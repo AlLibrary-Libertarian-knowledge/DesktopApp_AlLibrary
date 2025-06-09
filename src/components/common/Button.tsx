@@ -1,4 +1,4 @@
-import { Component, JSX, ParentProps } from 'solid-js';
+import { Component, ParentProps } from 'solid-js';
 import './Button.css';
 
 export interface ButtonProps extends ParentProps {

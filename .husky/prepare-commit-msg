@@ -1,0 +1,56 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Get the commit message file
+commit_msg_file=$1
+commit_source=$2
+sha1=$3
+
+# Only run for commits that don't already have a message (not amend, merge, etc.)
+if [ "$commit_source" = "" ]; then
+    # Get the current branch name
+    branch_name=$(git symbolic-ref --short HEAD 2>/dev/null || echo "unknown")
+    
+    # Extract ticket number from branch name if it follows a pattern like feat/ABC-123-description
+    ticket_number=$(echo "$branch_name" | grep -oE '[A-Z]+-[0-9]+' || echo "")
+    
+    # Prepare a template based on branch name
+    if echo "$branch_name" | grep -q "^feat/"; then
+        echo "feat: " > "$commit_msg_file"
+    elif echo "$branch_name" | grep -q "^fix/"; then
+        echo "fix: " > "$commit_msg_file"
+    elif echo "$branch_name" | grep -q "^docs/"; then
+        echo "docs: " > "$commit_msg_file"
+    elif echo "$branch_name" | grep -q "^refactor/"; then
+        echo "refactor: " > "$commit_msg_file"
+    elif echo "$branch_name" | grep -q "^test/"; then
+        echo "test: " > "$commit_msg_file"
+    elif echo "$branch_name" | grep -q "^chore/"; then
+        echo "chore: " > "$commit_msg_file"
+    else
+        echo "# Please enter the commit message for your changes." > "$commit_msg_file"
+        echo "#" >> "$commit_msg_file"
+        echo "# Use conventional commits format:" >> "$commit_msg_file"
+        echo "#   feat: add new feature" >> "$commit_msg_file"
+        echo "#   fix: bug fix" >> "$commit_msg_file"
+        echo "#   docs: documentation" >> "$commit_msg_file"
+        echo "#   style: formatting" >> "$commit_msg_file"
+        echo "#   refactor: code refactoring" >> "$commit_msg_file"
+        echo "#   test: add/update tests" >> "$commit_msg_file"
+        echo "#   chore: maintenance" >> "$commit_msg_file"
+        echo "#" >> "$commit_msg_file"
+        if [ -n "$ticket_number" ]; then
+            echo "# Ticket: $ticket_number" >> "$commit_msg_file"
+            echo "#" >> "$commit_msg_file"
+        fi
+    fi
+    
+    # Add ticket number to commit message if found
+    if [ -n "$ticket_number" ]; then
+        current_msg=$(cat "$commit_msg_file")
+        if ! echo "$current_msg" | grep -q "$ticket_number"; then
+            # Append ticket number to the end of the first line
+            sed -i "1s/$/ ($ticket_number)/" "$commit_msg_file"
+        fi
+    fi
+fi 

@@ -26,8 +26,8 @@ interface Link {
 }
 
 interface NetworkGraphProps {
-  width?: number;
-  height?: number;
+  width?: number | string;
+  height?: number | string;
   interactive?: boolean;
   showStats?: boolean;
   theme?: 'light' | 'dark';
@@ -39,6 +39,7 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
 
   const [hoveredNode, setHoveredNode] = createSignal<Node | null>(null);
   const [selectedNode, setSelectedNode] = createSignal<Node | null>(null);
+  const [mousePosition, setMousePosition] = createSignal<{ x: number; y: number } | null>(null);
   const [networkStats, setNetworkStats] = createStore({
     totalPeers: 0,
     activePeers: 0,
@@ -165,6 +166,7 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
     if (canvasRef) {
       drawNetwork();
     }
+    // Use requestAnimationFrame for optimal smoothness (60fps)
     animationId = requestAnimationFrame(animate);
   };
 
@@ -174,8 +176,10 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
     const ctx = canvasRef.getContext('2d');
     if (!ctx) return;
 
-    const width = props.width || 500;
-    const height = props.height || 400;
+    // Get actual canvas dimensions for responsive behavior
+    const rect = canvasRef.getBoundingClientRect();
+    const width = rect.width || 500;
+    const height = rect.height || 400;
 
     // Clear canvas
     ctx.clearRect(0, 0, width, height);
@@ -197,10 +201,11 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
       drawNode(ctx, node);
     });
 
-    // Draw hover tooltip
+    // Draw hover tooltip with mouse coordinates
     const hovered = hoveredNode();
-    if (hovered) {
-      drawTooltip(ctx, hovered);
+    const mousePos = mousePosition();
+    if (hovered && mousePos) {
+      drawTooltip(ctx, hovered, mousePos.x, mousePos.y, width, height);
     }
   };
 
@@ -235,10 +240,11 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
       active: ['#3b82f6', '#06b6d4'],
       idle: ['#6b7280', '#9ca3af'],
       error: ['#ef4444', '#f87171'],
-    };
+    } as const;
 
-    gradient.addColorStop(0, colors[link.status][0]);
-    gradient.addColorStop(1, colors[link.status][1]);
+    const statusColors = colors[link.status] || colors.idle;
+    gradient.addColorStop(0, statusColors[0]);
+    gradient.addColorStop(1, statusColors[1]);
 
     ctx.strokeStyle = gradient;
     ctx.lineWidth = Math.max(1, (link.bandwidth / 1024) * 4);
@@ -285,6 +291,18 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
       disconnected: 0.3,
       error: 0.5,
     };
+
+    // Enhanced hover effect with larger visual feedback
+    if (isHovered) {
+      // Draw hover ring
+      ctx.strokeStyle = typeColors[node.type];
+      ctx.lineWidth = 2;
+      ctx.globalAlpha = 0.6;
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, size + 8, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
 
     // Outer glow for selection/hover
     if (isSelected || isHovered) {
@@ -339,18 +357,26 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
       ctx.fillStyle = 'var(--text-color)';
       ctx.font = '11px var(--font-family-sans)';
       ctx.textAlign = 'center';
-      ctx.fillText(node.label, node.x, node.y + size + 15);
+      ctx.fillText(node.label || 'Unknown', node.x, node.y + size + 15);
     }
   };
 
-  const drawTooltip = (ctx: CanvasRenderingContext2D, node: Node) => {
-    const tooltipX = node.x + 20;
-    const tooltipY = node.y - 40;
-    const padding = 8;
+  const drawTooltip = (
+    ctx: CanvasRenderingContext2D,
+    node: Node,
+    mouseX: number,
+    mouseY: number,
+    width: number,
+    height: number
+  ) => {
+    const padding = 12;
+    const lineHeight = 16;
 
+    // Prepare tooltip content with better formatting
+    const title = node.label || 'Unknown Node';
     const lines = [
-      `${node.label}`,
-      `Status: ${node.status}`,
+      `Type: ${node.type.charAt(0).toUpperCase() + node.type.slice(1)}`,
+      `Status: ${node.status.charAt(0).toUpperCase() + node.status.slice(1)}`,
       `Connections: ${node.connections}`,
       `Bandwidth: ${node.bandwidth} KB/s`,
       `Latency: ${node.latency}ms`,
@@ -361,40 +387,164 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
       lines.push(`Cultural: ${node.culturalContext}`);
     }
 
-    // Measure tooltip size
-    ctx.font = '11px var(--font-family-sans)';
-    const maxWidth = Math.max(...lines.map(line => ctx.measureText(line).width));
-    const tooltipWidth = maxWidth + padding * 2;
-    const tooltipHeight = lines.length * 14 + padding * 2;
+    // Set proper web-safe fonts for canvas
+    const titleFont = 'bold 13px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    const contentFont = '11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
 
-    // Draw tooltip background
-    ctx.fillStyle = 'var(--color-surface)';
-    ctx.strokeStyle = 'var(--border-color)';
-    ctx.lineWidth = 1;
+    // Set font for measurements
+    ctx.font = titleFont;
+    const titleWidth = ctx.measureText(title).width;
+
+    ctx.font = contentFont;
+    const maxContentWidth = Math.max(...lines.map(line => ctx.measureText(line).width));
+    const maxWidth = Math.max(titleWidth, maxContentWidth);
+
+    const tooltipWidth = maxWidth + padding * 2;
+    const tooltipHeight = (lines.length + 1) * lineHeight + padding * 2 + 8; // Extra space for title
+
+    // Smart positioning - follow mouse but stay within bounds
+    const offset = 15; // Distance from cursor
+    let tooltipX = mouseX + offset;
+    let tooltipY = mouseY - tooltipHeight - offset;
+
+    // Adjust horizontal position if tooltip would go off right edge
+    if (tooltipX + tooltipWidth > width) {
+      tooltipX = mouseX - tooltipWidth - offset;
+    }
+
+    // Adjust vertical position if tooltip would go off top edge
+    if (tooltipY < 0) {
+      tooltipY = mouseY + offset;
+    }
+
+    // Final bounds check - ensure tooltip is fully visible
+    tooltipX = Math.max(5, Math.min(tooltipX, width - tooltipWidth - 5));
+    tooltipY = Math.max(5, Math.min(tooltipY, height - tooltipHeight - 5));
+
+    // Create gradient background
+    const gradient = ctx.createLinearGradient(
+      tooltipX,
+      tooltipY,
+      tooltipX,
+      tooltipY + tooltipHeight
+    );
+    gradient.addColorStop(0, 'rgba(30, 41, 59, 0.95)'); // Dark blue-gray
+    gradient.addColorStop(1, 'rgba(15, 23, 42, 0.98)'); // Darker blue-gray
+
+    // Draw shadow first
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+    ctx.shadowBlur = 8;
+    ctx.shadowOffsetX = 2;
+    ctx.shadowOffsetY = 4;
+
+    // Draw tooltip background with rounded corners
+    ctx.fillStyle = gradient;
     ctx.beginPath();
-    ctx.roundRect(tooltipX, tooltipY, tooltipWidth, tooltipHeight, 4);
+    ctx.roundRect(tooltipX, tooltipY, tooltipWidth, tooltipHeight, 8);
     ctx.fill();
+
+    // Reset shadow
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+
+    // Draw border with node type color
+    const typeColors = {
+      self: '#3b82f6',
+      peer: '#10b981',
+      institution: '#a855f7',
+      community: '#f59e0b',
+    };
+
+    ctx.strokeStyle = typeColors[node.type];
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(tooltipX, tooltipY, tooltipWidth, tooltipHeight, 8);
     ctx.stroke();
 
-    // Draw tooltip text
-    ctx.fillStyle = 'var(--text-color)';
+    // Draw title with larger, bold font
+    ctx.fillStyle = '#ffffff';
+    ctx.font = titleFont;
     ctx.textAlign = 'left';
+    ctx.fillText(title, tooltipX + padding, tooltipY + padding + 13);
+
+    // Draw separator line under title
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(tooltipX + padding, tooltipY + padding + 20);
+    ctx.lineTo(tooltipX + tooltipWidth - padding, tooltipY + padding + 20);
+    ctx.stroke();
+
+    // Draw content lines with proper spacing and colors
+    ctx.font = contentFont;
     lines.forEach((line, index) => {
-      ctx.fillText(line, tooltipX + padding, tooltipY + padding + (index + 1) * 14);
+      const yPos = tooltipY + padding + 20 + 8 + (index + 1) * lineHeight;
+
+      // Split line into label and value for better formatting
+      const [label, value] = line.split(': ');
+
+      if (!label || !value) return; // Safety check
+
+      // Draw label in muted color
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+      ctx.fillText(label + ':', tooltipX + padding, yPos);
+
+      // Draw value in bright color with appropriate status colors
+      let valueColor = '#ffffff';
+      if (label === 'Status') {
+        switch (value.toLowerCase()) {
+          case 'connected':
+            valueColor = '#10b981';
+            break;
+          case 'connecting':
+            valueColor = '#f59e0b';
+            break;
+          case 'disconnected':
+            valueColor = '#6b7280';
+            break;
+          case 'error':
+            valueColor = '#ef4444';
+            break;
+        }
+      } else if (label === 'Reliability') {
+        const reliability = parseInt(value);
+        if (reliability >= 90) valueColor = '#10b981';
+        else if (reliability >= 70) valueColor = '#f59e0b';
+        else valueColor = '#ef4444';
+      } else if (label === 'Type') {
+        valueColor = typeColors[node.type];
+      }
+
+      ctx.fillStyle = valueColor;
+      const labelWidth = ctx.measureText(label + ':').width;
+      ctx.fillText(value, tooltipX + padding + labelWidth + 8, yPos);
     });
   };
 
-  // Mouse interaction
+  // Mouse interaction - optimized for smooth performance
   const handleMouseMove = (e: MouseEvent) => {
     if (!canvasRef) return;
 
     const rect = canvasRef.getBoundingClientRect();
+
+    // Simple coordinate calculation since we're handling DPI in canvas setup
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
+    // Update mouse position for smooth tooltip tracking
+    setMousePosition({ x, y });
+
     const hoveredNodeFound = nodes.find(node => {
+      // Calculate the same size as used in drawNode
+      const baseSize = 12;
+      const nodeSize = baseSize + node.connections * 1.5;
+      // Add some padding for easier interaction
+      const clickRadius = nodeSize + 4;
+
       const distance = Math.sqrt((x - node.x) ** 2 + (y - node.y) ** 2);
-      return distance < 20;
+      return distance < clickRadius;
     });
 
     setHoveredNode(hoveredNodeFound || null);
@@ -405,12 +555,20 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
     if (!canvasRef) return;
 
     const rect = canvasRef.getBoundingClientRect();
+
+    // Simple coordinate calculation since we're handling DPI in canvas setup
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
     const clickedNode = nodes.find(node => {
+      // Calculate the same size as used in drawNode
+      const baseSize = 12;
+      const nodeSize = baseSize + node.connections * 1.5;
+      // Add some padding for easier interaction
+      const clickRadius = nodeSize + 4;
+
       const distance = Math.sqrt((x - node.x) ** 2 + (y - node.y) ** 2);
-      return distance < 20;
+      return distance < clickRadius;
     });
 
     setSelectedNode(clickedNode || null);
@@ -436,10 +594,54 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
 
   onMount(() => {
     if (canvasRef) {
+      // Set up canvas for proper DPI handling
+      const setupCanvas = () => {
+        const rect = canvasRef!.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+
+        // Set the canvas internal size with device pixel ratio
+        canvasRef!.width = rect.width * dpr;
+        canvasRef!.height = rect.height * dpr;
+
+        // Scale the canvas back down using CSS
+        canvasRef!.style.width = rect.width + 'px';
+        canvasRef!.style.height = rect.height + 'px';
+
+        // Scale the drawing context so everything draws at the correct size
+        const ctx = canvasRef!.getContext('2d');
+        if (ctx) {
+          ctx.scale(dpr, dpr);
+        }
+
+        console.log('Canvas setup:', {
+          rect: { width: rect.width, height: rect.height },
+          canvas: { width: canvasRef!.width, height: canvasRef!.height },
+          dpr,
+        });
+      };
+
+      setupCanvas();
+
+      // Add resize observer to handle canvas resizing
+      const resizeObserver = new ResizeObserver(setupCanvas);
+      resizeObserver.observe(canvasRef);
+
       canvasRef.addEventListener('mousemove', handleMouseMove);
       canvasRef.addEventListener('click', handleClick);
       animate();
+
+      // Cleanup function for resize observer
+      return () => {
+        resizeObserver.disconnect();
+        if (canvasRef) {
+          canvasRef.removeEventListener('mousemove', handleMouseMove);
+          canvasRef.removeEventListener('click', handleClick);
+        }
+      };
     }
+
+    // Return empty cleanup function if no canvas
+    return () => {};
   });
 
   onCleanup(() => {
@@ -456,8 +658,10 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
     <div class={`network-graph ${props.theme || 'light'}`}>
       <canvas
         ref={canvasRef}
-        width={props.width || 500}
-        height={props.height || 400}
+        style={{
+          width: typeof props.width === 'string' ? props.width : `${props.width || 500}px`,
+          height: typeof props.height === 'string' ? props.height : `${props.height || 400}px`,
+        }}
         class="network-canvas"
       />
 

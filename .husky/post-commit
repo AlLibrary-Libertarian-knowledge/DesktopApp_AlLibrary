@@ -1,0 +1,36 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "📝 Post-commit hook running..."
+
+# Get the commit message
+commit_msg=$(git log -1 --pretty=%B)
+
+# Check if this is a release commit
+if echo "$commit_msg" | grep -qE "^(release|chore\(release\))"; then
+    echo "🎉 Release commit detected!"
+    echo "Remember to:"
+    echo "  - Create a tag: git tag v<version>"
+    echo "  - Push tags: git push --tags"
+    echo "  - Create release notes"
+fi
+
+# Check if this is a fix commit
+if echo "$commit_msg" | grep -qE "^fix"; then
+    echo "🐛 Bug fix committed!"
+    echo "Consider:"
+    echo "  - Adding regression tests"
+    echo "  - Updating documentation if needed"
+fi
+
+# Show helpful next steps
+current_branch=$(git branch --show-current)
+if [ "$current_branch" != "main" ] && [ "$current_branch" != "master" ]; then
+    echo ""
+    echo "💡 Next steps:"
+    echo "  - Continue development on this branch"
+    echo "  - When ready, create a pull request to merge into main"
+    echo "  - Current branch: $current_branch"
+fi
+
+echo "✅ Post-commit actions completed!" 

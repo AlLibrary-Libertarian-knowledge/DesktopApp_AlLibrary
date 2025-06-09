@@ -1,0 +1,29 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔄 Post-checkout hook running..."
+
+# Check if dependencies need to be updated
+if [ -f "package-lock.json" ] && [ "package-lock.json" -nt "node_modules/.package-lock.json" ]; then
+    echo "📦 Package-lock.json has changed, updating dependencies..."
+    npm ci
+fi
+
+# Check for new dependencies in package.json
+if [ "package.json" -nt "node_modules/.package.json" ]; then
+    echo "📦 Package.json has changed, installing dependencies..."
+    npm install
+    touch node_modules/.package.json
+fi
+
+# Clear any cached build artifacts if switching between significantly different branches
+prev_commit=$1
+new_commit=$2
+branch_switch=$3
+
+if [ "$branch_switch" = "1" ]; then
+    echo "🧹 Branch switch detected, clearing build cache..."
+    rm -rf dist/ build/ .vite/ 2>/dev/null || true
+fi
+
+echo "✅ Post-checkout setup completed!" 

@@ -1,0 +1,24 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔀 Post-merge hook running..."
+
+# Check if package.json or package-lock.json changed in the merge
+changed_files=$(git diff-tree -r --name-only --no-commit-id ORIG_HEAD HEAD)
+
+if echo "$changed_files" | grep -q "package.*\.json"; then
+    echo "📦 Dependencies changed during merge, updating..."
+    npm ci
+    
+    # Run security audit after dependency updates
+    echo "🔒 Running security audit after dependency update..."
+    npm audit --audit-level=moderate
+fi
+
+# Check if there are any merge conflicts in important files
+if echo "$changed_files" | grep -q "\.ts$\|\.js$\|\.json$"; then
+    echo "🔧 Source files changed, running type check..."
+    npm run typecheck
+fi
+
+echo "✅ Post-merge setup completed!" 

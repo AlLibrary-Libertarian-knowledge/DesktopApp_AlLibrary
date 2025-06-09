@@ -1,6 +1,5 @@
 import { Component, createSignal, onMount } from 'solid-js';
-import { Button, Card, Input, Modal } from '../components/common';
-import Breadcrumb from '../components/common/Breadcrumb';
+import { Button, Card, Modal } from '../components/common';
 import NetworkGraph from '../components/network/NetworkGraph';
 import DownloadManager from '../components/dashboard/DownloadManager';
 import StatusBar from '../components/dashboard/StatusBar';
@@ -9,11 +8,7 @@ import './HomePage.css';
 const HomePage: Component = () => {
   const [showModal, setShowModal] = createSignal(false);
   const [activeTab, setActiveTab] = createSignal<'overview' | 'network' | 'downloads'>('overview');
-  const [inputValue, setInputValue] = createSignal('');
 
-  const breadcrumbItems = [{ label: 'Home', href: '/', icon: '🏠' }, { label: 'Dashboard' }];
-
-  const handleModalOpen = () => setShowModal(true);
   const handleModalClose = () => setShowModal(false);
 
   onMount(() => {
@@ -37,37 +32,106 @@ const HomePage: Component = () => {
           <p class="page-subtitle">Decentralized Cultural Heritage Preservation Network</p>
         </div>
 
-        <div class="network-status-header">
-          <div class="status-indicator online">
-            <span class="status-dot"></span>
-            Network Online
+        <div class="network-status-enhanced">
+          {/* Network Status Indicator */}
+          <div class="network-status-main">
+            <div class="status-indicator online">
+              <div class="status-pulse"></div>
+              <span class="status-text">Network Online</span>
+            </div>
+            <div class="network-health">
+              <div class="health-bar">
+                <div class="health-fill" style="width: 98%"></div>
+              </div>
+              <span class="health-text">98% Health</span>
+            </div>
           </div>
-          <div class="connection-info">
-            <span class="peer-count">89 peers</span>
-            <span class="speed-info">↓ 2.4 MB/s ↑ 1.2 MB/s</span>
+
+          {/* Live Data Flow Visualization */}
+          <div class="data-flow-container">
+            <div class="flow-section">
+              <div class="flow-header">
+                <span class="flow-icon download">⬇</span>
+                <span class="flow-label">Download</span>
+              </div>
+              <div class="flow-visual">
+                <div class="flow-stream download-stream">
+                  <div class="flow-particle"></div>
+                  <div class="flow-particle"></div>
+                  <div class="flow-particle"></div>
+                </div>
+                <div class="flow-speed">2.4 MB/s</div>
+              </div>
+            </div>
+
+            <div class="network-center">
+              <div class="network-node">
+                <div class="node-core"></div>
+                <div class="node-ring"></div>
+                <div class="node-outer"></div>
+              </div>
+              <div class="peer-count">
+                <span class="peer-number">89</span>
+                <span class="peer-label">peers</span>
+              </div>
+            </div>
+
+            <div class="flow-section">
+              <div class="flow-header">
+                <span class="flow-icon upload">⬆</span>
+                <span class="flow-label">Upload</span>
+              </div>
+              <div class="flow-visual">
+                <div class="flow-stream upload-stream">
+                  <div class="flow-particle"></div>
+                  <div class="flow-particle"></div>
+                  <div class="flow-particle"></div>
+                </div>
+                <div class="flow-speed">1.2 MB/s</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Network Activity Indicators */}
+          <div class="activity-indicators">
+            <div class="activity-item">
+              <div class="activity-dot active"></div>
+              <span class="activity-text">3 Downloads</span>
+            </div>
+            <div class="activity-item">
+              <div class="activity-dot seeding"></div>
+              <span class="activity-text">7 Seeding</span>
+            </div>
+            <div class="activity-item">
+              <div class="activity-dot discovering"></div>
+              <span class="activity-text">2 Discovering</span>
+            </div>
           </div>
         </div>
       </header>
 
       {/* Enhanced Navigation Tabs */}
-      <div class="dashboard-tabs">
+      <div
+        class="dashboard-tabs"
+        data-active={activeTab() === 'overview' ? '0' : activeTab() === 'network' ? '1' : '2'}
+      >
         <button
           class={`tab ${activeTab() === 'overview' ? 'active' : ''}`}
           onClick={() => setActiveTab('overview')}
         >
-          📊 Overview
+          <span class="tab-text">📊 Overview</span>
         </button>
         <button
           class={`tab ${activeTab() === 'network' ? 'active' : ''}`}
           onClick={() => setActiveTab('network')}
         >
-          🌐 Network
+          <span class="tab-text">🌐 Network</span>
         </button>
         <button
           class={`tab ${activeTab() === 'downloads' ? 'active' : ''}`}
           onClick={() => setActiveTab('downloads')}
         >
-          📥 Downloads
+          <span class="tab-text">📥 Downloads</span>
         </button>
       </div>
 
@@ -133,7 +197,7 @@ const HomePage: Component = () => {
                 </Button>
               </div>
               <Card class="network-preview-card">
-                <NetworkGraph width={800} height={350} showStats={true} theme="light" />
+                <NetworkGraph width="100%" height={350} showStats={true} theme="light" />
               </Card>
             </section>
 
@@ -361,16 +425,6 @@ const HomePage: Component = () => {
               <span class="feature-icon">📊</span>
               <span class="feature-text">Real-time network analytics & monitoring</span>
             </div>
-          </div>
-
-          <div class="mt-6">
-            <Input
-              label="What cultural knowledge would you like to preserve?"
-              placeholder="Traditional recipes, stories, art techniques, historical documents..."
-              value={inputValue()}
-              onInput={setInputValue}
-              hint="Your contributions help preserve cultural heritage for future generations"
-            />
           </div>
         </div>
       </Modal>
