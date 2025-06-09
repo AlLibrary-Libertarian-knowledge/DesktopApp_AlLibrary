@@ -1,5 +1,5 @@
 pub mod error;
-pub mod config;
-pub mod logger;
+pub mod logging;
 
-pub use error::{AlLibraryError, Result}; 
+pub use error::*;
+pub use logging::*; 

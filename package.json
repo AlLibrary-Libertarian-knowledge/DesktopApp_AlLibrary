@@ -18,9 +18,9 @@
     "tauri:build": "tauri build",
     "test": "vitest",
     "test:e2e": "playwright test",
-    "lint": "eslint src --ext .js,.ts",
-    "lint:fix": "eslint --fix --ext .js,.ts",
-    "format": "prettier --write src/**/*.{ts,tsx,css}",
+    "lint": "npx eslint src --ext .js,.ts",
+    "lint:fix": "npx eslint --fix --ext .js,.ts",
+    "format": "npx prettier --write src/**/*.{ts,tsx,css}",
     "typecheck": "tsc --noEmit",
     "prepare": "husky"
   },
@@ -47,11 +47,11 @@
   },
   "lint-staged": {
     "*.{js,ts}": [
-      "yarn lint:fix",
-      "yarn format"
+      "yarn run lint:fix",
+      "yarn run format"
     ],
     "*.{css,md,json}": [
-      "yarn format"
+      "yarn run format"
     ]
   }
 }
