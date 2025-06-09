@@ -19,7 +19,7 @@
     "test": "vitest",
     "test:e2e": "playwright test",
     "lint": "eslint src --ext .js,.ts",
-    "lint:fix": "eslint src --ext .ts,.tsx --fix",
+    "lint:fix": "eslint --fix --ext .js,.ts",
     "format": "prettier --write src/**/*.{ts,tsx,css}",
     "typecheck": "tsc --noEmit",
     "prepare": "husky"
@@ -47,11 +47,11 @@
   },
   "lint-staged": {
     "*.{js,ts}": [
-      "eslint --fix",
-      "prettier --write"
+      "yarn lint:fix",
+      "yarn format"
     ],
     "*.{css,md,json}": [
-      "prettier --write"
+      "yarn format"
     ]
   }
 }
