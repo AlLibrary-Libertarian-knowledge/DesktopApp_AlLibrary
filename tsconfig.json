@@ -15,12 +15,30 @@
     "jsx": "preserve",
     "jsxImportSource": "solid-js",
 
-    /* Linting */
+    /* Path mapping for clean imports */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@/components/*": ["src/components/*"],
+      "@/pages/*": ["src/pages/*"],
+      "@/stores/*": ["src/stores/*"],
+      "@/services/*": ["src/services/*"],
+      "@/utils/*": ["src/utils/*"],
+      "@/assets/*": ["src/assets/*"],
+      "@/styles/*": ["src/styles/*"]
+    },
+
+    /* Linting - Strict configuration */
     "strict": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitReturns": true,
+    "noImplicitOverride": true,
+    "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"],
+  "include": ["src/**/*", "src/**/*.tsx", "src/**/*.ts"],
+  "exclude": ["node_modules", "dist", "src-tauri"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

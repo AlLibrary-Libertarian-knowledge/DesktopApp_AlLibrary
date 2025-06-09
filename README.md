@@ -422,24 +422,74 @@ We welcome contributions from developers, cultural experts, and community member
 
 ---
 
-## 📊 Project Status
+## 📊 Project Status & Roadmap
 
-### Current Phase: Foundation Development
+### Development Timeline: 8 Weeks + 4 Week Buffer (3 Months Total)
 
-- ✅ Project structure and architecture
-- ✅ Core Tauri + SolidJS setup
-- 🔄 Document management system
-- 🔄 Basic P2P networking
+#### **Phase 1: Foundation** (Week 1) ✅
+
+- ✅ Tauri v2 + SolidJS project setup
+- ✅ SQLite database foundation
+- ✅ Basic document import (PDF/EPUB)
+- ✅ Development environment configuration
+
+#### **Phase 2: Local Functionality** (Week 2) 🔄
+
+- 🔄 Document preview system (PDF.js, EPUB)
+- 🔄 Local search implementation (SQLite FTS)
+- 🔄 Collections and organization features
+- 🔄 Basic UI framework and navigation
+
+#### **Phase 3: P2P Foundation** (Week 3) ⏳
+
+- ⏳ libp2p network setup and peer discovery
+- ⏳ Content distribution system
+- ⏳ Network search capabilities
+- ⏳ Content addressing and verification
+
+#### **Phase 4: Enhanced Features** (Week 4) ⏳
+
+- ⏳ Advanced document features (versions, annotations)
 - ⏳ Cultural protection framework
-- ⏳ Search and discovery
-- ⏳ Advanced features
+- ⏳ Advanced search with filters and history
+- ⏳ Document relationship mapping
 
-### Roadmap
+#### **Phase 5: Performance & Security** (Week 5) ⏳
 
-- **Phase 1**: Core functionality (Month 1)
-- **Phase 2**: P2P networking (Month 2)
-- **Phase 3**: Cultural protection (Month 3)
-- **Phase 4**: Advanced features (Future)
+- ⏳ Performance optimization and caching
+- ⏳ Security implementation and monitoring
+- ⏳ Offline support and synchronization
+- ⏳ Content security and access control
+
+#### **Phase 6: Optimization** (Week 6) ⏳
+
+- ⏳ UI enhancement and accessibility
+- ⏳ User preferences and history
+- ⏳ Feedback systems and analytics
+- ⏳ Cross-platform optimization
+
+#### **Phase 7: Testing & Documentation** (Week 7) ⏳
+
+- ⏳ Comprehensive testing framework
+- ⏳ User and technical documentation
+- ⏳ Final polish and issue resolution
+- ⏳ Performance tuning and optimization
+
+#### **Phase 8: Release & Maintenance** (Week 8) ⏳
+
+- ⏳ Final testing and validation
+- ⏳ Release preparation and builds
+- ⏳ Community launch preparation
+- ⏳ Documentation finalization
+
+#### **Buffer Period** (Weeks 9-12) ⏳
+
+- ⏳ Debugging and issue resolution
+- ⏳ Polish and user experience improvements
+- ⏳ Community feedback integration
+- ⏳ Final release preparation
+
+### Current Status: **Phase 1 Complete, Phase 2 In Progress**
 
 ---
 

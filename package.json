@@ -1,25 +1,44 @@
 {
-  "name": "desktopapp_allibrary",
+  "name": "desktopapp-allibrary",
   "version": "0.1.0",
-  "description": "",
+  "description": "AlLibrary - Decentralized Knowledge Sharing Platform",
   "type": "module",
+  "author": "AlLibrary Community",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/allibrary.git"
+  },
   "scripts": {
-    "start": "vite",
     "dev": "vite",
     "build": "vite build",
-    "serve": "vite preview",
-    "tauri": "tauri"
+    "preview": "vite preview",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build",
+    "test": "vitest",
+    "test:e2e": "playwright test",
+    "lint": "eslint src --ext .ts,.tsx",
+    "lint:fix": "eslint src --ext .ts,.tsx --fix",
+    "format": "prettier --write src/**/*.{ts,tsx,css}",
+    "typecheck": "tsc --noEmit"
   },
-  "license": "MIT",
   "dependencies": {
     "solid-js": "^1.9.3",
     "@tauri-apps/api": "^2",
-    "@tauri-apps/plugin-opener": "^2"
+    "@tauri-apps/plugin-opener": "^2",
+    "@solidjs/router": "^0.14.1"
   },
   "devDependencies": {
     "typescript": "~5.6.2",
     "vite": "^6.0.3",
     "vite-plugin-solid": "^2.11.0",
-    "@tauri-apps/cli": "^2"
+    "@tauri-apps/cli": "^2",
+    "vitest": "^2.0.0",
+    "eslint": "^9.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "eslint-plugin-solid": "^0.14.0",
+    "prettier": "^3.0.0"
   }
 }
