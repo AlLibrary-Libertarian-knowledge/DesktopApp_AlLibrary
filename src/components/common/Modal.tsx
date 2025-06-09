@@ -1,4 +1,4 @@
-import { Component, ParentProps, JSX, Show, onMount, onCleanup, createEffect } from 'solid-js';
+import { Component, ParentProps, JSX, Show, onCleanup, createEffect } from 'solid-js';
 import { Portal } from 'solid-js/web';
 import './Modal.css';
 

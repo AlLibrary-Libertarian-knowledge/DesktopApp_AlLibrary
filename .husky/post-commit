@@ -1,36 +1,54 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
 echo "📝 Post-commit hook running..."
 
-# Get the commit message
-commit_msg=$(git log -1 --pretty=%B)
+# Determine commit type from commit message
+COMMIT_MSG=$(git log -1 --pretty=%B)
+COMMIT_TYPE=""
 
-# Check if this is a release commit
-if echo "$commit_msg" | grep -qE "^(release|chore\(release\))"; then
-    echo "🎉 Release commit detected!"
-    echo "Remember to:"
-    echo "  - Create a tag: git tag v<version>"
-    echo "  - Push tags: git push --tags"
-    echo "  - Create release notes"
-fi
+case "$COMMIT_MSG" in
+  feat*) COMMIT_TYPE="feature" ;;
+  fix*) COMMIT_TYPE="bug fix" ;;
+  docs*) COMMIT_TYPE="documentation" ;;
+  style*) COMMIT_TYPE="style change" ;;
+  refactor*) COMMIT_TYPE="refactor" ;;
+  test*) COMMIT_TYPE="test" ;;
+  chore*) COMMIT_TYPE="maintenance" ;;
+  *) COMMIT_TYPE="change" ;;
+esac
 
-# Check if this is a fix commit
-if echo "$commit_msg" | grep -qE "^fix"; then
-    echo "🐛 Bug fix committed!"
+# Get current branch
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+# Provide contextual feedback
+echo "🐛 $COMMIT_TYPE committed!"
+case "$COMMIT_TYPE" in
+  "feature")
+    echo "Consider:"
+    echo "  - Adding tests for the new feature"
+    echo "  - Updating documentation"
+    echo "  - Checking if migration scripts are needed"
+    ;;
+  "bug fix")
     echo "Consider:"
     echo "  - Adding regression tests"
     echo "  - Updating documentation if needed"
-fi
+    ;;
+  "documentation")
+    echo "Great! Documentation improvements help everyone."
+    ;;
+  "test")
+    echo "Excellent! More tests = more confidence."
+    ;;
+esac
 
-# Show helpful next steps
-current_branch=$(git branch --show-current)
-if [ "$current_branch" != "main" ] && [ "$current_branch" != "master" ]; then
-    echo ""
-    echo "💡 Next steps:"
-    echo "  - Continue development on this branch"
-    echo "  - When ready, create a pull request to merge into main"
-    echo "  - Current branch: $current_branch"
+echo ""
+echo "💡 Next steps:"
+if [ "$BRANCH" = "main" ] || [ "$BRANCH" = "master" ]; then
+  echo "  - Consider creating a release tag if this is release-ready"
+  echo "  - Ensure CI/CD pipeline completes successfully"
+else
+  echo "  - Continue development on this branch"
+  echo "  - When ready, create a pull request to merge into main"
+  echo "  - Current branch: $BRANCH"
 fi
 
 echo "✅ Post-commit actions completed!" 

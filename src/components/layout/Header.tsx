@@ -3,7 +3,7 @@ import './Header.css';
 
 interface HeaderProps {
   sidebarCollapsed?: boolean;
-  onSidebarToggle?: () => void;
+  onSidebarToggle?: (() => void) | undefined;
 }
 
 const Header: Component<HeaderProps> = props => {

@@ -156,17 +156,20 @@ const DownloadManager: Component<DownloadManagerProps> = props => {
   };
 
   const filteredDownloads = () => {
-    let filtered = [...downloads];
-
-    if (filter() !== 'all') {
-      filtered = filtered.filter(item => item.status === filter());
-    }
+    let filtered = downloads.filter(item => {
+      if (filter() === 'all') return true;
+      return item.status === filter();
+    });
 
     // Sort
     const sortField = sortBy();
     filtered.sort((a, b) => {
       let aVal = a[sortField];
       let bVal = b[sortField];
+
+      // Handle undefined values for proper comparison
+      if (aVal === undefined || aVal === null) aVal = 0;
+      if (bVal === undefined || bVal === null) bVal = 0;
 
       if (aVal < bVal) return sortOrder() === 'asc' ? -1 : 1;
       if (aVal > bVal) return sortOrder() === 'asc' ? 1 : -1;
@@ -203,11 +206,14 @@ const DownloadManager: Component<DownloadManagerProps> = props => {
     selected.forEach(item => {
       props.onItemAction?.(action, item);
 
-      // Mock state changes
-      if (action === 'pause' && item.status === 'downloading') {
-        setDownloads(item.id, 'status', 'paused');
-      } else if (action === 'resume' && item.status === 'paused') {
-        setDownloads(item.id, 'status', 'downloading');
+      // Mock state changes - find the item index and update
+      const itemIndex = downloads.findIndex(d => d.id === item.id);
+      if (itemIndex !== -1) {
+        if (action === 'pause' && item.status === 'downloading') {
+          setDownloads(itemIndex, 'status', 'paused');
+        } else if (action === 'resume' && item.status === 'paused') {
+          setDownloads(itemIndex, 'status', 'downloading');
+        }
       }
     });
   };

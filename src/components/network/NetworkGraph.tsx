@@ -49,7 +49,7 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
   });
 
   // Mock network data - in real implementation this would come from backend
-  const [nodes, setNodes] = createStore<Node[]>([
+  const [nodes] = createStore<Node[]>([
     {
       id: 'self',
       label: 'You',
@@ -126,7 +126,7 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
     },
   ]);
 
-  const [links, setLinks] = createStore<Link[]>([
+  const [links] = createStore<Link[]>([
     {
       source: 'self',
       target: 'peer-1',

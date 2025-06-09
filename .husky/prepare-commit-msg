@@ -1,56 +1,46 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
+# Auto-suggest commit message based on branch/changes
+COMMIT_EDITMSG=$1
+COMMIT_SOURCE=$2
 
-# Get the commit message file
-commit_msg_file=$1
-commit_source=$2
-sha1=$3
+# Extract branch name
+BRANCH_NAME=$(git symbolic-ref --short HEAD 2>/dev/null || echo "main")
 
-# Only run for commits that don't already have a message (not amend, merge, etc.)
-if [ "$commit_source" = "" ]; then
-    # Get the current branch name
-    branch_name=$(git symbolic-ref --short HEAD 2>/dev/null || echo "unknown")
+# Extract ticket/issue number from branch name (e.g., feature/ALB-123 -> ALB-123)
+TICKET=$(echo "$BRANCH_NAME" | grep -o '[A-Z]\{2,\}-[0-9]\+' || echo "")
+
+# Determine commit type based on branch prefix or changes
+COMMIT_TYPE=""
+case "$BRANCH_NAME" in
+  feature/*) COMMIT_TYPE="feat" ;;
+  bugfix/*|fix/*) COMMIT_TYPE="fix" ;;
+  hotfix/*) COMMIT_TYPE="hotfix" ;;
+  release/*) COMMIT_TYPE="release" ;;
+  *) COMMIT_TYPE="chore" ;;
+esac
+
+# Only add suggestions for new commits (not amends, merges, etc.)
+if [ "$COMMIT_SOURCE" = "" ] || [ "$COMMIT_SOURCE" = "template" ]; then
+  # Check if commit message is empty or default
+  if [ ! -s "$COMMIT_EDITMSG" ] || grep -q "^#" "$COMMIT_EDITMSG"; then
     
-    # Extract ticket number from branch name if it follows a pattern like feat/ABC-123-description
-    ticket_number=$(echo "$branch_name" | grep -oE '[A-Z]+-[0-9]+' || echo "")
-    
-    # Prepare a template based on branch name
-    if echo "$branch_name" | grep -q "^feat/"; then
-        echo "feat: " > "$commit_msg_file"
-    elif echo "$branch_name" | grep -q "^fix/"; then
-        echo "fix: " > "$commit_msg_file"
-    elif echo "$branch_name" | grep -q "^docs/"; then
-        echo "docs: " > "$commit_msg_file"
-    elif echo "$branch_name" | grep -q "^refactor/"; then
-        echo "refactor: " > "$commit_msg_file"
-    elif echo "$branch_name" | grep -q "^test/"; then
-        echo "test: " > "$commit_msg_file"
-    elif echo "$branch_name" | grep -q "^chore/"; then
-        echo "chore: " > "$commit_msg_file"
-    else
-        echo "# Please enter the commit message for your changes." > "$commit_msg_file"
-        echo "#" >> "$commit_msg_file"
-        echo "# Use conventional commits format:" >> "$commit_msg_file"
-        echo "#   feat: add new feature" >> "$commit_msg_file"
-        echo "#   fix: bug fix" >> "$commit_msg_file"
-        echo "#   docs: documentation" >> "$commit_msg_file"
-        echo "#   style: formatting" >> "$commit_msg_file"
-        echo "#   refactor: code refactoring" >> "$commit_msg_file"
-        echo "#   test: add/update tests" >> "$commit_msg_file"
-        echo "#   chore: maintenance" >> "$commit_msg_file"
-        echo "#" >> "$commit_msg_file"
-        if [ -n "$ticket_number" ]; then
-            echo "# Ticket: $ticket_number" >> "$commit_msg_file"
-            echo "#" >> "$commit_msg_file"
-        fi
+    # Generate suggested commit message
+    SUGGESTED_PREFIX="$COMMIT_TYPE"
+    if [ -n "$TICKET" ]; then
+      SUGGESTED_PREFIX="$COMMIT_TYPE($TICKET)"
     fi
     
-    # Add ticket number to commit message if found
-    if [ -n "$ticket_number" ]; then
-        current_msg=$(cat "$commit_msg_file")
-        if ! echo "$current_msg" | grep -q "$ticket_number"; then
-            # Append ticket number to the end of the first line
-            sed -i "1s/$/ ($ticket_number)/" "$commit_msg_file"
-        fi
+    # Add suggestion as comment
+    echo "" >> "$COMMIT_EDITMSG"
+    echo "# Suggested format: $SUGGESTED_PREFIX: <description>" >> "$COMMIT_EDITMSG"
+    echo "# Branch: $BRANCH_NAME" >> "$COMMIT_EDITMSG"
+    if [ -n "$TICKET" ]; then
+      echo "# Ticket: $TICKET" >> "$COMMIT_EDITMSG"
     fi
+    echo "#" >> "$COMMIT_EDITMSG"
+    echo "# Examples:" >> "$COMMIT_EDITMSG"
+    echo "#   feat: add user authentication system" >> "$COMMIT_EDITMSG"
+    echo "#   fix: resolve memory leak in network graph" >> "$COMMIT_EDITMSG"
+    echo "#   feat(ALB-123): implement cultural context search" >> "$COMMIT_EDITMSG"
+    
+  fi
 fi 

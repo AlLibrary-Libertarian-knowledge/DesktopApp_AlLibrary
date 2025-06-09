@@ -10,22 +10,26 @@ interface NetworkStatus {
 
 interface DownloadStatus {
   active: number;
-  queued: number;
-  speed: string;
-  eta: string;
+  completed: number;
+  failed: number;
+  totalSize: string;
+  downloadSpeed: string;
 }
 
 interface StorageStatus {
-  used: number;
-  total: number;
+  used: string;
+  available: string;
   percentage: number;
+  cacheSize: string;
 }
 
 interface SystemHealth {
   cpu: number;
   memory: number;
   disk: number;
-  overall: 'good' | 'warning' | 'error';
+  network: number;
+  temperature: number;
+  uptime: string;
 }
 
 const StatusBar: Component = () => {
@@ -36,24 +40,28 @@ const StatusBar: Component = () => {
     health: 'good',
   });
 
-  const [downloadStatus, setDownloadStatus] = createSignal<DownloadStatus>({
+  const [downloadStatus] = createSignal<DownloadStatus>({
     active: 3,
-    queued: 7,
-    speed: '1.8 MB/s',
-    eta: '2h 15m',
+    completed: 47,
+    failed: 2,
+    totalSize: '2.4 GB',
+    downloadSpeed: '1.2 MB/s',
   });
 
-  const [storageStatus, setStorageStatus] = createSignal<StorageStatus>({
-    used: 3.5,
-    total: 10,
-    percentage: 35,
+  const [storageStatus] = createSignal<StorageStatus>({
+    used: '847 GB',
+    available: '1.2 TB',
+    percentage: 67,
+    cacheSize: '24 GB',
   });
 
-  const [systemHealth, setSystemHealth] = createSignal<SystemHealth>({
-    cpu: 45,
-    memory: 67,
-    disk: 35,
-    overall: 'good',
+  const [systemHealth] = createSignal<SystemHealth>({
+    cpu: 34,
+    memory: 78,
+    disk: 67,
+    network: 94,
+    temperature: 52,
+    uptime: '7d 14h 23m',
   });
 
   onMount(() => {
@@ -101,7 +109,7 @@ const StatusBar: Component = () => {
           <div class="status-title">Downloads</div>
           <div class="status-details">
             <span class="active-downloads">{downloadStatus().active} active</span>
-            <span class="download-speed">{downloadStatus().speed}</span>
+            <span class="download-speed">{downloadStatus().downloadSpeed}</span>
           </div>
         </div>
       </div>
@@ -112,7 +120,7 @@ const StatusBar: Component = () => {
           <div class="status-title">Storage</div>
           <div class="status-details">
             <span class="storage-usage">
-              {storageStatus().used}GB / {storageStatus().total}GB
+              {storageStatus().used} / {storageStatus().available}
             </span>
             <div class="storage-bar">
               <div class="storage-fill" style={`width: ${storageStatus().percentage}%`}></div>
@@ -122,7 +130,15 @@ const StatusBar: Component = () => {
       </div>
 
       <div class="status-section system-health">
-        <div class="status-icon">{getStatusIcon(systemHealth().overall)}</div>
+        <div class="status-icon">
+          {getStatusIcon(
+            systemHealth().network === 100
+              ? 'good'
+              : systemHealth().network < 100
+                ? 'warning'
+                : 'error'
+          )}
+        </div>
         <div class="status-content">
           <div class="status-title">Health</div>
           <div class="status-details">

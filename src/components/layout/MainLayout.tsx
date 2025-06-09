@@ -18,7 +18,7 @@ const MainLayout: Component<MainLayoutProps> = props => {
   return (
     <div class="main-layout">
       <Header
-        onSidebarToggle={props.onSidebarToggle}
+        onSidebarToggle={props.onSidebarToggle || undefined}
         sidebarCollapsed={props.sidebarCollapsed ?? false}
       />
 
