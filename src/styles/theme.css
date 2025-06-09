@@ -1,5 +1,10 @@
 /* theme.css - AlLibrary Theme System */
 
+/* Import Design System Modules */
+@import './variables.css';
+@import './responsive.css';
+@import './accessibility.css';
+
 :root {
   /* Color Palette */
   --primary-color: #3b82f6;
