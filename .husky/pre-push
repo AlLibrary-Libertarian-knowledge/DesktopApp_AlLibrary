@@ -15,15 +15,15 @@ fi
 
 # Run full test suite
 echo "🧪 Running full test suite..."
-npm run test
+yarn test
 
 # Build check to ensure everything compiles
 echo "🔨 Running build check..."
-npm run build
+yarn build
 
 # Final security audit
 echo "🔒 Running comprehensive security audit..."
-npm audit --audit-level=high
+yarn audit --level high
 
 # Check for TODO/FIXME comments in staged files
 echo "📝 Checking for TODO/FIXME comments..."
