@@ -1,6 +1,6 @@
-import { defineConfig } from "vite";
-import solid from "vite-plugin-solid";
-import { resolve } from "path";
+import { defineConfig } from 'vite';
+import solid from 'vite-plugin-solid';
+import { resolve } from 'path';
 
 // @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST;
@@ -12,14 +12,14 @@ export default defineConfig(async () => ({
   // Path aliases for clean imports
   resolve: {
     alias: {
-      "@": resolve(__dirname, "src"),
-      "@/components": resolve(__dirname, "src/components"),
-      "@/pages": resolve(__dirname, "src/pages"),
-      "@/stores": resolve(__dirname, "src/stores"),
-      "@/services": resolve(__dirname, "src/services"),
-      "@/utils": resolve(__dirname, "src/utils"),
-      "@/assets": resolve(__dirname, "src/assets"),
-      "@/styles": resolve(__dirname, "src/styles"),
+      '@': resolve(__dirname, 'src'),
+      '@/components': resolve(__dirname, 'src/components'),
+      '@/pages': resolve(__dirname, 'src/pages'),
+      '@/stores': resolve(__dirname, 'src/stores'),
+      '@/services': resolve(__dirname, 'src/services'),
+      '@/utils': resolve(__dirname, 'src/utils'),
+      '@/assets': resolve(__dirname, 'src/assets'),
+      '@/styles': resolve(__dirname, 'src/styles'),
     },
   },
 
@@ -34,14 +34,24 @@ export default defineConfig(async () => ({
     host: host || false,
     hmr: host
       ? {
-          protocol: "ws",
+          protocol: 'ws',
           host,
           port: 1421,
         }
       : undefined,
     watch: {
       // 3. tell vite to ignore watching `src-tauri`
-      ignored: ["**/src-tauri/**"],
+      ignored: ['**/src-tauri/**'],
+    },
+  },
+
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: ['./src/test-setup.ts'],
+    // Ensure we're using client-side rendering for tests
+    transformMode: {
+      web: [/\.[jt]sx?$/],
     },
   },
 }));
