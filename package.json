@@ -29,6 +29,7 @@
     "audit:fix": "npm audit fix",
     "clean": "rm -rf dist build .vite node_modules/.cache",
     "prepare": "husky",
+    "pre-commit": "echo '🔍 Running pre-commit checks...' && npx lint-staged && echo '✅ Pre-commit checks passed!'",
     "validate": "npm run typecheck && npm run lint && npm run test -- --run && npm run build",
     "husky:check": "sh .husky/health-check.sh"
   },
