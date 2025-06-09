@@ -3,8 +3,10 @@ pub mod commands;
 pub mod core;
 pub mod utils;
 
+use crate::commands::{initialize_app, get_app_ready_state, close_splash_screen};
 use crate::utils::{init_logging, LoggingConfig};
 use tracing::info;
+use std::thread;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -18,11 +20,30 @@ pub fn run() {
 
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .setup(|_app| {
+        .setup(|app| {
             info!("AlLibrary setup completed");
+            
+            // Auto-start the initialization process
+            let app_handle = app.handle().clone();
+            thread::spawn(move || {
+                // Small delay to ensure splash screen is shown
+                thread::sleep(std::time::Duration::from_millis(1000));
+                
+                // Start initialization in background
+                tauri::async_runtime::spawn(async move {
+                    if let Err(e) = initialize_app(app_handle).await {
+                        eprintln!("Initialization failed: {}", e);
+                    }
+                });
+            });
+            
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![])
+        .invoke_handler(tauri::generate_handler![
+            initialize_app,
+            get_app_ready_state,
+            close_splash_screen
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

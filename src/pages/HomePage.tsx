@@ -3,6 +3,21 @@ import { Button, Card, Modal } from '../components/common';
 import NetworkGraph from '../components/network/NetworkGraph';
 import DownloadManager from '../components/dashboard/DownloadManager';
 import StatusBar from '../components/dashboard/StatusBar';
+import {
+  Download,
+  Upload,
+  CheckCircle,
+  Globe,
+  Building2,
+  Search,
+  BarChart3,
+  Settings,
+  RefreshCw,
+  Plus,
+  ClipboardList,
+  Share,
+  Activity,
+} from 'lucide-solid';
 import './HomePage.css';
 
 const HomePage: Component = () => {
@@ -35,15 +50,19 @@ const HomePage: Component = () => {
         <div class="network-status-enhanced">
           {/* Network Status Indicator */}
           <div class="network-status-main">
-            <div class="status-indicator online">
-              <div class="status-pulse"></div>
+            <div class="status-row">
               <span class="status-text">Network Online</span>
-            </div>
-            <div class="network-health">
-              <div class="health-bar">
-                <div class="health-fill" style="width: 98%"></div>
+              <div class="status-indicator online">
+                <div class="status-pulse"></div>
               </div>
-              <span class="health-text">98% Health</span>
+            </div>
+            <div class="health-row">
+              <div class="network-health">
+                <div class="health-bar">
+                  <div class="health-fill" style="width: 98%"></div>
+                </div>
+                <span class="health-text">98% Health</span>
+              </div>
             </div>
           </div>
 
@@ -119,19 +138,28 @@ const HomePage: Component = () => {
           class={`tab ${activeTab() === 'overview' ? 'active' : ''}`}
           onClick={() => setActiveTab('overview')}
         >
-          <span class="tab-text">📊 Overview</span>
+          <span class="tab-text">
+            <BarChart3 size={16} class="mr-2" />
+            Overview
+          </span>
         </button>
         <button
           class={`tab ${activeTab() === 'network' ? 'active' : ''}`}
           onClick={() => setActiveTab('network')}
         >
-          <span class="tab-text">🌐 Network</span>
+          <span class="tab-text">
+            <Activity size={16} class="mr-2" />
+            Network
+          </span>
         </button>
         <button
           class={`tab ${activeTab() === 'downloads' ? 'active' : ''}`}
           onClick={() => setActiveTab('downloads')}
         >
-          <span class="tab-text">📥 Downloads</span>
+          <span class="tab-text">
+            <Download size={16} class="mr-2" />
+            Downloads
+          </span>
         </button>
       </div>
 
@@ -207,7 +235,9 @@ const HomePage: Component = () => {
                 <Card title="Recent Downloads" padding="lg">
                   <div class="activity-list modern">
                     <div class="activity-item">
-                      <div class="activity-icon downloading">📥</div>
+                      <div class="activity-icon downloading">
+                        <Download size={16} />
+                      </div>
                       <div class="activity-content">
                         <h4 class="activity-title">Traditional Healing Practices.pdf</h4>
                         <p class="activity-meta">67% complete • 2.1 MB/s</p>
@@ -222,7 +252,9 @@ const HomePage: Component = () => {
                       </div>
                     </div>
                     <div class="activity-item">
-                      <div class="activity-icon seeding">📤</div>
+                      <div class="activity-icon seeding">
+                        <Upload size={16} />
+                      </div>
                       <div class="activity-content">
                         <h4 class="activity-title">Digital Archives Collection</h4>
                         <p class="activity-meta">Seeding • 1.5 MB/s upload</p>
@@ -232,7 +264,9 @@ const HomePage: Component = () => {
                       </div>
                     </div>
                     <div class="activity-item">
-                      <div class="activity-icon completed">✅</div>
+                      <div class="activity-icon completed">
+                        <CheckCircle size={16} />
+                      </div>
                       <div class="activity-content">
                         <h4 class="activity-title">Andean Music Methods.epub</h4>
                         <p class="activity-meta">Completed • Ready to share</p>
@@ -252,7 +286,9 @@ const HomePage: Component = () => {
                 <Card title="Network Activity" padding="lg">
                   <div class="activity-list modern">
                     <div class="activity-item">
-                      <div class="activity-icon peer">🌐</div>
+                      <div class="activity-icon peer">
+                        <Globe size={16} />
+                      </div>
                       <div class="activity-content">
                         <h4 class="activity-title">Pacific Cultural Center</h4>
                         <p class="activity-meta">Connected • 45ms latency</p>
@@ -262,7 +298,9 @@ const HomePage: Component = () => {
                       </div>
                     </div>
                     <div class="activity-item">
-                      <div class="activity-icon institution">🏛️</div>
+                      <div class="activity-icon institution">
+                        <Building2 size={16} />
+                      </div>
                       <div class="activity-content">
                         <h4 class="activity-title">Instituto Socioambiental</h4>
                         <p class="activity-meta">New documents shared • Brazil</p>
@@ -272,7 +310,9 @@ const HomePage: Component = () => {
                       </div>
                     </div>
                     <div class="activity-item">
-                      <div class="activity-icon discovery">🔍</div>
+                      <div class="activity-icon discovery">
+                        <Search size={16} />
+                      </div>
                       <div class="activity-content">
                         <h4 class="activity-title">DHT Discovery</h4>
                         <p class="activity-meta">Found 12 new cultural archives</p>
@@ -296,19 +336,27 @@ const HomePage: Component = () => {
               <Card title="Quick Actions" padding="lg">
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   <Button variant="outline" class="action-button modern">
-                    <span class="action-icon">📤</span>
+                    <span class="action-icon">
+                      <Share size={20} />
+                    </span>
                     <span class="action-text">Share Document</span>
                   </Button>
                   <Button variant="outline" class="action-button modern">
-                    <span class="action-icon">🔍</span>
+                    <span class="action-icon">
+                      <Search size={20} />
+                    </span>
                     <span class="action-text">Search Network</span>
                   </Button>
                   <Button variant="outline" class="action-button modern">
-                    <span class="action-icon">📊</span>
+                    <span class="action-icon">
+                      <BarChart3 size={20} />
+                    </span>
                     <span class="action-text">Analytics</span>
                   </Button>
                   <Button variant="outline" class="action-button modern">
-                    <span class="action-icon">⚙️</span>
+                    <span class="action-icon">
+                      <Settings size={20} />
+                    </span>
                     <span class="action-text">Settings</span>
                   </Button>
                 </div>
@@ -324,13 +372,16 @@ const HomePage: Component = () => {
               <h2>Network Topology & Analysis</h2>
               <div class="network-controls">
                 <Button variant="ghost" size="sm">
-                  🔄 Refresh
+                  <RefreshCw size={14} class="mr-2" />
+                  Refresh
                 </Button>
                 <Button variant="ghost" size="sm">
-                  📊 Statistics
+                  <BarChart3 size={14} class="mr-2" />
+                  Statistics
                 </Button>
                 <Button variant="outline" size="sm">
-                  ⚙️ Configure
+                  <Settings size={14} class="mr-2" />
+                  Configure
                 </Button>
               </div>
             </div>
@@ -353,13 +404,16 @@ const HomePage: Component = () => {
               <h2>Download Manager</h2>
               <div class="download-controls">
                 <Button variant="primary" size="sm">
-                  ➕ Add Download
+                  <Plus size={14} class="mr-2" />
+                  Add Download
                 </Button>
                 <Button variant="ghost" size="sm">
-                  📋 Queue
+                  <ClipboardList size={14} class="mr-2" />
+                  Queue
                 </Button>
                 <Button variant="outline" size="sm">
-                  ⚙️ Preferences
+                  <Settings size={14} class="mr-2" />
+                  Preferences
                 </Button>
               </div>
             </div>

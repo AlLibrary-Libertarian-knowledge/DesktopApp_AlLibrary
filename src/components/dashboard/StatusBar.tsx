@@ -1,4 +1,13 @@
 import { Component, createSignal, onMount } from 'solid-js';
+import {
+  Download,
+  HardDrive,
+  Shield,
+  CheckCircle,
+  AlertTriangle,
+  XCircle,
+  Circle,
+} from 'lucide-solid';
 import './StatusBar.css';
 
 interface NetworkStatus {
@@ -80,20 +89,36 @@ const StatusBar: Component = () => {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'good':
-        return '🟢';
+        return CheckCircle;
       case 'warning':
-        return '🟡';
+        return AlertTriangle;
       case 'error':
-        return '🔴';
+        return XCircle;
       default:
-        return '⚫';
+        return Circle;
     }
   };
+
+  const StatusIcon = getStatusIcon(networkStatus().health);
+  const HealthIcon = getStatusIcon(
+    systemHealth().network === 100 ? 'good' : systemHealth().network < 100 ? 'warning' : 'error'
+  );
 
   return (
     <div class="status-bar">
       <div class="status-section network-status">
-        <div class="status-icon">{getStatusIcon(networkStatus().health)}</div>
+        <div class="status-icon">
+          <StatusIcon
+            size={16}
+            color={
+              networkStatus().health === 'good'
+                ? '#10b981'
+                : networkStatus().health === 'warning'
+                  ? '#f59e0b'
+                  : '#ef4444'
+            }
+          />
+        </div>
         <div class="status-content">
           <div class="status-title">Network</div>
           <div class="status-details">
@@ -104,7 +129,9 @@ const StatusBar: Component = () => {
       </div>
 
       <div class="status-section download-status">
-        <div class="status-icon">⬇️</div>
+        <div class="status-icon">
+          <Download size={16} />
+        </div>
         <div class="status-content">
           <div class="status-title">Downloads</div>
           <div class="status-details">
@@ -115,7 +142,9 @@ const StatusBar: Component = () => {
       </div>
 
       <div class="status-section storage-status">
-        <div class="status-icon">💾</div>
+        <div class="status-icon">
+          <HardDrive size={16} />
+        </div>
         <div class="status-content">
           <div class="status-title">Storage</div>
           <div class="status-details">
@@ -131,13 +160,16 @@ const StatusBar: Component = () => {
 
       <div class="status-section system-health">
         <div class="status-icon">
-          {getStatusIcon(
-            systemHealth().network === 100
-              ? 'good'
-              : systemHealth().network < 100
-                ? 'warning'
-                : 'error'
-          )}
+          <HealthIcon
+            size={16}
+            color={
+              systemHealth().network === 100
+                ? '#10b981'
+                : systemHealth().network < 100
+                  ? '#f59e0b'
+                  : '#ef4444'
+            }
+          />
         </div>
         <div class="status-content">
           <div class="status-title">Health</div>
@@ -149,7 +181,9 @@ const StatusBar: Component = () => {
       </div>
 
       <div class="status-section cultural-protection">
-        <div class="status-icon">🛡️</div>
+        <div class="status-icon">
+          <Shield size={16} />
+        </div>
         <div class="status-content">
           <div class="status-title">Cultural Protection</div>
           <div class="status-details">

@@ -12,6 +12,7 @@
   "app": {
     "windows": [
       {
+        "label": "main",
         "title": "AlLibrary - Decentralized Cultural Heritage Network",
         "width": 1920,
         "height": 1080,
@@ -25,7 +26,20 @@
         "focus": true,
         "alwaysOnTop": false,
         "skipTaskbar": false,
-        "visible": true
+        "visible": false
+      },
+      {
+        "label": "splashscreen",
+        "title": "AlLibrary Loading...",
+        "width": 600,
+        "height": 400,
+        "center": true,
+        "resizable": false,
+        "decorations": false,
+        "alwaysOnTop": true,
+        "visible": true,
+        "skipTaskbar": true,
+        "url": "/splash.html"
       }
     ],
     "security": {

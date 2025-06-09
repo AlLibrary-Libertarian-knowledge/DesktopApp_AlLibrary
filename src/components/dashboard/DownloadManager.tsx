@@ -1,5 +1,19 @@
 import { Component, createSignal, For, Show } from 'solid-js';
 import { createStore } from 'solid-js/store';
+import {
+  Play,
+  Pause,
+  Trash2,
+  List,
+  FileText,
+  FileText as Document,
+  BookOpen,
+  Package,
+  ChevronUp,
+  ChevronDown,
+  ArrowUp,
+  ArrowDown,
+} from 'lucide-solid';
 import { Button } from '../common';
 import './DownloadManager.css';
 
@@ -218,6 +232,17 @@ const DownloadManager: Component<DownloadManagerProps> = props => {
     });
   };
 
+  const getFileIcon = (type: string) => {
+    switch (type) {
+      case 'PDF':
+        return Document;
+      case 'EPUB':
+        return BookOpen;
+      default:
+        return Package;
+    }
+  };
+
   return (
     <div class="download-manager">
       {/* Toolbar */}
@@ -229,7 +254,7 @@ const DownloadManager: Component<DownloadManagerProps> = props => {
             onClick={() => handleAction('resume')}
             disabled={selectedItems().length === 0}
           >
-            ▶️ Resume
+            <Play size={14} /> Resume
           </Button>
           <Button
             variant="ghost"
@@ -237,7 +262,7 @@ const DownloadManager: Component<DownloadManagerProps> = props => {
             onClick={() => handleAction('pause')}
             disabled={selectedItems().length === 0}
           >
-            ⏸️ Pause
+            <Pause size={14} /> Pause
           </Button>
           <Button
             variant="ghost"
@@ -245,7 +270,7 @@ const DownloadManager: Component<DownloadManagerProps> = props => {
             onClick={() => handleAction('remove')}
             disabled={selectedItems().length === 0}
           >
-            🗑️ Remove
+            <Trash2 size={14} /> Remove
           </Button>
         </div>
 
@@ -265,14 +290,14 @@ const DownloadManager: Component<DownloadManagerProps> = props => {
               size="sm"
               onClick={() => setViewMode('list')}
             >
-              📋
+              <List size={14} />
             </Button>
             <Button
               variant={viewMode() === 'compact' ? 'primary' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('compact')}
             >
-              📑
+              <FileText size={14} />
             </Button>
           </div>
         </div>
@@ -296,10 +321,14 @@ const DownloadManager: Component<DownloadManagerProps> = props => {
             />
           </div>
           <div class="header-cell name-cell" onClick={() => handleSort('name')}>
-            Name {sortBy() === 'name' && (sortOrder() === 'asc' ? '↑' : '↓')}
+            Name{' '}
+            {sortBy() === 'name' &&
+              (sortOrder() === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />)}
           </div>
           <div class="header-cell size-cell" onClick={() => handleSort('size')}>
-            Size {sortBy() === 'size' && (sortOrder() === 'asc' ? '↑' : '↓')}
+            Size{' '}
+            {sortBy() === 'size' &&
+              (sortOrder() === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />)}
           </div>
           <div class="header-cell progress-cell">Progress</div>
           <div class="header-cell speed-cell">Speed</div>
@@ -307,98 +336,107 @@ const DownloadManager: Component<DownloadManagerProps> = props => {
           <div class="header-cell eta-cell">ETA</div>
           <div class="header-cell ratio-cell">Ratio</div>
           <div class="header-cell status-cell" onClick={() => handleSort('status')}>
-            Status {sortBy() === 'status' && (sortOrder() === 'asc' ? '↑' : '↓')}
+            Status{' '}
+            {sortBy() === 'status' &&
+              (sortOrder() === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />)}
           </div>
         </div>
 
         {/* Download Items */}
         <div class="download-items">
           <For each={filteredDownloads()}>
-            {item => (
-              <div
-                class={`download-item ${selectedItems().includes(item.id) ? 'selected' : ''} ${item.status}`}
-                onClick={e => handleItemSelect(item.id, e.ctrlKey)}
-                onDblClick={() => props.onItemSelect?.(item)}
-              >
-                <div class="item-cell checkbox-cell">
-                  <input
-                    type="checkbox"
-                    checked={selectedItems().includes(item.id)}
-                    onClick={e => e.stopPropagation()}
-                    onChange={() => handleItemSelect(item.id)}
-                  />
-                </div>
-
-                <div class="item-cell name-cell">
-                  <div class="item-name">
-                    <span class="file-icon">
-                      {item.type === 'PDF' ? '📄' : item.type === 'EPUB' ? '📖' : '📦'}
-                    </span>
-                    <span class="file-name" title={item.name}>
-                      {item.name}
-                    </span>
+            {item => {
+              const FileIcon = getFileIcon(item.type);
+              return (
+                <div
+                  class={`download-item ${selectedItems().includes(item.id) ? 'selected' : ''} ${item.status}`}
+                  onClick={e => handleItemSelect(item.id, e.ctrlKey)}
+                  onDblClick={() => props.onItemSelect?.(item)}
+                >
+                  <div class="item-cell checkbox-cell">
+                    <input
+                      type="checkbox"
+                      checked={selectedItems().includes(item.id)}
+                      onClick={e => e.stopPropagation()}
+                      onChange={() => handleItemSelect(item.id)}
+                    />
                   </div>
-                  <Show when={item.culturalContext}>
-                    <div class="cultural-badge">{item.culturalContext}</div>
-                  </Show>
-                  <div class="item-source">{item.source}</div>
-                </div>
 
-                <div class="item-cell size-cell">{formatBytes(item.size)}</div>
-
-                <div class="item-cell progress-cell">
-                  <div class="progress-container">
-                    <div class="progress-bar">
-                      <div
-                        class="progress-fill"
-                        style={`width: ${getProgress(item)}%; background-color: ${getStatusColor(item.status)}`}
-                      />
+                  <div class="item-cell name-cell">
+                    <div class="item-name">
+                      <span class="file-icon">
+                        <FileIcon size={16} />
+                      </span>
+                      <span class="file-name" title={item.name}>
+                        {item.name}
+                      </span>
                     </div>
-                    <span class="progress-text">{getProgress(item).toFixed(1)}%</span>
+                    <Show when={item.culturalContext}>
+                      <div class="cultural-badge">{item.culturalContext}</div>
+                    </Show>
+                    <div class="item-source">{item.source}</div>
                   </div>
-                </div>
 
-                <div class="item-cell speed-cell">
-                  <div class="speed-info">
-                    <div class="download-speed">↓ {formatSpeed(item.downloadSpeed)}</div>
-                    <div class="upload-speed">↑ {formatSpeed(item.uploadSpeed)}</div>
-                  </div>
-                </div>
+                  <div class="item-cell size-cell">{formatBytes(item.size)}</div>
 
-                <div class="item-cell peers-cell">
-                  <span class="peer-count">{item.peers}</span>
-                  <span class="seeder-count">({item.seeders})</span>
-                </div>
-
-                <div class="item-cell eta-cell">{formatTime(item.eta)}</div>
-
-                <div class="item-cell ratio-cell">
-                  <span
-                    class={`ratio ${item.ratio > 1 ? 'good' : item.ratio > 0.5 ? 'fair' : 'poor'}`}
-                  >
-                    {item.ratio.toFixed(2)}
-                  </span>
-                </div>
-
-                <div class="item-cell status-cell">
-                  <span
-                    class={`status-badge ${item.status}`}
-                    style={`color: ${getStatusColor(item.status)}`}
-                  >
-                    {item.status.toUpperCase()}
-                  </span>
-                  <div class="health-indicator">
-                    <div class="health-bar">
-                      <div
-                        class="health-fill"
-                        style={`width: ${item.health}%; background-color: ${item.health > 80 ? 'var(--color-success)' : item.health > 50 ? 'var(--color-warning)' : 'var(--color-danger)'}`}
-                      />
+                  <div class="item-cell progress-cell">
+                    <div class="progress-container">
+                      <div class="progress-bar">
+                        <div
+                          class="progress-fill"
+                          style={`width: ${getProgress(item)}%; background-color: ${getStatusColor(item.status)}`}
+                        />
+                      </div>
+                      <span class="progress-text">{getProgress(item).toFixed(1)}%</span>
                     </div>
-                    <span class="health-text">{item.health}%</span>
+                  </div>
+
+                  <div class="item-cell speed-cell">
+                    <div class="speed-info">
+                      <div class="download-speed">
+                        <ArrowDown size={12} /> {formatSpeed(item.downloadSpeed)}
+                      </div>
+                      <div class="upload-speed">
+                        <ArrowUp size={12} /> {formatSpeed(item.uploadSpeed)}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="item-cell peers-cell">
+                    <span class="peer-count">{item.peers}</span>
+                    <span class="seeder-count">({item.seeders})</span>
+                  </div>
+
+                  <div class="item-cell eta-cell">{formatTime(item.eta)}</div>
+
+                  <div class="item-cell ratio-cell">
+                    <span
+                      class={`ratio ${item.ratio > 1 ? 'good' : item.ratio > 0.5 ? 'fair' : 'poor'}`}
+                    >
+                      {item.ratio.toFixed(2)}
+                    </span>
+                  </div>
+
+                  <div class="item-cell status-cell">
+                    <span
+                      class={`status-badge ${item.status}`}
+                      style={`color: ${getStatusColor(item.status)}`}
+                    >
+                      {item.status.toUpperCase()}
+                    </span>
+                    <div class="health-indicator">
+                      <div class="health-bar">
+                        <div
+                          class="health-fill"
+                          style={`width: ${item.health}%; background-color: ${item.health > 80 ? 'var(--color-success)' : item.health > 50 ? 'var(--color-warning)' : 'var(--color-danger)'}`}
+                        />
+                      </div>
+                      <span class="health-text">{item.health}%</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              );
+            }}
           </For>
         </div>
       </div>
@@ -411,8 +449,14 @@ const DownloadManager: Component<DownloadManagerProps> = props => {
           <span>Completed: {downloads.filter(d => d.status === 'completed').length}</span>
         </div>
         <div class="status-group">
-          <span>↓ {formatSpeed(downloads.reduce((sum, d) => sum + d.downloadSpeed, 0))}</span>
-          <span>↑ {formatSpeed(downloads.reduce((sum, d) => sum + d.uploadSpeed, 0))}</span>
+          <span>
+            <ArrowDown size={12} />{' '}
+            {formatSpeed(downloads.reduce((sum, d) => sum + d.downloadSpeed, 0))}
+          </span>
+          <span>
+            <ArrowUp size={12} />{' '}
+            {formatSpeed(downloads.reduce((sum, d) => sum + d.uploadSpeed, 0))}
+          </span>
         </div>
       </div>
     </div>
