@@ -72,49 +72,91 @@ const enhancedGetContext = vi.fn(() => {
   return mockContext;
 });
 
-// Enhanced getBoundingClientRect mock
-const enhancedGetBoundingClientRect = vi.fn(() => ({
-  width: 800,
-  height: 400,
-  top: 0,
-  left: 0,
-  right: 800,
-  bottom: 400,
-  x: 0,
-  y: 0,
-  toJSON: () => ({}),
-}));
+// Enhanced getBoundingClientRect mock that returns dimensions based on actual style
+const enhancedGetBoundingClientRect = vi.fn(function () {
+  // Read the actual style from the canvas element
+  const width = this.style.width;
+  const height = this.style.height;
 
-// Dynamic style object that preserves percentages
-const createDynamicStyle = () => {
-  const style = {
-    width: '800px',
-    height: '400px',
-    cursor: 'default',
+  // Parse width to number (remove 'px', convert percentages to pixel equivalent)
+  let pixelWidth = 500; // default
+  let pixelHeight = 400; // default
+
+  if (width) {
+    if (width.endsWith('px')) {
+      pixelWidth = parseInt(width);
+    } else if (width.endsWith('%')) {
+      // For percentage, use a reasonable container size (e.g., 800px container)
+      pixelWidth = 800 * (parseInt(width) / 100);
+    }
+  }
+
+  if (height) {
+    if (height.endsWith('px')) {
+      pixelHeight = parseInt(height);
+    } else if (height.endsWith('%')) {
+      // For percentage, use a reasonable container size (e.g., 600px container)
+      pixelHeight = 600 * (parseInt(height) / 100);
+    }
+  }
+
+  return {
+    width: pixelWidth,
+    height: pixelHeight,
+    top: 0,
+    left: 0,
+    right: pixelWidth,
+    bottom: pixelHeight,
+    x: 0,
+    y: 0,
+    toJSON: () => ({}),
   };
+});
 
-  // Mock setProperty to preserve percentage values
+// Create a persistent style object that retains property changes
+const createPersistentStyle = () => {
+  const styleStorage = new Map();
+
+  // Initialize with component's actual default values (from NetworkGraph.tsx lines 658-661)
+  styleStorage.set('width', '500px'); // Component default: props.width || 500
+  styleStorage.set('height', '400px'); // Component default: props.height || 400
+  styleStorage.set('cursor', 'default');
+
   const setPropertySpy = vi.fn((property, value) => {
-    style[property] = value;
+    styleStorage.set(property, value);
   });
 
   const removePropertySpy = vi.fn(property => {
-    delete style[property];
+    styleStorage.delete(property);
   });
 
   const getPropertyValueSpy = vi.fn(property => {
-    return style[property] || '';
+    return styleStorage.get(property) || '';
   });
 
-  // Add methods to style object
-  Object.assign(style, {
-    setProperty: setPropertySpy,
-    removeProperty: removePropertySpy,
-    getPropertyValue: getPropertyValueSpy,
-  });
+  // Create a proxy that intercepts all property access
+  return new Proxy(
+    {},
+    {
+      get(target, prop) {
+        if (prop === 'setProperty') return setPropertySpy;
+        if (prop === 'removeProperty') return removePropertySpy;
+        if (prop === 'getPropertyValue') return getPropertyValueSpy;
 
-  return style;
+        // Return stored value for any property
+        return styleStorage.get(prop.toString()) || '';
+      },
+      set(target, prop, value) {
+        // Store the value when properties are set directly
+        styleStorage.set(prop.toString(), value);
+        return true;
+      },
+    }
+  );
 };
+
+// Create a single persistent style instance
+const persistentStyle = createPersistentStyle();
 
 // Override HTMLCanvasElement prototype methods with persistent spies
 Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
@@ -138,7 +180,7 @@ Object.defineProperty(HTMLCanvasElement.prototype, 'removeEventListener', {
 });
 
 Object.defineProperty(HTMLCanvasElement.prototype, 'style', {
-  get: createDynamicStyle,
+  get: () => persistentStyle,
   configurable: true,
 });
 
@@ -165,4 +207,5 @@ export {
   restoreSpy,
   createLinearGradientSpy,
   setLineDashSpy,
+  persistentStyle,
 };

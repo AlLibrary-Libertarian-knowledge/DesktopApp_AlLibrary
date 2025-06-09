@@ -1,6 +1,12 @@
 import { render, cleanup } from '@solidjs/testing-library';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import NetworkGraph from './NetworkGraph';
+import {
+  mockContext,
+  addEventListenerSpy,
+  removeEventListenerSpy,
+  scaleSpy,
+} from '../../test-setup';
 
 // Mock ResizeObserver
 class MockResizeObserver {
@@ -9,36 +15,7 @@ class MockResizeObserver {
   disconnect() {}
 }
 
-// Mock Canvas and Context
-const mockContext = {
-  clearRect: vi.fn(),
-  fillRect: vi.fn(),
-  strokeRect: vi.fn(),
-  fillStyle: '',
-  strokeStyle: '',
-  lineWidth: 1,
-  globalAlpha: 1,
-  beginPath: vi.fn(),
-  closePath: vi.fn(),
-  moveTo: vi.fn(),
-  lineTo: vi.fn(),
-  fill: vi.fn(),
-  stroke: vi.fn(),
-  arc: vi.fn(),
-  createLinearGradient: vi.fn(() => ({
-    addColorStop: vi.fn(),
-  })),
-  measureText: vi.fn(() => ({ width: 100 })),
-  fillText: vi.fn(),
-  scale: vi.fn(),
-  setLineDash: vi.fn(),
-  shadowColor: '',
-  shadowBlur: 0,
-  shadowOffsetX: 0,
-  shadowOffsetY: 0,
-  font: '',
-  textAlign: '',
-};
+// Using mockContext from test-setup.ts (imported above)
 
 const mockCanvas = {
   getContext: vi.fn(() => mockContext),
@@ -156,11 +133,10 @@ describe('NetworkGraph', () => {
   });
 
   it('responds to mouse events for interactivity', () => {
-    const { container } = render(() => <NetworkGraph interactive={true} />);
-    const canvas = container.querySelector('canvas');
+    render(() => <NetworkGraph interactive={true} />);
 
-    expect(canvas?.addEventListener).toHaveBeenCalledWith('mousemove', expect.any(Function));
-    expect(canvas?.addEventListener).toHaveBeenCalledWith('click', expect.any(Function));
+    expect(addEventListenerSpy).toHaveBeenCalledWith('mousemove', expect.any(Function));
+    expect(addEventListenerSpy).toHaveBeenCalledWith('click', expect.any(Function));
   });
 
   it('calculates network statistics correctly', () => {
@@ -237,11 +213,8 @@ describe('NetworkGraph', () => {
 
       unmount();
 
-      expect(mockCanvas.removeEventListener).toHaveBeenCalledWith(
-        'mousemove',
-        expect.any(Function)
-      );
-      expect(mockCanvas.removeEventListener).toHaveBeenCalledWith('click', expect.any(Function));
+      expect(removeEventListenerSpy).toHaveBeenCalledWith('mousemove', expect.any(Function));
+      expect(removeEventListenerSpy).toHaveBeenCalledWith('click', expect.any(Function));
     });
   });
 });

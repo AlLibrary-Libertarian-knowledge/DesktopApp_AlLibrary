@@ -161,11 +161,19 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
     },
   ]);
 
-  // Animation and rendering
+  // Animation loop with proper cleanup
   const animate = () => {
-    if (canvasRef) {
-      drawNetwork();
+    // Safety check: don't continue animation if canvas is null or tests are ending
+    if (
+      !canvasRef ||
+      typeof window === 'undefined' ||
+      typeof requestAnimationFrame === 'undefined'
+    ) {
+      return;
     }
+
+    drawNetwork();
+
     // Use requestAnimationFrame for optimal smoothness (60fps)
     animationId = requestAnimationFrame(animate);
   };
