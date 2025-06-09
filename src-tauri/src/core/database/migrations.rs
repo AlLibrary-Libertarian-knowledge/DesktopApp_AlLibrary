@@ -1,6 +1,6 @@
-use crate::utils::error::{AlLibraryError, Result};
+use crate::utils::error::Result;
 use sqlx::SqlitePool;
-use tracing::{info, warn};
+use tracing::info;
 
 pub async fn run_migrations(pool: &SqlitePool) -> Result<()> {
     info!("Running database migrations...");
@@ -24,6 +24,7 @@ pub async fn run_migrations(pool: &SqlitePool) -> Result<()> {
 
 struct Migration {
     version: String,
+    #[allow(dead_code)]
     description: String,
     sql: String,
 }

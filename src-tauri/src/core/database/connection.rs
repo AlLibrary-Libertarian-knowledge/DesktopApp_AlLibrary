@@ -1,5 +1,5 @@
 use crate::utils::error::{AlLibraryError, Result};
-use sqlx::{SqlitePool, Pool, Sqlite};
+use sqlx::SqlitePool;
 use std::sync::Arc;
 use tokio::sync::OnceCell;
 

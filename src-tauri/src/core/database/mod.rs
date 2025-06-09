@@ -7,7 +7,7 @@ pub use connection::*;
 pub use models::*;
 pub use operations::*;
 
-use crate::utils::error::{AlLibraryError, Result};
+use crate::utils::error::Result;
 use sqlx::SqlitePool;
 use std::path::PathBuf;
 

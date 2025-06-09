@@ -1,0 +1,64 @@
+/* MainLayout.css - Main application layout styles */
+
+.main-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.layout-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg-secondary);
+}
+
+.content-wrapper {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Responsive breakpoints */
+@media (max-width: 768px) {
+  .content-wrapper {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .content-wrapper {
+    padding: 0.75rem;
+  }
+}
+
+/* Transitions for smooth layout changes */
+.main-content {
+  transition: margin-left 0.3s ease;
+}
+
+/* Print styles */
+@media print {
+  .main-layout {
+    height: auto;
+  }
+
+  .layout-body {
+    display: block;
+  }
+
+  .content-wrapper {
+    overflow: visible;
+    padding: 0;
+  }
+}

@@ -2,7 +2,7 @@ use crate::utils::error::{AlLibraryError, Result};
 use std::path::{Path, PathBuf};
 use tokio::fs;
 use tokio::io::AsyncWriteExt;
-use tracing::{info, warn, error};
+use tracing::{info, warn};
 use uuid::Uuid;
 
 pub struct FileStorage {
