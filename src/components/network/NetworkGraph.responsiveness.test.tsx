@@ -1,67 +1,7 @@
 import { describe, it, expect, vi, beforeAll } from 'vitest';
 
 describe('NetworkGraph Responsive Behavior Integration', () => {
-  beforeAll(() => {
-    // Mock browser APIs for Node.js environment
-    global.ResizeObserver = vi.fn(() => ({
-      observe: vi.fn(),
-      unobserve: vi.fn(),
-      disconnect: vi.fn(),
-    }));
-
-    global.requestAnimationFrame = vi.fn(cb => {
-      setTimeout(cb, 16);
-      return 1;
-    });
-
-    global.cancelAnimationFrame = vi.fn();
-
-    // Mock canvas methods
-    const mockContext = {
-      clearRect: vi.fn(),
-      fillRect: vi.fn(),
-      strokeRect: vi.fn(),
-      fillStyle: '',
-      strokeStyle: '',
-      lineWidth: 1,
-      globalAlpha: 1,
-      beginPath: vi.fn(),
-      closePath: vi.fn(),
-      moveTo: vi.fn(),
-      lineTo: vi.fn(),
-      fill: vi.fn(),
-      stroke: vi.fn(),
-      arc: vi.fn(),
-      createLinearGradient: vi.fn(() => ({
-        addColorStop: vi.fn(),
-      })),
-      measureText: vi.fn(() => ({ width: 100 })),
-      fillText: vi.fn(),
-      scale: vi.fn(),
-      setLineDash: vi.fn(),
-      shadowColor: '',
-      shadowBlur: 0,
-      shadowOffsetX: 0,
-      shadowOffsetY: 0,
-      font: '',
-      textAlign: '',
-    };
-
-    global.HTMLCanvasElement.prototype.getContext = vi.fn(() => mockContext);
-    global.HTMLCanvasElement.prototype.getBoundingClientRect = vi.fn(() => ({
-      width: 800,
-      height: 400,
-      top: 0,
-      left: 0,
-      right: 800,
-      bottom: 400,
-    }));
-
-    Object.defineProperty(window, 'devicePixelRatio', {
-      writable: true,
-      value: 1,
-    });
-  });
+  // Note: Browser API mocks are now configured in test-setup.ts
 
   it('responsive network graph functionality exists', () => {
     // Test that the NetworkGraph component can be imported

@@ -603,9 +603,12 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
         canvasRef!.width = rect.width * dpr;
         canvasRef!.height = rect.height * dpr;
 
-        // Scale the canvas back down using CSS
-        canvasRef!.style.width = rect.width + 'px';
-        canvasRef!.style.height = rect.height + 'px';
+        // Preserve original CSS values if they were percentages, otherwise use pixel values
+        const originalWidth = typeof props.width === 'string' ? props.width : `${rect.width}px`;
+        const originalHeight = typeof props.height === 'string' ? props.height : `${rect.height}px`;
+
+        canvasRef!.style.width = originalWidth;
+        canvasRef!.style.height = originalHeight;
 
         // Scale the drawing context so everything draws at the correct size
         const ctx = canvasRef!.getContext('2d');

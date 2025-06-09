@@ -57,15 +57,8 @@ const mockCanvas = {
   style: { width: '800px', height: '400px', cursor: 'default' },
 };
 
-// Global mocks
-global.ResizeObserver = MockResizeObserver;
-global.HTMLCanvasElement.prototype.getContext = mockCanvas.getContext;
-global.HTMLCanvasElement.prototype.getBoundingClientRect = mockCanvas.getBoundingClientRect;
-global.requestAnimationFrame = vi.fn(cb => {
-  setTimeout(cb, 16);
-  return 1;
-});
-global.cancelAnimationFrame = vi.fn();
+// Use mocks from test-setup.ts
+// Note: Global mocks are now configured in test-setup.ts
 
 Object.defineProperty(window, 'devicePixelRatio', {
   writable: true,
