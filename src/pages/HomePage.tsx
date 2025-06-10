@@ -3,6 +3,7 @@ import { Button, Card, Modal } from '../components/common';
 import NetworkGraph from '../components/network/NetworkGraph';
 import DownloadManager from '../components/dashboard/DownloadManager';
 import StatusBar from '../components/dashboard/StatusBar';
+import SecurityPanel from '../components/dashboard/SecurityPanel';
 import {
   Download,
   Upload,
@@ -385,6 +386,7 @@ const HomePage: Component = () => {
                 </Button>
               </div>
             </div>
+
             <Card class="network-container">
               <NetworkGraph
                 width={1200}
@@ -394,6 +396,9 @@ const HomePage: Component = () => {
                 theme="light"
               />
             </Card>
+
+            {/* Security Analysis Section */}
+            <SecurityPanel />
           </section>
         )}
 

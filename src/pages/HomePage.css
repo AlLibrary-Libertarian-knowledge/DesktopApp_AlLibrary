@@ -2054,6 +2054,11 @@
   }
 }
 
+/* Network Section Layout */
+.network-section .network-container {
+  margin-bottom: var(--space-lg);
+}
+
 /* Reduced Motion Support */
 @media (prefers-reduced-motion: reduce) {
   .status-pulse,
