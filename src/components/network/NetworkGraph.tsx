@@ -1921,8 +1921,10 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
         canvasRef!.width = rect.width * dpr;
         canvasRef!.height = rect.height * dpr;
 
-        const originalWidth = typeof props.width === 'string' ? props.width : `${rect.width}px`;
-        const originalHeight = typeof props.height === 'string' ? props.height : `${rect.height}px`;
+        const originalWidth =
+          typeof props.width === 'string' ? props.width : `${props.width || 500}px`;
+        const originalHeight =
+          typeof props.height === 'string' ? props.height : `${props.height || 400}px`;
 
         canvasRef!.style.width = originalWidth;
         canvasRef!.style.height = originalHeight;
