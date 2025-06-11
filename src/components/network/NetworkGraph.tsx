@@ -7,6 +7,7 @@ import {
   Vector2D,
   throttle,
   CanvasOptimizer,
+  ObjectPool,
 } from '../../utils/performance';
 import './NetworkGraph.css';
 
@@ -106,6 +107,20 @@ interface NetworkGraphProps {
 const NetworkGraph: Component<NetworkGraphProps> = props => {
   let canvasRef: HTMLCanvasElement | undefined;
   let animationId: number;
+
+  // Performance system instances
+  let renderer: CanvasRenderer | null = null;
+  let animationManager: AnimationManager | null = null;
+  let spatialGrid: SpatialGrid | null = null;
+
+  // Object pools for frequent allocations
+  const vectorPool = new ObjectPool(
+    () => new Vector2D(),
+    v => {
+      v.x = 0;
+      v.y = 0;
+    }
+  );
 
   const [hoveredNode, setHoveredNode] = createSignal<Node | null>(null);
   const [selectedNode, setSelectedNode] = createSignal<Node | null>(null);
@@ -1111,8 +1126,9 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
     animationId = requestAnimationFrame(animate);
   };
 
+  // Optimized render function following CORE_OPTIMIZATION_PHILOSOPHY
   const drawNetwork = () => {
-    if (!canvasRef) return;
+    if (!canvasRef || !renderer) return;
 
     const ctx = canvasRef.getContext('2d');
     if (!ctx) return;
@@ -1123,8 +1139,17 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
 
     ctx.clearRect(0, 0, width, height);
 
-    drawGrid(ctx, width, height);
+    // Batch all drawing operations for better performance
+    renderer.batchDrawOperations([
+      () => drawGrid(ctx, width, height),
+      () => drawAllConnections(ctx),
+      () => drawAllNodes(ctx),
+      () => drawUIOverlays(ctx, width, height),
+    ]);
+  };
 
+  // Optimized connection drawing with caching
+  const drawAllConnections = (ctx: CanvasRenderingContext2D) => {
     links.forEach(link => {
       const sourceNode = nodes.find(n => n.id === link.source);
       const targetNode = nodes.find(n => n.id === link.target);
@@ -1136,15 +1161,126 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
         sourceNode.status === 'connected' &&
         targetNode.status === 'connected'
       ) {
-        drawLink(ctx, sourceNode, targetNode, link);
+        drawOptimizedLink(ctx, sourceNode, targetNode, link);
       }
     });
+  };
 
+  // Optimized node drawing with spatial optimization
+  const drawAllNodes = (ctx: CanvasRenderingContext2D) => {
     nodes.forEach(node => {
-      drawNode(ctx, node);
+      drawOptimizedNode(ctx, node);
+    });
+  };
+
+  // Optimized link drawing with cached gradients
+  const drawOptimizedLink = (
+    ctx: CanvasRenderingContext2D,
+    source: Node,
+    target: Node,
+    link: Link
+  ) => {
+    if (!renderer) return;
+
+    // Cache expensive gradient calculations
+    const gradientKey = `link-${link.status}-${Math.round(link.bandwidth / 100)}`;
+    const gradient = renderer.getOrCreateGradient(gradientKey, () => {
+      const grad = ctx.createLinearGradient(source.x, source.y, target.x, target.y);
+
+      switch (link.status) {
+        case 'active':
+          grad.addColorStop(0, 'rgba(16, 185, 129, 0.8)');
+          grad.addColorStop(1, 'rgba(16, 185, 129, 0.1)');
+          break;
+        case 'idle':
+          grad.addColorStop(0, 'rgba(107, 114, 128, 0.4)');
+          grad.addColorStop(1, 'rgba(107, 114, 128, 0.05)');
+          break;
+        default:
+          grad.addColorStop(0, 'rgba(239, 68, 68, 0.6)');
+          grad.addColorStop(1, 'rgba(239, 68, 68, 0.1)');
+      }
+      return grad;
     });
 
-    // Draw UI elements (tooltip, etc.)
+    // Efficient line drawing
+    ctx.save();
+    ctx.strokeStyle = gradient;
+    ctx.lineWidth = Math.max(1, (link.bandwidth / 1024) * 3);
+    ctx.beginPath();
+    ctx.moveTo(source.x, source.y);
+    ctx.lineTo(target.x, target.y);
+    ctx.stroke();
+    ctx.restore();
+  };
+
+  // Optimized node drawing with cached gradients
+  const drawOptimizedNode = (ctx: CanvasRenderingContext2D, node: Node) => {
+    if (!renderer) return;
+
+    // Cache expensive gradient calculations
+    const gradientKey = `node-${node.type}-${node.status}-${node.reliability > 80 ? 'high' : 'normal'}`;
+    const gradient = renderer.getOrCreateGradient(gradientKey, () => {
+      const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, 35);
+
+      // Different gradients based on node properties
+      switch (node.status) {
+        case 'connected':
+          if (node.type === 'self') {
+            grad.addColorStop(0, '#4f46e5');
+            grad.addColorStop(1, '#1e1b4b');
+          } else {
+            grad.addColorStop(0, '#10b981');
+            grad.addColorStop(1, '#064e3b');
+          }
+          break;
+        case 'connecting':
+          grad.addColorStop(0, '#f59e0b');
+          grad.addColorStop(1, '#92400e');
+          break;
+        case 'disconnected':
+          grad.addColorStop(0, '#6b7280');
+          grad.addColorStop(1, '#374151');
+          break;
+        case 'error':
+          grad.addColorStop(0, '#ef4444');
+          grad.addColorStop(1, '#7f1d1d');
+          break;
+      }
+      return grad;
+    });
+
+    // Use the original drawNode logic but with cached gradient
+    const isHovered = hoveredNode()?.id === node.id;
+    const isSelected = selectedNode()?.id === node.id;
+
+    const baseSize = 12;
+    const connectionModifier = Math.min(node.connections * 0.5, 6);
+    let activityModifier = 0;
+    if (node.activeTransfers) {
+      const hasDownloads = node.activeTransfers.downloading.length > 0;
+      const hasUploads = node.activeTransfers.uploading.length > 0;
+      activityModifier = (hasDownloads ? 2 : 0) + (hasUploads ? 2 : 0);
+    }
+
+    const finalSize = baseSize + connectionModifier + activityModifier;
+
+    // Draw with cached gradient
+    ctx.save();
+    ctx.translate(node.x, node.y);
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(0, 0, finalSize, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // Call original drawNode for additional effects but skip gradient creation
+    drawNode(ctx, node);
+  };
+
+  // UI overlay drawing
+  const drawUIOverlays = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
+    // Draw tooltip if hovering
     const hovered = hoveredNode();
     const mousePos = mousePosition();
     if (hovered && mousePos) {
@@ -1765,7 +1901,8 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
     ctx.fillText('🖱️ Click for details', tooltipX + tooltipWidth / 2, hintY);
   };
 
-  const handleMouseMove = (e: MouseEvent) => {
+  // Optimized mouse handling following CORE_OPTIMIZATION_PHILOSOPHY
+  const handleMouseMoveOptimized = (e: MouseEvent) => {
     if (!canvasRef) return;
 
     const rect = canvasRef.getBoundingClientRect();
@@ -1790,19 +1927,38 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
       return;
     }
 
-    // Normal hover detection when not dragging
-    const hoveredNodeFound = nodes.find(node => {
-      const baseSize = 12;
-      const nodeSize = baseSize + node.connections * 1.5;
-      const clickRadius = nodeSize + 4;
+    // Efficient hover detection using spatial grid if available
+    let hoveredNodeFound: Node | null = null;
 
-      const distance = Math.sqrt((x - node.x) ** 2 + (y - node.y) ** 2);
-      return distance < clickRadius;
-    });
+    if (spatialGrid) {
+      // Use spatial optimization for large node counts
+      const nearbyNodes = spatialGrid.getNearby(x, y, 50);
+      hoveredNodeFound =
+        nearbyNodes.find(node => {
+          const baseSize = 12;
+          const nodeSize = baseSize + node.connections * 1.5;
+          const clickRadius = nodeSize + 4;
+          const distance = Math.sqrt((x - node.x) ** 2 + (y - node.y) ** 2);
+          return distance < clickRadius;
+        }) || null;
+    } else {
+      // Fallback to original method for small node counts
+      hoveredNodeFound =
+        nodes.find(node => {
+          const baseSize = 12;
+          const nodeSize = baseSize + node.connections * 1.5;
+          const clickRadius = nodeSize + 4;
+          const distance = Math.sqrt((x - node.x) ** 2 + (y - node.y) ** 2);
+          return distance < clickRadius;
+        }) || null;
+    }
 
-    setHoveredNode(hoveredNodeFound || null);
+    setHoveredNode(hoveredNodeFound);
     canvasRef.style.cursor = hoveredNodeFound ? 'pointer' : 'default';
   };
+
+  // Throttled mouse move (60fps max) following optimization philosophy
+  const handleMouseMove = throttle(handleMouseMoveOptimized, 16);
 
   const handleMouseDown = (e: MouseEvent) => {
     if (!canvasRef) return;
@@ -1940,6 +2096,17 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
         const ctx = canvasRef!.getContext('2d');
         if (ctx) {
           ctx.scale(dpr, dpr);
+
+          // Initialize performance systems
+          if (!renderer) {
+            renderer = new CanvasRenderer(ctx);
+          }
+          if (!animationManager) {
+            animationManager = new AnimationManager();
+          }
+          if (!spatialGrid) {
+            spatialGrid = new SpatialGrid(100); // 100px grid cells
+          }
         }
       };
 
@@ -1974,9 +2141,26 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
   });
 
   onCleanup(() => {
+    // Stop animation systems following CORE_OPTIMIZATION_PHILOSOPHY
+    if (animationManager) {
+      animationManager.stop();
+    }
     if (animationId) {
       cancelAnimationFrame(animationId);
     }
+
+    // Clear performance caches
+    if (renderer) {
+      renderer.clearCache();
+    }
+    if (spatialGrid) {
+      spatialGrid.clear();
+    }
+    if (vectorPool) {
+      vectorPool.clear();
+    }
+
+    // Remove event listeners
     if (canvasRef) {
       canvasRef.removeEventListener('mousemove', handleMouseMove);
       canvasRef.removeEventListener('mousedown', handleMouseDown);

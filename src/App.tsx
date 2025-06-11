@@ -1,12 +1,21 @@
-import { Component, createSignal, ParentProps, Show, onMount } from 'solid-js';
+import { Component, createSignal, ParentProps, Show, onMount, lazy, Suspense } from 'solid-js';
 import { Router, Route } from '@solidjs/router';
 import { listen } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/core';
 import MainLayout from './components/layout/MainLayout';
-import HomePage from './pages/HomePage';
 import LoadingScreen from './components/common/LoadingScreen';
 import './styles/theme.css';
 import './App.css';
+
+// Lazy load page components following CORE_OPTIMIZATION_PHILOSOPHY
+const HomePage = lazy(() => import('./pages/HomePage'));
+const CollectionsPage = lazy(() => import('./pages/CollectionsPage'));
+const FavoritesPage = lazy(() => import('./pages/FavoritesPage'));
+const RecentPage = lazy(() => import('./pages/RecentPage'));
+const SearchPage = lazy(() => import('./pages/SearchPage'));
+const BrowsePage = lazy(() => import('./pages/BrowsePage'));
+const TrendingPage = lazy(() => import('./pages/TrendingPage'));
+const PeersPage = lazy(() => import('./pages/PeersPage'));
 
 interface InitProgress {
   phase: string;
@@ -14,6 +23,23 @@ interface InitProgress {
   progress: number;
   icon: string;
 }
+
+// Route loading wrapper component following optimization principles
+const RouteWrapper: Component<{ children: any }> = props => (
+  <Suspense
+    fallback={
+      <div class="route-loading">
+        <div class="loading-container">
+          <div class="loading-spinner"></div>
+          <h3>Loading page...</h3>
+          <p>Please wait while we prepare your content</p>
+        </div>
+      </div>
+    }
+  >
+    {props.children}
+  </Suspense>
+);
 
 // Wrapper component that includes MainLayout
 const AppWithLayout: Component<ParentProps> = props => {
@@ -74,61 +100,79 @@ const App: Component = () => {
 
       <Show when={!isLoading()}>
         <Router root={AppWithLayout}>
-          <Route path="/" component={HomePage} />
+          <Route
+            path="/"
+            component={() => (
+              <RouteWrapper>
+                <HomePage />
+              </RouteWrapper>
+            )}
+          />
+
           <Route
             path="/collections"
             component={() => (
-              <div class="page-placeholder">
-                <h1>Collections</h1>
-                <p>Organize your documents into collections for better management.</p>
-              </div>
+              <RouteWrapper>
+                <CollectionsPage />
+              </RouteWrapper>
             )}
           />
+
           <Route
             path="/favorites"
             component={() => (
-              <div class="page-placeholder">
-                <h1>Favorites</h1>
-                <p>Your starred and bookmarked documents.</p>
-              </div>
+              <RouteWrapper>
+                <FavoritesPage />
+              </RouteWrapper>
             )}
           />
+
           <Route
             path="/recent"
             component={() => (
-              <div class="page-placeholder">
-                <h1>Recent</h1>
-                <p>Recently accessed documents and activities.</p>
-              </div>
+              <RouteWrapper>
+                <RecentPage />
+              </RouteWrapper>
             )}
           />
+
           <Route
             path="/search"
             component={() => (
-              <div class="page-placeholder">
-                <h1>Search Network</h1>
-                <p>Search across the decentralized network for documents.</p>
-              </div>
+              <RouteWrapper>
+                <SearchPage />
+              </RouteWrapper>
             )}
           />
+
           <Route
             path="/browse"
             component={() => (
-              <div class="page-placeholder">
-                <h1>Browse Categories</h1>
-                <p>Explore documents by categories and topics.</p>
-              </div>
+              <RouteWrapper>
+                <BrowsePage />
+              </RouteWrapper>
             )}
           />
+
           <Route
             path="/trending"
             component={() => (
-              <div class="page-placeholder">
-                <h1>Trending</h1>
-                <p>Popular documents and topics in the network.</p>
-              </div>
+              <RouteWrapper>
+                <TrendingPage />
+              </RouteWrapper>
             )}
           />
+
+          <Route
+            path="/peers"
+            component={() => (
+              <RouteWrapper>
+                <PeersPage />
+              </RouteWrapper>
+            )}
+          />
+
+          {/* Placeholder routes for remaining pages */}
           <Route
             path="/new-arrivals"
             component={() => (
@@ -138,6 +182,7 @@ const App: Component = () => {
               </div>
             )}
           />
+
           <Route
             path="/cultural-contexts"
             component={() => (
@@ -147,6 +192,7 @@ const App: Component = () => {
               </div>
             )}
           />
+
           <Route
             path="/traditional-knowledge"
             component={() => (
@@ -156,6 +202,7 @@ const App: Component = () => {
               </div>
             )}
           />
+
           <Route
             path="/community-guidelines"
             component={() => (
@@ -165,6 +212,7 @@ const App: Component = () => {
               </div>
             )}
           />
+
           <Route
             path="/preservation"
             component={() => (
@@ -174,15 +222,7 @@ const App: Component = () => {
               </div>
             )}
           />
-          <Route
-            path="/peers"
-            component={() => (
-              <div class="page-placeholder">
-                <h1>Peer Network</h1>
-                <p>Connected peers and network topology.</p>
-              </div>
-            )}
-          />
+
           <Route
             path="/sharing"
             component={() => (
@@ -192,6 +232,7 @@ const App: Component = () => {
               </div>
             )}
           />
+
           <Route
             path="/downloads"
             component={() => (
@@ -201,6 +242,7 @@ const App: Component = () => {
               </div>
             )}
           />
+
           <Route
             path="/sync"
             component={() => (
@@ -210,6 +252,7 @@ const App: Component = () => {
               </div>
             )}
           />
+
           <Route
             path="*"
             component={() => (
