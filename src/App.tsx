@@ -20,7 +20,7 @@ const AppWithLayout: Component<ParentProps> = props => {
   const [sidebarCollapsed, setSidebarCollapsed] = createSignal(false);
 
   const handleSidebarToggle = () => {
-    setSidebarCollapsed(!sidebarCollapsed());
+    setSidebarCollapsed(prev => !prev);
   };
 
   return (
@@ -42,10 +42,10 @@ const App: Component = () => {
         setInitProgress(event.payload);
 
         // When initialization is complete, hide loading screen
-        if (event.payload.phase === 'complete') {
+        if (event.payload.phase === 'complete' || event.payload.progress >= 100) {
           setTimeout(() => {
             setIsLoading(false);
-          }, 1000); // Small delay to show completion
+          }, 1500); // Small delay to show completion
         }
       });
 
@@ -58,7 +58,7 @@ const App: Component = () => {
       // Fallback: hide loading after a timeout if Tauri isn't available
       setTimeout(() => {
         setIsLoading(false);
-      }, 3000);
+      }, 4000);
     }
   });
 

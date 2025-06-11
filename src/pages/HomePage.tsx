@@ -18,6 +18,13 @@ import {
   ClipboardList,
   Share,
   Activity,
+  BookOpen,
+  Users,
+  University,
+  Zap,
+  TrendingUp,
+  TrendingDown,
+  ArrowRight,
 } from 'lucide-solid';
 import './HomePage.css';
 
@@ -173,44 +180,72 @@ const HomePage: Component = () => {
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <Card variant="elevated" class="stat-card enhanced">
                   <div class="stat-content">
-                    <div class="stat-icon">📚</div>
+                    <div class="stat-icon">
+                      <BookOpen size={32} />
+                    </div>
                     <div class="stat-info">
-                      <h3 class="stat-number">12,847</h3>
-                      <p class="stat-label">Documents Shared</p>
-                      <div class="stat-trend positive">↗ +127 today</div>
+                      <div class="stat-main">
+                        <h3 class="stat-number">12,847</h3>
+                        <p class="stat-label">Documents Shared</p>
+                      </div>
+                      <div class="stat-trend positive">
+                        <TrendingUp size={12} />
+                        +127 today
+                      </div>
                     </div>
                   </div>
                 </Card>
 
                 <Card variant="elevated" class="stat-card enhanced">
                   <div class="stat-content">
-                    <div class="stat-icon">🌍</div>
+                    <div class="stat-icon">
+                      <Users size={32} />
+                    </div>
                     <div class="stat-info">
-                      <h3 class="stat-number">89</h3>
-                      <p class="stat-label">Connected Peers</p>
-                      <div class="stat-trend positive">↗ +5 online</div>
+                      <div class="stat-main">
+                        <h3 class="stat-number">89</h3>
+                        <p class="stat-label">Connected Peers</p>
+                      </div>
+                      <div class="stat-trend positive">
+                        <TrendingUp size={12} />
+                        +5 online
+                      </div>
                     </div>
                   </div>
                 </Card>
 
                 <Card variant="elevated" class="stat-card enhanced">
                   <div class="stat-content">
-                    <div class="stat-icon">🏛️</div>
+                    <div class="stat-icon">
+                      <University size={32} />
+                    </div>
                     <div class="stat-info">
-                      <h3 class="stat-number">156</h3>
-                      <p class="stat-label">Cultural Institutions</p>
-                      <div class="stat-trend neutral">→ stable</div>
+                      <div class="stat-main">
+                        <h3 class="stat-number">156</h3>
+                        <p class="stat-label">Cultural Institutions</p>
+                      </div>
+                      <div class="stat-trend neutral">
+                        <ArrowRight size={12} />
+                        stable
+                      </div>
                     </div>
                   </div>
                 </Card>
 
                 <Card variant="elevated" class="stat-card enhanced">
                   <div class="stat-content">
-                    <div class="stat-icon">⚡</div>
+                    <div class="stat-icon">
+                      <Zap size={32} />
+                    </div>
                     <div class="stat-info">
-                      <h3 class="stat-number">98%</h3>
-                      <p class="stat-label">Network Health</p>
-                      <div class="stat-trend positive">↗ excellent</div>
+                      <div class="stat-main">
+                        <h3 class="stat-number">98%</h3>
+                        <p class="stat-label">Network Health</p>
+                      </div>
+                      <div class="stat-trend positive">
+                        <TrendingUp size={12} />
+                        excellent
+                      </div>
                     </div>
                   </div>
                 </Card>
@@ -390,7 +425,7 @@ const HomePage: Component = () => {
             <Card class="network-container">
               <NetworkGraph
                 width={1200}
-                height={700}
+                height={500}
                 showStats={true}
                 interactive={true}
                 theme="light"

@@ -47,6 +47,7 @@ const SecurityBadge: Component = () => {
     } catch (error) {
       console.error('Failed to load security info:', error);
       setIsLoading(false);
+      // Set a fallback state or error indicator if needed
     }
   });
 

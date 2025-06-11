@@ -12,6 +12,7 @@ import {
   Database,
   CheckCircle,
 } from 'lucide-solid';
+import logoSvg from '/src/assets/logo.svg';
 import './LoadingScreen.css';
 
 interface TauriProgress {
@@ -81,7 +82,7 @@ const LoadingScreen: Component<LoadingScreenProps> = props => {
       // Simulate loading progress
       progressInterval = setInterval(() => {
         setLoadingProgress(prev => {
-          const newProgress = prev + Math.random() * 3;
+          const newProgress = Math.min(prev + Math.random() * 2 + 0.5, 100);
           if (newProgress >= 100) {
             clearInterval(progressInterval);
             setTimeout(() => {
@@ -91,7 +92,7 @@ const LoadingScreen: Component<LoadingScreenProps> = props => {
           }
           return newProgress;
         });
-      }, 80);
+      }, 100);
 
       // Change phases during loading
       phaseInterval = setInterval(() => {
@@ -103,9 +104,10 @@ const LoadingScreen: Component<LoadingScreenProps> = props => {
             setCurrentIcon(() => nextPhase.icon);
             return next;
           }
+          clearInterval(phaseInterval);
           return prev;
         });
-      }, 1200);
+      }, 2000);
     }
   });
 
@@ -138,7 +140,7 @@ const LoadingScreen: Component<LoadingScreenProps> = props => {
         <div class="loading-header">
           <div class="app-logo">
             <div class="logo-icon">
-              <BookOpen size={48} />
+              <img src={logoSvg} alt="AlLibrary Logo" class="logo-image" />
             </div>
             <div class="logo-rings">
               <div class="ring ring-1" />

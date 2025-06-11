@@ -17,6 +17,15 @@ import {
   XCircle,
   AlertCircle,
   Activity,
+  Wifi,
+  Server,
+  Router,
+  Signal,
+  ShieldCheck,
+  ShieldAlert,
+  TrendingUp,
+  TrendingDown,
+  Info,
 } from 'lucide-solid';
 import './SecurityPanel.css';
 
@@ -43,6 +52,7 @@ const SecurityPanel: Component = () => {
   const [isLoading, setIsLoading] = createSignal(true);
   const [isRefreshing, setIsRefreshing] = createSignal(false);
   const [lastUpdated, setLastUpdated] = createSignal<Date | null>(null);
+  const [hasError, setHasError] = createSignal(false);
   const [showFullIP, setShowFullIP] = createSignal(false);
   const [expandedCard, setExpandedCard] = createSignal<string | null>(null);
 
@@ -62,6 +72,7 @@ const SecurityPanel: Component = () => {
       });
     } catch (error) {
       console.error('Failed to load security info:', error);
+      setHasError(true);
       setIsLoading(false);
     }
   });
@@ -76,10 +87,15 @@ const SecurityPanel: Component = () => {
     if (isRefreshing()) return;
 
     setIsRefreshing(true);
+    setHasError(false);
     try {
-      await invoke('refresh_security_info');
+      const security = await invoke<SecurityInfo>('get_security_info');
+      setSecurityInfo(security);
+      setLastUpdated(new Date());
     } catch (error) {
       console.error('Failed to refresh security info:', error);
+      setHasError(true);
+    } finally {
       setIsRefreshing(false);
     }
   };
@@ -98,14 +114,24 @@ const SecurityPanel: Component = () => {
     return 'Poor';
   };
 
+  const getSecurityIcon = (score: number) => {
+    if (score >= 80) return ShieldCheck;
+    if (score >= 60) return Shield;
+    if (score >= 40) return ShieldAlert;
+    return AlertTriangle;
+  };
+
   const getConnectionIcon = (connectionType: string) => {
     if (connectionType.includes('VPN') || connectionType.includes('Proxy')) {
       return Shield;
     }
-    if (connectionType.includes('Private')) {
-      return Zap;
+    if (connectionType.includes('WiFi')) {
+      return Wifi;
     }
-    return Globe;
+    if (connectionType.includes('Ethernet')) {
+      return Router;
+    }
+    return Signal;
   };
 
   const maskIP = (ip: string) => {
@@ -118,21 +144,43 @@ const SecurityPanel: Component = () => {
   };
 
   const getLatencyStatus = (latency?: number) => {
-    if (!latency) return { status: 'unknown', color: 'gray' };
-    if (latency < 50) return { status: 'excellent', color: 'green' };
-    if (latency < 150) return { status: 'good', color: 'blue' };
-    if (latency < 300) return { status: 'fair', color: 'yellow' };
-    return { status: 'poor', color: 'red' };
+    if (!latency) return { status: 'unknown', color: 'gray', trend: 'stable' };
+    if (latency < 50) return { status: 'excellent', color: 'green', trend: 'up' };
+    if (latency < 150) return { status: 'good', color: 'blue', trend: 'up' };
+    if (latency < 300) return { status: 'fair', color: 'yellow', trend: 'down' };
+    return { status: 'poor', color: 'red', trend: 'down' };
+  };
+
+  const getThreatLevel = () => {
+    const info = securityInfo();
+    if (!info) return 'unknown';
+
+    let threats = 0;
+    if (info.is_tor) threats += 3;
+    if (info.is_proxy) threats += 2;
+    if (info.is_vpn) threats += 1;
+    if (info.warnings.length > 0) threats += info.warnings.length;
+
+    if (threats === 0) return 'minimal';
+    if (threats <= 2) return 'low';
+    if (threats <= 4) return 'moderate';
+    return 'high';
   };
 
   return (
     <div class="security-panel">
+      {/* Enhanced Header */}
       <div class="security-panel-header">
         <div class="header-left">
-          <Shield size={24} class="header-icon" />
+          <div class="header-icon-container">
+            <div class="header-icon">
+              <Shield size={24} />
+            </div>
+            <div class="header-pulse"></div>
+          </div>
           <div class="header-text">
             <h3>Network Security Analysis</h3>
-            <p>Comprehensive security monitoring for cultural heritage preservation</p>
+            <p>Real-time security monitoring for cultural heritage networks</p>
           </div>
         </div>
         <div class="header-actions">
@@ -142,7 +190,7 @@ const SecurityPanel: Component = () => {
             disabled={isRefreshing()}
           >
             <RefreshCw size={16} />
-            {isRefreshing() ? 'Analyzing...' : 'Refresh Analysis'}
+            <span>{isRefreshing() ? 'Analyzing...' : 'Refresh Analysis'}</span>
           </button>
         </div>
       </div>
@@ -150,102 +198,217 @@ const SecurityPanel: Component = () => {
       <Show when={isLoading()}>
         <div class="security-loading">
           <div class="loading-content">
-            <div class="loading-spinner-large" />
+            <div class="loading-animation">
+              <div class="loading-spinner-large" />
+              <div class="loading-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
             <h4>Analyzing Network Security</h4>
             <p>Performing comprehensive security assessment...</p>
           </div>
         </div>
       </Show>
 
-      <Show when={!isLoading() && securityInfo()}>
+      <Show when={!isLoading() && hasError()}>
+        <div class="security-error">
+          <div class="error-content">
+            <div class="error-icon">
+              <AlertTriangle size={48} />
+            </div>
+            <h4>Unable to Load Security Information</h4>
+            <p>
+              Failed to retrieve network security data. Please check your connection and try again.
+            </p>
+            <button class="retry-btn" onClick={handleRefresh}>
+              <RefreshCw size={16} />
+              <span>Retry Analysis</span>
+            </button>
+          </div>
+        </div>
+      </Show>
+
+      <Show when={!isLoading() && !hasError() && securityInfo()}>
         <div class="security-content">
-          {/* Security Score Overview */}
+          {/* Enhanced Security Score Overview */}
           <div class="security-overview">
             <div class="score-section">
-              <div class={`score-display ${getSecurityColor(securityInfo()!.security_score)}`}>
+              <div
+                class={`score-display ${getSecurityColor(securityInfo()!.security_score)}`}
+                style={{
+                  '--score': securityInfo()!.security_score,
+                  '--score-color':
+                    getSecurityColor(securityInfo()!.security_score) === 'excellent'
+                      ? '#22c55e'
+                      : getSecurityColor(securityInfo()!.security_score) === 'good'
+                        ? '#3b82f6'
+                        : getSecurityColor(securityInfo()!.security_score) === 'fair'
+                          ? '#f59e0b'
+                          : '#ef4444',
+                  '--score-color-rgb':
+                    getSecurityColor(securityInfo()!.security_score) === 'excellent'
+                      ? '34, 197, 94'
+                      : getSecurityColor(securityInfo()!.security_score) === 'good'
+                        ? '59, 130, 246'
+                        : getSecurityColor(securityInfo()!.security_score) === 'fair'
+                          ? '245, 158, 11'
+                          : '239, 68, 68',
+                }}
+              >
                 <div class="score-circle-large">
-                  <span class="score-number-large">{securityInfo()!.security_score}</span>
-                  <span class="score-label">Security Score</span>
+                  <div class="score-inner">
+                    <span class="score-number-large">{securityInfo()!.security_score}</span>
+                    <span class="score-label">Security Score</span>
+                  </div>
+                  <div class="score-ring"></div>
+                  <div class="score-glow"></div>
+                </div>
+                <div class="score-icon">
+                  {(() => {
+                    const Icon = getSecurityIcon(securityInfo()!.security_score);
+                    return <Icon size={24} />;
+                  })()}
                 </div>
               </div>
+
               <div class="score-details">
                 <h4 class={`security-level ${getSecurityColor(securityInfo()!.security_score)}`}>
                   {getSecurityLevel(securityInfo()!.security_score)} Security
                 </h4>
                 <p class="score-description">
                   {securityInfo()!.security_score >= 80
-                    ? 'Your connection is secure and suitable for cultural heritage work.'
+                    ? 'Your connection is secure and optimal for cultural heritage work.'
                     : securityInfo()!.security_score >= 60
                       ? 'Minor security concerns detected. Monitor your connection.'
                       : securityInfo()!.security_score >= 40
                         ? 'Moderate security risks. Consider reviewing your setup.'
-                        : 'Multiple security issues detected. Please review warnings.'}
+                        : 'Multiple security issues detected. Please review warnings immediately.'}
                 </p>
+
+                {/* Threat Level Indicator */}
+                <div class={`threat-indicator ${getThreatLevel()}`}>
+                  <div class="threat-icon">
+                    {getThreatLevel() === 'minimal' ? (
+                      <CheckCircle size={16} />
+                    ) : getThreatLevel() === 'low' ? (
+                      <Info size={16} />
+                    ) : getThreatLevel() === 'moderate' ? (
+                      <AlertTriangle size={16} />
+                    ) : (
+                      <XCircle size={16} />
+                    )}
+                  </div>
+                  <span class="threat-text">
+                    {getThreatLevel().charAt(0).toUpperCase() + getThreatLevel().slice(1)} Threat
+                    Level
+                  </span>
+                </div>
               </div>
             </div>
 
-            {/* Quick Stats */}
+            {/* Enhanced Quick Stats */}
             <div class="quick-stats">
-              <div class="stat-item">
-                <div class="stat-icon">
-                  {(() => {
-                    const Icon = getConnectionIcon(securityInfo()!.connection_type);
-                    return <Icon size={20} />;
-                  })()}
+              <div class="stat-item enhanced">
+                <div class="stat-icon-container">
+                  <div class="stat-icon">
+                    {(() => {
+                      const Icon = getConnectionIcon(securityInfo()!.connection_type);
+                      return <Icon size={20} />;
+                    })()}
+                  </div>
+                  <div class="stat-indicator active"></div>
                 </div>
                 <div class="stat-content">
-                  <span class="stat-label">Connection</span>
+                  <span class="stat-label">Connection Type</span>
                   <span class="stat-value">{securityInfo()!.connection_type}</span>
                 </div>
               </div>
 
-              <div class="stat-item">
-                <div class="stat-icon">
-                  <Clock size={20} />
+              <div class="stat-item enhanced">
+                <div class="stat-icon-container">
+                  <div class="stat-icon">
+                    <Activity size={20} />
+                  </div>
+                  <div
+                    class={`stat-indicator ${getLatencyStatus(securityInfo()!.latency_ms).status}`}
+                  ></div>
                 </div>
                 <div class="stat-content">
-                  <span class="stat-label">Latency</span>
+                  <span class="stat-label">Network Latency</span>
+                  <div class="stat-value-container">
+                    <span
+                      class={`stat-value latency-${getLatencyStatus(securityInfo()!.latency_ms).status}`}
+                    >
+                      {securityInfo()!.latency_ms
+                        ? `${securityInfo()!.latency_ms}ms`
+                        : 'Testing...'}
+                    </span>
+                    <div class="stat-trend">
+                      {getLatencyStatus(securityInfo()!.latency_ms).trend === 'up' ? (
+                        <TrendingUp size={14} />
+                      ) : (
+                        <TrendingDown size={14} />
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="stat-item enhanced">
+                <div class="stat-icon-container">
+                  <div class="stat-icon">
+                    {securityInfo()!.ssl_available ? <Lock size={20} /> : <Unlock size={20} />}
+                  </div>
+                  <div
+                    class={`stat-indicator ${securityInfo()!.ssl_available ? 'available' : 'unavailable'}`}
+                  ></div>
+                </div>
+                <div class="stat-content">
+                  <span class="stat-label">SSL/TLS Security</span>
                   <span
-                    class={`stat-value latency-${getLatencyStatus(securityInfo()!.latency_ms).status}`}
+                    class={`stat-value ${securityInfo()!.ssl_available ? 'available' : 'unavailable'}`}
                   >
-                    {securityInfo()!.latency_ms ? `${securityInfo()!.latency_ms}ms` : 'Unknown'}
+                    {securityInfo()!.ssl_available ? 'Secured' : 'Unsecured'}
                   </span>
                 </div>
               </div>
 
-              <div class="stat-item">
-                <div class="stat-icon">
-                  {securityInfo()!.ssl_available ? <Lock size={20} /> : <Unlock size={20} />}
+              <div class="stat-item enhanced">
+                <div class="stat-icon-container">
+                  <div class="stat-icon">
+                    <Server size={20} />
+                  </div>
+                  <div class="stat-indicator active"></div>
                 </div>
                 <div class="stat-content">
-                  <span class="stat-label">SSL/TLS</span>
-                  <span
-                    class={`stat-value ${securityInfo()!.ssl_available ? 'available' : 'unavailable'}`}
-                  >
-                    {securityInfo()!.ssl_available ? 'Available' : 'Unavailable'}
-                  </span>
+                  <span class="stat-label">Peer Status</span>
+                  <span class="stat-value">Connected</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Detailed Information Grid */}
+          {/* Enhanced Information Grid */}
           <div class="info-grid">
-            {/* IP Information */}
+            {/* IP Information Card */}
             <div
-              class={`info-card ${expandedCard() === 'ip' ? 'expanded' : ''}`}
+              class={`info-card enhanced ${expandedCard() === 'ip' ? 'expanded' : ''}`}
               onClick={() => setExpandedCard(expandedCard() === 'ip' ? null : 'ip')}
             >
               <div class="info-header">
-                <Globe size={18} />
-                <h4>IP Address Information</h4>
+                <div class="header-icon-wrapper">
+                  <Globe size={18} />
+                </div>
+                <h4>Network Identity</h4>
                 <div class="expand-indicator">{expandedCard() === 'ip' ? '−' : '+'}</div>
               </div>
               <div class="info-content">
-                <div class="info-row">
+                <div class="info-row highlighted">
                   <span class="info-label">Public IP:</span>
                   <div class="ip-display">
-                    <span class="info-value">
+                    <span class="info-value ip-value">
                       {showFullIP()
                         ? securityInfo()!.public_ip || 'Not detected'
                         : maskIP(securityInfo()!.public_ip || '')}
@@ -267,24 +430,26 @@ const SecurityPanel: Component = () => {
                   <span class="info-value">{securityInfo()!.local_ip || 'Not detected'}</span>
                 </div>
                 <div class="info-row">
-                  <span class="info-label">ISP:</span>
+                  <span class="info-label">Internet Provider:</span>
                   <span class="info-value">{securityInfo()!.isp || 'Unknown'}</span>
                 </div>
               </div>
             </div>
 
-            {/* Location Information */}
+            {/* Location Information Card */}
             <div
-              class={`info-card ${expandedCard() === 'location' ? 'expanded' : ''}`}
+              class={`info-card enhanced ${expandedCard() === 'location' ? 'expanded' : ''}`}
               onClick={() => setExpandedCard(expandedCard() === 'location' ? null : 'location')}
             >
               <div class="info-header">
-                <MapPin size={18} />
+                <div class="header-icon-wrapper">
+                  <MapPin size={18} />
+                </div>
                 <h4>Geographic Location</h4>
                 <div class="expand-indicator">{expandedCard() === 'location' ? '−' : '+'}</div>
               </div>
               <div class="info-content">
-                <div class="info-row">
+                <div class="info-row highlighted">
                   <span class="info-label">Country:</span>
                   <span class="info-value">{securityInfo()!.country || 'Unknown'}</span>
                 </div>
@@ -303,94 +468,117 @@ const SecurityPanel: Component = () => {
               </div>
             </div>
 
-            {/* Security Features */}
+            {/* Security Features Card */}
             <div
-              class={`info-card ${expandedCard() === 'security' ? 'expanded' : ''}`}
+              class={`info-card enhanced ${expandedCard() === 'security' ? 'expanded' : ''}`}
               onClick={() => setExpandedCard(expandedCard() === 'security' ? null : 'security')}
             >
               <div class="info-header">
-                <Shield size={18} />
-                <h4>Security Features</h4>
+                <div class="header-icon-wrapper">
+                  <Shield size={18} />
+                </div>
+                <h4>Security Analysis</h4>
                 <div class="expand-indicator">{expandedCard() === 'security' ? '−' : '+'}</div>
               </div>
               <div class="info-content">
-                <div class="feature-row">
-                  <span class="feature-label">VPN Detection:</span>
+                <div class="feature-row enhanced">
+                  <div class="feature-info">
+                    <span class="feature-label">VPN Detection:</span>
+                    <span class="feature-description">Privacy layer analysis</span>
+                  </div>
                   <div class="feature-status">
                     {securityInfo()!.is_vpn ? (
-                      <>
-                        <AlertTriangle size={16} class="status-warning" />
-                        <span class="status-text warning">Detected</span>
-                      </>
+                      <div class="status-badge warning">
+                        <AlertTriangle size={14} />
+                        <span>Detected</span>
+                      </div>
                     ) : (
-                      <>
-                        <CheckCircle size={16} class="status-success" />
-                        <span class="status-text success">Not detected</span>
-                      </>
+                      <div class="status-badge success">
+                        <CheckCircle size={14} />
+                        <span>Clear</span>
+                      </div>
                     )}
                   </div>
                 </div>
-                <div class="feature-row">
-                  <span class="feature-label">Proxy Detection:</span>
+
+                <div class="feature-row enhanced">
+                  <div class="feature-info">
+                    <span class="feature-label">Proxy Detection:</span>
+                    <span class="feature-description">Intermediary server check</span>
+                  </div>
                   <div class="feature-status">
                     {securityInfo()!.is_proxy ? (
-                      <>
-                        <AlertTriangle size={16} class="status-warning" />
-                        <span class="status-text warning">Detected</span>
-                      </>
+                      <div class="status-badge warning">
+                        <AlertTriangle size={14} />
+                        <span>Detected</span>
+                      </div>
                     ) : (
-                      <>
-                        <CheckCircle size={16} class="status-success" />
-                        <span class="status-text success">Not detected</span>
-                      </>
+                      <div class="status-badge success">
+                        <CheckCircle size={14} />
+                        <span>Clear</span>
+                      </div>
                     )}
                   </div>
                 </div>
-                <div class="feature-row">
-                  <span class="feature-label">Tor Network:</span>
+
+                <div class="feature-row enhanced">
+                  <div class="feature-info">
+                    <span class="feature-label">Tor Network:</span>
+                    <span class="feature-description">Anonymity network scan</span>
+                  </div>
                   <div class="feature-status">
                     {securityInfo()!.is_tor ? (
-                      <>
-                        <XCircle size={16} class="status-error" />
-                        <span class="status-text error">Detected</span>
-                      </>
+                      <div class="status-badge danger">
+                        <XCircle size={14} />
+                        <span>Detected</span>
+                      </div>
                     ) : (
-                      <>
-                        <CheckCircle size={16} class="status-success" />
-                        <span class="status-text success">Not detected</span>
-                      </>
+                      <div class="status-badge success">
+                        <CheckCircle size={14} />
+                        <span>Clear</span>
+                      </div>
                     )}
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Network Performance */}
+            {/* Network Performance Card */}
             <div
-              class={`info-card ${expandedCard() === 'performance' ? 'expanded' : ''}`}
+              class={`info-card enhanced ${expandedCard() === 'performance' ? 'expanded' : ''}`}
               onClick={() =>
                 setExpandedCard(expandedCard() === 'performance' ? null : 'performance')
               }
             >
               <div class="info-header">
-                <Activity size={18} />
-                <h4>Network Performance</h4>
+                <div class="header-icon-wrapper">
+                  <Activity size={18} />
+                </div>
+                <h4>Performance Metrics</h4>
                 <div class="expand-indicator">{expandedCard() === 'performance' ? '−' : '+'}</div>
               </div>
               <div class="info-content">
-                <div class="performance-metric">
-                  <span class="metric-label">Connection Quality:</span>
-                  <div class="metric-bar">
-                    <div
-                      class={`metric-fill ${getLatencyStatus(securityInfo()!.latency_ms).status}`}
-                      style={`width: ${Math.max(10, 100 - (securityInfo()!.latency_ms || 0) / 5)}%`}
-                    />
+                <div class="performance-metric enhanced">
+                  <div class="metric-header">
+                    <span class="metric-label">Connection Quality:</span>
+                    <span class="metric-score">
+                      {getLatencyStatus(securityInfo()!.latency_ms).status.toUpperCase()}
+                    </span>
                   </div>
-                  <span class="metric-value">
-                    {getLatencyStatus(securityInfo()!.latency_ms).status.toUpperCase()}
-                  </span>
+                  <div class="metric-bar-container">
+                    <div class="metric-bar">
+                      <div
+                        class={`metric-fill ${getLatencyStatus(securityInfo()!.latency_ms).status}`}
+                        style={`width: ${Math.max(10, 100 - (securityInfo()!.latency_ms || 0) / 5)}%`}
+                      />
+                    </div>
+                    <div class="metric-percentage">
+                      {Math.max(10, 100 - (securityInfo()!.latency_ms || 0) / 5).toFixed(0)}%
+                    </div>
+                  </div>
                 </div>
-                <div class="info-row">
+
+                <div class="info-row highlighted">
                   <span class="info-label">Response Time:</span>
                   <span
                     class={`info-value latency-${getLatencyStatus(securityInfo()!.latency_ms).status}`}
@@ -398,8 +586,9 @@ const SecurityPanel: Component = () => {
                     {securityInfo()!.latency_ms ? `${securityInfo()!.latency_ms}ms` : 'Testing...'}
                   </span>
                 </div>
+
                 <div class="info-row">
-                  <span class="info-label">SSL Support:</span>
+                  <span class="info-label">SSL Security:</span>
                   <span
                     class={`info-value ${securityInfo()!.ssl_available ? 'ssl-available' : 'ssl-unavailable'}`}
                   >
@@ -410,20 +599,37 @@ const SecurityPanel: Component = () => {
             </div>
           </div>
 
-          {/* Warnings Section */}
+          {/* Enhanced Warnings Section */}
           <Show when={securityInfo()!.warnings.length > 0}>
-            <div class="warnings-section">
+            <div class="warnings-section enhanced">
               <div class="warnings-header">
-                <AlertTriangle size={20} />
-                <h4>Security Warnings</h4>
-                <span class="warning-count">{securityInfo()!.warnings.length} issue(s)</span>
+                <div class="warning-icon-container">
+                  <AlertTriangle size={20} />
+                  <div class="warning-pulse"></div>
+                </div>
+                <div class="warnings-title">
+                  <h4>Security Alerts</h4>
+                  <p>Issues requiring your attention</p>
+                </div>
+                <div class="warning-count">
+                  <span class="count-number">{securityInfo()!.warnings.length}</span>
+                  <span class="count-label">
+                    alert{securityInfo()!.warnings.length !== 1 ? 's' : ''}
+                  </span>
+                </div>
               </div>
               <div class="warnings-list">
                 <For each={securityInfo()!.warnings}>
-                  {warning => (
-                    <div class="warning-item">
-                      <AlertCircle size={16} />
-                      <span>{warning}</span>
+                  {(warning, index) => (
+                    <div class="warning-item enhanced">
+                      <div class="warning-indicator">
+                        <AlertCircle size={16} />
+                        <span class="warning-number">{index() + 1}</span>
+                      </div>
+                      <div class="warning-content">
+                        <span class="warning-text">{warning}</span>
+                      </div>
+                      <div class="warning-severity high">High</div>
                     </div>
                   )}
                 </For>
@@ -431,16 +637,23 @@ const SecurityPanel: Component = () => {
             </div>
           </Show>
 
-          {/* Last Updated */}
+          {/* Enhanced Footer */}
           <Show when={lastUpdated()}>
-            <div class="panel-footer">
+            <div class="panel-footer enhanced">
               <div class="update-info">
-                <Clock size={14} />
-                <span>Last updated: {lastUpdated()!.toLocaleString()}</span>
+                <div class="update-icon">
+                  <Clock size={14} />
+                </div>
+                <div class="update-details">
+                  <span class="update-label">Last Analysis:</span>
+                  <span class="update-time">{lastUpdated()!.toLocaleString()}</span>
+                </div>
               </div>
               <div class="cultural-notice">
-                <Shield size={14} />
-                <span>Analysis optimized for cultural heritage preservation networks</span>
+                <div class="notice-icon">
+                  <Shield size={14} />
+                </div>
+                <span class="notice-text">Optimized for cultural heritage networks</span>
               </div>
             </div>
           </Show>

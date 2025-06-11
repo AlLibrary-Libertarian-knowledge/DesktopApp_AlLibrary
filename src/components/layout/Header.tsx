@@ -1,5 +1,6 @@
 import { Component } from 'solid-js';
 import './Header.css';
+import logoSvg from '/src/assets/logo.svg';
 
 interface HeaderProps {
   sidebarCollapsed?: boolean;
@@ -19,8 +20,13 @@ const Header: Component<HeaderProps> = props => {
         </button>
 
         <div class="header-brand">
-          <h1 class="app-title">AlLibrary</h1>
-          <span class="app-subtitle">Decentralized Knowledge Sharing</span>
+          <div class="brand-content">
+            <img src={logoSvg} alt="AlLibrary Logo" class="app-logo" />
+            <div class="brand-text">
+              <h1 class="app-title">AlLibrary</h1>
+              <span class="app-subtitle">Decentralized Knowledge Sharing</span>
+            </div>
+          </div>
         </div>
       </div>
 

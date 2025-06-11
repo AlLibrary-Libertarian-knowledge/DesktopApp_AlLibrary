@@ -22,6 +22,11 @@
   z-index: 9999;
   overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  transition:
+    opacity 0.5s ease-out,
+    transform 0.5s ease-out;
+  padding: 2rem;
+  box-sizing: border-box;
 }
 
 /* Background Effects */
@@ -47,6 +52,7 @@
   background: rgba(139, 92, 246, 0.6);
   border-radius: 50%;
   animation: float 6s ease-in-out infinite;
+  will-change: transform, opacity;
 }
 
 @keyframes float {
@@ -66,20 +72,29 @@
   position: relative;
   z-index: 2;
   text-align: center;
-  max-width: 500px;
-  width: 90%;
+  max-width: 600px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
 }
 
 /* Logo Section */
 .loading-header {
-  margin-bottom: 3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
   animation: fadeInUp 1s ease-out;
 }
 
 .app-logo {
   position: relative;
-  display: inline-block;
-  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .logo-icon {
@@ -88,31 +103,43 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 80px;
-  height: 80px;
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(168, 85, 247, 0.3));
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-radius: 20px;
-  border: 1px solid rgba(139, 92, 246, 0.3);
-  color: rgba(139, 92, 246, 0.9);
-  margin: 0 auto;
+  width: 96px;
+  height: 96px;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(168, 85, 247, 0.2));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 24px;
+  border: 1px solid rgba(139, 92, 246, 0.25);
   box-shadow:
-    0 8px 32px rgba(139, 92, 246, 0.3),
+    0 12px 48px rgba(139, 92, 246, 0.3),
+    0 6px 24px rgba(168, 85, 247, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  animation: logoGlow 2s ease-in-out infinite alternate;
+  animation: logoGlow 3s ease-in-out infinite alternate;
+  will-change: box-shadow, transform;
+}
+
+.logo-image {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 8px rgba(139, 92, 246, 0.3));
+  transition: all 0.3s ease;
 }
 
 @keyframes logoGlow {
   0% {
     box-shadow:
-      0 8px 32px rgba(139, 92, 246, 0.3),
+      0 12px 48px rgba(139, 92, 246, 0.3),
+      0 6px 24px rgba(168, 85, 247, 0.2),
       inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transform: scale(1);
   }
   100% {
     box-shadow:
-      0 12px 48px rgba(139, 92, 246, 0.5),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      0 16px 64px rgba(139, 92, 246, 0.5),
+      0 8px 32px rgba(168, 85, 247, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    transform: scale(1.02);
   }
 }
 
@@ -128,29 +155,30 @@
   border: 1px solid rgba(139, 92, 246, 0.2);
   border-radius: 50%;
   animation: ringPulse 3s ease-in-out infinite;
+  will-change: transform, opacity;
 }
 
 .ring-1 {
-  width: 100px;
-  height: 100px;
-  top: -10px;
-  left: -10px;
+  width: 120px;
+  height: 120px;
+  top: -12px;
+  left: -12px;
   animation-delay: 0s;
 }
 
 .ring-2 {
-  width: 130px;
-  height: 130px;
-  top: -25px;
-  left: -25px;
+  width: 150px;
+  height: 150px;
+  top: -27px;
+  left: -27px;
   animation-delay: 0.5s;
 }
 
 .ring-3 {
-  width: 160px;
-  height: 160px;
-  top: -40px;
-  left: -40px;
+  width: 180px;
+  height: 180px;
+  top: -42px;
+  left: -42px;
   animation-delay: 1s;
 }
 
@@ -167,27 +195,43 @@
 }
 
 .app-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  background: linear-gradient(135deg, rgba(248, 250, 252, 0.9), rgba(139, 92, 246, 0.8));
+  font-size: 3rem;
+  font-weight: 800;
+  background: linear-gradient(
+    135deg,
+    rgba(248, 250, 252, 0.95),
+    rgba(139, 92, 246, 0.85),
+    rgba(168, 85, 247, 0.8)
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  margin: 0 0 0.5rem 0;
-  letter-spacing: -0.02em;
+  margin: 0;
+  letter-spacing: -0.025em;
+  text-align: center;
+  line-height: 1.1;
+  filter: drop-shadow(0 2px 4px rgba(139, 92, 246, 0.3));
 }
 
 .app-subtitle {
-  font-size: 1rem;
-  color: rgba(248, 250, 252, 0.7);
+  font-size: 1.125rem;
+  color: rgba(248, 250, 252, 0.75);
   margin: 0;
-  font-weight: 400;
-  letter-spacing: 0.02em;
+  font-weight: 500;
+  letter-spacing: 0.025em;
+  text-align: center;
+  line-height: 1.4;
+  max-width: 400px;
 }
 
 /* Progress Section */
 .loading-progress-section {
-  margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  max-width: 400px;
   animation: fadeInUp 1s ease-out 0.3s both;
 }
 
@@ -214,6 +258,7 @@
   transition: width 0.3s ease;
   position: relative;
   overflow: hidden;
+  will-change: width;
 }
 
 .progress-bar::after {
@@ -277,8 +322,8 @@
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
-  margin-bottom: 3rem;
   animation: fadeInUp 1s ease-out 0.6s both;
+  min-height: 2rem;
 }
 
 .phase-icon {
@@ -333,6 +378,7 @@
   justify-content: center;
   color: rgba(139, 92, 246, 0.6);
   animation: elementFloat 4s ease-in-out infinite;
+  will-change: transform, opacity;
 }
 
 .element-1 {
@@ -504,10 +550,13 @@
 /* Footer */
 .loading-footer {
   position: absolute;
-  bottom: 2rem;
+  bottom: 3rem;
   left: 50%;
   transform: translateX(-50%);
   animation: fadeInUp 1s ease-out 1s both;
+  text-align: center;
+  width: 100%;
+  max-width: 500px;
 }
 
 .loading-footer p {
@@ -532,20 +581,65 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .app-title {
-    font-size: 2rem;
-  }
-
-  .app-subtitle {
-    font-size: 0.875rem;
+  .loading-screen {
+    padding: 1rem;
   }
 
   .loading-content {
-    max-width: 350px;
+    gap: 1.5rem;
+    max-width: 100%;
+  }
+
+  .logo-icon {
+    width: 80px;
+    height: 80px;
+  }
+
+  .logo-image {
+    width: 52px;
+    height: 52px;
+  }
+
+  .ring-1 {
+    width: 100px;
+    height: 100px;
+    top: -10px;
+    left: -10px;
+  }
+
+  .ring-2 {
+    width: 130px;
+    height: 130px;
+    top: -25px;
+    left: -25px;
+  }
+
+  .ring-3 {
+    width: 160px;
+    height: 160px;
+    top: -40px;
+    left: -40px;
+  }
+
+  .app-title {
+    font-size: 2.25rem;
+  }
+
+  .app-subtitle {
+    font-size: 1rem;
+  }
+
+  .loading-progress-section {
+    max-width: 320px;
   }
 
   .cultural-elements .element {
     width: 32px;
     height: 32px;
+  }
+
+  .loading-footer {
+    bottom: 2rem;
+    font-size: 0.875rem;
   }
 }
