@@ -255,3 +255,21 @@ impl Tag {
         }
     }
 } 
+
+// Optimized query result structures (simplified for now)
+
+#[derive(Debug, Clone)]
+pub struct DocumentWithRelations {
+    pub document: Document,
+    pub authors: Vec<String>,
+    pub tags: Vec<String>,
+    pub collections: Vec<String>,
+}
+
+#[derive(Debug, Clone)]
+pub struct DocumentFilters {
+    pub file_type: Option<String>,
+    pub processing_status: Option<String>,
+    pub is_shared: Option<bool>,
+    pub cultural_origin: Option<String>,
+} 
