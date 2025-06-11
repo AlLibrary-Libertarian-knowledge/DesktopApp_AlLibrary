@@ -15,7 +15,7 @@ fi
 
 # Run full test suite
 echo "🧪 Running full test suite..."
-yarn test
+yarn test --run
 
 # Build check to ensure everything compiles
 echo "🔨 Running build check..."
@@ -23,7 +23,18 @@ yarn build
 
 # Final security audit
 echo "🔒 Running comprehensive security audit..."
-yarn audit --level high
+# Run audit and capture output
+audit_result=$(yarn audit 2>&1)
+echo "$audit_result"
+
+# Check if there are any high or critical vulnerabilities
+if echo "$audit_result" | grep -E "(High|Critical)" > /dev/null; then
+    echo "❌ High or critical security vulnerabilities found!"
+    echo "Please run 'yarn audit' and 'yarn audit fix' to resolve them."
+    exit 1
+else
+    echo "✅ No high or critical vulnerabilities found - proceeding..."
+fi
 
 # Check for TODO/FIXME comments in staged files
 echo "📝 Checking for TODO/FIXME comments..."
