@@ -37,11 +37,38 @@ export default defineConfig(async () => ({
     rollupOptions: {
       output: {
         manualChunks: {
-          // Split vendor libraries
+          // OPTIMIZATION: Enhanced chunk grouping for better caching
+          // Core vendor libraries (rarely change)
+          'vendor-core': ['solid-js'],
           'vendor-ui': ['@solidjs/router', 'lucide-solid'],
           'vendor-tauri': ['@tauri-apps/api', '@tauri-apps/plugin-opener'],
-          // Split large components
-          network: ['./src/components/network/NetworkGraph.tsx'],
+
+          // UI components (frequently used, group together)
+          'ui-components': [
+            './src/components/common/Button.tsx',
+            './src/components/common/LoadingScreen.tsx',
+            './src/components/layout/Header.tsx',
+            './src/components/layout/Sidebar.tsx',
+          ],
+
+          // Performance-critical network components (separate for caching)
+          'network-graph': [
+            './src/components/network/NetworkGraph.tsx',
+            './src/utils/performance.ts',
+          ],
+
+          // Page components (lazy-loaded, separate chunks)
+          'pages-main': ['./src/pages/HomePage.tsx', './src/pages/CollectionsPage.tsx'],
+          'pages-secondary': [
+            './src/pages/SearchPage.tsx',
+            './src/pages/BrowsePage.tsx',
+            './src/pages/TrendingPage.tsx',
+          ],
+          'pages-network': [
+            './src/pages/PeersPage.tsx',
+            './src/pages/FavoritesPage.tsx',
+            './src/pages/RecentPage.tsx',
+          ],
         },
       },
     },

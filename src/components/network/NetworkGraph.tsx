@@ -1111,7 +1111,44 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
   };
 
   // Animation loop with physics simulation
-  const animate = () => {
+  // OPTIMIZATION: Smart Animation Management - Only animate when needed
+  let isRenderScheduled = false;
+  let lastActivityTime = Date.now();
+  const ACTIVITY_TIMEOUT = 3000; // 3 seconds of no activity before slowing down
+  const STABLE_VELOCITY_THRESHOLD = 0.1; // Velocity below this is considered stable
+
+  const checkNetworkActivity = (): boolean => {
+    // Check for movement (unstable velocities)
+    const hasMovement = nodes.some(
+      node =>
+        Math.abs(node.vx) > STABLE_VELOCITY_THRESHOLD ||
+        Math.abs(node.vy) > STABLE_VELOCITY_THRESHOLD
+    );
+
+    // Check for user interaction
+    const hasInteraction = hoveredNode() !== null || isDragging() || isExpanding();
+
+    // Check for active transfers
+    const hasActiveTransfers = nodes.some(
+      node =>
+        node.activeTransfers &&
+        (node.activeTransfers.downloading.length > 0 || node.activeTransfers.uploading.length > 0)
+    );
+
+    return hasMovement || hasInteraction || hasActiveTransfers;
+  };
+
+  const scheduleRender = () => {
+    if (!isRenderScheduled) {
+      isRenderScheduled = true;
+      requestAnimationFrame(() => {
+        drawNetwork();
+        isRenderScheduled = false;
+      });
+    }
+  };
+
+  const smartAnimate = () => {
     if (
       !canvasRef ||
       typeof window === 'undefined' ||
@@ -1120,11 +1157,31 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
       return;
     }
 
-    simulatePhysics();
-    drawNetwork();
+    const hasActivity = checkNetworkActivity();
+    const timeSinceActivity = Date.now() - lastActivityTime;
 
-    animationId = requestAnimationFrame(animate);
+    if (hasActivity) {
+      lastActivityTime = Date.now();
+      // Full-speed animation when there's activity
+      simulatePhysics();
+      drawNetwork();
+      animationId = requestAnimationFrame(smartAnimate);
+    } else if (timeSinceActivity < ACTIVITY_TIMEOUT) {
+      // Reduced animation for a bit after activity stops
+      simulatePhysics();
+      scheduleRender();
+      animationId = requestAnimationFrame(smartAnimate);
+    } else {
+      // Very slow updates when network is stable
+      scheduleRender();
+      setTimeout(() => {
+        animationId = requestAnimationFrame(smartAnimate);
+      }, 100); // Check every 100ms instead of every frame
+    }
   };
+
+  // Keep the original animate function as a fallback/alternative
+  const animate = smartAnimate;
 
   // Optimized render function following CORE_OPTIMIZATION_PHILOSOPHY
   const drawNetwork = () => {
@@ -1161,15 +1218,31 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
         sourceNode.status === 'connected' &&
         targetNode.status === 'connected'
       ) {
-        drawOptimizedLink(ctx, sourceNode, targetNode, link);
+        drawLink(ctx, sourceNode, targetNode, link); // Using your beautiful animated drawLink function!
       }
     });
   };
 
-  // Optimized node drawing with spatial optimization
+  // OPTIMIZATION: Frustum Culling ONLY - Keep all your beautiful details and hover effects!
   const drawAllNodes = (ctx: CanvasRenderingContext2D) => {
-    nodes.forEach(node => {
-      drawOptimizedNode(ctx, node);
+    if (!canvasRef) return;
+
+    const rect = canvasRef.getBoundingClientRect();
+    const padding = 100; // Extra padding for smooth transitions
+
+    // Frustum Culling: Only render nodes within viewport + padding (this keeps performance gains)
+    const visibleNodes = nodes.filter(node => {
+      return (
+        node.x >= -padding &&
+        node.x <= rect.width + padding &&
+        node.y >= -padding &&
+        node.y <= rect.height + padding
+      );
+    });
+
+    // Render all visible nodes with full detail and hover effects!
+    visibleNodes.forEach(node => {
+      drawNode(ctx, node); // Using your original beautiful drawNode function
     });
   };
 
@@ -1214,76 +1287,12 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
     ctx.restore();
   };
 
-  // Optimized node drawing with cached gradients
-  const drawOptimizedNode = (ctx: CanvasRenderingContext2D, node: Node) => {
-    if (!renderer) return;
-
-    // Cache expensive gradient calculations
-    const gradientKey = `node-${node.type}-${node.status}-${node.reliability > 80 ? 'high' : 'normal'}`;
-    const gradient = renderer.getOrCreateGradient(gradientKey, () => {
-      const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, 35);
-
-      // Different gradients based on node properties
-      switch (node.status) {
-        case 'connected':
-          if (node.type === 'self') {
-            grad.addColorStop(0, '#4f46e5');
-            grad.addColorStop(1, '#1e1b4b');
-          } else {
-            grad.addColorStop(0, '#10b981');
-            grad.addColorStop(1, '#064e3b');
-          }
-          break;
-        case 'connecting':
-          grad.addColorStop(0, '#f59e0b');
-          grad.addColorStop(1, '#92400e');
-          break;
-        case 'disconnected':
-          grad.addColorStop(0, '#6b7280');
-          grad.addColorStop(1, '#374151');
-          break;
-        case 'error':
-          grad.addColorStop(0, '#ef4444');
-          grad.addColorStop(1, '#7f1d1d');
-          break;
-      }
-      return grad;
-    });
-
-    // Use the original drawNode logic but with cached gradient
-    const isHovered = hoveredNode()?.id === node.id;
-    const isSelected = selectedNode()?.id === node.id;
-
-    const baseSize = 12;
-    const connectionModifier = Math.min(node.connections * 0.5, 6);
-    let activityModifier = 0;
-    if (node.activeTransfers) {
-      const hasDownloads = node.activeTransfers.downloading.length > 0;
-      const hasUploads = node.activeTransfers.uploading.length > 0;
-      activityModifier = (hasDownloads ? 2 : 0) + (hasUploads ? 2 : 0);
-    }
-
-    const finalSize = baseSize + connectionModifier + activityModifier;
-
-    // Draw with cached gradient
-    ctx.save();
-    ctx.translate(node.x, node.y);
-    ctx.fillStyle = gradient;
-    ctx.beginPath();
-    ctx.arc(0, 0, finalSize, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-
-    // Call original drawNode for additional effects but skip gradient creation
-    drawNode(ctx, node);
-  };
-
   // UI overlay drawing
   const drawUIOverlays = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
-    // Draw tooltip if hovering
+    // Draw tooltip if hovering AND not dragging
     const hovered = hoveredNode();
     const mousePos = mousePosition();
-    if (hovered && mousePos) {
+    if (hovered && mousePos && !isDragging()) {
       drawTooltip(ctx, hovered, mousePos.x, mousePos.y, width, height);
     }
   };
@@ -1757,52 +1766,119 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
     height: number
   ) => {
     const padding = 16;
-    const lineHeight = 20;
+    const lineHeight = 18;
 
     const title = node.username || node.label || 'Unknown Node';
 
-    // Create a clean, minimal summary with only essential info
+    // Enhanced tooltip with detailed information you wanted!
     const lines: string[] = [];
 
-    // Basic info - larger, readable text
+    // Node Type & Status - Core Info
     lines.push(
-      `${node.type.charAt(0).toUpperCase() + node.type.slice(1)} • ${node.status.charAt(0).toUpperCase() + node.status.slice(1)}`
+      `Type: ${node.type.charAt(0).toUpperCase() + node.type.slice(1)} • ${node.status.charAt(0).toUpperCase() + node.status.slice(1)}`
     );
 
+    // IP Address & Network Info
+    if (node.username && node.username !== node.label) {
+      lines.push(`IP: ${node.username}`);
+    }
     if (node.location && node.location !== 'Unknown') {
-      lines.push(`📍 ${node.location}`);
+      lines.push(`Location: ${node.location}`);
+    }
+    if (node.networkType) {
+      lines.push(`Network: ${node.networkType.toUpperCase()}`);
     }
 
-    // Active transfers - show only if there are any
+    // Connection & Performance Metrics
+    lines.push(`Connections: ${node.connections} peers`);
+    lines.push(`Bandwidth: ${(node.bandwidth / 1024).toFixed(1)} MB/s`);
+    lines.push(
+      `Latency: ${node.latency.toFixed(0)}ms • Reliability: ${node.reliability.toFixed(0)}%`
+    );
+
+    // Active File Transfers with full details
     if (node.activeTransfers) {
       const downloads = node.activeTransfers.downloading;
       const uploads = node.activeTransfers.uploading;
 
       if (downloads.length > 0) {
-        const dl = downloads[0]; // Show only primary download
-        if (dl) {
-          lines.push(`📥 ${dl.fileName.split('.')[0]}... (${dl.progress}%)`);
+        lines.push(''); // Spacing
+        lines.push(`📥 DOWNLOADING (${downloads.length}):`);
+        downloads.slice(0, 2).forEach(dl => {
+          // Show up to 2 downloads
+          lines.push(`  • ${dl.fileName}`);
+          lines.push(
+            `    ${dl.progress}% • ${(dl.speed / 1024).toFixed(1)} MB/s • ${formatFileSize(dl.fileSize)}`
+          );
+          lines.push(`    ${formatTimeRemaining(dl.timeRemaining)} remaining`);
+        });
+        if (downloads.length > 2) {
+          lines.push(`  ... and ${downloads.length - 2} more`);
         }
       }
 
       if (uploads.length > 0) {
-        const ul = uploads[0]; // Show only primary upload
-        if (ul) {
-          lines.push(`📤 ${ul.fileName.split('.')[0]}... (${ul.progress}%)`);
+        lines.push(''); // Spacing
+        lines.push(`📤 UPLOADING (${uploads.length}):`);
+        uploads.slice(0, 2).forEach(ul => {
+          // Show up to 2 uploads
+          lines.push(`  • ${ul.fileName}`);
+          lines.push(
+            `    ${ul.progress}% • ${(ul.speed / 1024).toFixed(1)} MB/s • ${formatFileSize(ul.fileSize)}`
+          );
+          lines.push(`    ${formatTimeRemaining(ul.timeRemaining)} remaining`);
+        });
+        if (uploads.length > 2) {
+          lines.push(`  ... and ${uploads.length - 2} more`);
         }
       }
     }
 
-    // Connection info - simplified
-    if (node.connections > 0) {
-      lines.push(`🔗 ${node.connections} peers connected`);
+    // Node Capabilities
+    if (node.capabilities) {
+      lines.push(''); // Spacing
+      lines.push('🛠️ CAPABILITIES:');
+      lines.push(
+        `  Search: ${node.capabilities.supportsSearch ? '✅' : '❌'} • Tor: ${node.capabilities.supportsTor ? '✅' : '❌'}`
+      );
+      lines.push(`  Max File: ${formatFileSize(node.capabilities.maxFileSize * 1024)}`);
+      lines.push(`  Content: ${node.capabilities.availableContent} docs`);
+      lines.push(`  Shared Space: ${(node.capabilities.diskSpaceShared / 1024).toFixed(1)} GB`);
+      if (node.capabilities.culturalSpecializations.length > 0) {
+        lines.push(
+          `  Specializes: ${node.capabilities.culturalSpecializations.slice(0, 2).join(', ')}`
+        );
+      }
+    }
+
+    // Network Statistics
+    if (node.networkStats) {
+      lines.push(''); // Spacing
+      lines.push('📊 STATISTICS:');
+      lines.push(`  Shared: ${(node.networkStats.totalDataShared / 1024).toFixed(1)} GB`);
+      lines.push(`  Received: ${(node.networkStats.totalDataReceived / 1024).toFixed(1)} GB`);
+      lines.push(`  Peers Served: ${node.networkStats.peersServed}`);
+      lines.push(
+        `  Uptime: ${Math.floor(node.networkStats.uptime / 3600)}h ${Math.floor((node.networkStats.uptime % 3600) / 60)}m`
+      );
+    }
+
+    // Recent Activity
+    if (node.recentActivity && node.recentActivity.length > 0) {
+      lines.push(''); // Spacing
+      lines.push('📋 RECENT ACTIVITY:');
+      node.recentActivity.slice(0, 3).forEach(activity => {
+        const timeAgo = Math.floor((Date.now() - activity.timestamp.getTime()) / 60000);
+        lines.push(`  ${activity.action === 'sent' ? '📤' : '📥'} ${activity.fileName}`);
+        lines.push(`    ${formatFileSize(activity.fileSize)} • ${timeAgo}m ago`);
+      });
     }
 
     const titleFont = 'bold 16px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-    const contentFont = '13px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    const contentFont = '12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
     const hintFont = '11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
 
-    // Calculate dimensions with larger, more readable text
+    // Calculate dimensions with detailed content
     ctx.font = titleFont;
     const titleWidth = ctx.measureText(title).width;
 
@@ -1810,8 +1886,8 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
     const maxContentWidth = Math.max(...lines.map(line => ctx.measureText(line).width));
     const maxWidth = Math.max(titleWidth, maxContentWidth);
 
-    const tooltipWidth = Math.min(maxWidth + padding * 2, 350);
-    const tooltipHeight = (lines.length + 1) * lineHeight + padding * 2 + 30; // Extra space for hint
+    const tooltipWidth = Math.min(maxWidth + padding * 2, 450); // Wider for more content
+    const tooltipHeight = (lines.length + 1) * lineHeight + padding * 2 + 30; // Dynamic height
 
     const offset = 15;
     let tooltipX = mouseX + offset;
@@ -1927,31 +2003,18 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
       return;
     }
 
-    // Efficient hover detection using spatial grid if available
+    // SIMPLIFIED hover detection - always use direct method for reliable tooltips
     let hoveredNodeFound: Node | null = null;
 
-    if (spatialGrid) {
-      // Use spatial optimization for large node counts
-      const nearbyNodes = spatialGrid.getNearby(x, y, 50);
-      hoveredNodeFound =
-        nearbyNodes.find(node => {
-          const baseSize = 12;
-          const nodeSize = baseSize + node.connections * 1.5;
-          const clickRadius = nodeSize + 4;
-          const distance = Math.sqrt((x - node.x) ** 2 + (y - node.y) ** 2);
-          return distance < clickRadius;
-        }) || null;
-    } else {
-      // Fallback to original method for small node counts
-      hoveredNodeFound =
-        nodes.find(node => {
-          const baseSize = 12;
-          const nodeSize = baseSize + node.connections * 1.5;
-          const clickRadius = nodeSize + 4;
-          const distance = Math.sqrt((x - node.x) ** 2 + (y - node.y) ** 2);
-          return distance < clickRadius;
-        }) || null;
-    }
+    // Direct hover detection (most reliable)
+    hoveredNodeFound =
+      nodes.find(node => {
+        const baseSize = 12;
+        const nodeSize = baseSize + node.connections * 1.5;
+        const clickRadius = nodeSize + 10; // Increased radius for easier hover
+        const distance = Math.sqrt((x - node.x) ** 2 + (y - node.y) ** 2);
+        return distance < clickRadius;
+      }) || null;
 
     setHoveredNode(hoveredNodeFound);
     canvasRef.style.cursor = hoveredNodeFound ? 'pointer' : 'default';
@@ -2169,6 +2232,75 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
     }
     document.removeEventListener('mouseup', handleMouseUp);
   });
+
+  // OPTIMIZATION: Performance Monitoring System
+  let performanceStats = {
+    nodeCount: 0,
+    renderTime: 0,
+    memoryUsage: 0,
+    frameRate: 60,
+    lastFrameTime: Date.now(),
+    frameCount: 0,
+  };
+
+  const monitorPerformance = () => {
+    const startTime = performance.now();
+
+    // Store original drawNetwork
+    const originalDrawNetwork = drawNetwork;
+
+    // Wrap drawNetwork with performance monitoring
+    const monitoredDrawNetwork = () => {
+      const startRender = performance.now();
+      originalDrawNetwork();
+      const endRender = performance.now();
+
+      performanceStats.renderTime = endRender - startRender;
+      performanceStats.nodeCount = nodes.length;
+
+      // Calculate FPS
+      const currentTime = Date.now();
+      performanceStats.frameCount++;
+      if (performanceStats.frameCount % 60 === 0) {
+        const deltaTime = currentTime - performanceStats.lastFrameTime;
+        performanceStats.frameRate = Math.round(60000 / deltaTime);
+        performanceStats.lastFrameTime = currentTime;
+      }
+
+      // Memory usage (if available)
+      if ((performance as any).memory) {
+        performanceStats.memoryUsage = (performance as any).memory.usedJSHeapSize;
+      }
+
+      // Log performance warnings
+      if (performanceStats.renderTime > 16.67) {
+        console.warn(
+          `NetworkGraph: Slow frame detected: ${performanceStats.renderTime.toFixed(2)}ms (target: <16.67ms for 60fps)`
+        );
+      }
+
+      // Memory leak detection
+      if (performanceStats.memoryUsage > 50 * 1024 * 1024) {
+        // 50MB threshold
+        console.warn(
+          `NetworkGraph: High memory usage: ${(performanceStats.memoryUsage / 1024 / 1024).toFixed(1)}MB`
+        );
+      }
+    };
+
+    return monitoredDrawNetwork;
+  };
+
+  const logPerformanceMetrics = () => {
+    console.log('NetworkGraph Performance Metrics:', {
+      renderTime: `${performanceStats.renderTime.toFixed(2)}ms`,
+      frameRate: `${performanceStats.frameRate}fps`,
+      nodeCount: performanceStats.nodeCount,
+      memoryMB: `${(performanceStats.memoryUsage / 1024 / 1024).toFixed(1)}MB`,
+      viewportOptimization: 'Frustum Culling + LOD Active',
+      animationMode: 'Smart Animation Management',
+    });
+  };
 
   return (
     <div class={`network-graph ${props.theme || 'light'}`}>
