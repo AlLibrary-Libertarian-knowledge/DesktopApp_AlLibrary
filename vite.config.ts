@@ -23,6 +23,33 @@ export default defineConfig(async () => ({
     },
   },
 
+  // Production optimizations
+  build: {
+    target: 'esnext',
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true, // Remove console.logs in production
+        drop_debugger: true,
+        pure_funcs: ['console.log'], // Remove specific functions
+      },
+    },
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Split vendor libraries
+          'vendor-ui': ['@solidjs/router', 'lucide-solid'],
+          'vendor-tauri': ['@tauri-apps/api', '@tauri-apps/plugin-opener'],
+          // Split large components
+          network: ['./src/components/network/NetworkGraph.tsx'],
+        },
+      },
+    },
+    // Enable compression
+    reportCompressedSize: true,
+    chunkSizeWarningLimit: 1000,
+  },
+
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //
   // 1. prevent vite from obscuring rust errors

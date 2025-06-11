@@ -1,5 +1,13 @@
 import { Component, createSignal, onMount, onCleanup, createEffect } from 'solid-js';
 import { createStore } from 'solid-js/store';
+import {
+  CanvasRenderer,
+  AnimationManager,
+  SpatialGrid,
+  Vector2D,
+  throttle,
+  CanvasOptimizer,
+} from '../../utils/performance';
 import './NetworkGraph.css';
 
 interface Node {
