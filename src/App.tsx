@@ -3,19 +3,19 @@ import { Router, Route } from '@solidjs/router';
 import { listen } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/core';
 import MainLayout from './components/layout/MainLayout';
-import LoadingScreen from './components/common/LoadingScreen';
+import { Loading } from './components/foundation';
 import './styles/theme.css';
 import './App.css';
 
-// Lazy load page components following CORE_OPTIMIZATION_PHILOSOPHY
-const HomePage = lazy(() => import('./pages/HomePage'));
-const CollectionsPage = lazy(() => import('./pages/CollectionsPage'));
-const FavoritesPage = lazy(() => import('./pages/FavoritesPage'));
-const RecentPage = lazy(() => import('./pages/RecentPage'));
-const SearchPage = lazy(() => import('./pages/SearchPage'));
-const BrowsePage = lazy(() => import('./pages/BrowsePage'));
-const TrendingPage = lazy(() => import('./pages/TrendingPage'));
-const PeersPage = lazy(() => import('./pages/PeersPage'));
+// Import page components
+import { Home as HomePage } from './pages/Home';
+import { Collections as CollectionsPage } from './pages/Collections';
+import { Favorites as FavoritesPage } from './pages/Favorites';
+import { Recent as RecentPage } from './pages/Recent';
+import { Search as SearchPage } from './pages/Search';
+import { Browse as BrowsePage } from './pages/Browse';
+import { Trending as TrendingPage } from './pages/Trending';
+import { Peers as PeersPage } from './pages/Peers';
 
 interface InitProgress {
   phase: string;
@@ -95,7 +95,7 @@ const App: Component = () => {
   return (
     <>
       <Show when={isLoading()}>
-        <LoadingScreen onComplete={handleLoadingComplete} tauriProgress={initProgress()} />
+        <Loading onComplete={handleLoadingComplete} tauriProgress={initProgress()} />
       </Show>
 
       <Show when={!isLoading()}>

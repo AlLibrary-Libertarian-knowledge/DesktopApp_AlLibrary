@@ -45,8 +45,8 @@ export default defineConfig(async () => ({
 
           // UI components (frequently used, group together)
           'ui-components': [
-            './src/components/common/Button.tsx',
-            './src/components/common/LoadingScreen.tsx',
+            './src/components/foundation/Button/Button.tsx',
+            './src/components/foundation/Loading/Loading.tsx',
             './src/components/layout/Header.tsx',
             './src/components/layout/Sidebar.tsx',
           ],
@@ -58,16 +58,16 @@ export default defineConfig(async () => ({
           ],
 
           // Page components (lazy-loaded, separate chunks)
-          'pages-main': ['./src/pages/HomePage.tsx', './src/pages/CollectionsPage.tsx'],
+          'pages-main': ['./src/pages/Home/Home.tsx', './src/pages/Collections/Collections.tsx'],
           'pages-secondary': [
-            './src/pages/SearchPage.tsx',
-            './src/pages/BrowsePage.tsx',
-            './src/pages/TrendingPage.tsx',
+            './src/pages/Search/Search.tsx',
+            './src/pages/Browse/Browse.tsx',
+            './src/pages/Trending/Trending.tsx',
           ],
           'pages-network': [
-            './src/pages/PeersPage.tsx',
-            './src/pages/FavoritesPage.tsx',
-            './src/pages/RecentPage.tsx',
+            './src/pages/Peers/Peers.tsx',
+            './src/pages/Favorites/Favorites.tsx',
+            './src/pages/Recent/Recent.tsx',
           ],
         },
       },

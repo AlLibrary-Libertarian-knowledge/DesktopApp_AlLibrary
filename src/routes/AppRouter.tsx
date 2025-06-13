@@ -1,19 +1,26 @@
 import { Router, Route } from '@solidjs/router';
-import HomePage from '../pages/HomePage';
+import { Home } from '../pages/Home';
+import { Search } from '../pages/Search';
+import { Collections } from '../pages/Collections';
+import { Favorites } from '../pages/Favorites';
+import { Recent } from '../pages/Recent';
+import { Trending } from '../pages/Trending';
+import { Browse } from '../pages/Browse';
+import { Peers } from '../pages/Peers';
 
 const AppRouter = () => {
   return (
     <Router>
       {/* Library Routes */}
-      <Route path="/" component={HomePage} />
-      <Route path="/collections" component={() => <div>Collections Page</div>} />
-      <Route path="/favorites" component={() => <div>Favorites Page</div>} />
-      <Route path="/recent" component={() => <div>Recent Activity Page</div>} />
+      <Route path="/" component={Home} />
+      <Route path="/collections" component={Collections} />
+      <Route path="/favorites" component={Favorites} />
+      <Route path="/recent" component={Recent} />
 
       {/* Discovery Routes */}
-      <Route path="/search" component={() => <div>Search Network Page</div>} />
-      <Route path="/browse" component={() => <div>Browse Categories Page</div>} />
-      <Route path="/trending" component={() => <div>Trending Content Page</div>} />
+      <Route path="/search" component={Search} />
+      <Route path="/browse" component={Browse} />
+      <Route path="/trending" component={Trending} />
       <Route path="/new-arrivals" component={() => <div>New Arrivals Page</div>} />
 
       {/* Cultural Heritage Routes */}
@@ -26,7 +33,7 @@ const AppRouter = () => {
       <Route path="/preservation" component={() => <div>Preservation Page</div>} />
 
       {/* Network Routes */}
-      <Route path="/peers" component={() => <div>Peer Network Page</div>} />
+      <Route path="/peers" component={Peers} />
       <Route path="/sharing" component={() => <div>Sharing Status Page</div>} />
       <Route path="/downloads" component={() => <div>Downloads Page</div>} />
       <Route path="/sync" component={() => <div>Synchronization Page</div>} />
