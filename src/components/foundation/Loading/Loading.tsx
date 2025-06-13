@@ -143,9 +143,9 @@ const LoadingScreen: Component<LoadingScreenProps> = props => {
               <img src={logoSvg} alt="AlLibrary Logo" class={styles.logoImage} />
             </div>
             <div class={styles.logoRings}>
-              <div class={styles.ring} />
-              <div class={styles.ring} />
-              <div class={styles.ring} />
+              <div class={`${styles.ring} ${styles.ring1}`} />
+              <div class={`${styles.ring} ${styles.ring2}`} />
+              <div class={`${styles.ring} ${styles.ring3}`} />
             </div>
           </div>
           <h1 class={styles.appTitle}>AlLibrary</h1>
@@ -171,33 +171,33 @@ const LoadingScreen: Component<LoadingScreenProps> = props => {
 
         {/* Cultural Elements */}
         <div class={styles.culturalElements}>
-          <div class={styles.element}>
+          <div class={`${styles.element} ${styles.element1}`}>
             <Layers size={20} />
           </div>
-          <div class={styles.element}>
+          <div class={`${styles.element} ${styles.element2}`}>
             <Zap size={18} />
           </div>
-          <div class={styles.element}>
+          <div class={`${styles.element} ${styles.element3}`}>
             <Shield size={22} />
           </div>
-          <div class={styles.element}>
+          <div class={`${styles.element} ${styles.element4}`}>
             <Users size={20} />
           </div>
         </div>
 
         {/* Network Visualization */}
         <div class={styles.networkViz}>
-          <div class={styles.networkNode}>
+          <div class={`${styles.networkNode} ${styles.central}`}>
             <div class={styles.nodePulse} />
           </div>
-          <div class={styles.networkNode} />
-          <div class={styles.networkNode} />
-          <div class={styles.networkNode} />
-          <div class={styles.networkNode} />
-          <div class={styles.networkConnection} />
-          <div class={styles.networkConnection} />
-          <div class={styles.networkConnection} />
-          <div class={styles.networkConnection} />
+          <div class={`${styles.networkNode} ${styles.node1}`} />
+          <div class={`${styles.networkNode} ${styles.node2}`} />
+          <div class={`${styles.networkNode} ${styles.node3}`} />
+          <div class={`${styles.networkNode} ${styles.node4}`} />
+          <div class={`${styles.networkConnection} ${styles.conn1}`} />
+          <div class={`${styles.networkConnection} ${styles.conn2}`} />
+          <div class={`${styles.networkConnection} ${styles.conn3}`} />
+          <div class={`${styles.networkConnection} ${styles.conn4}`} />
         </div>
       </div>
 

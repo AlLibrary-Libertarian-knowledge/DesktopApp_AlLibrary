@@ -57,13 +57,13 @@ const Input: Component<InputProps> = props => {
 
   const inputClasses = () =>
     [
-      'input',
-      `input-${props.size || 'md'}`,
-      `input-${props.variant || 'default'}`,
-      props.error && 'input-error',
-      props.disabled && 'input-disabled',
-      isFocused() && 'input-focused',
-      props.icon && 'input-with-icon',
+      styles['input'],
+      styles[`input-${props.size || 'md'}`],
+      styles[`input-${props.variant || 'default'}`],
+      props.error && styles['input-error'],
+      props.disabled && styles['input-disabled'],
+      isFocused() && styles['input-focused'],
+      props.icon && styles['input-with-icon'],
       props.class,
     ]
       .filter(Boolean)
@@ -72,17 +72,17 @@ const Input: Component<InputProps> = props => {
   const inputId = () => props.id || `input-${Math.random().toString(36).substr(2, 9)}`;
 
   return (
-    <div class="input-wrapper">
+    <div class={styles['input-wrapper']}>
       <Show when={props.label}>
-        <label class="input-label" for={inputId()}>
+        <label class={styles['input-label']} for={inputId()}>
           {props.label}
-          {props.required && <span class="input-required">*</span>}
+          {props.required && <span class={styles['input-required']}>*</span>}
         </label>
       </Show>
 
-      <div class="input-container">
+      <div class={styles['input-container']}>
         <Show when={props.icon}>
-          <div class="input-icon">{props.icon}</div>
+          <div class={styles['input-icon']}>{props.icon}</div>
         </Show>
 
         <input
@@ -109,13 +109,13 @@ const Input: Component<InputProps> = props => {
       </div>
 
       <Show when={props.error}>
-        <div class="input-error-message" role="alert">
+        <div class={styles['input-error-message']} role="alert">
           {props.error}
         </div>
       </Show>
 
       <Show when={props.hint && !props.error}>
-        <div class="input-hint">{props.hint}</div>
+        <div class={styles['input-hint']}>{props.hint}</div>
       </Show>
     </div>
   );

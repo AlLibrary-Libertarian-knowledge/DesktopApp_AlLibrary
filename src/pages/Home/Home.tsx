@@ -138,7 +138,10 @@ const HomePage: Component = () => {
       </header>
 
       {/* Enhanced Navigation Tabs */}
-      <div class={styles['dashboard-tabs']}>
+      <div
+        class={styles['dashboard-tabs']}
+        data-active={activeTab() === 'overview' ? '0' : activeTab() === 'network' ? '1' : '2'}
+      >
         <button
           class={`${styles.tab} ${activeTab() === 'overview' ? styles.active : ''}`}
           onClick={() => setActiveTab('overview')}
@@ -173,10 +176,10 @@ const HomePage: Component = () => {
         {activeTab() === 'overview' && (
           <>
             {/* Enhanced Stats Section */}
-            <section class={styles['stats-section']}>
-              <div class={styles['stats-row']}>
+            <section class={`${styles['stats-section']} ${styles['enhanced']}`}>
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <Card variant="elevated" class={`${styles['stat-card']} ${styles['enhanced']}`}>
-                  <div class={styles['stat-content-column']}>
+                  <div class={styles['stat-content']}>
                     <div class={styles['stat-icon']}>
                       <BookOpen size={32} />
                     </div>
@@ -194,7 +197,7 @@ const HomePage: Component = () => {
                 </Card>
 
                 <Card variant="elevated" class={`${styles['stat-card']} ${styles['enhanced']}`}>
-                  <div class={styles['stat-content-column']}>
+                  <div class={styles['stat-content']}>
                     <div class={styles['stat-icon']}>
                       <Users size={32} />
                     </div>
@@ -212,7 +215,7 @@ const HomePage: Component = () => {
                 </Card>
 
                 <Card variant="elevated" class={`${styles['stat-card']} ${styles['enhanced']}`}>
-                  <div class={styles['stat-content-column']}>
+                  <div class={styles['stat-content']}>
                     <div class={styles['stat-icon']}>
                       <University size={32} />
                     </div>
@@ -230,7 +233,7 @@ const HomePage: Component = () => {
                 </Card>
 
                 <Card variant="elevated" class={`${styles['stat-card']} ${styles['enhanced']}`}>
-                  <div class={styles['stat-content-column']}>
+                  <div class={styles['stat-content']}>
                     <div class={styles['stat-icon']}>
                       <Zap size={32} />
                     </div>
@@ -263,12 +266,12 @@ const HomePage: Component = () => {
             </section>
 
             {/* Enhanced Activity Section */}
-            <section class={styles['activity-section']}>
+            <section class={`${styles['activity-section']} ${styles['enhanced']}`}>
               <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card title="Recent Downloads" padding="lg">
-                  <div class={styles['activity-list']}>
+                  <div class={`${styles['activity-list']} ${styles['modern']}`}>
                     <div class={styles['activity-item']}>
-                      <div class={styles['activity-icon']}>
+                      <div class={`${styles['activity-icon']} ${styles['downloading']}`}>
                         <Download size={16} />
                       </div>
                       <div class={styles['activity-content']}>
@@ -281,11 +284,13 @@ const HomePage: Component = () => {
                         </div>
                       </div>
                       <div class={styles['activity-status']}>
-                        <span class={styles['status-badge']}>Downloading</span>
+                        <span class={`${styles['status-badge']} ${styles['downloading']}`}>
+                          Downloading
+                        </span>
                       </div>
                     </div>
                     <div class={styles['activity-item']}>
-                      <div class={styles['activity-icon']}>
+                      <div class={`${styles['activity-icon']} ${styles['seeding']}`}>
                         <Upload size={16} />
                       </div>
                       <div class={styles['activity-content']}>
@@ -293,11 +298,13 @@ const HomePage: Component = () => {
                         <p class={styles['activity-meta']}>Seeding • 1.5 MB/s upload</p>
                       </div>
                       <div class={styles['activity-status']}>
-                        <span class={styles['status-badge']}>Seeding</span>
+                        <span class={`${styles['status-badge']} ${styles['seeding']}`}>
+                          Seeding
+                        </span>
                       </div>
                     </div>
                     <div class={styles['activity-item']}>
-                      <div class={styles['activity-icon']}>
+                      <div class={`${styles['activity-icon']} ${styles['completed']}`}>
                         <CheckCircle size={16} />
                       </div>
                       <div class={styles['activity-content']}>
@@ -305,7 +312,9 @@ const HomePage: Component = () => {
                         <p class={styles['activity-meta']}>Completed • Ready to share</p>
                       </div>
                       <div class={styles['activity-status']}>
-                        <span class={styles['status-badge']}>Complete</span>
+                        <span class={`${styles['status-badge']} ${styles['completed']}`}>
+                          Complete
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -317,9 +326,9 @@ const HomePage: Component = () => {
                 </Card>
 
                 <Card title="Network Activity" padding="lg">
-                  <div class={styles['activity-list']}>
+                  <div class={`${styles['activity-list']} ${styles['modern']}`}>
                     <div class={styles['activity-item']}>
-                      <div class={styles['activity-icon']}>
+                      <div class={`${styles['activity-icon']} ${styles['peer']}`}>
                         <Globe size={16} />
                       </div>
                       <div class={styles['activity-content']}>
@@ -327,11 +336,13 @@ const HomePage: Component = () => {
                         <p class={styles['activity-meta']}>Connected • 45ms latency</p>
                       </div>
                       <div class={styles['activity-status']}>
-                        <span class={styles['status-badge']}>Connected</span>
+                        <span class={`${styles['status-badge']} ${styles['connected']}`}>
+                          Connected
+                        </span>
                       </div>
                     </div>
                     <div class={styles['activity-item']}>
-                      <div class={styles['activity-icon']}>
+                      <div class={`${styles['activity-icon']} ${styles['institution']}`}>
                         <Building2 size={16} />
                       </div>
                       <div class={styles['activity-content']}>
@@ -339,11 +350,13 @@ const HomePage: Component = () => {
                         <p class={styles['activity-meta']}>New documents shared • Brazil</p>
                       </div>
                       <div class={styles['activity-status']}>
-                        <span class={styles['status-badge']}>Sharing</span>
+                        <span class={`${styles['status-badge']} ${styles['sharing']}`}>
+                          Sharing
+                        </span>
                       </div>
                     </div>
                     <div class={styles['activity-item']}>
-                      <div class={styles['activity-icon']}>
+                      <div class={`${styles['activity-icon']} ${styles['discovery']}`}>
                         <Search size={16} />
                       </div>
                       <div class={styles['activity-content']}>
@@ -351,7 +364,9 @@ const HomePage: Component = () => {
                         <p class={styles['activity-meta']}>Found 12 new cultural archives</p>
                       </div>
                       <div class={styles['activity-status']}>
-                        <span class={styles['status-badge']}>Discovered</span>
+                        <span class={`${styles['status-badge']} ${styles['discovered']}`}>
+                          Discovered
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -365,28 +380,40 @@ const HomePage: Component = () => {
             </section>
 
             {/* Enhanced Quick Actions */}
-            <section class={styles['actions-section']}>
+            <section class={`${styles['actions-section']} ${styles['enhanced']}`}>
               <Card title="Quick Actions" padding="lg">
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <Button variant="outline" class={styles['action-button']!}>
+                  <Button
+                    variant="outline"
+                    class={`${styles['action-button']} ${styles['modern']}`}
+                  >
                     <span class={styles['action-icon']}>
                       <Share size={20} />
                     </span>
                     <span class={styles['action-text']}>Share Document</span>
                   </Button>
-                  <Button variant="outline" class={styles['action-button']!}>
+                  <Button
+                    variant="outline"
+                    class={`${styles['action-button']} ${styles['modern']}`}
+                  >
                     <span class={styles['action-icon']}>
                       <Search size={20} />
                     </span>
                     <span class={styles['action-text']}>Search Network</span>
                   </Button>
-                  <Button variant="outline" class={styles['action-button']!}>
+                  <Button
+                    variant="outline"
+                    class={`${styles['action-button']} ${styles['modern']}`}
+                  >
                     <span class={styles['action-icon']}>
                       <BarChart3 size={20} />
                     </span>
                     <span class={styles['action-text']}>Analytics</span>
                   </Button>
-                  <Button variant="outline" class={styles['action-button']!}>
+                  <Button
+                    variant="outline"
+                    class={`${styles['action-button']} ${styles['modern']}`}
+                  >
                     <span class={styles['action-icon']}>
                       <Settings size={20} />
                     </span>
@@ -474,7 +501,7 @@ const HomePage: Component = () => {
         title="Welcome to AlLibrary"
         size="lg"
         footer={
-          <div class="flex gap-3">
+          <div class="flex gap-3 justify-end">
             <Button variant="outline" onClick={handleModalClose}>
               Take Tour
             </Button>
@@ -484,14 +511,14 @@ const HomePage: Component = () => {
           </div>
         }
       >
-        <div class={styles['welcome-modal-content']}>
-          <p class="text-base">
+        <div class={`${styles['welcome-modal-content']} ${styles['enhanced']}`}>
+          <p class="text-base mb-4">
             AlLibrary is a sophisticated decentralized platform for preserving and sharing cultural
             heritage documents. Built on advanced P2P technology with TOR integration, we ensure
             traditional knowledge is preserved securely.
           </p>
 
-          <div class={styles['feature-list']}>
+          <div class={`${styles['feature-list']} ${styles['enhanced']}`}>
             <div class={styles['feature-item']}>
               <span class={styles['feature-icon']}>🔐</span>
               <span class={styles['feature-text']}>

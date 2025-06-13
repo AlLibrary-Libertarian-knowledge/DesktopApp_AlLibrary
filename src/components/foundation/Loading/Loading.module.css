@@ -1,5 +1,5 @@
 /* Loading Screen - Cultural Heritage Theme */
-.loading-screen {
+.loadingScreen {
   position: fixed;
   top: 0;
   left: 0;
@@ -30,7 +30,7 @@
 }
 
 /* Background Effects */
-.loading-background {
+.loadingBackground {
   position: absolute;
   top: 0;
   left: 0;
@@ -39,7 +39,7 @@
   opacity: 0.6;
 }
 
-.floating-particles {
+.floatingParticles {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -68,7 +68,7 @@
 }
 
 /* Main Content */
-.loading-content {
+.loadingContent {
   position: relative;
   z-index: 2;
   text-align: center;
@@ -82,7 +82,7 @@
 }
 
 /* Logo Section */
-.loading-header {
+.loadingHeader {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -90,14 +90,14 @@
   animation: fadeInUp 1s ease-out;
 }
 
-.app-logo {
+.appLogo {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.logo-icon {
+.logoIcon {
   position: relative;
   z-index: 3;
   display: flex;
@@ -118,7 +118,7 @@
   will-change: box-shadow, transform;
 }
 
-.logo-image {
+.logoImage {
   width: 64px;
   height: 64px;
   object-fit: contain;
@@ -143,7 +143,7 @@
   }
 }
 
-.logo-rings {
+.logoRings {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -158,7 +158,7 @@
   will-change: transform, opacity;
 }
 
-.ring-1 {
+.ring1 {
   width: 120px;
   height: 120px;
   top: -12px;
@@ -166,7 +166,7 @@
   animation-delay: 0s;
 }
 
-.ring-2 {
+.ring2 {
   width: 150px;
   height: 150px;
   top: -27px;
@@ -174,7 +174,7 @@
   animation-delay: 0.5s;
 }
 
-.ring-3 {
+.ring3 {
   width: 180px;
   height: 180px;
   top: -42px;
@@ -194,296 +194,311 @@
   }
 }
 
-.app-title {
+.appTitle {
   font-size: 3rem;
   font-weight: 800;
   background: linear-gradient(
     135deg,
-    rgba(248, 250, 252, 0.95),
-    rgba(139, 92, 246, 0.85),
-    rgba(168, 85, 247, 0.8)
+    rgba(139, 92, 246, 0.9) 0%,
+    rgba(168, 85, 247, 0.8) 25%,
+    rgba(219, 39, 119, 0.7) 50%,
+    rgba(239, 68, 68, 0.8) 75%,
+    rgba(139, 92, 246, 0.9) 100%
   );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   margin: 0;
   letter-spacing: -0.025em;
-  text-align: center;
   line-height: 1.1;
-  filter: drop-shadow(0 2px 4px rgba(139, 92, 246, 0.3));
 }
 
-.app-subtitle {
+.appSubtitle {
+  color: rgba(248, 250, 252, 0.8);
   font-size: 1.125rem;
-  color: rgba(248, 250, 252, 0.75);
-  margin: 0;
   font-weight: 500;
+  margin: 0;
   letter-spacing: 0.025em;
-  text-align: center;
-  line-height: 1.4;
-  max-width: 400px;
+  background: linear-gradient(135deg, rgba(248, 250, 252, 0.9), rgba(203, 213, 225, 0.7));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 /* Progress Section */
-.loading-progress-section {
+.loadingProgressSection {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1rem;
   width: 100%;
   max-width: 400px;
-  animation: fadeInUp 1s ease-out 0.3s both;
 }
 
-.progress-container {
+.progressContainer {
   position: relative;
   width: 100%;
-  height: 6px;
-  background: rgba(51, 65, 85, 0.4);
-  border-radius: 3px;
+  height: 12px;
+  background: rgba(30, 41, 59, 0.6);
+  border-radius: 1rem;
   overflow: hidden;
-  margin-bottom: 1rem;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(148, 163, 184, 0.1);
 }
 
-.progress-bar {
+.progressBar {
   height: 100%;
   background: linear-gradient(
     90deg,
-    rgba(139, 92, 246, 0.8) 0%,
-    rgba(168, 85, 247, 0.9) 50%,
-    rgba(192, 132, 252, 0.8) 100%
+    rgba(139, 92, 246, 0.9) 0%,
+    rgba(168, 85, 247, 0.8) 50%,
+    rgba(139, 92, 246, 0.9) 100%
   );
-  border-radius: 3px;
+  border-radius: 1rem;
   transition: width 0.3s ease;
   position: relative;
   overflow: hidden;
-  will-change: width;
 }
 
-.progress-bar::after {
+.progressBar::after {
   content: '';
   position: absolute;
   top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-  animation: progressShimmer 2s ease-in-out infinite;
+  animation: progressShimmer 2s linear infinite;
 }
 
 @keyframes progressShimmer {
   0% {
-    transform: translateX(-100%);
+    left: -100%;
   }
   100% {
-    transform: translateX(100%);
+    left: 100%;
   }
 }
 
-.progress-glow {
+.progressGlow {
   position: absolute;
   top: -2px;
-  left: 0;
-  right: 0;
+  left: -2px;
+  right: -2px;
   bottom: -2px;
-  background: linear-gradient(
-    90deg,
-    rgba(139, 92, 246, 0.3) 0%,
-    rgba(168, 85, 247, 0.4) 50%,
-    rgba(192, 132, 252, 0.3) 100%
-  );
-  border-radius: 5px;
-  filter: blur(8px);
-  opacity: 0.6;
+  background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.3), transparent);
+  border-radius: 1rem;
+  opacity: 0;
   animation: glowPulse 2s ease-in-out infinite;
 }
 
 @keyframes glowPulse {
   0%,
   100% {
-    opacity: 0.3;
+    opacity: 0;
   }
   50% {
-    opacity: 0.7;
+    opacity: 1;
   }
 }
 
-.progress-percentage {
-  font-size: 0.875rem;
-  color: rgba(248, 250, 252, 0.8);
-  font-weight: 600;
+.progressPercentage {
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgba(248, 250, 252, 0.9);
 }
 
 /* Loading Phase */
-.loading-phase {
+.loadingPhase {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  animation: fadeInUp 1s ease-out 0.6s both;
-  min-height: 2rem;
+  gap: 1rem;
+  padding: 1rem 2rem;
+  background: rgba(30, 41, 59, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 2rem;
+  border: 1px solid rgba(148, 163, 184, 0.1);
 }
 
-.phase-icon {
+.phaseIcon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  background: rgba(139, 92, 246, 0.15);
-  border-radius: 10px;
-  border: 1px solid rgba(139, 92, 246, 0.2);
-  color: rgba(139, 92, 246, 0.8);
-  animation: iconSpin 3s ease-in-out infinite;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(168, 85, 247, 0.1));
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  color: rgba(139, 92, 246, 0.9);
+  animation: iconSpin 4s linear infinite;
 }
 
 @keyframes iconSpin {
-  0%,
-  100% {
-    transform: scale(1) rotate(0deg);
+  0% {
+    transform: rotate(0deg);
   }
-  50% {
-    transform: scale(1.1) rotate(5deg);
+  100% {
+    transform: rotate(360deg);
   }
 }
 
-.phase-text {
-  font-size: 0.95rem;
-  color: rgba(248, 250, 252, 0.8);
+.phaseText {
+  font-size: 1rem;
   font-weight: 500;
-  max-width: 300px;
+  color: rgba(248, 250, 252, 0.9);
 }
 
 /* Cultural Elements */
-.cultural-elements {
+.culturalElements {
   position: absolute;
-  width: 100%;
-  height: 100%;
   top: 0;
   left: 0;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
 }
 
 .element {
   position: absolute;
-  width: 40px;
-  height: 40px;
-  background: rgba(139, 92, 246, 0.1);
-  border: 1px solid rgba(139, 92, 246, 0.2);
-  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba(139, 92, 246, 0.6);
-  animation: elementFloat 4s ease-in-out infinite;
-  will-change: transform, opacity;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(30, 41, 59, 0.3);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: rgba(139, 92, 246, 0.7);
+  animation: elementFloat 8s ease-in-out infinite;
 }
 
-.element-1 {
+.element1 {
   top: 20%;
   left: 10%;
   animation-delay: 0s;
 }
 
-.element-2 {
-  top: 30%;
+.element2 {
+  top: 25%;
   right: 15%;
-  animation-delay: 1s;
-}
-
-.element-3 {
-  bottom: 30%;
-  left: 15%;
   animation-delay: 2s;
 }
 
-.element-4 {
+.element3 {
+  bottom: 30%;
+  left: 15%;
+  animation-delay: 4s;
+}
+
+.element4 {
   bottom: 20%;
   right: 10%;
-  animation-delay: 3s;
+  animation-delay: 6s;
 }
 
 @keyframes elementFloat {
   0%,
   100% {
     transform: translateY(0) rotate(0deg);
-    opacity: 0.4;
+    opacity: 0.5;
+  }
+  25% {
+    transform: translateY(-20px) rotate(90deg);
+    opacity: 0.8;
   }
   50% {
-    transform: translateY(-20px) rotate(10deg);
-    opacity: 0.8;
+    transform: translateY(-10px) rotate(180deg);
+    opacity: 0.6;
+  }
+  75% {
+    transform: translateY(-30px) rotate(270deg);
+    opacity: 0.9;
   }
 }
 
 /* Network Visualization */
-.network-viz {
+.networkViz {
   position: absolute;
   bottom: 10%;
   left: 50%;
   transform: translateX(-50%);
   width: 200px;
-  height: 100px;
-  opacity: 0.3;
+  height: 120px;
+  pointer-events: none;
 }
 
-.network-node {
+.networkNode {
   position: absolute;
-  width: 8px;
-  height: 8px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
-  animation: nodePulse 2s ease-in-out infinite;
+  background: rgba(139, 92, 246, 0.6);
+  border: 2px solid rgba(139, 92, 246, 0.8);
 }
 
-.network-node.central {
-  bottom: 50%;
+.networkNode.central {
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
-  width: 12px;
-  height: 12px;
+  transform: translate(-50%, -50%);
+  width: 24px;
+  height: 24px;
+  background: rgba(168, 85, 247, 0.8);
+  border: 2px solid rgba(168, 85, 247, 1);
 }
 
-.node-pulse {
+.nodePulse {
   position: absolute;
-  width: 100%;
-  height: 100%;
-  background: rgba(139, 92, 246, 0.3);
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  border: 2px solid rgba(139, 92, 246, 0.4);
   border-radius: 50%;
   animation: centralPulse 2s ease-in-out infinite;
 }
 
 @keyframes centralPulse {
-  0%,
-  100% {
+  0% {
     transform: scale(1);
-    opacity: 0.6;
+    opacity: 1;
   }
-  50% {
+  100% {
     transform: scale(2);
     opacity: 0;
   }
 }
 
-.node-1 {
-  bottom: 80%;
+.node1 {
+  top: 10%;
   left: 20%;
-  animation-delay: 0.2s;
+  animation: nodePulse 3s ease-in-out infinite;
+  animation-delay: 0s;
 }
-.node-2 {
-  bottom: 80%;
+
+.node2 {
+  top: 10%;
   right: 20%;
-  animation-delay: 0.4s;
+  animation: nodePulse 3s ease-in-out infinite;
+  animation-delay: 0.5s;
 }
-.node-3 {
-  bottom: 20%;
+
+.node3 {
+  bottom: 10%;
   left: 20%;
-  animation-delay: 0.6s;
+  animation: nodePulse 3s ease-in-out infinite;
+  animation-delay: 1s;
 }
-.node-4 {
-  bottom: 20%;
+
+.node4 {
+  bottom: 10%;
   right: 20%;
-  animation-delay: 0.8s;
+  animation: nodePulse 3s ease-in-out infinite;
+  animation-delay: 1.5s;
 }
 
 @keyframes nodePulse {
@@ -498,82 +513,84 @@
   }
 }
 
-.network-connection {
+.networkConnection {
   position: absolute;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.4), transparent);
-  animation: connectionFlow 3s ease-in-out infinite;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.6), transparent);
+  animation: connectionFlow 4s linear infinite;
 }
 
-.conn-1 {
-  bottom: 58%;
-  left: 25%;
-  width: 50px;
-  transform: rotate(-30deg);
-  animation-delay: 0.5s;
+.conn1 {
+  top: 25%;
+  left: 30%;
+  width: 40%;
+  transform: rotate(-15deg);
+  animation-delay: 0s;
 }
 
-.conn-2 {
-  bottom: 58%;
-  right: 25%;
-  width: 50px;
-  transform: rotate(30deg);
+.conn2 {
+  top: 25%;
+  right: 30%;
+  width: 40%;
+  transform: rotate(15deg);
   animation-delay: 1s;
 }
 
-.conn-3 {
-  bottom: 42%;
-  left: 25%;
-  width: 50px;
-  transform: rotate(30deg);
-  animation-delay: 1.5s;
-}
-
-.conn-4 {
-  bottom: 42%;
-  right: 25%;
-  width: 50px;
-  transform: rotate(-30deg);
+.conn3 {
+  bottom: 25%;
+  left: 30%;
+  width: 40%;
+  transform: rotate(15deg);
   animation-delay: 2s;
 }
 
+.conn4 {
+  bottom: 25%;
+  right: 30%;
+  width: 40%;
+  transform: rotate(-15deg);
+  animation-delay: 3s;
+}
+
 @keyframes connectionFlow {
-  0%,
-  100% {
-    opacity: 0.2;
+  0% {
+    background: linear-gradient(90deg, transparent, transparent, transparent);
   }
   50% {
-    opacity: 0.8;
+    background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.8), transparent);
+  }
+  100% {
+    background: linear-gradient(90deg, transparent, transparent, transparent);
   }
 }
 
-/* Footer */
-.loading-footer {
+/* Loading Footer */
+.loadingFooter {
   position: absolute;
-  bottom: 3rem;
+  bottom: 2rem;
   left: 50%;
   transform: translateX(-50%);
-  animation: fadeInUp 1s ease-out 1s both;
   text-align: center;
-  width: 100%;
-  max-width: 500px;
+  animation: fadeInUp 1.5s ease-out;
+  animation-delay: 0.5s;
+  animation-fill-mode: both;
 }
 
-.loading-footer p {
-  font-size: 0.875rem;
-  color: rgba(248, 250, 252, 0.5);
+.loadingFooter p {
   margin: 0;
-  text-align: center;
-  letter-spacing: 0.05em;
+  font-size: 0.875rem;
+  color: rgba(203, 213, 225, 0.7);
+  font-weight: 400;
+  letter-spacing: 0.025em;
 }
 
 /* Animations */
 @keyframes fadeInUp {
-  from {
+  0% {
     opacity: 0;
     transform: translateY(30px);
   }
-  to {
+  100% {
     opacity: 1;
     transform: translateY(0);
   }
@@ -581,65 +598,63 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .loading-screen {
+  .loadingScreen {
     padding: 1rem;
   }
 
-  .loading-content {
+  .loadingContent {
     gap: 1.5rem;
-    max-width: 100%;
   }
 
-  .logo-icon {
-    width: 80px;
-    height: 80px;
+  .logoIcon {
+    width: 72px;
+    height: 72px;
   }
 
-  .logo-image {
-    width: 52px;
-    height: 52px;
+  .logoImage {
+    width: 48px;
+    height: 48px;
   }
 
-  .ring-1 {
-    width: 100px;
-    height: 100px;
-    top: -10px;
-    left: -10px;
+  .ring1 {
+    width: 96px;
+    height: 96px;
+    top: -12px;
+    left: -12px;
   }
 
-  .ring-2 {
-    width: 130px;
-    height: 130px;
-    top: -25px;
-    left: -25px;
+  .ring2 {
+    width: 120px;
+    height: 120px;
+    top: -24px;
+    left: -24px;
   }
 
-  .ring-3 {
-    width: 160px;
-    height: 160px;
-    top: -40px;
-    left: -40px;
+  .ring3 {
+    width: 144px;
+    height: 144px;
+    top: -36px;
+    left: -36px;
   }
 
-  .app-title {
+  .appTitle {
     font-size: 2.25rem;
   }
 
-  .app-subtitle {
+  .appSubtitle {
     font-size: 1rem;
   }
 
-  .loading-progress-section {
-    max-width: 320px;
+  .loadingProgressSection {
+    max-width: 300px;
   }
 
-  .cultural-elements .element {
-    width: 32px;
-    height: 32px;
+  .culturalElements .element {
+    width: 48px;
+    height: 48px;
   }
 
-  .loading-footer {
-    bottom: 2rem;
-    font-size: 0.875rem;
+  .loadingFooter {
+    bottom: 1rem;
   }
 }

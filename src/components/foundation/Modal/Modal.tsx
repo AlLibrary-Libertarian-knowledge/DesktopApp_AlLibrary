@@ -64,16 +64,16 @@ const Modal: Component<ModalProps> = props => {
 
   const modalClasses = () =>
     [
-      'modal-content',
-      `modal-${props.size || 'md'}`,
-      props.centered && 'modal-centered',
+      styles['modal-content'],
+      styles[`modal-${props.size || 'md'}`],
+      props.centered && styles['modal-centered'],
       props.class,
     ]
       .filter(Boolean)
       .join(' ');
 
   const overlayClasses = () =>
-    ['modal-overlay', props.open && 'modal-overlay-open', props.overlayClass]
+    [styles['modal-overlay'], props.open && styles['modal-overlay-open'], props.overlayClass]
       .filter(Boolean)
       .join(' ');
 
@@ -89,16 +89,16 @@ const Modal: Component<ModalProps> = props => {
         >
           <div ref={modalRef} class={modalClasses()} tabindex={-1} role="document">
             <Show when={props.header || props.title || props.closable !== false}>
-              <div class="modal-header">
+              <div class={styles['modal-header']}>
                 <Show when={props.header}>{props.header}</Show>
                 <Show when={!props.header && props.title}>
-                  <h2 id="modal-title" class="modal-title">
+                  <h2 id="modal-title" class={styles['modal-title']}>
                     {props.title}
                   </h2>
                 </Show>
                 <Show when={props.closable !== false}>
                   <button
-                    class="modal-close"
+                    class={styles['modal-close']}
                     onClick={props.onClose}
                     aria-label="Close modal"
                     type="button"
@@ -109,10 +109,10 @@ const Modal: Component<ModalProps> = props => {
               </div>
             </Show>
 
-            <div class="modal-body">{props.children}</div>
+            <div class={styles['modal-body']}>{props.children}</div>
 
             <Show when={props.footer}>
-              <div class="modal-footer">{props.footer}</div>
+              <div class={styles['modal-footer']}>{props.footer}</div>
             </Show>
           </div>
         </div>
