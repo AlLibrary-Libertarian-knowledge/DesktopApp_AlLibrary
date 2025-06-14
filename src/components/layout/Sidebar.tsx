@@ -60,7 +60,8 @@ const Sidebar: Component<SidebarProps> = props => {
       title: 'Library',
       icon: BookOpen,
       items: [
-        { path: '/', label: 'My Documents', icon: FileText },
+        { path: '/', label: 'Dashboard', icon: HardDrive },
+        { path: '/documents', label: 'Document Management', icon: FileText },
         { path: '/collections', label: 'Collections', icon: Folder },
         { path: '/favorites', label: 'Favorites', icon: Star },
         { path: '/recent', label: 'Recent', icon: Clock },

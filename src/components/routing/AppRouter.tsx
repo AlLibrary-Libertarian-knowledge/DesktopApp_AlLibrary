@@ -1,11 +1,13 @@
 import { Router, Route } from '@solidjs/router';
-import HomePage from '../../pages/HomePage';
+import HomePage from '../../pages/Home';
+import DocumentManagement from '../../pages/DocumentManagement';
 
 const AppRouter = () => {
   return (
     <Router>
       {/* Library Routes */}
       <Route path="/" component={HomePage} />
+      <Route path="/documents" component={DocumentManagement} />
       <Route path="/collections" component={() => <div>Collections Page</div>} />
       <Route path="/favorites" component={() => <div>Favorites Page</div>} />
       <Route path="/recent" component={() => <div>Recent Activity Page</div>} />

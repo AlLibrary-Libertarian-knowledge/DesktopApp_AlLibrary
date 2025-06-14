@@ -16,6 +16,7 @@ import { Search as SearchPage } from './pages/Search';
 import { Browse as BrowsePage } from './pages/Browse';
 import { Trending as TrendingPage } from './pages/Trending';
 import { Peers as PeersPage } from './pages/Peers';
+import DocumentManagement from './pages/DocumentManagement';
 
 interface InitProgress {
   phase: string;
@@ -105,6 +106,15 @@ const App: Component = () => {
             component={() => (
               <RouteWrapper>
                 <HomePage />
+              </RouteWrapper>
+            )}
+          />
+
+          <Route
+            path="/documents"
+            component={() => (
+              <RouteWrapper>
+                <DocumentManagement />
               </RouteWrapper>
             )}
           />
