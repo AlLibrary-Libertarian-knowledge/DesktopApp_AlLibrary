@@ -511,8 +511,14 @@ const DocumentManagement: Component = () => {
         input.onchange = e => {
           const files = (e.target as HTMLInputElement).files;
           if (files && files.length > 0) {
-            const path = files[0].webkitRelativePath.split('/')[0];
-            resolve(path);
+            const firstFile = files[0];
+            if (firstFile && firstFile.webkitRelativePath) {
+              const pathParts = firstFile.webkitRelativePath.split('/');
+              const path = pathParts[0] || 'AlLibrary';
+              resolve(path);
+            } else {
+              resolve('AlLibrary');
+            }
           }
         };
         input.click();
@@ -645,7 +651,7 @@ const DocumentManagement: Component = () => {
   };
 
   const clearSelection = () => {
-    setSelectedDocuments(new Set());
+    setSelectedDocuments(new Set<string>());
     setShowBatchActions(false);
   };
 

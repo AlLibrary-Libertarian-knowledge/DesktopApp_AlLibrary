@@ -168,8 +168,10 @@
 
 .stat-content {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 1.25rem;
+  text-align: center;
+  gap: 1rem;
   padding: 1.5rem;
   position: relative;
   z-index: 4;
@@ -197,6 +199,9 @@
     0 8px 32px rgba(0, 0, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   transition: all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+  transform: translate3d(0, 0, 0); /* Hardware acceleration */
+  backface-visibility: hidden; /* Prevent blur */
+  will-change: transform, box-shadow; /* Optimize for transforms */
 }
 
 .stat-icon svg {
@@ -205,6 +210,8 @@
   transition: all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
   z-index: 5;
   position: relative;
+  transform: translate3d(0, 0, 0); /* Hardware acceleration */
+  will-change: transform, color, filter; /* Optimize for transforms */
 }
 
 .stat-icon::before {
@@ -237,16 +244,16 @@
   0%,
   100% {
     opacity: 0.5;
-    transform: scale(1);
+    transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
   }
   50% {
     opacity: 1;
-    transform: scale(1.05);
+    transform: translate3d(0, 0, 0) scale3d(1.05, 1.05, 1);
   }
 }
 
 .stat-card.enhanced:hover .stat-icon {
-  transform: scale(1.1) rotate(5deg);
+  transform: translate3d(0, 0, 0) scale3d(1.1, 1.1, 1) rotate(5deg);
   box-shadow:
     0 12px 40px rgba(0, 0, 0, 0.15),
     0 0 0 1px rgba(59, 130, 246, 0.3),
@@ -257,7 +264,7 @@
 .stat-card.enhanced:hover .stat-icon svg {
   color: rgba(255, 255, 255, 1);
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
-  transform: scale(1.05);
+  transform: translate3d(0, 0, 0) scale3d(1.05, 1.05, 1);
 }
 
 /* Individual Icon Color Themes */
@@ -302,7 +309,9 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  height: 5.5rem; /* Fixed height to ensure consistent alignment */
+  align-items: center;
+  text-align: center;
+  width: 100%;
 }
 
 .stat-main {
@@ -330,16 +339,21 @@
   font-weight: 600;
   color: rgba(203, 213, 225, 0.9);
   margin: 0;
-  line-height: 1.2;
+  line-height: 1.4;
   letter-spacing: 0.025em;
   text-transform: uppercase;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-  height: 2.1rem; /* Fixed height for 2 lines max */
+  min-height: 2.1rem; /* Min height to support 1-2 lines */
+  max-height: 4rem; /* Increased max height for 2 lines */
   display: flex;
   align-items: center;
-  overflow: hidden;
+  justify-content: center;
+  overflow: visible; /* Allow text to show fully */
   word-wrap: break-word;
+  word-break: break-word;
   hyphens: auto;
+  text-align: center;
+  white-space: normal; /* Allow text wrapping */
 }
 
 /* Activity Section */
@@ -873,6 +887,9 @@
   }
 
   .stat-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
     padding: 1.25rem;
     gap: 1rem;
   }
@@ -894,7 +911,11 @@
 
   .stat-label {
     font-size: 0.8125rem;
-    height: 1.8rem;
+    min-height: 1.8rem;
+    max-height: 3.5rem;
+    line-height: 1.4;
+    overflow: visible;
+    white-space: normal;
   }
 
   .stat-trend {
@@ -927,6 +948,9 @@
   }
 
   .stat-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
     padding: 1rem;
     gap: 0.875rem;
   }
@@ -948,7 +972,11 @@
 
   .stat-label {
     font-size: 0.75rem;
-    height: 1.6rem;
+    min-height: 1.6rem;
+    max-height: 3.2rem;
+    line-height: 1.4;
+    overflow: visible;
+    white-space: normal;
   }
 
   .stat-trend {
@@ -1055,6 +1083,9 @@
   }
 
   .stat-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
     padding: 1rem;
     gap: 0.875rem;
   }
@@ -1076,7 +1107,11 @@
 
   .stat-label {
     font-size: 0.75rem;
-    height: 1.4rem;
+    min-height: 1.4rem;
+    max-height: 3rem;
+    line-height: 1.4;
+    overflow: visible;
+    white-space: normal;
   }
 
   .stat-trend {
@@ -1195,6 +1230,9 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
     inset 0 0 0 1px rgba(255, 255, 255, 0.05);
   transition: all 0.6s cubic-bezier(0.25, 0.1, 0.25, 1);
+  transform: translate3d(0, 0, 0); /* Hardware acceleration */
+  backface-visibility: hidden; /* Prevent blur on transforms */
+  -webkit-font-smoothing: antialiased; /* Improve text rendering */
   z-index: 1;
 }
 
@@ -1250,7 +1288,7 @@
 }
 
 .stat-card.enhanced:hover {
-  transform: translateY(-4px) scale(1.02);
+  transform: translate3d(0, -5px, 0);
   box-shadow:
     0 24px 80px rgba(0, 0, 0, 0.2),
     0 12px 40px rgba(0, 0, 0, 0.15),
@@ -2592,7 +2630,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 0.5rem auto;
+  margin: 0 auto;
 }
 
 .stat-main {
@@ -2616,6 +2654,8 @@
   font-size: 0.875rem;
   font-weight: 600;
   margin: 0;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
   line-height: 1.2;
   text-align: center;
   min-height: 1.5rem;
