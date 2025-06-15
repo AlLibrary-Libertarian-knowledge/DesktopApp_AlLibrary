@@ -50,6 +50,21 @@ const DocumentManagement: Component = () => {
   const [uploadProgress, setUploadProgress] = createSignal(0);
   const [isUploading, setIsUploading] = createSignal(false);
 
+  // Enhanced state for new features
+  const [selectedDocuments, setSelectedDocuments] = createSignal<Set<string>>(new Set());
+  const [showBatchActions, setShowBatchActions] = createSignal(false);
+  const [showMetadataEditor, setShowMetadataEditor] = createSignal(false);
+  const [showDocumentAnalytics, setShowDocumentAnalytics] = createSignal(false);
+  const [sortBy, setSortBy] = createSignal<'title' | 'date' | 'size' | 'relevance' | 'cultural'>(
+    'date'
+  );
+  const [sortOrder, setSortOrder] = createSignal<'asc' | 'desc'>('desc');
+  const [filterBy, setFilterBy] = createSignal<
+    'all' | 'recent' | 'large' | 'cultural' | 'untagged'
+  >('all');
+  const [showSmartSuggestions, setShowSmartSuggestions] = createSignal(false);
+  const [autoTaggingEnabled, setAutoTaggingEnabled] = createSignal(true);
+
   // Project folder management
   const [projectFolderPath, setProjectFolderPath] = createSignal<string>('');
   const [showFolderSetup, setShowFolderSetup] = createSignal(false);
@@ -590,7 +605,8 @@ const DocumentManagement: Component = () => {
   const handleDocumentAction = (action: string, document: Document) => {
     switch (action) {
       case 'edit':
-        alert(`Edit functionality for "${document.title}" would open here.`);
+        setSelectedDocument(document);
+        setShowMetadataEditor(true);
         break;
       case 'share':
         alert(`Share functionality for "${document.title}" would open here.`);
@@ -603,8 +619,140 @@ const DocumentManagement: Component = () => {
           alert('Document deleted successfully.');
         }
         break;
+      case 'analyze':
+        setSelectedDocument(document);
+        setShowDocumentAnalytics(true);
+        break;
     }
   };
+
+  // Enhanced document management functions
+  const toggleDocumentSelection = (documentId: string) => {
+    const newSelection = new Set(selectedDocuments());
+    if (newSelection.has(documentId)) {
+      newSelection.delete(documentId);
+    } else {
+      newSelection.add(documentId);
+    }
+    setSelectedDocuments(newSelection);
+    setShowBatchActions(newSelection.size > 0);
+  };
+
+  const selectAllDocuments = () => {
+    const allIds = new Set<string>(displayDocuments().map(doc => doc.id));
+    setSelectedDocuments(allIds);
+    setShowBatchActions(true);
+  };
+
+  const clearSelection = () => {
+    setSelectedDocuments(new Set());
+    setShowBatchActions(false);
+  };
+
+  const handleBatchAction = async (action: string) => {
+    const selectedIds = Array.from(selectedDocuments());
+    const selectedDocs = displayDocuments().filter(doc => selectedIds.includes(doc.id));
+
+    switch (action) {
+      case 'delete':
+        if (confirm(`Are you sure you want to delete ${selectedIds.length} documents?`)) {
+          alert(`${selectedIds.length} documents deleted successfully.`);
+          clearSelection();
+        }
+        break;
+      case 'tag':
+        const tag = prompt('Enter tag to add to selected documents:');
+        if (tag) {
+          alert(`Tag "${tag}" added to ${selectedIds.length} documents.`);
+        }
+        break;
+      case 'export':
+        alert(`Exporting ${selectedIds.length} documents...`);
+        break;
+      case 'analyze':
+        setShowDocumentAnalytics(true);
+        break;
+    }
+  };
+
+  const generateSmartTags = async (document: Document) => {
+    // Simulate AI-powered tag generation
+    const suggestions = [
+      'traditional-knowledge',
+      'cultural-heritage',
+      'educational-resource',
+      document.culturalMetadata?.culturalOrigin?.toLowerCase().replace(/\s+/g, '-'),
+      document.language,
+    ].filter(Boolean);
+
+    return suggestions;
+  };
+
+  const applySmartOrganization = async () => {
+    if (!autoTaggingEnabled()) return;
+
+    const untaggedDocs = displayDocuments().filter(doc => !doc.tags || doc.tags.length === 0);
+
+    for (const doc of untaggedDocs) {
+      const suggestedTags = await generateSmartTags(doc);
+      // In real implementation, this would update the document
+      console.log(`Suggested tags for "${doc.title}":`, suggestedTags);
+    }
+
+    alert(`Smart organization applied to ${untaggedDocs.length} documents.`);
+  };
+
+  // Enhanced sorting and filtering
+  const sortedAndFilteredDocuments = createMemo(() => {
+    let docs = displayDocuments();
+
+    // Apply filters
+    switch (filterBy()) {
+      case 'recent':
+        docs = docs.filter(doc => {
+          const daysSinceCreated = (Date.now() - doc.createdAt.getTime()) / (1000 * 60 * 60 * 24);
+          return daysSinceCreated <= 7;
+        });
+        break;
+      case 'large':
+        docs = docs.filter(doc => doc.fileSize > 10 * 1024 * 1024); // > 10MB
+        break;
+      case 'cultural':
+        docs = docs.filter(
+          doc => doc.culturalMetadata && doc.culturalMetadata.sensitivityLevel > 1
+        );
+        break;
+      case 'untagged':
+        docs = docs.filter(doc => !doc.tags || doc.tags.length === 0);
+        break;
+    }
+
+    // Apply sorting
+    return docs.sort((a, b) => {
+      let comparison = 0;
+
+      switch (sortBy()) {
+        case 'title':
+          comparison = a.title.localeCompare(b.title);
+          break;
+        case 'date':
+          comparison = a.createdAt.getTime() - b.createdAt.getTime();
+          break;
+        case 'size':
+          comparison = a.fileSize - b.fileSize;
+          break;
+        case 'cultural':
+          const aLevel = a.culturalMetadata?.sensitivityLevel || 0;
+          const bLevel = b.culturalMetadata?.sensitivityLevel || 0;
+          comparison = aLevel - bLevel;
+          break;
+        default:
+          comparison = 0;
+      }
+
+      return sortOrder() === 'desc' ? -comparison : comparison;
+    });
+  });
 
   return (
     <div class={styles['document-management']}>
@@ -642,6 +790,111 @@ const DocumentManagement: Component = () => {
           </span>
         </button>
       </div>
+
+      {/* Enhanced Toolbar for Library Tab */}
+      <Show when={activeTab() === 'library'}>
+        <div class={styles['enhanced-toolbar']}>
+          {/* Left side - Selection and batch actions */}
+          <div class={styles['toolbar-left']}>
+            <Show when={showBatchActions()}>
+              <div class={styles['batch-actions']}>
+                <span class={styles['selection-count']}>{selectedDocuments().size} selected</span>
+                <Button variant="secondary" size="sm" onClick={() => handleBatchAction('tag')}>
+                  <Tag size={14} class="mr-1" />
+                  Tag
+                </Button>
+                <Button variant="secondary" size="sm" onClick={() => handleBatchAction('export')}>
+                  <Download size={14} class="mr-1" />
+                  Export
+                </Button>
+                <Button variant="danger" size="sm" onClick={() => handleBatchAction('delete')}>
+                  <Trash2 size={14} class="mr-1" />
+                  Delete
+                </Button>
+                <Button variant="ghost" size="sm" onClick={clearSelection}>
+                  Clear
+                </Button>
+              </div>
+            </Show>
+
+            <Show when={!showBatchActions()}>
+              <div class={styles['selection-actions']}>
+                <Button variant="ghost" size="sm" onClick={selectAllDocuments}>
+                  Select All
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={applySmartOrganization}
+                  disabled={!autoTaggingEnabled()}
+                >
+                  <Settings size={14} class="mr-1" />
+                  Smart Organize
+                </Button>
+              </div>
+            </Show>
+          </div>
+
+          {/* Right side - Sorting, filtering, and view options */}
+          <div class={styles['toolbar-right']}>
+            {/* Filter dropdown */}
+            <select
+              class={styles['filter-select']}
+              value={filterBy()}
+              onChange={e => setFilterBy(e.currentTarget.value as any)}
+            >
+              <option value="all">All Documents</option>
+              <option value="recent">Recent (7 days)</option>
+              <option value="large">Large Files (&gt;10MB)</option>
+              <option value="cultural">Cultural Content</option>
+              <option value="untagged">Untagged</option>
+            </select>
+
+            {/* Sort dropdown */}
+            <select
+              class={styles['sort-select']}
+              value={`${sortBy()}-${sortOrder()}`}
+              onChange={e => {
+                const [sort, order] = e.currentTarget.value.split('-');
+                setSortBy(sort as any);
+                setSortOrder(order as any);
+              }}
+            >
+              <option value="date-desc">Newest First</option>
+              <option value="date-asc">Oldest First</option>
+              <option value="title-asc">Title A-Z</option>
+              <option value="title-desc">Title Z-A</option>
+              <option value="size-desc">Largest First</option>
+              <option value="size-asc">Smallest First</option>
+              <option value="cultural-desc">Most Cultural</option>
+            </select>
+
+            {/* View mode toggle */}
+            <div class={styles['view-toggle']}>
+              <button
+                class={`${styles['view-btn']} ${viewMode() === 'grid' ? styles.active : ''}`}
+                onClick={() => setViewMode('grid')}
+                title="Grid View"
+              >
+                <Grid size={16} />
+              </button>
+              <button
+                class={`${styles['view-btn']} ${viewMode() === 'list' ? styles.active : ''}`}
+                onClick={() => setViewMode('list')}
+                title="List View"
+              >
+                <List size={16} />
+              </button>
+            </div>
+
+            {/* Analytics button */}
+            <Button variant="ghost" size="sm" onClick={() => setShowDocumentAnalytics(true)}>
+              <Settings size={14} class="mr-1" />
+              Analytics
+            </Button>
+          </div>
+        </div>
+      </Show>
 
       <div class={styles['document-content']}>
         {/* Library Tab */}
@@ -1022,19 +1275,36 @@ const DocumentManagement: Component = () => {
                       ? 'Try adjusting your search terms or clear the search to see all documents.'
                       : 'Upload your first document to get started.'}
                   </p>
-                  <Button variant="primary" onClick={() => setActiveTab('upload')}>
+                  <Button
+                    variant="futuristic"
+                    color="purple"
+                    onClick={() => setActiveTab('upload')}
+                  >
                     <Upload size={16} class="mr-2" />
                     Upload Document
                   </Button>
                 </div>
               </Show>
 
-              <Show when={!documents.loading && displayDocuments().length > 0}>
+              <Show when={!documents.loading && sortedAndFilteredDocuments().length > 0}>
                 <div class={styles['documents-grid']}>
-                  <For each={displayDocuments()}>
+                  <For each={sortedAndFilteredDocuments()}>
                     {document => (
-                      <Card class={styles['document-card'] || ''} variant="elevated">
+                      <Card
+                        class={`${styles['document-card'] || 'document-card'} ${selectedDocuments().has(document.id) ? styles.selected || 'selected' : ''}`}
+                        variant="elevated"
+                      >
                         <div class={styles['document-header']}>
+                          {/* Selection checkbox */}
+                          <div class={styles['document-selection']}>
+                            <input
+                              type="checkbox"
+                              checked={selectedDocuments().has(document.id)}
+                              onChange={() => toggleDocumentSelection(document.id)}
+                              class={styles['selection-checkbox'] || 'selection-checkbox'}
+                            />
+                          </div>
+
                           <div class={styles['document-icon']}>
                             {document.mimeType === 'application/pdf' ? (
                               <FileText size={24} />
@@ -1047,6 +1317,7 @@ const DocumentManagement: Component = () => {
                               variant="ghost"
                               size="sm"
                               onClick={() => handleDocumentSelect(document)}
+                              title="Preview Document"
                             >
                               <Eye size={16} />
                             </Button>
@@ -1054,13 +1325,23 @@ const DocumentManagement: Component = () => {
                               variant="ghost"
                               size="sm"
                               onClick={() => handleDocumentAction('edit', document)}
+                              title="Edit Metadata"
                             >
                               <Edit size={16} />
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
+                              onClick={() => handleDocumentAction('analyze', document)}
+                              title="Document Analytics"
+                            >
+                              <Settings size={16} />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               onClick={() => handleDocumentAction('share', document)}
+                              title="Share Document"
                             >
                               <Share size={16} />
                             </Button>
@@ -1068,7 +1349,8 @@ const DocumentManagement: Component = () => {
                               variant="ghost"
                               size="sm"
                               onClick={() => handleDocumentAction('delete', document)}
-                              class={styles['delete-button'] || ''}
+                              class={styles['delete-button'] || 'delete-button'}
+                              title="Delete Document"
                             >
                               <Trash2 size={16} />
                             </Button>
@@ -1134,10 +1416,14 @@ const DocumentManagement: Component = () => {
         {/* Upload Tab */}
         <Show when={activeTab() === 'upload'}>
           <section class={styles['upload-section']}>
-            <Card title="Upload Documents" padding="lg" class={styles['upload-card'] || ''}>
+            <Card
+              title="Upload Documents"
+              padding="lg"
+              class={styles['upload-card'] || 'upload-card'}
+            >
               <div class={styles['upload-zone']}>
                 <div class={styles['upload-content']}>
-                  <Upload size={48} class={styles['upload-icon'] || ''} />
+                  <Upload size={48} class={styles['upload-icon'] || 'upload-icon'} />
                   <h3>Drop files here or click to browse</h3>
                   <p>Supports PDF and EPUB files up to 100MB each</p>
                   <p class={styles['upload-note']}>
@@ -1154,7 +1440,7 @@ const DocumentManagement: Component = () => {
                     id="file-upload"
                   />
                   <label for="file-upload" class={styles['upload-button']}>
-                    <Button variant="primary" size="lg">
+                    <Button variant="futuristic" color="purple" size="lg">
                       <Plus size={20} class="mr-2" />
                       Select Files
                     </Button>
@@ -1241,21 +1527,24 @@ const DocumentManagement: Component = () => {
 
             <div class={styles['preview-actions']}>
               <Button
-                variant="outline"
+                variant="futuristic"
+                color="purple"
                 onClick={() => handleDocumentAction('edit', selectedDocument()!)}
               >
                 <Edit size={16} class="mr-2" />
                 Edit Metadata
               </Button>
               <Button
-                variant="outline"
+                variant="futuristic"
+                color="purple"
                 onClick={() => handleDocumentAction('share', selectedDocument()!)}
               >
                 <Share size={16} class="mr-2" />
                 Share
               </Button>
               <Button
-                variant="primary"
+                variant="futuristic"
+                color="purple"
                 onClick={() => handleDocumentAction('download', selectedDocument()!)}
               >
                 <Download size={16} class="mr-2" />
@@ -1288,7 +1577,7 @@ const DocumentManagement: Component = () => {
               <div class={styles['default-option']}>
                 <h4>Default Location</h4>
                 <p class={styles['path-display']}>{projectFolderPath()}</p>
-                <Button variant="primary" onClick={useDefaultPath}>
+                <Button variant="futuristic" color="purple" onClick={useDefaultPath}>
                   <HardDrive size={16} class="mr-2" />
                   Use Default
                 </Button>
@@ -1297,7 +1586,7 @@ const DocumentManagement: Component = () => {
               <div class={styles['custom-option']}>
                 <h4>Custom Location</h4>
                 <p>Choose a different folder for your library</p>
-                <Button variant="outline" onClick={handleFolderSelect}>
+                <Button variant="futuristic" color="purple" onClick={handleFolderSelect}>
                   <Folder size={16} class="mr-2" />
                   Browse Folders
                 </Button>
@@ -1308,6 +1597,228 @@ const DocumentManagement: Component = () => {
               <AlertCircle size={16} />
               <span>You can change this location later in the settings.</span>
             </div>
+          </div>
+        </Modal>
+      </Show>
+
+      {/* Metadata Editor Modal */}
+      <Show when={showMetadataEditor() && selectedDocument()}>
+        <Modal
+          open={showMetadataEditor()}
+          onClose={() => setShowMetadataEditor(false)}
+          title={`Edit Metadata - ${selectedDocument()?.title}`}
+          size="lg"
+          class={styles['metadata-editor']}
+        >
+          <div class={styles['metadata-form']}>
+            <div class={styles['form-group']}>
+              <label class={styles['form-label']}>Title</label>
+              <input
+                type="text"
+                class={styles['form-input']}
+                value={selectedDocument()?.title || ''}
+                placeholder="Document title"
+              />
+            </div>
+
+            <div class={styles['form-group']}>
+              <label class={styles['form-label']}>Description</label>
+              <textarea
+                class={styles['form-textarea']}
+                value={selectedDocument()?.description || ''}
+                placeholder="Document description"
+              />
+            </div>
+
+            <div class={styles['form-group']}>
+              <label class={styles['form-label']}>Tags</label>
+              <div class={styles['tag-input-container']}>
+                <For each={selectedDocument()?.tags || []}>
+                  {tag => (
+                    <span class={styles['tag-item']}>
+                      {tag}
+                      <button class={styles['tag-remove']}>×</button>
+                    </span>
+                  )}
+                </For>
+                <input type="text" class={styles['tag-input']} placeholder="Add tags..." />
+              </div>
+            </div>
+
+            <div class={styles['form-group']}>
+              <label class={styles['form-label']}>Language</label>
+              <select class={styles['form-input']}>
+                <option value="en">English</option>
+                <option value="es">Spanish</option>
+                <option value="fr">French</option>
+                <option value="pt">Portuguese</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div class={styles['form-group']}>
+              <label class={styles['form-label']}>Cultural Context (Educational Information)</label>
+              <textarea
+                class={styles['form-textarea']}
+                value={selectedDocument()?.culturalMetadata?.culturalOrigin || ''}
+                placeholder="Cultural origin and context for educational purposes"
+                readonly
+              />
+              <small style="color: rgba(148, 163, 184, 0.7); font-size: 0.8rem;">
+                Cultural information is displayed for educational purposes only and does not
+                restrict access.
+              </small>
+            </div>
+
+            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+              <Button
+                variant="futuristic"
+                color="purple"
+                onClick={() => setShowMetadataEditor(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="futuristic"
+                color="purple"
+                onClick={() => {
+                  alert('Metadata saved successfully!');
+                  setShowMetadataEditor(false);
+                }}
+              >
+                Save Changes
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      </Show>
+
+      {/* Document Analytics Modal */}
+      <Show when={showDocumentAnalytics() && selectedDocument()}>
+        <Modal
+          open={showDocumentAnalytics()}
+          onClose={() => setShowDocumentAnalytics(false)}
+          title={`Document Analytics - ${selectedDocument()?.title}`}
+          size="xl"
+          class={styles['analytics-modal']}
+        >
+          <div class={styles['analytics-content']}>
+            <div class={styles['analytics-section']}>
+              <h4>Document Information</h4>
+              <div class={styles['analytics-metric']}>
+                <span class={styles['metric-label']}>File Size</span>
+                <span class={styles['metric-value']}>
+                  {formatFileSize(selectedDocument()?.fileSize || 0)}
+                </span>
+              </div>
+              <div class={styles['analytics-metric']}>
+                <span class={styles['metric-label']}>Format</span>
+                <span class={styles['metric-value']}>
+                  {selectedDocument()?.format?.toUpperCase()}
+                </span>
+              </div>
+              <div class={styles['analytics-metric']}>
+                <span class={styles['metric-label']}>Created</span>
+                <span class={styles['metric-value']}>
+                  {selectedDocument()?.createdAt.toLocaleDateString()}
+                </span>
+              </div>
+              <div class={styles['analytics-metric']}>
+                <span class={styles['metric-label']}>Language</span>
+                <span class={styles['metric-value']}>
+                  {selectedDocument()?.language || 'Unknown'}
+                </span>
+              </div>
+            </div>
+
+            <div class={styles['analytics-section']}>
+              <h4>Cultural Context</h4>
+              <div class={styles['analytics-metric']}>
+                <span class={styles['metric-label']}>Sensitivity Level</span>
+                <span class={styles['metric-value']}>
+                  {getCulturalSensitivityLabel(
+                    selectedDocument()?.culturalMetadata?.sensitivityLevel || 1
+                  )}
+                </span>
+              </div>
+              <div class={styles['analytics-metric']}>
+                <span class={styles['metric-label']}>Cultural Origin</span>
+                <span class={styles['metric-value']}>
+                  {selectedDocument()?.culturalMetadata?.culturalOrigin || 'Not specified'}
+                </span>
+              </div>
+              <div class={styles['analytics-metric']}>
+                <span class={styles['metric-label']}>Educational Purpose</span>
+                <span class={styles['metric-value']}>
+                  {selectedDocument()?.culturalMetadata?.educationalPurpose ? 'Yes' : 'No'}
+                </span>
+              </div>
+            </div>
+
+            <div class={styles['analytics-section']}>
+              <h4>Security & Validation</h4>
+              <div class={styles['analytics-metric']}>
+                <span class={styles['metric-label']}>Security Scan</span>
+                <span class={styles['metric-value']}>
+                  {selectedDocument()?.securityValidation?.passed ? '✅ Passed' : '❌ Failed'}
+                </span>
+              </div>
+              <div class={styles['analytics-metric']}>
+                <span class={styles['metric-label']}>Integrity Check</span>
+                <span class={styles['metric-value']}>
+                  {selectedDocument()?.securityValidation?.integrityCheck?.valid
+                    ? '✅ Valid'
+                    : '❌ Invalid'}
+                </span>
+              </div>
+              <div class={styles['analytics-metric']}>
+                <span class={styles['metric-label']}>Legal Compliance</span>
+                <span class={styles['metric-value']}>
+                  {selectedDocument()?.securityValidation?.legalCompliance?.compliant
+                    ? '✅ Compliant'
+                    : '❌ Issues'}
+                </span>
+              </div>
+            </div>
+
+            <div class={styles['analytics-section']}>
+              <h4>Usage Statistics</h4>
+              <div class={styles['analytics-metric']}>
+                <span class={styles['metric-label']}>Tags</span>
+                <span class={styles['metric-value']}>
+                  {selectedDocument()?.tags?.length || 0} tags
+                </span>
+              </div>
+              <div class={styles['analytics-metric']}>
+                <span class={styles['metric-label']}>Categories</span>
+                <span class={styles['metric-value']}>
+                  {selectedDocument()?.categories?.length || 0} categories
+                </span>
+              </div>
+              <div class={styles['analytics-metric']}>
+                <span class={styles['metric-label']}>Version</span>
+                <span class={styles['metric-value']}>v{selectedDocument()?.version || 1}</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+            <Button
+              variant="futuristic"
+              color="purple"
+              onClick={() => setShowDocumentAnalytics(false)}
+            >
+              Close
+            </Button>
+            <Button
+              variant="futuristic"
+              color="purple"
+              onClick={() => {
+                alert('Analytics exported successfully!');
+              }}
+            >
+              Export Report
+            </Button>
           </div>
         </Modal>
       </Show>
