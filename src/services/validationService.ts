@@ -1,24 +1,18 @@
 /**
- * Main Validation Service
+ * Comprehensive Validation Service
  *
- * Orchestrates all validation types following SOLID principles:
- * - Single Responsibility: Each validator handles specific validation type
- * - Open/Closed: Extensible for new validation types
- * - Interface Segregation: Clear validation interfaces
- * - Dependency Inversion: Depends on abstractions, not concrete classes
+ * Orchestrates all validation services following SOLID principles:
+ * - Cultural validation (INFORMATION ONLY - NO ACCESS CONTROL)
+ * - Security validation (Technical threats only)
+ * - Document validation (Format and content validation)
  *
- * ANTI-CENSORSHIP ENFORCEMENT:
- * - Cultural validation is INFORMATION ONLY - NO ACCESS CONTROL
- * - Security validation for technical threats only
- * - No content blocking based on cultural, political, or ideological factors
+ * ANTI-CENSORSHIP CORE: All cultural validation provides information only,
+ * never restricts access. Multiple perspectives supported equally.
  */
 
 import type { Document } from '@/types/Document';
-import type {
-  CulturalAnalysis,
-  CulturalInformation,
-  CulturalSensitivityLevel,
-} from '@/types/Cultural';
+import type { CulturalAnalysis, CulturalInformation } from '@/types/Cultural';
+import { CulturalSensitivityLevel } from '@/types/Cultural';
 import type { SecurityValidationResult, SafetyResult, ValidationContext } from '@/types/Security';
 import { culturalValidator, securityValidator, documentValidator } from './validation';
 import type { DocumentValidationResult, DocumentUploadContext } from './validation';
@@ -318,7 +312,7 @@ export class ValidationService {
 
     return (
       `This content appears to have cultural significance (${culturalAnalysis.detectedLevel}). ` +
-      `Educational resources are available to enhance understanding. ` +
+      `Educational resources are accessible to enhance understanding. ` +
       `${culturalAnalysis.suggestedContext || ''}`
     );
   }

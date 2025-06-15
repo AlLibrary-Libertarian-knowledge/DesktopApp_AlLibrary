@@ -10,14 +10,15 @@
  */
 
 import type {
-  CulturalSensitivityLevel,
   CulturalMetadata,
   CulturalInformation,
   CulturalAnalysis,
   CulturalEducationModule,
   CommunityInformation,
   CulturalValidationContext,
+  SacredSymbol,
 } from '@/types/Cultural';
+import { CulturalSensitivityLevel } from '@/types/Cultural';
 import type { Document } from '@/types/Document';
 
 /**
@@ -35,19 +36,44 @@ export class CulturalValidator {
    */
   async analyzeCulturalSensitivity(content: string | Document): Promise<CulturalAnalysis> {
     try {
+      // Handle null/undefined content gracefully - never block access
+      if (!content) {
+        return {
+          detectedLevel: CulturalSensitivityLevel.PUBLIC,
+          confidence: 0,
+          detectedSymbols: [],
+          suggestedContext: 'Analysis unavailable - content accessible',
+          recommendedInformation: [],
+          analysisMetadata: {
+            analyzedAt: new Date(),
+            analysisVersion: '1.0.0',
+            reviewRequired: false, // Anti-censorship: no approval required
+          },
+        };
+      }
+
       // Extract text content for analysis
-      const textContent = typeof content === 'string' ? content : content.content || '';
+      const textContent =
+        typeof content === 'string'
+          ? content
+          : (content?.title || '') + ' ' + (content?.description || '');
+
+      // Check if Document has existing cultural metadata
+      const existingLevel =
+        typeof content !== 'string' && content.culturalMetadata?.sensitivityLevel;
 
       // Detect cultural markers (educational purpose)
       const culturalMarkers = this.detectCulturalMarkers(textContent);
-      const detectedLevel = this.calculateSensitivityLevel(culturalMarkers);
+
+      // Use existing level if available, otherwise calculate from content
+      const detectedLevel = existingLevel || this.calculateSensitivityLevel(culturalMarkers);
 
       // Generate educational recommendations
       const suggestedContext = this.generateEducationalContext(culturalMarkers, detectedLevel);
 
       return {
         detectedLevel,
-        confidence: culturalMarkers.length > 0 ? 0.8 : 0.3,
+        confidence: existingLevel ? 1.0 : culturalMarkers.length > 0 ? 0.8 : 0.3,
         detectedSymbols: culturalMarkers,
         detectedOrigin: this.detectCulturalOrigin(culturalMarkers),
         suggestedContext,
@@ -55,7 +81,11 @@ export class CulturalValidator {
         analysisMetadata: {
           analyzedAt: new Date(),
           analysisVersion: '1.0.0',
-          reviewRequired: detectedLevel >= CulturalSensitivityLevel.GUARDIAN,
+          reviewRequired: false, // Anti-censorship: no approval required
+          detectionMethod: existingLevel ? 'existing_metadata' : 'keyword_pattern_matching',
+          confidenceFactors: existingLevel
+            ? ['existing_metadata']
+            : ['keyword_density', 'context_analysis'],
         },
       };
     } catch (error) {
@@ -71,7 +101,7 @@ export class CulturalValidator {
         analysisMetadata: {
           analyzedAt: new Date(),
           analysisVersion: '1.0.0',
-          reviewRequired: false,
+          reviewRequired: false, // Anti-censorship: no approval required
         },
       };
     }
@@ -103,7 +133,8 @@ export class CulturalValidator {
 
       return {
         sensitivityLevel: culturalMetadata.sensitivityLevel,
-        culturalContext: culturalMetadata.culturalContext,
+        culturalContext:
+          culturalMetadata.culturalContext || 'Cultural context available for educational purposes',
         educationalResources,
         traditionalProtocols: culturalMetadata.traditionalProtocols || [],
         communityInformation: communityContext?.culturalBackground,
@@ -244,8 +275,8 @@ export class CulturalValidator {
 
   // ==================== PRIVATE HELPER METHODS ====================
 
-  private detectCulturalMarkers(content: string): any[] {
-    const markers: any[] = [];
+  private detectCulturalMarkers(content: string): SacredSymbol[] {
+    const markers: SacredSymbol[] = [];
 
     // Simple keyword-based detection (would be enhanced with ML in production)
     const culturalKeywords = [
@@ -278,7 +309,7 @@ export class CulturalValidator {
     return markers;
   }
 
-  private calculateSensitivityLevel(markers: any[]): CulturalSensitivityLevel {
+  private calculateSensitivityLevel(markers: SacredSymbol[]): CulturalSensitivityLevel {
     if (markers.length === 0) return CulturalSensitivityLevel.PUBLIC;
 
     // Simple scoring system (would be enhanced with ML)
@@ -303,14 +334,17 @@ export class CulturalValidator {
     return CulturalSensitivityLevel.EDUCATIONAL;
   }
 
-  private generateEducationalContext(markers: any[], level: CulturalSensitivityLevel): string {
+  private generateEducationalContext(
+    markers: SacredSymbol[],
+    level: CulturalSensitivityLevel
+  ): string {
     if (markers.length === 0) {
-      return 'No specific cultural context detected - general educational content';
+      return 'No specific cultural context detected - general educational content accessible to all';
     }
 
     const contexts = [
       'This content appears to have cultural significance.',
-      'Educational resources are available to enhance understanding.',
+      'Educational resources are accessible to enhance understanding.',
       'Consider the cultural context when engaging with this material.',
       'Multiple perspectives may provide deeper insights.',
     ];

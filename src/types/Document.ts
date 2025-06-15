@@ -82,6 +82,9 @@ export interface Document {
   /** MIME type */
   mimeType: string;
 
+  /** Document content (for analysis and search) */
+  content?: string;
+
   /** Document creation timestamp */
   createdAt: Date;
 

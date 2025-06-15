@@ -108,21 +108,62 @@ pub async fn clear_cache() -> Result<bool, String> {
 }
 
 #[tauri::command]
-pub async fn get_disk_space_info(project_path: String) -> Result<DiskSpaceInfo, String> {
-    let path = Path::new(&project_path);
+pub async fn get_disk_space_info(projectPath: String) -> Result<DiskSpaceInfo, String> {
+    use tracing::{info, debug};
     
-    // Get project directory size
-    let project_size = calculate_directory_size(path)
-        .map_err(|e| format!("Failed to calculate project size: {}", e))?;
+    info!("Getting disk space info for path: {}", projectPath);
+    let path = Path::new(&projectPath);
+    
+    // Get project directory size (gracefully handle permission errors)
+    let project_size = calculate_directory_size(path).unwrap_or(0);
+    debug!("Project size calculated: {} bytes", project_size);
     
     // Get disk information
     let disks = Disks::new_with_refreshed_list();
+    debug!("Found {} disks", disks.len());
     
     // Find the disk that contains our project path
-    let disk = disks
-        .iter()
-        .find(|d| path.starts_with(d.mount_point()))
-        .ok_or_else(|| "Could not find disk for project path".to_string())?;
+    // Windows-specific logic for drive detection
+    let disk = if cfg!(windows) {
+        // On Windows, extract the drive letter from the path
+        let path_str = path.to_string_lossy();
+        let drive_letter = if path_str.len() >= 2 && path_str.chars().nth(1) == Some(':') {
+            path_str.chars().nth(0).unwrap().to_uppercase().to_string()
+        } else {
+            // Default to C: if we can't determine the drive
+            "C".to_string()
+        };
+        
+        // Find disk by drive letter
+        disks.iter().find(|d| {
+            let mount_point = d.mount_point().to_string_lossy();
+            mount_point.starts_with(&format!("{}:", drive_letter)) || 
+            mount_point.starts_with(&format!("{}:\\", drive_letter))
+        })
+    } else {
+        // Unix-like systems: find by mount point
+        let mut search_path = path;
+        loop {
+            if let Some(disk) = disks.iter().find(|d| search_path.starts_with(d.mount_point())) {
+                break Some(disk);
+            }
+            
+            // Try parent directory
+            if let Some(parent) = search_path.parent() {
+                search_path = parent;
+            } else {
+                break None;
+            }
+        }
+    };
+    
+    let disk = disk.ok_or_else(|| {
+        let available_disks: Vec<String> = disks.iter()
+            .map(|d| format!("{} ({})", d.name().to_string_lossy(), d.mount_point().to_string_lossy()))
+            .collect();
+        format!("Could not find disk for project path '{}'. Available disks: [{}]", 
+                projectPath, available_disks.join(", "))
+    })?;
     
     let total_space = disk.total_space();
     let available_space = disk.available_space();
@@ -148,7 +189,7 @@ pub async fn get_disk_space_info(project_path: String) -> Result<DiskSpaceInfo, 
         used_disk_space_bytes: used_space,
         project_percentage,
         disk_usage_percentage,
-        project_path: project_path.clone(),
+        project_path: projectPath.clone(),
         disk_name: disk.name().to_string_lossy().to_string(),
     })
 }
@@ -156,22 +197,52 @@ pub async fn get_disk_space_info(project_path: String) -> Result<DiskSpaceInfo, 
 fn calculate_directory_size(path: &Path) -> Result<u64, std::io::Error> {
     let mut total_size = 0u64;
     
+    // Check if path exists first
+    if !path.exists() {
+        return Ok(0);
+    }
+    
     if path.is_dir() {
-        let entries = std::fs::read_dir(path)?;
-        for entry in entries {
-            let entry = entry?;
-            let entry_path = entry.path();
-            
-            if entry_path.is_dir() {
-                total_size += calculate_directory_size(&entry_path)?;
-            } else {
-                let metadata = entry.metadata()?;
-                total_size += metadata.len();
+        // Try to read directory, but handle permission errors gracefully
+        match std::fs::read_dir(path) {
+            Ok(entries) => {
+                for entry in entries {
+                    match entry {
+                        Ok(entry) => {
+                            let entry_path = entry.path();
+                            
+                            if entry_path.is_dir() {
+                                // Recursively calculate subdirectory size, but ignore permission errors
+                                if let Ok(subdir_size) = calculate_directory_size(&entry_path) {
+                                    total_size += subdir_size;
+                                }
+                                // If we can't access a subdirectory, just skip it
+                            } else {
+                                // Try to get file metadata, but handle permission errors
+                                if let Ok(metadata) = entry.metadata() {
+                                    total_size += metadata.len();
+                                }
+                                // If we can't access file metadata, just skip it
+                            }
+                        }
+                        Err(_) => {
+                            // Skip entries we can't read due to permissions
+                            continue;
+                        }
+                    }
+                }
+            }
+            Err(_) => {
+                // If we can't read the directory due to permissions, return 0
+                return Ok(0);
             }
         }
     } else if path.is_file() {
-        let metadata = std::fs::metadata(path)?;
-        total_size = metadata.len();
+        // Try to get file metadata, but handle permission errors
+        match std::fs::metadata(path) {
+            Ok(metadata) => total_size = metadata.len(),
+            Err(_) => return Ok(0), // If we can't access file, return 0
+        }
     }
     
     Ok(total_size)

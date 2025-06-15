@@ -841,7 +841,14 @@ const DocumentManagement: Component = () => {
                       <div class={styles['status-icon']}>
                         <Folder size={14} />
                       </div>
-                      <span class={styles['status-text']}>tales/AlLibrary</span>
+                      <span class={styles['status-text']}>
+                        {projectInfo()?.projectPath
+                          ? projectInfo()!
+                              .projectPath.split(/[\/\\]/)
+                              .slice(-2)
+                              .join('/')
+                          : 'tales/AlLibrary'}
+                      </span>
                       <div class={styles['folder-change-hint']}>
                         <Settings size={10} />
                       </div>

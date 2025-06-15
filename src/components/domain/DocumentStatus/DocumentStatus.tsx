@@ -1,4 +1,4 @@
-import { Component, createMemo, createSignal, onMount } from 'solid-js';
+import { Component, createMemo, createSignal, onMount, createEffect } from 'solid-js';
 import { HardDrive, FileText, File } from 'lucide-solid';
 import { SystemAPI, SystemUtils } from '../../../types/System';
 import styles from './DocumentStatus.module.css';
@@ -32,25 +32,33 @@ export const DocumentStatus: Component<DocumentStatusProps> = props => {
   const [diskSpaceInfo, setDiskSpaceInfo] = createSignal<any>(null);
   const [loading, setLoading] = createSignal(true);
 
-  // Load disk space information on mount
-  onMount(async () => {
-    const pathToCheck = props.projectPath || '.';
+  // Function to load disk space information
+  const loadDiskSpaceInfo = async (projectPath: string) => {
+    setLoading(true);
     try {
-      const info = await SystemAPI.getDiskSpaceInfo(pathToCheck);
+      const info = await SystemAPI.getDiskSpaceInfo(projectPath);
       setDiskSpaceInfo(info);
     } catch (error) {
       console.error('Failed to get disk space info:', error);
       // Fallback: try current directory
-      if (pathToCheck !== '.') {
-        try {
-          const fallbackInfo = await SystemAPI.getDiskSpaceInfo('.');
-          setDiskSpaceInfo(fallbackInfo);
-        } catch (fallbackError) {
-          console.error('Fallback disk space check also failed:', fallbackError);
-        }
+      try {
+        const fallbackInfo = await SystemAPI.getDiskSpaceInfo('.');
+        setDiskSpaceInfo(fallbackInfo);
+      } catch (fallbackError) {
+        console.error('Fallback disk space check also failed:', fallbackError);
       }
     }
     setLoading(false);
+  };
+
+  // Load disk space information when project path becomes available
+  createEffect(() => {
+    const pathToCheck = props.projectPath;
+    if (pathToCheck) {
+      loadDiskSpaceInfo(pathToCheck);
+    } else {
+      setLoading(false);
+    }
   });
 
   const formatFileSize = (bytes: number): string => {
@@ -60,23 +68,23 @@ export const DocumentStatus: Component<DocumentStatusProps> = props => {
   const storagePercentage = createMemo(() => {
     const info = diskSpaceInfo();
     if (info) {
-      // Use actual disk usage percentage
-      return Math.min(info.disk_usage_percentage, 100);
+      // Show overall disk usage percentage (how much of the disk is used)
+      return Math.min(Math.max(info.disk_usage_percentage, 2), 100); // Minimum 2% for visibility
     }
     // Fallback to old calculation if no disk info available
     const maxStorageGB = 10; // 10GB limit
-    const currentStorageGB = props.stats.totalSize / (1024 * 1024 * 1024);
-    return Math.min((currentStorageGB / maxStorageGB) * 100, 100);
+    const totalSize = props.stats?.totalSize || 0;
+    const currentStorageGB = totalSize / (1024 * 1024 * 1024);
+    return Math.min(Math.max((currentStorageGB / maxStorageGB) * 100, 2), 100); // Minimum 2% for visibility
   });
 
   const storageUsageText = createMemo(() => {
     const info = diskSpaceInfo();
     if (info) {
-      // Calculate remaining space (available space on disk)
-      const remainingSpace = info.available_disk_space_bytes;
-      return `${formatFileSize(info.project_size_bytes)} / ${formatFileSize(remainingSpace)}`;
+      // Show used space vs total space (overall disk usage)
+      return `${formatFileSize(info.used_disk_space_bytes)} / ${formatFileSize(info.total_disk_space_bytes)} used`;
     }
-    return `${formatFileSize(props.stats.totalSize)} / 10GB`;
+    return `${formatFileSize(props.stats?.totalSize || 0)} / 10GB`;
   });
 
   return (
@@ -84,19 +92,19 @@ export const DocumentStatus: Component<DocumentStatusProps> = props => {
       {/* Document Statistics */}
       <div class={styles['stats-overview']}>
         <div class={styles['stat-item']}>
-          <span class={styles['stat-number']}>{props.stats.totalDocuments}</span>
+          <span class={styles['stat-number']}>{props.stats?.totalDocuments || 0}</span>
           <span class={styles['stat-label']}>Documents</span>
         </div>
         <div class={styles['stat-item']}>
-          <span class={styles['stat-number']}>{formatFileSize(props.stats.totalSize)}</span>
+          <span class={styles['stat-number']}>{formatFileSize(props.stats?.totalSize || 0)}</span>
           <span class={styles['stat-label']}>Storage Used</span>
         </div>
         <div class={styles['stat-item']}>
-          <span class={styles['stat-number']}>{props.stats.culturalContexts}</span>
+          <span class={styles['stat-number']}>{props.stats?.culturalContexts || 0}</span>
           <span class={styles['stat-label']}>Cultural Contexts</span>
         </div>
         <div class={styles['stat-item']}>
-          <span class={styles['stat-number']}>{props.stats.recentUploads}</span>
+          <span class={styles['stat-number']}>{props.stats?.recentUploads || 0}</span>
           <span class={styles['stat-label']}>Recent Uploads</span>
         </div>
       </div>

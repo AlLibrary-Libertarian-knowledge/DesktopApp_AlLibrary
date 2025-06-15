@@ -52,4 +52,5 @@ dns-lookup = "2.0"
 
 # System information
 sysinfo = "0.30"
+dirs = "5.0"
 

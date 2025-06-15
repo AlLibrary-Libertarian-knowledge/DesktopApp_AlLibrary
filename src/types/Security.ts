@@ -29,6 +29,35 @@ export interface SecurityValidationContext {
 }
 
 /**
+ * Validation context (alias for test compatibility)
+ */
+export interface ValidationContext {
+  /** User ID */
+  userId: string;
+
+  /** Session ID */
+  sessionId: string;
+
+  /** Input type */
+  inputType: 'text' | 'file' | 'json' | 'path' | any;
+
+  /** Input source */
+  source: 'user_input' | 'file_upload' | 'file_access' | 'api' | string;
+
+  /** Expected type for validation */
+  expectedType?: string;
+
+  /** File name (for file uploads) */
+  fileName?: string;
+
+  /** File size (for file uploads) */
+  fileSize?: number;
+
+  /** Jurisdiction for legal compliance */
+  jurisdiction?: string;
+}
+
+/**
  * Comprehensive validation result
  */
 export interface ValidationResult {
@@ -464,4 +493,67 @@ export interface NetworkSecurityMetadata {
 
   /** Security level */
   securityLevel: 'basic' | 'standard' | 'high' | 'maximum';
+}
+
+/**
+ * Security validation result (alias for compatibility)
+ */
+export interface SecurityValidationResult {
+  /** Validation passed */
+  valid: boolean;
+
+  /** Sanitized input */
+  sanitizedInput?: any;
+
+  /** Security level */
+  securityLevel: 'SAFE' | 'WARNING' | 'BLOCKED';
+
+  /** Validation timestamp */
+  validatedAt: Date;
+
+  /** Validation ID */
+  validationId: string;
+
+  /** Error message if validation failed */
+  error?: string;
+}
+
+/**
+ * Safety assessment result
+ */
+export interface SafetyResult {
+  /** Content is safe */
+  safe: boolean;
+
+  /** Detected threats */
+  threats: SecurityThreat[];
+
+  /** Confidence level */
+  confidence: number;
+
+  /** Safety recommendation */
+  recommendation: string;
+}
+
+/**
+ * Scan result interface
+ */
+export interface ScanResult {
+  /** Scan passed */
+  safe: boolean;
+
+  /** Detected threats */
+  threats: SecurityThreat[];
+
+  /** Scan timestamp */
+  scanTime: Date;
+
+  /** Scanner version */
+  scanVersion: string;
+
+  /** File information */
+  fileInfo?: {
+    type: string;
+    size: number;
+  };
 }
