@@ -147,7 +147,7 @@ impl DocumentOperations {
 
     // Simplified for now - will implement complex queries later
     pub async fn get_all_optimized(
-        pool: &SqlitePool, 
+        _pool: &SqlitePool, 
         limit: Option<i64>, 
         offset: Option<i64>,
         _filters: Option<DocumentFilters>

@@ -61,7 +61,7 @@ const Sidebar: Component<SidebarProps> = props => {
       icon: BookOpen,
       items: [
         { path: '/', label: 'Dashboard', icon: HardDrive },
-        { path: '/documents', label: 'Document Management', icon: FileText },
+        { path: '/documents', label: 'Documents & Search', icon: FileText },
         { path: '/collections', label: 'Collections', icon: Folder },
         { path: '/favorites', label: 'Favorites', icon: Star },
         { path: '/recent', label: 'Recent', icon: Clock },
@@ -72,7 +72,7 @@ const Sidebar: Component<SidebarProps> = props => {
       title: 'Discovery',
       icon: Search,
       items: [
-        { path: '/search', label: 'Search Network', icon: Globe },
+        { path: '/search-network', label: 'Search Network', icon: Globe },
         { path: '/browse', label: 'Browse Categories', icon: FolderOpen },
         { path: '/trending', label: 'Trending', icon: TrendingUp, badge: '12' },
         { path: '/new-arrivals', label: 'New Arrivals', icon: Sparkles, badge: 'New' },

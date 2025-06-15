@@ -62,6 +62,11 @@ export type {
   NetworkSecurityMetadata,
 } from './Security';
 
+// System Information Types
+export type { DiskSpaceInfo, SystemStatus, CacheStats } from './System';
+
+export { SystemAPI, SystemUtils } from './System';
+
 // Network and P2P Types (to be implemented in Phase 3)
 export interface NetworkNode {
   /** Node identifier */

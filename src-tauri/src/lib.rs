@@ -3,7 +3,7 @@ pub mod commands;
 pub mod core;
 pub mod utils;
 
-use crate::commands::{initialize_app, get_app_ready_state, close_splash_screen, get_security_info, refresh_security_info};
+use crate::commands::{initialize_app, get_app_ready_state, close_splash_screen, get_security_info, refresh_security_info, get_disk_space_info};
 use crate::utils::{init_logging, LoggingConfig};
 use tracing::info;
 use std::thread;
@@ -44,7 +44,8 @@ pub fn run() {
             get_app_ready_state,
             close_splash_screen,
             get_security_info,
-            refresh_security_info
+            refresh_security_info,
+            get_disk_space_info
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

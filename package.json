@@ -15,7 +15,7 @@
     "preview": "vite preview",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
-    "tauri:dev-clean": "yarn cache clean && yarn clean:win && cd src-tauri && cargo clean && cd .. && tauri dev",
+    "tauri:dev-clean": "yarn cache clean && yarn clean:win && yarn clean:appdata && cd src-tauri && cargo clean && cd .. && tauri dev",
     "tauri:build": "tauri build",
     "test": "vitest",
     "test:e2e": "playwright test",
@@ -30,6 +30,7 @@
     "audit:fix": "npm audit fix",
     "clean": "rm -rf dist build .vite node_modules/.cache",
     "clean:win": "if exist dist rmdir /s /q dist && if exist build rmdir /s /q build && if exist .vite rmdir /s /q .vite && if exist node_modules\\.cache rmdir /s /q node_modules\\.cache",
+    "clean:appdata": "if exist \"%APPDATA%\\desktopapp-allibrary\" rmdir /s /q \"%APPDATA%\\desktopapp-allibrary\" && if exist \"%APPDATA%\\com.desktopapp-allibrary.dev\" rmdir /s /q \"%APPDATA%\\com.desktopapp-allibrary.dev\"",
     "prepare": "husky",
     "validate": "npm run typecheck && npm run lint && npm run test -- --run && npm run build",
     "husky:check": "sh .husky/health-check.sh"

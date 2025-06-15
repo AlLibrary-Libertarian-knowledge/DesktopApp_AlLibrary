@@ -60,7 +60,7 @@ export default defineConfig(async () => ({
           // Page components (lazy-loaded, separate chunks)
           'pages-main': ['./src/pages/Home/Home.tsx', './src/pages/Collections/Collections.tsx'],
           'pages-secondary': [
-            './src/pages/Search/Search.tsx',
+            './src/pages/DocumentManagement/DocumentManagement.tsx',
             './src/pages/Browse/Browse.tsx',
             './src/pages/Trending/Trending.tsx',
           ],

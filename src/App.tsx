@@ -12,7 +12,7 @@ import { Home as HomePage } from './pages/Home';
 import { Collections as CollectionsPage } from './pages/Collections';
 import { Favorites as FavoritesPage } from './pages/Favorites';
 import { Recent as RecentPage } from './pages/Recent';
-import { Search as SearchPage } from './pages/Search';
+// SearchPage functionality has been merged into DocumentManagement
 import { Browse as BrowsePage } from './pages/Browse';
 import { Trending as TrendingPage } from './pages/Trending';
 import { Peers as PeersPage } from './pages/Peers';
@@ -150,7 +150,7 @@ const App: Component = () => {
             path="/search"
             component={() => (
               <RouteWrapper>
-                <SearchPage />
+                <DocumentManagement />
               </RouteWrapper>
             )}
           />

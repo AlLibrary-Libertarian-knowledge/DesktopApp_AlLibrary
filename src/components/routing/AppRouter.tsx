@@ -13,7 +13,8 @@ const AppRouter = () => {
       <Route path="/recent" component={() => <div>Recent Activity Page</div>} />
 
       {/* Discovery Routes */}
-      <Route path="/search" component={() => <div>Search Network Page</div>} />
+      <Route path="/search" component={DocumentManagement} />
+      <Route path="/search-network" component={() => <div>Search Network Page</div>} />
       <Route path="/browse" component={() => <div>Browse Categories Page</div>} />
       <Route path="/trending" component={() => <div>Trending Content Page</div>} />
       <Route path="/new-arrivals" component={() => <div>New Arrivals Page</div>} />
