@@ -86,7 +86,7 @@ export interface SearchIndex {
   indexHealth: 'healthy' | 'needs_update' | 'corrupted';
 }
 
-export interface SearchService {
+export interface ISearchService {
   // Search operations
   search(query: SearchQuery): Promise<SearchResult[]>;
   searchSuggestions(partialQuery: string): Promise<string[]>;
@@ -105,7 +105,7 @@ export interface SearchService {
   validateCulturalAccess(document: Document, userId: string): Promise<boolean>;
 }
 
-class SearchServiceImpl implements SearchService {
+class SearchServiceImpl implements ISearchService {
   private searchSettings: SearchSettings | null = null;
   private indexPath: string | null = null;
 
@@ -390,3 +390,6 @@ class SearchServiceImpl implements SearchService {
 
 // Export singleton instance
 export const searchService = new SearchServiceImpl();
+
+// Export the class for testing
+export { SearchServiceImpl as SearchService };

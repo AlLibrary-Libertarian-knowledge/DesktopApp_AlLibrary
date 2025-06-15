@@ -6,7 +6,7 @@
  */
 
 import { invoke } from '@tauri-apps/api/core';
-import type {
+import {
   Collection,
   CollectionType,
   CollectionVisibility,
@@ -26,7 +26,7 @@ import type { CulturalMetadata, CulturalInformation } from '../types/Cultural';
 /**
  * Collection service interface
  */
-export interface CollectionService {
+export interface ICollectionService {
   // Core CRUD operations
   getCollections(
     filters?: CollectionSearchFilters,
@@ -500,7 +500,7 @@ class CollectionServiceImpl implements CollectionService {
       // Return basic cultural information even on error
       return {
         sensitivityLevel: culturalMetadata.sensitivityLevel,
-        culturalContext: culturalMetadata.culturalContext,
+        culturalContext: culturalMetadata.culturalContext || 'No cultural context provided',
         educationalResources: [],
         traditionalProtocols: culturalMetadata.traditionalProtocols || [],
         informationOnly: true,
@@ -821,3 +821,6 @@ class CollectionServiceImpl implements CollectionService {
 
 // Export singleton instance
 export const collectionService: CollectionService = new CollectionServiceImpl();
+
+// Export the class for testing
+export { CollectionServiceImpl as CollectionService };

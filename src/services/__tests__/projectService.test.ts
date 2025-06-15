@@ -1,19 +1,20 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ProjectService } from '../projectService';
 import type { Project, ProjectConfig, StorageInfo } from '../../types/core';
+import { invoke } from '@tauri-apps/api/core';
 
 // Mock Tauri
 vi.mock('@tauri-apps/api/core', () => ({
   invoke: vi.fn(),
 }));
 
+const mockInvoke = vi.mocked(invoke);
+
 describe('ProjectService', () => {
   let service: ProjectService;
-  let mockInvoke: any;
 
   beforeEach(() => {
     service = new ProjectService();
-    mockInvoke = vi.mocked(require('@tauri-apps/api/core').invoke);
     mockInvoke.mockClear();
   });
 

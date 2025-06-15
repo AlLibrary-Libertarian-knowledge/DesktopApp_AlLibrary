@@ -7,29 +7,163 @@ import type {
   FolderValidationResult,
   AppSettings,
 } from '../types/Settings';
+import type { Project, ProjectConfig, StorageInfo } from '../types/core';
 
-export interface ProjectService {
-  // Project folder management
+export interface IProjectService {
+  // Project CRUD operations
+  createProject(project: Partial<Project>): Promise<Project>;
+  getProject(id: number): Promise<Project>;
+  updateProject(id: number, updates: Partial<Project>): Promise<Project>;
+  deleteProject(id: number): Promise<boolean>;
+  listProjects(): Promise<Project[]>;
+
+  // Directory and storage management
+  initializeProjectDirectory(
+    path: string
+  ): Promise<{ success: boolean; directories_created: string[] }>;
+  getProjectStorageInfo(projectId: number): Promise<StorageInfo>;
+  validateProjectPath(
+    path: string
+  ): Promise<{ accessible: boolean; writable: boolean; exists: boolean; permissions: string }>;
+  migrateProjectData(
+    sourceProjectId: number,
+    targetProjectId: number
+  ): Promise<{ success: boolean; files_migrated: number; migration_time: number }>;
+
+  // Configuration management
+  setProjectConfig(projectId: number, config: ProjectConfig): Promise<ProjectConfig>;
+  getProjectConfig(projectId: number): Promise<ProjectConfig>;
+
+  // Legacy folder management (for compatibility with existing code)
   selectProjectFolder(): Promise<string | null>;
   validateProjectFolder(path: string): Promise<FolderValidationResult>;
   initializeProjectFolder(path: string): Promise<boolean>;
   getProjectInfo(path: string): Promise<ProjectFolderInfo>;
-
-  // Settings management
   loadSettings(): Promise<AppSettings>;
   saveSettings(settings: AppSettings): Promise<void>;
   resetToDefaults(): Promise<AppSettings>;
-
-  // Folder structure management
   createFolderStructure(basePath: string): Promise<FolderStructure>;
   validateFolderStructure(structure: FolderStructure): Promise<boolean>;
   repairFolderStructure(structure: FolderStructure): Promise<boolean>;
 }
 
-class ProjectServiceImpl implements ProjectService {
+class ProjectServiceImpl implements IProjectService {
   private currentSettings: AppSettings | null = null;
   private defaultProjectName = 'AlLibrary';
 
+  // Project CRUD operations
+  async createProject(project: Partial<Project>): Promise<Project> {
+    try {
+      return await invoke<Project>('create_project', { project });
+    } catch (error) {
+      console.error('Failed to create project:', error);
+      throw new Error('Unable to create project');
+    }
+  }
+
+  async getProject(id: number): Promise<Project> {
+    try {
+      return await invoke<Project>('get_project', { id });
+    } catch (error) {
+      console.error(`Failed to get project ${id}:`, error);
+      throw new Error('Unable to load project');
+    }
+  }
+
+  async updateProject(id: number, updates: Partial<Project>): Promise<Project> {
+    try {
+      return await invoke<Project>('update_project', { id, updates });
+    } catch (error) {
+      console.error(`Failed to update project ${id}:`, error);
+      throw new Error('Unable to update project');
+    }
+  }
+
+  async deleteProject(id: number): Promise<boolean> {
+    try {
+      return await invoke<boolean>('delete_project', { id });
+    } catch (error) {
+      console.error(`Failed to delete project ${id}:`, error);
+      throw new Error('Unable to delete project');
+    }
+  }
+
+  async listProjects(): Promise<Project[]> {
+    try {
+      return await invoke<Project[]>('list_projects');
+    } catch (error) {
+      console.error('Failed to list projects:', error);
+      throw new Error('Unable to load projects');
+    }
+  }
+
+  // Directory and storage management
+  async initializeProjectDirectory(
+    path: string
+  ): Promise<{ success: boolean; directories_created: string[] }> {
+    try {
+      return await invoke('initialize_project_directory', { path });
+    } catch (error) {
+      console.error('Failed to initialize project directory:', error);
+      throw new Error('Unable to initialize project directory');
+    }
+  }
+
+  async getProjectStorageInfo(projectId: number): Promise<StorageInfo> {
+    try {
+      return await invoke<StorageInfo>('get_project_storage_info', { project_id: projectId });
+    } catch (error) {
+      console.error(`Failed to get storage info for project ${projectId}:`, error);
+      throw new Error('Unable to load storage information');
+    }
+  }
+
+  async validateProjectPath(
+    path: string
+  ): Promise<{ accessible: boolean; writable: boolean; exists: boolean; permissions: string }> {
+    try {
+      return await invoke('validate_project_path', { path });
+    } catch (error) {
+      console.error('Failed to validate project path:', error);
+      throw new Error('Unable to validate project path');
+    }
+  }
+
+  async migrateProjectData(
+    sourceProjectId: number,
+    targetProjectId: number
+  ): Promise<{ success: boolean; files_migrated: number; migration_time: number }> {
+    try {
+      return await invoke('migrate_project_data', {
+        source_project_id: sourceProjectId,
+        target_project_id: targetProjectId,
+      });
+    } catch (error) {
+      console.error('Failed to migrate project data:', error);
+      throw new Error('Unable to migrate project data');
+    }
+  }
+
+  // Configuration management
+  async setProjectConfig(projectId: number, config: ProjectConfig): Promise<ProjectConfig> {
+    try {
+      return await invoke<ProjectConfig>('set_project_config', { project_id: projectId, config });
+    } catch (error) {
+      console.error(`Failed to set config for project ${projectId}:`, error);
+      throw new Error('Unable to set project configuration');
+    }
+  }
+
+  async getProjectConfig(projectId: number): Promise<ProjectConfig> {
+    try {
+      return await invoke<ProjectConfig>('get_project_config', { project_id: projectId });
+    } catch (error) {
+      console.error(`Failed to get config for project ${projectId}:`, error);
+      throw new Error('Unable to load project configuration');
+    }
+  }
+
+  // Legacy methods for compatibility with existing code
   async selectProjectFolder(): Promise<string | null> {
     try {
       const selectedPath = await invoke<string | null>('select_project_folder');
@@ -303,3 +437,6 @@ class ProjectServiceImpl implements ProjectService {
 
 // Export singleton instance
 export const projectService = new ProjectServiceImpl();
+
+// Export the class for testing
+export { ProjectServiceImpl as ProjectService };
