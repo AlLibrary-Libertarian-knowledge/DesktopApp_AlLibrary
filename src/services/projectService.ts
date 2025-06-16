@@ -34,6 +34,10 @@ export interface IProjectService {
   setProjectConfig(projectId: number, config: ProjectConfig): Promise<ProjectConfig>;
   getProjectConfig(projectId: number): Promise<ProjectConfig>;
 
+  // P2P and decentralization methods
+  configureP2P(projectId: number, config: any): Promise<any>;
+  prepareOfflineSync(projectId: number): Promise<any>;
+
   // Legacy folder management (for compatibility with existing code)
   selectProjectFolder(): Promise<string | null>;
   validateProjectFolder(path: string): Promise<FolderValidationResult>;
@@ -57,7 +61,7 @@ class ProjectServiceImpl implements IProjectService {
       return await invoke<Project>('create_project', { project });
     } catch (error) {
       console.error('Failed to create project:', error);
-      throw new Error('Unable to create project');
+      throw error; // Re-throw the original error to preserve the error message
     }
   }
 
@@ -114,7 +118,7 @@ class ProjectServiceImpl implements IProjectService {
       return await invoke<StorageInfo>('get_project_storage_info', { project_id: projectId });
     } catch (error) {
       console.error(`Failed to get storage info for project ${projectId}:`, error);
-      throw new Error('Unable to load storage information');
+      throw error; // Re-throw the original error to preserve the error message
     }
   }
 
@@ -125,7 +129,7 @@ class ProjectServiceImpl implements IProjectService {
       return await invoke('validate_project_path', { path });
     } catch (error) {
       console.error('Failed to validate project path:', error);
-      throw new Error('Unable to validate project path');
+      throw error; // Re-throw the original error to preserve the error message
     }
   }
 
@@ -317,6 +321,30 @@ class ProjectServiceImpl implements IProjectService {
     } catch (error) {
       console.error('Failed to repair folder structure:', error);
       return false;
+    }
+  }
+
+  // P2P and decentralization methods
+  async configureP2P(projectId: number, config: any): Promise<any> {
+    try {
+      return await invoke('configure_project_p2p', {
+        project_id: projectId,
+        config,
+      });
+    } catch (error) {
+      console.error('Failed to configure P2P:', error);
+      throw new Error('Unable to configure P2P networking');
+    }
+  }
+
+  async prepareOfflineSync(projectId: number): Promise<any> {
+    try {
+      return await invoke('prepare_offline_sync', {
+        project_id: projectId,
+      });
+    } catch (error) {
+      console.error('Failed to prepare offline sync:', error);
+      throw new Error('Unable to prepare offline synchronization');
     }
   }
 

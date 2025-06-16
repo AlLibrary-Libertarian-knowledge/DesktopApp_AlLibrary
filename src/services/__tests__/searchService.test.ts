@@ -7,13 +7,15 @@ vi.mock('@tauri-apps/api/core', () => ({
   invoke: vi.fn(),
 }));
 
+// Import the mocked module to get access to the mock
+import { invoke } from '@tauri-apps/api/core';
+const mockInvoke = vi.mocked(invoke);
+
 describe('SearchService', () => {
   let service: SearchService;
-  let mockInvoke: any;
 
   beforeEach(() => {
     service = new SearchService();
-    mockInvoke = vi.mocked(require('@tauri-apps/api/core').invoke);
     mockInvoke.mockClear();
   });
 

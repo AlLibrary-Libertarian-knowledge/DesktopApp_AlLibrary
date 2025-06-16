@@ -22,6 +22,8 @@ describe('CollectionService', () => {
     const { invoke } = await import('@tauri-apps/api/core');
     mockInvoke = vi.mocked(invoke);
     mockInvoke.mockClear();
+    // Clear cache to ensure clean tests
+    (collectionService as any).clearCache();
   });
 
   describe('Anti-Censorship Enforcement', () => {
@@ -585,6 +587,9 @@ describe('CollectionService', () => {
     });
 
     it('handles large collection lists efficiently', async () => {
+      // Clear cache to ensure we get the mocked result
+      (collectionService as any).clearCache();
+
       const largeCollectionList = Array.from({ length: 1000 }, (_, i) => ({
         id: i.toString(),
         name: `Collection ${i}`,
@@ -625,7 +630,7 @@ describe('CollectionService', () => {
       mockInvoke.mockRejectedValue(new Error('Database connection failed'));
 
       await expect(collectionService.getCollection('1')).rejects.toThrow(
-        'Unable to load collection'
+        'Database connection failed'
       );
     });
 

@@ -99,6 +99,12 @@ class CollectionServiceImpl implements CollectionService {
   private collectionsCache = new Map<string, { data: Collection[]; timestamp: number }>();
   private collectionCache = new Map<string, { data: Collection; timestamp: number }>();
 
+  // Method to clear cache for testing
+  clearCache(): void {
+    this.collectionsCache.clear();
+    this.collectionCache.clear();
+  }
+
   /**
    * Get collections with filtering and search
    */
@@ -147,16 +153,8 @@ class CollectionServiceImpl implements CollectionService {
       const processedCollections = await Promise.all(
         result.map(async collection => {
           if (options.respectCulturalBoundaries) {
-            const culturalInfo = await this.validateCulturalAccess(
-              collection.id,
-              collection.culturalMetadata
-            );
-
-            // Always return collection with cultural information
-            return {
-              ...collection,
-              culturalInformation: culturalInfo,
-            };
+            // Validate cultural access for information purposes only
+            await this.validateCulturalAccess(collection.id, collection.culturalMetadata);
           }
           return collection;
         })
@@ -196,13 +194,10 @@ class CollectionServiceImpl implements CollectionService {
         return null;
       }
 
-      // Validate cultural access
-      const culturalInfo = await this.validateCulturalAccess(result.id, result.culturalMetadata);
+      // Validate cultural access for information purposes only
+      await this.validateCulturalAccess(result.id, result.culturalMetadata);
 
-      const processedCollection = {
-        ...result,
-        culturalInformation: culturalInfo,
-      };
+      const processedCollection = result;
 
       // Cache the result
       this.collectionCache.set(cacheKey, {
@@ -213,7 +208,7 @@ class CollectionServiceImpl implements CollectionService {
       return processedCollection;
     } catch (error) {
       console.error(`Failed to fetch collection ${id}:`, error);
-      throw new Error('Unable to load collection');
+      throw error; // Re-throw the original error to preserve the error message
     }
   }
 
@@ -308,7 +303,7 @@ class CollectionServiceImpl implements CollectionService {
       return result;
     } catch (error) {
       console.error('Failed to create collection:', error);
-      throw new Error('Unable to create collection');
+      throw error; // Re-throw the original error to preserve the error message
     }
   }
 

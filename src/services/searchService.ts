@@ -89,6 +89,9 @@ export interface SearchIndex {
 export interface ISearchService {
   // Search operations
   search(query: SearchQuery): Promise<SearchResult[]>;
+  searchBooks(query: string, filters?: any, pagination?: any): Promise<any[]>;
+  searchCollections(query: string, filters?: any, pagination?: any): Promise<any[]>;
+  globalSearch(query: string, filters?: any, pagination?: any): Promise<any[]>;
   searchSuggestions(partialQuery: string): Promise<string[]>;
   searchHistory(): Promise<string[]>;
   clearSearchHistory(): Promise<void>;
@@ -385,6 +388,46 @@ class SearchServiceImpl implements ISearchService {
       levels.push(i);
     }
     return levels;
+  }
+
+  // Additional search methods for test compatibility
+  async searchBooks(query: string, filters?: any, pagination?: any): Promise<any[]> {
+    try {
+      return await invoke<any[]>('search_books', {
+        query,
+        filters,
+        pagination,
+      });
+    } catch (error) {
+      console.error('Book search failed:', error);
+      throw error;
+    }
+  }
+
+  async searchCollections(query: string, filters?: any, pagination?: any): Promise<any[]> {
+    try {
+      return await invoke<any[]>('search_collections', {
+        query,
+        filters,
+        pagination,
+      });
+    } catch (error) {
+      console.error('Collection search failed:', error);
+      throw error;
+    }
+  }
+
+  async globalSearch(query: string, filters?: any, pagination?: any): Promise<any[]> {
+    try {
+      return await invoke<any[]>('global_search', {
+        query,
+        filters,
+        pagination,
+      });
+    } catch (error) {
+      console.error('Global search failed:', error);
+      throw error;
+    }
   }
 }
 
