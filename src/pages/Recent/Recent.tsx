@@ -2,10 +2,30 @@ import { Component, createSignal, createEffect, For, Show } from 'solid-js';
 import { Card } from '../../components/foundation/Card';
 import { Button } from '../../components/foundation/Button';
 import { Input } from '../../components/foundation/Input';
-import { Clock, Eye, Download, FileText, Search, Calendar, Filter } from 'lucide-solid';
-import type { Document } from '../../types/Document';
-import type { CulturalSensitivityLevel } from '../../types/Cultural';
+import {
+  Clock,
+  Eye,
+  Download,
+  FileText,
+  Search,
+  Calendar,
+  Filter,
+  Upload,
+  Share2,
+  Heart,
+  ShieldCheck,
+  Fingerprint,
+  History,
+} from 'lucide-solid';
+import {
+  Document,
+  DocumentFormat,
+  DocumentContentType,
+  DocumentStatus,
+} from '../../types/Document';
+import { CulturalSensitivityLevel } from '../../types/Cultural';
 import styles from './Recent.module.css';
+import { CustomDropdown, DropdownOption } from './CustomDropdown';
 
 interface RecentActivity {
   id: string;
@@ -15,6 +35,139 @@ interface RecentActivity {
   duration?: number; // in seconds for view activities
   deviceName?: string;
 }
+
+const mockDocuments: Document[] = [
+  {
+    id: 'doc1',
+    title: 'Traditional Weaving Techniques',
+    description: 'Ancient textile creation methods from indigenous communities.',
+    format: DocumentFormat.PDF,
+    contentType: DocumentContentType.TRADITIONAL_KNOWLEDGE,
+    status: DocumentStatus.ACTIVE,
+    filePath: '/documents/weaving.pdf',
+    originalFilename: 'weaving.pdf',
+    fileSize: 3200000,
+    fileHash: 'hash1',
+    mimeType: 'application/pdf',
+    createdAt: new Date('2024-01-15'),
+    updatedAt: new Date(),
+    createdBy: 'user1',
+    version: 1,
+    culturalMetadata: {
+      sensitivityLevel: CulturalSensitivityLevel.EDUCATIONAL,
+      culturalOrigin: 'Andean Communities',
+    },
+    tags: ['weaving', 'textile', 'traditional-craft'],
+    categories: ['Crafts'],
+    language: 'en',
+    authors: [{ name: 'Community Elders', role: 'Custodian' }],
+    accessHistory: [],
+    relationships: [],
+    securityValidation: {
+      validatedAt: new Date(),
+      passed: true,
+      issues: [],
+      malwareScanResult: {
+        clean: true,
+        threats: [],
+        scanEngine: 'Internal',
+        scanDate: new Date(),
+      },
+      integrityCheck: {
+        valid: true,
+        expectedHash: 'hash1',
+        actualHash: 'hash1',
+        algorithm: 'SHA-256',
+      },
+      legalCompliance: {
+        compliant: true,
+        issues: [],
+        jurisdiction: 'Global',
+      },
+    },
+    contentVerification: {
+      signature: 'sig1',
+      algorithm: 'ECDSA',
+      verifiedAt: new Date(),
+      chainOfCustody: [],
+      authentic: true,
+      verificationProvider: 'CommunitySign',
+      publicKey: 'key1',
+    },
+    sourceAttribution: {
+      originalSource: 'Andean Community Archive',
+      sourceType: 'community',
+      credibilityIndicators: ['Community Verified'],
+      sourceVerified: true,
+      attributionRequirements: ['Credit community'],
+    },
+  },
+  {
+    id: 'doc2',
+    title: 'Sacred Plant Ceremonies',
+    description: 'Spiritual practices and traditional plant use.',
+    format: DocumentFormat.PDF,
+    contentType: DocumentContentType.CEREMONIAL,
+    status: DocumentStatus.ACTIVE,
+    filePath: '/documents/plant-ceremonies.pdf',
+    originalFilename: 'plant-ceremonies.pdf',
+    fileSize: 2100000,
+    fileHash: 'hash3',
+    mimeType: 'application/pdf',
+    createdAt: new Date('2024-01-18'),
+    updatedAt: new Date(),
+    createdBy: 'user3',
+    version: 1,
+    culturalMetadata: {
+      sensitivityLevel: CulturalSensitivityLevel.COMMUNITY,
+      culturalOrigin: 'Indigenous Communities',
+    },
+    tags: ['ceremony', 'plants', 'spiritual'],
+    categories: ['Spirituality'],
+    language: 'es',
+    authors: [{ name: 'Tribal Council', role: 'Guardian' }],
+    accessHistory: [],
+    relationships: [],
+    securityValidation: {
+      validatedAt: new Date(),
+      passed: true,
+      issues: [],
+      malwareScanResult: {
+        clean: true,
+        threats: [],
+        scanEngine: 'Internal',
+        scanDate: new Date(),
+      },
+      integrityCheck: {
+        valid: true,
+        expectedHash: 'hash3',
+        actualHash: 'hash3',
+        algorithm: 'SHA-256',
+      },
+      legalCompliance: {
+        compliant: true,
+        issues: [],
+        jurisdiction: 'Global',
+      },
+    },
+    contentVerification: {
+      signature: 'sig3',
+      algorithm: 'ECDSA',
+      verifiedAt: new Date(),
+      chainOfCustody: [],
+      authentic: true,
+      verificationProvider: 'GuardianSign',
+      publicKey: 'key3',
+    },
+    sourceAttribution: {
+      originalSource: 'Sacred Knowledge Keepers',
+      sourceType: 'traditional',
+      credibilityIndicators: ['Guardian Endorsed'],
+      sourceVerified: true,
+      attributionRequirements: ['Respectful use only'],
+    },
+  },
+];
 
 const RecentPage: Component = () => {
   const [activities, setActivities] = createSignal<RecentActivity[]>([]);
@@ -27,103 +180,23 @@ const RecentPage: Component = () => {
   >('all');
   const [loading, setLoading] = createSignal(true);
 
-  // Mock data for development
   createEffect(() => {
     setTimeout(() => {
       setActivities([
         {
           id: 'act1',
           type: 'view',
-          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-          duration: 1200, // 20 minutes
+          timestamp: new Date(Date.now() - 2 * 36e5),
+          duration: 1200,
           deviceName: 'Desktop',
-          document: {
-            id: 'doc1',
-            title: 'Traditional Weaving Techniques',
-            description: 'Ancient textile creation methods from indigenous communities',
-            format: 'pdf' as any,
-            contentType: 'cultural' as any,
-            status: 'active' as any,
-            filePath: '/documents/weaving.pdf',
-            originalFilename: 'weaving.pdf',
-            fileSize: 3200000,
-            fileHash: 'hash1',
-            mimeType: 'application/pdf',
-            createdAt: new Date('2024-01-15'),
-            updatedAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
-            createdBy: 'user1',
-            version: 1,
-            culturalMetadata: {
-              sensitivityLevel: 'educational' as CulturalSensitivityLevel,
-              culturalOrigin: 'Andean Communities',
-            } as any,
-            tags: ['weaving', 'textile', 'traditional-craft'],
-            categories: ['Crafts'],
-            language: 'en',
-            authors: [],
-            accessHistory: [],
-            relationships: [],
-            securityValidation: {} as any,
-            contentVerification: {} as any,
-            sourceAttribution: {} as any,
-          },
-        },
-        {
-          id: 'act2',
-          type: 'download',
-          timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000), // 5 hours ago
-          deviceName: 'Mobile',
-          document: {
-            id: 'doc2',
-            title: 'Solar Panel Installation Guide',
-            description: 'Comprehensive guide for renewable energy systems',
-            filePath: '/documents/solar-guide.pdf',
-            fileSize: 4500000,
-            mimeType: 'application/pdf',
-            uploadDate: new Date('2024-01-20'),
-            lastAccessed: new Date(Date.now() - 5 * 60 * 60 * 1000),
-            tags: ['solar', 'renewable-energy', 'technical'],
-            culturalSensitivity: 'public' as CulturalSensitivityLevel,
-            culturalOrigin: 'Global Community',
-          },
+          document: mockDocuments[0],
         },
         {
           id: 'act3',
           type: 'favorite',
-          timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
+          timestamp: new Date(Date.now() - 24 * 36e5),
           deviceName: 'Desktop',
-          document: {
-            id: 'doc3',
-            title: 'Sacred Plant Ceremonies',
-            description: 'Spiritual practices and traditional plant use',
-            filePath: '/documents/plant-ceremonies.pdf',
-            fileSize: 2100000,
-            mimeType: 'application/pdf',
-            uploadDate: new Date('2024-01-18'),
-            lastAccessed: new Date(Date.now() - 24 * 60 * 60 * 1000),
-            tags: ['ceremony', 'plants', 'spiritual'],
-            culturalSensitivity: 'community-restricted' as CulturalSensitivityLevel,
-            culturalOrigin: 'Indigenous Communities',
-          },
-        },
-        {
-          id: 'act4',
-          type: 'upload',
-          timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
-          deviceName: 'Desktop',
-          document: {
-            id: 'doc4',
-            title: 'Community Garden Planning',
-            description: 'Urban agriculture and food sovereignty practices',
-            filePath: '/documents/garden-planning.pdf',
-            fileSize: 1800000,
-            mimeType: 'application/pdf',
-            uploadDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-            lastAccessed: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-            tags: ['gardening', 'community', 'food-sovereignty'],
-            culturalSensitivity: 'public' as CulturalSensitivityLevel,
-            culturalOrigin: 'Community Initiative',
-          },
+          document: mockDocuments[1],
         },
       ]);
       setLoading(false);
@@ -132,10 +205,11 @@ const RecentPage: Component = () => {
 
   const filteredActivities = () => {
     return activities().filter(activity => {
+      const doc = activity.document;
       const matchesSearch =
-        activity.document.title.toLowerCase().includes(searchQuery().toLowerCase()) ||
-        activity.document.description.toLowerCase().includes(searchQuery().toLowerCase()) ||
-        activity.document.tags.some(tag => tag.toLowerCase().includes(searchQuery().toLowerCase()));
+        doc.title.toLowerCase().includes(searchQuery().toLowerCase()) ||
+        (doc.description ?? '').toLowerCase().includes(searchQuery().toLowerCase()) ||
+        doc.tags.some(tag => tag.toLowerCase().includes(searchQuery().toLowerCase()));
 
       const matchesType = selectedType() === 'all' || activity.type === selectedType();
 
@@ -164,41 +238,30 @@ const RecentPage: Component = () => {
       case 'download':
         return Download;
       case 'upload':
-        return FileText;
+        return Upload;
       case 'share':
-        return Download; // Reusing download icon for now
+        return Share2;
       case 'favorite':
-        return Clock;
-    }
-  };
-
-  const getActivityColor = (type: RecentActivity['type']) => {
-    switch (type) {
-      case 'view':
-        return '#3498db';
-      case 'download':
-        return '#27ae60';
-      case 'upload':
-        return '#e67e22';
-      case 'share':
-        return '#9b59b6';
-      case 'favorite':
-        return '#e74c3c';
+        return Heart;
+      default:
+        return History;
     }
   };
 
   const getSensitivityColor = (level: CulturalSensitivityLevel) => {
     switch (level) {
-      case 'public':
+      case CulturalSensitivityLevel.PUBLIC:
         return 'var(--color-success)';
-      case 'educational':
+      case CulturalSensitivityLevel.EDUCATIONAL:
         return 'var(--color-info)';
-      case 'community-restricted':
+      case CulturalSensitivityLevel.COMMUNITY:
         return 'var(--color-warning)';
-      case 'guardian-approval':
+      case CulturalSensitivityLevel.GUARDIAN:
         return 'var(--color-danger)';
-      case 'sacred-protected':
+      case CulturalSensitivityLevel.SACRED:
         return 'var(--color-sacred)';
+      default:
+        return 'var(--color-info)';
     }
   };
 
@@ -209,13 +272,9 @@ const RecentPage: Component = () => {
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
 
-    if (minutes < 60) {
-      return `${minutes} minutes ago`;
-    } else if (hours < 24) {
-      return `${hours} hours ago`;
-    } else {
-      return `${days} days ago`;
-    }
+    if (minutes < 60) return `${minutes}m ago`;
+    if (hours < 24) return `${hours}h ago`;
+    return `${days}d ago`;
   };
 
   const formatDuration = (seconds: number): string => {
@@ -232,12 +291,28 @@ const RecentPage: Component = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  const activityTypeOptions: DropdownOption[] = [
+    { value: 'all', label: 'All Activities', icon: <Filter size={18} /> },
+    { value: 'view', label: 'Views', icon: <Eye size={18} color="#3498db" /> },
+    { value: 'download', label: 'Downloads', icon: <Download size={18} color="#27ae60" /> },
+    { value: 'upload', label: 'Uploads', icon: <Upload size={18} color="#f39c12" /> },
+    { value: 'share', label: 'Shares', icon: <Share2 size={18} color="#9b59b6" /> },
+    { value: 'favorite', label: 'Favorites', icon: <Heart size={18} color="#e74c3c" /> },
+  ];
+
+  const timeFrameOptions: DropdownOption[] = [
+    { value: 'all', label: 'All Time', icon: <Calendar size={18} /> },
+    { value: 'today', label: 'Today', icon: <Calendar size={18} /> },
+    { value: 'week', label: 'This Week', icon: <Calendar size={18} /> },
+    { value: 'month', label: 'This Month', icon: <Calendar size={18} /> },
+  ];
+
   return (
     <div class={styles.recentPage}>
       <div class={styles.header}>
         <div class={styles.titleSection}>
           <h1>
-            <Clock class={styles.headerIcon} />
+            <History class={styles.headerIcon || ''} />
             Recent Activity
           </h1>
           <p>Your recent document interactions and activities</p>
@@ -245,68 +320,57 @@ const RecentPage: Component = () => {
 
         <div class={styles.controls}>
           <div class={styles.searchContainer}>
-            <Search class={styles.searchIcon} />
+            <Search class={styles.searchIcon || ''} />
             <Input
               type="search"
               placeholder="Search recent activities..."
               value={searchQuery()}
-              onInput={e => setSearchQuery(e.target.value)}
-              class={styles.searchInput}
+              onInput={setSearchQuery}
+              class={styles.searchInput || ''}
             />
           </div>
 
           <div class={styles.filters}>
-            <select
+            <CustomDropdown
+              options={activityTypeOptions}
               value={selectedType()}
-              onChange={e => setSelectedType(e.target.value as any)}
-              class={styles.filterSelect}
-            >
-              <option value="all">All Activities</option>
-              <option value="view">👁️ Views</option>
-              <option value="download">⬇️ Downloads</option>
-              <option value="upload">⬆️ Uploads</option>
-              <option value="share">🔄 Shares</option>
-              <option value="favorite">❤️ Favorites</option>
-            </select>
-
-            <select
+              onChange={setSelectedType as (val: string) => void}
+              ariaLabel="Filter by activity type"
+            />
+            <CustomDropdown
+              options={timeFrameOptions}
               value={selectedTimeframe()}
-              onChange={e => setSelectedTimeframe(e.target.value as any)}
-              class={styles.filterSelect}
-            >
-              <option value="all">All Time</option>
-              <option value="today">📅 Today</option>
-              <option value="week">📆 This Week</option>
-              <option value="month">🗓️ This Month</option>
-            </select>
+              onChange={setSelectedTimeframe as (val: string) => void}
+              ariaLabel="Filter by timeframe"
+            />
           </div>
         </div>
       </div>
 
       <div class={styles.stats}>
         <div class={styles.statCard}>
-          <Eye class={styles.statIcon} />
+          <Eye class={styles.statIcon || ''} />
           <div>
             <h3>{activities().filter(a => a.type === 'view').length}</h3>
             <p>Documents Viewed</p>
           </div>
         </div>
         <div class={styles.statCard}>
-          <Download class={styles.statIcon} />
+          <Download class={styles.statIcon || ''} />
           <div>
             <h3>{activities().filter(a => a.type === 'download').length}</h3>
             <p>Downloads</p>
           </div>
         </div>
         <div class={styles.statCard}>
-          <FileText class={styles.statIcon} />
+          <Upload class={styles.statIcon || ''} />
           <div>
             <h3>{activities().filter(a => a.type === 'upload').length}</h3>
             <p>Uploads</p>
           </div>
         </div>
         <div class={styles.statCard}>
-          <Filter class={styles.statIcon} />
+          <Filter class={styles.statIcon || ''} />
           <div>
             <h3>{filteredActivities().length}</h3>
             <p>Filtered Results</p>
@@ -327,7 +391,7 @@ const RecentPage: Component = () => {
           when={filteredActivities().length > 0}
           fallback={
             <div class={styles.emptyState}>
-              <Clock class={styles.emptyIcon} />
+              <History class={styles.emptyIcon || ''} />
               <h3>No recent activities found</h3>
               <p>
                 {searchQuery() || selectedType() !== 'all' || selectedTimeframe() !== 'all'
@@ -345,13 +409,12 @@ const RecentPage: Component = () => {
               {activity => {
                 const IconComponent = getActivityIcon(activity.type);
                 return (
-                  <Card class={styles.activityCard}>
+                  <Card class={styles.activityCard || ''}>
                     <div class={styles.activityHeader}>
                       <div class={styles.activityType}>
-                        <IconComponent
-                          class={styles.activityIcon}
-                          style={{ color: getActivityColor(activity.type) }}
-                        />
+                        <div class={styles.activityIcon}>
+                          <IconComponent size={20} />
+                        </div>
                         <div class={styles.activityInfo}>
                           <span class={styles.activityTitle}>
                             {activity.type.charAt(0).toUpperCase() + activity.type.slice(1)}
@@ -365,21 +428,27 @@ const RecentPage: Component = () => {
                         class={styles.sensitivityBadge}
                         style={{
                           'background-color': getSensitivityColor(
-                            activity.document.culturalSensitivity
+                            activity.document.culturalMetadata.sensitivityLevel
                           ),
                         }}
                       >
-                        {activity.document.culturalSensitivity}
+                        {
+                          CulturalSensitivityLevel[
+                            activity.document.culturalMetadata.sensitivityLevel
+                          ]
+                        }
                       </div>
                     </div>
 
                     <div class={styles.documentInfo}>
                       <h3 class={styles.documentTitle}>{activity.document.title}</h3>
-                      <p class={styles.documentDescription}>{activity.document.description}</p>
+                      <p class={styles.documentDescription}>
+                        {activity.document.description ?? ''}
+                      </p>
 
                       <div class={styles.documentMeta}>
                         <span class={styles.culturalOrigin}>
-                          📍 {activity.document.culturalOrigin}
+                          📍 {activity.document.culturalMetadata.culturalOrigin}
                         </span>
                         <span class={styles.fileSize}>
                           {formatFileSize(activity.document.fileSize)}
@@ -395,23 +464,25 @@ const RecentPage: Component = () => {
                       </div>
 
                       <div class={styles.tags}>
-                        <For each={activity.document.tags.slice(0, 3)}>
+                        <For each={(activity.document.tags ?? []).slice(0, 3)}>
                           {tag => <span class={styles.tag}>#{tag}</span>}
                         </For>
-                        {activity.document.tags.length > 3 && (
-                          <span class={styles.tagMore}>+{activity.document.tags.length - 3}</span>
+                        {(activity.document.tags ?? []).length > 3 && (
+                          <span class={styles.tagMore}>
+                            +{(activity.document.tags ?? []).length - 3}
+                          </span>
                         )}
                       </div>
                     </div>
 
                     <div class={styles.activityActions}>
-                      <Button variant="primary" size="small">
+                      <Button variant="primary" size="sm">
                         Open Document
                       </Button>
-                      <Button variant="secondary" size="small">
+                      <Button variant="secondary" size="sm">
                         View Details
                       </Button>
-                      <Button variant="ghost" size="small">
+                      <Button variant="ghost" size="sm">
                         Remove from History
                       </Button>
                     </div>

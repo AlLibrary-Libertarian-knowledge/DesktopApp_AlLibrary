@@ -6,6 +6,8 @@ import { Star, Heart, BookOpen, Filter, Search, Grid, List } from 'lucide-solid'
 import type { Document } from '../../types/Document';
 import { CulturalSensitivityLevel } from '../../types/Cultural';
 import styles from './Favorites.module.css';
+import { CustomDropdown, DropdownOption } from './CustomDropdown';
+import { Globe, Users, Lock, Book } from 'lucide-solid';
 
 interface FavoriteItem {
   id: string;
@@ -100,12 +102,15 @@ const FavoritesPage: Component = () => {
     return favorites().filter(item => {
       const matchesSearch =
         item.title.toLowerCase().includes(searchQuery().toLowerCase()) ||
-        item.description.toLowerCase().includes(searchQuery().toLowerCase()) ||
+        (item.description ?? '').toLowerCase().includes(searchQuery().toLowerCase()) ||
         item.tags.some(tag => tag.toLowerCase().includes(searchQuery().toLowerCase()));
 
       const matchesType = selectedType() === 'all' || item.favoriteType === selectedType();
-      const matchesSensitivity =
-        selectedSensitivity() === 'all' || item.culturalSensitivity === selectedSensitivity();
+      let matchesSensitivity = true;
+      if (selectedSensitivity() !== 'all') {
+        const level = sensitivityStringToEnum(selectedSensitivity() as string);
+        matchesSensitivity = level !== null && item.culturalSensitivity === level;
+      }
 
       return matchesSearch && matchesType && matchesSensitivity;
     });
@@ -124,16 +129,18 @@ const FavoritesPage: Component = () => {
 
   const getSensitivityColor = (level: CulturalSensitivityLevel) => {
     switch (level) {
-      case 'public':
+      case CulturalSensitivityLevel.PUBLIC:
         return 'var(--color-success)';
-      case 'educational':
+      case CulturalSensitivityLevel.EDUCATIONAL:
         return 'var(--color-info)';
-      case 'community-restricted':
+      case CulturalSensitivityLevel.COMMUNITY:
         return 'var(--color-warning)';
-      case 'guardian-approval':
+      case CulturalSensitivityLevel.GUARDIAN:
         return 'var(--color-danger)';
-      case 'sacred-protected':
+      case CulturalSensitivityLevel.SACRED:
         return 'var(--color-sacred)';
+      default:
+        return 'var(--color-info)';
     }
   };
 
@@ -153,6 +160,39 @@ const FavoritesPage: Component = () => {
     });
   };
 
+  const typeOptions: DropdownOption[] = [
+    { value: 'all', label: 'All Types', icon: <Filter size={18} /> },
+    { value: 'star', label: 'Starred', icon: <Star size={18} color="#fbbf24" /> },
+    { value: 'bookmark', label: 'Bookmarked', icon: <BookOpen size={18} color="#6366f1" /> },
+    { value: 'love', label: 'Loved', icon: <Heart size={18} color="#ef4444" /> },
+  ];
+  const sensitivityOptions: DropdownOption[] = [
+    { value: 'all', label: 'All Sensitivity Levels', icon: <Globe size={18} /> },
+    { value: 'public', label: 'Public', icon: <Globe size={18} color="#22c55e" /> },
+    { value: 'educational', label: 'Educational', icon: <Book size={18} color="#06b6d4" /> },
+    { value: 'community', label: 'Community', icon: <Users size={18} color="#f59e0b" /> },
+    { value: 'guardian', label: 'Guardian', icon: <Lock size={18} color="#a78bfa" /> },
+    { value: 'sacred', label: 'Sacred', icon: <Heart size={18} color="#ef4444" /> },
+  ];
+
+  // Helper to map string to enum
+  const sensitivityStringToEnum = (val: string): CulturalSensitivityLevel | null => {
+    switch (val) {
+      case 'public':
+        return CulturalSensitivityLevel.PUBLIC;
+      case 'educational':
+        return CulturalSensitivityLevel.EDUCATIONAL;
+      case 'community':
+        return CulturalSensitivityLevel.COMMUNITY;
+      case 'guardian':
+        return CulturalSensitivityLevel.GUARDIAN;
+      case 'sacred':
+        return CulturalSensitivityLevel.SACRED;
+      default:
+        return null;
+    }
+  };
+
   return (
     <div class={styles.favoritesPage}>
       <div class={styles.header}>
@@ -166,53 +206,45 @@ const FavoritesPage: Component = () => {
 
         <div class={styles.controls}>
           <div class={styles.searchContainer}>
-            <Search class={styles.searchIcon} />
+            <Search class={styles.searchIcon || ''} />
             <Input
               type="search"
               placeholder="Search your favorites..."
               value={searchQuery()}
-              onInput={e => setSearchQuery(e.target.value)}
-              class={styles.searchInput}
+              onInput={setSearchQuery}
+              class={styles.searchInput || ''}
             />
           </div>
 
           <div class={styles.filters}>
-            <select
-              value={selectedType()}
-              onChange={e => setSelectedType(e.target.value as any)}
-              class={styles.filterSelect}
-            >
-              <option value="all">All Types</option>
-              <option value="star">⭐ Starred</option>
-              <option value="bookmark">📖 Bookmarked</option>
-              <option value="love">❤️ Loved</option>
-            </select>
-
-            <select
-              value={selectedSensitivity()}
-              onChange={e => setSelectedSensitivity(e.target.value as any)}
-              class={styles.filterSelect}
-            >
-              <option value="all">All Sensitivity Levels</option>
-              <option value="public">🌍 Public</option>
-              <option value="educational">📚 Educational</option>
-              <option value="community-restricted">🏘️ Community</option>
-              <option value="guardian-approval">👥 Guardian</option>
-              <option value="sacred-protected">🔒 Sacred</option>
-            </select>
-
+            <CustomDropdown
+              options={typeOptions}
+              value={String(selectedType())}
+              onChange={setSelectedType}
+              ariaLabel="Filter by type"
+              class={styles.filterSelect || ''}
+            />
+            <CustomDropdown
+              options={sensitivityOptions}
+              value={String(selectedSensitivity())}
+              onChange={v => setSelectedSensitivity(v as any)}
+              ariaLabel="Filter by sensitivity"
+              class={styles.filterSelect || ''}
+            />
             <div class={styles.viewToggle}>
               <Button
                 variant={viewMode() === 'grid' ? 'primary' : 'secondary'}
-                size="small"
+                size="sm"
                 onClick={() => setViewMode('grid')}
+                class={viewMode() === 'grid' ? styles.activeView || '' : ''}
               >
                 <Grid size={16} />
               </Button>
               <Button
                 variant={viewMode() === 'list' ? 'primary' : 'secondary'}
-                size="small"
+                size="sm"
                 onClick={() => setViewMode('list')}
+                class={viewMode() === 'list' ? styles.activeView || '' : ''}
               >
                 <List size={16} />
               </Button>
@@ -283,11 +315,11 @@ const FavoritesPage: Component = () => {
               {favorite => {
                 const IconComponent = getFavoriteIcon(favorite.favoriteType);
                 return (
-                  <Card class={styles.favoriteCard}>
-                    <div class={styles.cardHeader}>
-                      <div class={styles.favoriteType}>
+                  <Card class={styles.favoriteCard || ''}>
+                    <div class={styles.cardHeader || ''}>
+                      <div class={styles.favoriteType || ''}>
                         <IconComponent
-                          class={styles.favoriteIcon}
+                          class={styles.favoriteIcon || ''}
                           style={{
                             color:
                               favorite.favoriteType === 'love'
@@ -297,10 +329,12 @@ const FavoritesPage: Component = () => {
                                   : '#3498db',
                           }}
                         />
-                        <span class={styles.favoriteDate}>{formatDate(favorite.favoriteDate)}</span>
+                        <span class={styles.favoriteDate || ''}>
+                          {formatDate(favorite.favoriteDate)}
+                        </span>
                       </div>
                       <div
-                        class={styles.sensitivityBadge}
+                        class={styles.sensitivityBadge || ''}
                         style={{
                           'background-color': getSensitivityColor(favorite.culturalSensitivity),
                         }}
@@ -309,9 +343,9 @@ const FavoritesPage: Component = () => {
                       </div>
                     </div>
 
-                    <div class={styles.cardContent}>
-                      <h3 class={styles.documentTitle}>{favorite.title}</h3>
-                      <p class={styles.documentDescription}>{favorite.description}</p>
+                    <div class={styles.cardContent || ''}>
+                      <h3 class={styles.documentTitle || ''}>{favorite.title}</h3>
+                      <p class={styles.documentDescription || ''}>{favorite.description ?? ''}</p>
 
                       <div class={styles.documentMeta}>
                         <span class={styles.culturalOrigin}>📍 {favorite.culturalOrigin}</span>
