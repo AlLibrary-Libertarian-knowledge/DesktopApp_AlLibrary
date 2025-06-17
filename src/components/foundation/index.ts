@@ -5,3 +5,4 @@ export { Card } from './Card';
 export { Modal } from './Modal';
 export { Loading } from './Loading';
 export { Breadcrumb } from './Navigation';
+export { default as AppRouter } from './Router/AppRouter';

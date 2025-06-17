@@ -1,6 +1,6 @@
 import { Component, createSignal, onMount } from 'solid-js';
 import { Button, Card, Modal } from '../../components/foundation';
-import NetworkGraph from '../../components/network/NetworkGraph';
+import { NetworkGraph } from '../../components/composite';
 import { DownloadManager, StatusBar, SecurityPanel } from '../../components/domain/dashboard';
 import {
   Download,

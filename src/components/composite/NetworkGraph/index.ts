@@ -1,5 +1,6 @@
-// Main NetworkGraph component (to be refactored)
+// NetworkGraph Component - Complex network visualization
 export { default as NetworkGraph } from './NetworkGraph';
+export { default as NetworkGraphRefactored } from './NetworkGraphRefactored';
 
 // Types and interfaces
 export * from './types';

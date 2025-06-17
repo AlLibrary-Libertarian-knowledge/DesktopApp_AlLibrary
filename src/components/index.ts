@@ -7,6 +7,11 @@ export * from './domain';
 // Composite Components (Complex UI)
 export * from './composite';
 
-// Existing Components
-export { default as NetworkGraph } from './network/NetworkGraph';
-export { default as AppRouter } from './routing/AppRouter';
+// Layout Components
+export * from './layout';
+
+// Pages Components
+export * from './pages';
+
+// Cultural Components
+export * from './cultural';

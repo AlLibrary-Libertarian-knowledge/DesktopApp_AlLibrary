@@ -9,7 +9,7 @@ import type {
   ExpansionState,
 } from '../types';
 import { mockNetworkData } from '../data/mockNetworkData';
-import { debounce } from '../../../utils/performance';
+import { debounce } from '../../../../utils/performance';
 
 export function useNetworkState() {
   // Node and link data

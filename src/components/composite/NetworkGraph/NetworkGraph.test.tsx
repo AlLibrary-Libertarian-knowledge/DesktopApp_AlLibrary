@@ -1,7 +1,7 @@
 import { render, cleanup } from '@solidjs/testing-library';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import NetworkGraph from './NetworkGraph';
-import { mockContext, addEventListenerSpy, removeEventListenerSpy } from '../../test-setup';
+import { mockContext, addEventListenerSpy, removeEventListenerSpy } from '../../../test-setup';
 
 // Mock ResizeObserver
 class MockResizeObserver {

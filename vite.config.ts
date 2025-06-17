@@ -53,7 +53,7 @@ export default defineConfig(async () => ({
 
           // Performance-critical network components (separate for caching)
           'network-graph': [
-            './src/components/network/NetworkGraph.tsx',
+            './src/components/composite/NetworkGraph/NetworkGraph.tsx',
             './src/utils/performance.ts',
           ],
 

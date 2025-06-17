@@ -1,6 +1,6 @@
 import { Router, Route } from '@solidjs/router';
-import HomePage from '../../pages/Home';
-import DocumentManagement from '../../pages/DocumentManagement';
+import HomePage from '../../../pages/Home';
+import DocumentManagement from '../../../pages/DocumentManagement';
 
 const AppRouter = () => {
   return (

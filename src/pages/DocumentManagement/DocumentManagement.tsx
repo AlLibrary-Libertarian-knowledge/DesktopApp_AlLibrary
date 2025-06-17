@@ -1,6 +1,6 @@
 import { Component, createSignal, createResource, createMemo, Show, For } from 'solid-js';
 import { Button, Card, Modal } from '../../components/foundation';
-import { TopCard } from '../../components/composite';
+import { TopCard, DocumentManagementRightColumn } from '../../components/composite';
 import { DocumentStatus } from '../../components/domain';
 import {
   Upload,
@@ -761,724 +761,678 @@ const DocumentManagement: Component = () => {
   });
 
   return (
-    <div class={styles['document-management']}>
-      {/* Reusable Top Card Component */}
-      <TopCard
-        title="Document Management"
-        subtitle="Upload, organize, and manage your cultural heritage documents"
-        rightContent={
-          <DocumentStatus
-            stats={stats()}
-            {...(projectFolderPath() && { projectPath: projectFolderPath() })}
-          />
-        }
-        aria-label="Document Management Dashboard"
-      />
+    <div
+      class={styles['document-management']}
+      style={{ display: 'flex', flexDirection: 'row', gap: '2rem' }}
+    >
+      <div style={{ flex: 1, minWidth: 0 }}>
+        {/* Reusable Top Card Component */}
+        <TopCard
+          title="Document Management"
+          subtitle="Upload, organize, and manage your cultural heritage documents"
+          rightContent={
+            <div class={styles['right-content-glass'] || ''}>
+              <DocumentStatus
+                stats={stats()}
+                {...(projectFolderPath() && { projectPath: projectFolderPath() })}
+                class={styles['status-minimal'] || ''}
+              />
+            </div>
+          }
+          aria-label="Document Management Dashboard"
+        />
 
-      {/* Navigation Tabs */}
-      <div class={styles['document-tabs']}>
-        <button
-          class={`${styles.tab} ${activeTab() === 'library' ? styles.active : ''}`}
-          onClick={() => setActiveTab('library')}
-        >
-          <span class={styles['tab-text']}>
-            <BookOpen size={16} class="mr-2" />
-            Document Library
-          </span>
-        </button>
-        <button
-          class={`${styles.tab} ${activeTab() === 'upload' ? styles.active : ''}`}
-          onClick={() => setActiveTab('upload')}
-        >
-          <span class={styles['tab-text']}>
-            <Upload size={16} class="mr-2" />
-            Upload Documents
-          </span>
-        </button>
-      </div>
+        {/* Navigation Tabs */}
+        <div class={styles['document-tabs'] || ''}>
+          <button
+            class={`${styles.tab || ''} ${activeTab() === 'library' ? styles.active || '' : ''}`}
+            onClick={() => setActiveTab('library')}
+          >
+            <span class={styles['tab-text'] || ''}>
+              <BookOpen size={16} class="mr-2" />
+              Document Library
+            </span>
+          </button>
+          <button
+            class={`${styles.tab || ''} ${activeTab() === 'upload' ? styles.active || '' : ''}`}
+            onClick={() => setActiveTab('upload')}
+          >
+            <span class={styles['tab-text'] || ''}>
+              <Upload size={16} class="mr-2" />
+              Upload Documents
+            </span>
+          </button>
+        </div>
 
-      {/* Enhanced Toolbar for Library Tab */}
-      <Show when={activeTab() === 'library'}>
-        <div class={styles['enhanced-toolbar']}>
-          {/* Left side - Selection and batch actions */}
-          <div class={styles['toolbar-left']}>
-            <Show when={showBatchActions()}>
-              <div class={styles['batch-actions']}>
-                <span class={styles['selection-count']}>{selectedDocuments().size} selected</span>
-                <Button variant="secondary" size="sm" onClick={() => handleBatchAction('tag')}>
-                  <Tag size={14} class="mr-1" />
-                  Tag
-                </Button>
-                <Button variant="secondary" size="sm" onClick={() => handleBatchAction('export')}>
-                  <Download size={14} class="mr-1" />
-                  Export
-                </Button>
-                <Button variant="danger" size="sm" onClick={() => handleBatchAction('delete')}>
-                  <Trash2 size={14} class="mr-1" />
-                  Delete
-                </Button>
-                <Button variant="ghost" size="sm" onClick={clearSelection}>
-                  Clear
-                </Button>
-              </div>
-            </Show>
+        {/* Enhanced Toolbar for Library Tab */}
+        <Show when={activeTab() === 'library'}>
+          <div class={styles['enhanced-toolbar']}>
+            {/* Left side - Selection and batch actions */}
+            <div class={styles['toolbar-left']}>
+              <Show when={showBatchActions()}>
+                <div class={styles['batch-actions']}>
+                  <span class={styles['selection-count']}>{selectedDocuments().size} selected</span>
+                  <Button variant="secondary" size="sm" onClick={() => handleBatchAction('tag')}>
+                    <Tag size={14} class="mr-1" />
+                    Tag
+                  </Button>
+                  <Button variant="secondary" size="sm" onClick={() => handleBatchAction('export')}>
+                    <Download size={14} class="mr-1" />
+                    Export
+                  </Button>
+                  <Button variant="danger" size="sm" onClick={() => handleBatchAction('delete')}>
+                    <Trash2 size={14} class="mr-1" />
+                    Delete
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={clearSelection}>
+                    Clear
+                  </Button>
+                </div>
+              </Show>
 
-            <Show when={!showBatchActions()}>
-              <div class={styles['selection-actions']}>
-                <Button variant="ghost" size="sm" onClick={selectAllDocuments}>
-                  Select All
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={applySmartOrganization}
-                  disabled={!autoTaggingEnabled()}
-                >
-                  <Settings size={14} class="mr-1" />
-                  Smart Organize
-                </Button>
-              </div>
-            </Show>
-          </div>
-
-          {/* Right side - Sorting, filtering, and view options */}
-          <div class={styles['toolbar-right']}>
-            {/* Filter dropdown */}
-            <select
-              class={styles['filter-select']}
-              value={filterBy()}
-              onChange={e => setFilterBy(e.currentTarget.value as any)}
-            >
-              <option value="all">All Documents</option>
-              <option value="recent">Recent (7 days)</option>
-              <option value="large">Large Files (&gt;10MB)</option>
-              <option value="cultural">Cultural Content</option>
-              <option value="untagged">Untagged</option>
-            </select>
-
-            {/* Sort dropdown */}
-            <select
-              class={styles['sort-select']}
-              value={`${sortBy()}-${sortOrder()}`}
-              onChange={e => {
-                const [sort, order] = e.currentTarget.value.split('-');
-                setSortBy(sort as any);
-                setSortOrder(order as any);
-              }}
-            >
-              <option value="date-desc">Newest First</option>
-              <option value="date-asc">Oldest First</option>
-              <option value="title-asc">Title A-Z</option>
-              <option value="title-desc">Title Z-A</option>
-              <option value="size-desc">Largest First</option>
-              <option value="size-asc">Smallest First</option>
-              <option value="cultural-desc">Most Cultural</option>
-            </select>
-
-            {/* View mode toggle */}
-            <div class={styles['view-toggle']}>
-              <button
-                class={`${styles['view-btn']} ${viewMode() === 'grid' ? styles.active : ''}`}
-                onClick={() => setViewMode('grid')}
-                title="Grid View"
-              >
-                <Grid size={16} />
-              </button>
-              <button
-                class={`${styles['view-btn']} ${viewMode() === 'list' ? styles.active : ''}`}
-                onClick={() => setViewMode('list')}
-                title="List View"
-              >
-                <List size={16} />
-              </button>
+              <Show when={!showBatchActions()}>
+                <div class={styles['selection-actions']}>
+                  <Button variant="ghost" size="sm" onClick={selectAllDocuments}>
+                    Select All
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={applySmartOrganization}
+                    disabled={!autoTaggingEnabled()}
+                  >
+                    <Settings size={14} class="mr-1" />
+                    Smart Organize
+                  </Button>
+                </div>
+              </Show>
             </div>
 
-            {/* Analytics button */}
-            <Button variant="ghost" size="sm" onClick={() => setShowDocumentAnalytics(true)}>
-              <Settings size={14} class="mr-1" />
-              Analytics
-            </Button>
+            {/* Right side - Sorting, filtering, and view options */}
+            <div class={styles['toolbar-right']}>
+              {/* Filter dropdown */}
+              <select
+                class={styles['filter-select']}
+                value={filterBy()}
+                onChange={e => setFilterBy(e.currentTarget.value as any)}
+              >
+                <option value="all">All Documents</option>
+                <option value="recent">Recent (7 days)</option>
+                <option value="large">Large Files (&gt;10MB)</option>
+                <option value="cultural">Cultural Content</option>
+                <option value="untagged">Untagged</option>
+              </select>
+
+              {/* Sort dropdown */}
+              <select
+                class={styles['sort-select']}
+                value={`${sortBy()}-${sortOrder()}`}
+                onChange={e => {
+                  const [sort, order] = e.currentTarget.value.split('-');
+                  setSortBy(sort as any);
+                  setSortOrder(order as any);
+                }}
+              >
+                <option value="date-desc">Newest First</option>
+                <option value="date-asc">Oldest First</option>
+                <option value="title-asc">Title A-Z</option>
+                <option value="title-desc">Title Z-A</option>
+                <option value="size-desc">Largest First</option>
+                <option value="size-asc">Smallest First</option>
+                <option value="cultural-desc">Most Cultural</option>
+              </select>
+
+              {/* View mode toggle */}
+              <div class={styles['view-toggle']}>
+                <button
+                  class={`${styles['view-btn']} ${viewMode() === 'grid' ? styles.active : ''}`}
+                  onClick={() => setViewMode('grid')}
+                  title="Grid View"
+                >
+                  <Grid size={16} />
+                </button>
+                <button
+                  class={`${styles['view-btn']} ${viewMode() === 'list' ? styles.active : ''}`}
+                  onClick={() => setViewMode('list')}
+                  title="List View"
+                >
+                  <List size={16} />
+                </button>
+              </div>
+
+              {/* Analytics button */}
+              <Button variant="ghost" size="sm" onClick={() => setShowDocumentAnalytics(true)}>
+                <Settings size={14} class="mr-1" />
+                Analytics
+              </Button>
+            </div>
           </div>
-        </div>
-      </Show>
+        </Show>
 
-      <div class={styles['document-content']}>
-        {/* Library Tab */}
-        <Show when={activeTab() === 'library'}>
-          <section class={styles['library-section']}>
-            {/* Enhanced Search and Controls */}
-            <div class={styles['library-controls']}>
-              {/* Futuristic Search Interface */}
-              <div class={styles['search-interface']}>
-                {/* Enhanced Search Container */}
-                <div class={styles['search-container']}>
-                  <div class={styles['search-input-wrapper']}>
-                    <div class={styles['search-icon-container']}>
-                      <Search size={20} class={styles['search-icon']} />
-                    </div>
-                    <input
-                      type="text"
-                      placeholder="🔍 Discover knowledge across cultures and time..."
-                      value={searchQuery()}
-                      onInput={e => handleSearchInput(e.currentTarget.value)}
-                      class={styles['search-input']}
-                    />
-                    <div class={styles['search-actions']}>
-                      <Show when={isSearching()}>
-                        <div class={styles['search-loading']}>
-                          <div class={styles['loading-pulse']}></div>
-                        </div>
-                      </Show>
-                      <Show when={searchQuery()}>
-                        <button
-                          onClick={() => {
-                            setSearchQuery('');
-                            setSearchResults([]);
-                            setSearchError('');
-                            setSearchSuggestions([]);
-                          }}
-                          class={styles['clear-button']}
-                          title="Clear search"
-                        >
-                          <div class={styles['clear-icon']}></div>
-                        </button>
-                      </Show>
-                    </div>
-                  </div>
-
-                  {/* Search Enhancement Bar */}
-                  <div class={styles['search-enhancement-bar']}>
-                    <div class={styles['search-stats']}>
-                      <span class={styles['search-stat']}>
-                        <Clock size={12} />
-                        {searchHistory()?.length || 0} recent
-                      </span>
-                      <span class={styles['search-stat']}>
-                        <Shield size={12} />
-                        Verified sources
-                      </span>
-                      <span class={styles['search-stat']}>
-                        <Globe size={12} />
-                        Cultural context
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Enhanced Control Bar - Search Mode + View Mode */}
-                  <div class={styles['enhanced-control-bar']}>
-                    {/* Search Mode Toggle */}
-                    <div class={styles['control-section']}>
-                      <div class={styles['mode-toggle']}>
-                        <button
-                          class={`${styles['mode-button']} ${searchMode() === 'basic' ? styles['active'] : ''}`}
-                          onClick={() => setSearchMode('basic')}
-                        >
-                          <span class={styles['mode-text']}>Basic</span>
-                        </button>
-                        <button
-                          class={`${styles['mode-button']} ${searchMode() === 'advanced' ? styles['active'] : ''}`}
-                          onClick={() => setSearchMode('advanced')}
-                        >
-                          <span class={styles['mode-text']}>Advanced</span>
-                        </button>
-                        <div
-                          class={styles['mode-indicator']}
-                          style={{
-                            transform:
-                              searchMode() === 'advanced' ? 'translateX(100%)' : 'translateX(0%)',
-                          }}
-                        ></div>
+        <div class={styles['document-content'] || ''}>
+          {/* Library Tab */}
+          <Show when={activeTab() === 'library'}>
+            <section class={styles['library-section'] || ''}>
+              {/* Enhanced Search and Controls */}
+              <div class={styles['library-controls']}>
+                {/* Futuristic Search Interface */}
+                <div class={styles['search-interface']}>
+                  {/* Enhanced Search Container */}
+                  <div class={styles['search-container']}>
+                    <div class={styles['search-input-wrapper']}>
+                      <div class={styles['search-icon-container']}>
+                        <Search size={20} class={styles['search-icon']} />
                       </div>
-                    </div>
-
-                    {/* View Mode Toggle */}
-                    <div class={styles['control-section']}>
-                      <div class={styles['view-toggle']}>
-                        <button
-                          class={`${styles['view-button']} ${viewMode() === 'grid' ? styles['active'] : ''}`}
-                          onClick={() => setViewMode('grid')}
-                          title="Grid view"
-                        >
-                          <Grid size={16} />
-                          <span class={styles['view-text']}>Grid</span>
-                        </button>
-                        <button
-                          class={`${styles['view-button']} ${viewMode() === 'list' ? styles['active'] : ''}`}
-                          onClick={() => setViewMode('list')}
-                          title="List view"
-                        >
-                          <List size={16} />
-                          <span class={styles['view-text']}>List</span>
-                        </button>
-                        <div
-                          class={styles['view-indicator']}
-                          style={{
-                            transform:
-                              viewMode() === 'list' ? 'translateX(100%)' : 'translateX(0%)',
-                          }}
-                        ></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Search Suggestions */}
-                <Show when={searchSuggestions().length > 0}>
-                  <div class={styles['suggestions-container']}>
-                    <div class={styles['suggestions-list']}>
-                      <For each={searchSuggestions()}>
-                        {(suggestion, index) => (
+                      <input
+                        type="text"
+                        placeholder="🔍 Discover knowledge across cultures and time..."
+                        value={searchQuery()}
+                        onInput={e => handleSearchInput(e.currentTarget.value)}
+                        class={styles['search-input']}
+                      />
+                      <div class={styles['search-actions']}>
+                        <Show when={isSearching()}>
+                          <div class={styles['search-loading']}>
+                            <div class={styles['loading-pulse']}></div>
+                          </div>
+                        </Show>
+                        <Show when={searchQuery()}>
                           <button
-                            class={styles['suggestion-item']}
                             onClick={() => {
-                              setSearchQuery(suggestion);
-                              if (searchMode() === 'advanced') {
-                                performAdvancedSearch(suggestion);
-                              }
+                              setSearchQuery('');
+                              setSearchResults([]);
+                              setSearchError('');
                               setSearchSuggestions([]);
                             }}
-                            style={{ 'animation-delay': `${index() * 50}ms` }}
+                            class={styles['clear-button']}
+                            title="Clear search"
                           >
-                            <div class={styles['suggestion-icon']}>
-                              <Search size={12} />
-                            </div>
-                            <span class={styles['suggestion-text']}>{suggestion}</span>
+                            <div class={styles['clear-icon']}></div>
                           </button>
-                        )}
-                      </For>
-                    </div>
-                  </div>
-                </Show>
-
-                {/* Advanced Search Controls */}
-                <Show when={searchMode() === 'advanced'}>
-                  <div class={styles['advanced-controls']}>
-                    <div class={styles['control-group']}>
-                      <button
-                        class={`${styles['control-button']} ${styles['cultural-search']}`}
-                        onClick={() => performCulturalSearch(searchQuery())}
-                        disabled={!searchQuery().trim()}
-                      >
-                        <Globe size={16} />
-                        <span>Cultural Context</span>
-                        <div class={styles['button-glow']}></div>
-                      </button>
-
-                      <button
-                        class={`${styles['control-button']} ${showAdvancedSearch() ? styles['active'] : ''}`}
-                        onClick={() => setShowAdvancedSearch(!showAdvancedSearch())}
-                      >
-                        <Filter size={16} />
-                        <span>Filters</span>
-                        <div class={styles['button-glow']}></div>
-                      </button>
-
-                      <Show when={searchHistory()?.length > 0}>
-                        <button
-                          class={styles['control-button']}
-                          onClick={() => {
-                            console.log('Search history:', searchHistory());
-                          }}
-                        >
-                          <History size={16} />
-                          <span>History</span>
-                          <div class={styles['button-glow']}></div>
-                        </button>
-                      </Show>
-                    </div>
-                  </div>
-                </Show>
-
-                {/* Enhanced Project Status Bar */}
-                <Show when={projectInfo()}>
-                  <div class={styles['status-bar']}>
-                    <button
-                      class={styles['status-item-button']}
-                      onClick={handleFolderSelect}
-                      title="Click to change project folder"
-                    >
-                      <div class={styles['status-icon']}>
-                        <Folder size={14} />
+                        </Show>
                       </div>
-                      <span class={styles['status-text']}>
-                        {projectInfo()?.projectPath
-                          ? projectInfo()!
-                              .projectPath.split(/[\/\\]/)
-                              .slice(-2)
-                              .join('/')
-                          : 'tales/AlLibrary'}
-                      </span>
-                      <div class={styles['folder-change-hint']}>
-                        <Settings size={10} />
+                    </div>
+
+                    {/* Search Enhancement Bar */}
+                    <div class={styles['search-enhancement-bar']}>
+                      <div class={styles['search-stats']}>
+                        <span class={styles['search-stat']}>
+                          <Clock size={12} />
+                          {searchHistory()?.length || 0} recent
+                        </span>
+                        <span class={styles['search-stat']}>
+                          <Shield size={12} />
+                          Verified sources
+                        </span>
+                        <span class={styles['search-stat']}>
+                          <Globe size={12} />
+                          Cultural context
+                        </span>
                       </div>
-                    </button>
-                    <Show when={indexInfo()}>
-                      <div class={styles['status-divider']}></div>
-                      <div class={styles['status-item']}>
-                        <div class={styles['status-indicator']}>
+                    </div>
+
+                    {/* Enhanced Control Bar - Search Mode + View Mode */}
+                    <div class={styles['enhanced-control-bar']}>
+                      {/* Search Mode Toggle */}
+                      <div class={styles['control-section']}>
+                        <div class={styles['mode-toggle']}>
+                          <button
+                            class={`${styles['mode-button']} ${searchMode() === 'basic' ? styles['active'] : ''}`}
+                            onClick={() => setSearchMode('basic')}
+                          >
+                            <span class={styles['mode-text']}>Basic</span>
+                          </button>
+                          <button
+                            class={`${styles['mode-button']} ${searchMode() === 'advanced' ? styles['active'] : ''}`}
+                            onClick={() => setSearchMode('advanced')}
+                          >
+                            <span class={styles['mode-text']}>Advanced</span>
+                          </button>
                           <div
-                            class={`${styles['indicator-dot']} ${indexInfo()?.indexHealth === 'healthy' ? styles['healthy'] : styles['warning']}`}
+                            class={styles['mode-indicator']}
+                            style={{
+                              transform:
+                                searchMode() === 'advanced' ? 'translateX(100%)' : 'translateX(0%)',
+                            }}
                           ></div>
                         </div>
-                        <span class={styles['status-text']}>
-                          {indexInfo()?.documentCount || 0} documents indexed
-                        </span>
-                        {indexInfo()?.indexHealth !== 'healthy' && (
-                          <button
-                            class={styles['rebuild-button']}
-                            onClick={rebuildIndex}
-                            title="Rebuild search index"
-                          >
-                            <RefreshCw size={12} />
-                          </button>
-                        )}
                       </div>
-                    </Show>
+
+                      {/* View Mode Toggle */}
+                      <div class={styles['control-section']}>
+                        <div class={styles['view-toggle']}>
+                          <button
+                            class={`${styles['view-button']} ${viewMode() === 'grid' ? styles['active'] : ''}`}
+                            onClick={() => setViewMode('grid')}
+                            title="Grid view"
+                          >
+                            <Grid size={16} />
+                            <span class={styles['view-text']}>Grid</span>
+                          </button>
+                          <button
+                            class={`${styles['view-button']} ${viewMode() === 'list' ? styles['active'] : ''}`}
+                            onClick={() => setViewMode('list')}
+                            title="List view"
+                          >
+                            <List size={16} />
+                            <span class={styles['view-text']}>List</span>
+                          </button>
+                          <div
+                            class={styles['view-indicator']}
+                            style={{
+                              transform:
+                                viewMode() === 'list' ? 'translateX(100%)' : 'translateX(0%)',
+                            }}
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Search Suggestions */}
+                  <Show when={searchSuggestions().length > 0}>
+                    <div class={styles['suggestions-container']}>
+                      <div class={styles['suggestions-list']}>
+                        <For each={searchSuggestions()}>
+                          {(suggestion, index) => (
+                            <button
+                              class={styles['suggestion-item']}
+                              onClick={() => {
+                                setSearchQuery(suggestion);
+                                if (searchMode() === 'advanced') {
+                                  performAdvancedSearch(suggestion);
+                                }
+                                setSearchSuggestions([]);
+                              }}
+                              style={{ 'animation-delay': `${index() * 50}ms` }}
+                            >
+                              <div class={styles['suggestion-icon']}>
+                                <Search size={12} />
+                              </div>
+                              <span class={styles['suggestion-text']}>{suggestion}</span>
+                            </button>
+                          )}
+                        </For>
+                      </div>
+                    </div>
+                  </Show>
+
+                  {/* Advanced Search Controls */}
+                  <Show when={searchMode() === 'advanced'}>
+                    <div class={styles['advanced-controls']}>
+                      <div class={styles['control-group']}>
+                        <button
+                          class={`${styles['control-button']} ${styles['cultural-search']}`}
+                          onClick={() => performCulturalSearch(searchQuery())}
+                          disabled={!searchQuery().trim()}
+                        >
+                          <Globe size={16} />
+                          <span>Cultural Context</span>
+                          <div class={styles['button-glow']}></div>
+                        </button>
+
+                        <button
+                          class={`${styles['control-button']} ${showAdvancedSearch() ? styles['active'] : ''}`}
+                          onClick={() => setShowAdvancedSearch(!showAdvancedSearch())}
+                        >
+                          <Filter size={16} />
+                          <span>Filters</span>
+                          <div class={styles['button-glow']}></div>
+                        </button>
+
+                        <Show when={searchHistory()?.length > 0}>
+                          <button
+                            class={styles['control-button']}
+                            onClick={() => {
+                              console.log('Search history:', searchHistory());
+                            }}
+                          >
+                            <History size={16} />
+                            <span>History</span>
+                            <div class={styles['button-glow']}></div>
+                          </button>
+                        </Show>
+                      </div>
+                    </div>
+                  </Show>
+
+                  {/* Enhanced Project Status Bar */}
+                  <Show when={projectInfo()}>
+                    <div class={styles['status-bar']}>
+                      <button
+                        class={styles['status-item-button']}
+                        onClick={handleFolderSelect}
+                        title="Click to change project folder"
+                      >
+                        <div class={styles['status-icon']}>
+                          <Folder size={14} />
+                        </div>
+                        <span class={styles['status-text']}>
+                          {projectInfo()?.projectPath
+                            ? projectInfo()!
+                                .projectPath.split(/[\/\\]/)
+                                .slice(-2)
+                                .join('/')
+                            : 'tales/AlLibrary'}
+                        </span>
+                        <div class={styles['folder-change-hint']}>
+                          <Settings size={10} />
+                        </div>
+                      </button>
+                      <Show when={indexInfo()}>
+                        <div class={styles['status-divider']}></div>
+                        <div class={styles['status-item']}>
+                          <div class={styles['status-indicator']}>
+                            <div
+                              class={`${styles['indicator-dot']} ${indexInfo()?.indexHealth === 'healthy' ? styles['healthy'] : styles['warning']}`}
+                            ></div>
+                          </div>
+                          <span class={styles['status-text']}>
+                            {indexInfo()?.documentCount || 0} documents indexed
+                          </span>
+                          {indexInfo()?.indexHealth !== 'healthy' && (
+                            <button
+                              class={styles['rebuild-button']}
+                              onClick={rebuildIndex}
+                              title="Rebuild search index"
+                            >
+                              <RefreshCw size={12} />
+                            </button>
+                          )}
+                        </div>
+                      </Show>
+                    </div>
+                  </Show>
+                </div>
+              </div>
+
+              {/* Advanced Search Filters Panel */}
+              <Show when={showAdvancedSearch()}>
+                <div class={styles['advanced-filters-panel']}>
+                  <div class={styles['filters-header']}>
+                    <h4>Advanced Search Filters</h4>
+                    <Button variant="ghost" size="sm" onClick={() => setShowAdvancedSearch(false)}>
+                      ✕
+                    </Button>
+                  </div>
+                  <div class={styles['filters-content']}>
+                    <div class={styles['filter-group']}>
+                      <label>Content Types:</label>
+                      <div class={styles['filter-options']}>
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={searchFilters().contentTypes.includes('traditional_knowledge')}
+                            onChange={e => {
+                              const filters = searchFilters();
+                              if (e.currentTarget.checked) {
+                                setSearchFilters({
+                                  ...filters,
+                                  contentTypes: [...filters.contentTypes, 'traditional_knowledge'],
+                                });
+                              } else {
+                                setSearchFilters({
+                                  ...filters,
+                                  contentTypes: filters.contentTypes.filter(
+                                    t => t !== 'traditional_knowledge'
+                                  ),
+                                });
+                              }
+                            }}
+                          />
+                          Traditional Knowledge
+                        </label>
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={searchFilters().contentTypes.includes('academic')}
+                            onChange={e => {
+                              const filters = searchFilters();
+                              if (e.currentTarget.checked) {
+                                setSearchFilters({
+                                  ...filters,
+                                  contentTypes: [...filters.contentTypes, 'academic'],
+                                });
+                              } else {
+                                setSearchFilters({
+                                  ...filters,
+                                  contentTypes: filters.contentTypes.filter(t => t !== 'academic'),
+                                });
+                              }
+                            }}
+                          />
+                          Academic
+                        </label>
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={searchFilters().contentTypes.includes('cultural')}
+                            onChange={e => {
+                              const filters = searchFilters();
+                              if (e.currentTarget.checked) {
+                                setSearchFilters({
+                                  ...filters,
+                                  contentTypes: [...filters.contentTypes, 'cultural'],
+                                });
+                              } else {
+                                setSearchFilters({
+                                  ...filters,
+                                  contentTypes: filters.contentTypes.filter(t => t !== 'cultural'),
+                                });
+                              }
+                            }}
+                          />
+                          Cultural
+                        </label>
+                      </div>
+                    </div>
+                    <div class={styles['filter-group']}>
+                      <label>Cultural Sensitivity Level:</label>
+                      <div class={styles['filter-options']}>
+                        <For each={[1, 2, 3, 4, 5]}>
+                          {level => (
+                            <label>
+                              <input
+                                type="checkbox"
+                                checked={searchFilters().sensitivityLevels.includes(level)}
+                                onChange={e => {
+                                  const filters = searchFilters();
+                                  if (e.currentTarget.checked) {
+                                    setSearchFilters({
+                                      ...filters,
+                                      sensitivityLevels: [...filters.sensitivityLevels, level],
+                                    });
+                                  } else {
+                                    setSearchFilters({
+                                      ...filters,
+                                      sensitivityLevels: filters.sensitivityLevels.filter(
+                                        l => l !== level
+                                      ),
+                                    });
+                                  }
+                                }}
+                              />
+                              {getCulturalSensitivityLabel(level)}
+                            </label>
+                          )}
+                        </For>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Show>
+
+              {/* Search Error Display */}
+              <Show when={searchError()}>
+                <div class={styles['search-error']}>
+                  <AlertCircle size={24} />
+                  <p>{searchError()}</p>
+                </div>
+              </Show>
+
+              {/* Document Grid/List */}
+              <div class={`${styles['documents-container']} ${styles[viewMode()]}`}>
+                <Show when={documents.loading}>
+                  <div class={styles['loading-state']}>
+                    <div class={styles['loading-spinner']}></div>
+                    <p>Loading documents...</p>
                   </div>
                 </Show>
-              </div>
-            </div>
 
-            {/* Advanced Search Filters Panel */}
-            <Show when={showAdvancedSearch()}>
-              <div class={styles['advanced-filters-panel']}>
-                <div class={styles['filters-header']}>
-                  <h4>Advanced Search Filters</h4>
-                  <Button variant="ghost" size="sm" onClick={() => setShowAdvancedSearch(false)}>
-                    ✕
-                  </Button>
-                </div>
-                <div class={styles['filters-content']}>
-                  <div class={styles['filter-group']}>
-                    <label>Content Types:</label>
-                    <div class={styles['filter-options']}>
-                      <label>
-                        <input
-                          type="checkbox"
-                          checked={searchFilters().contentTypes.includes('traditional_knowledge')}
-                          onChange={e => {
-                            const filters = searchFilters();
-                            if (e.currentTarget.checked) {
-                              setSearchFilters({
-                                ...filters,
-                                contentTypes: [...filters.contentTypes, 'traditional_knowledge'],
-                              });
-                            } else {
-                              setSearchFilters({
-                                ...filters,
-                                contentTypes: filters.contentTypes.filter(
-                                  t => t !== 'traditional_knowledge'
-                                ),
-                              });
-                            }
-                          }}
-                        />
-                        Traditional Knowledge
-                      </label>
-                      <label>
-                        <input
-                          type="checkbox"
-                          checked={searchFilters().contentTypes.includes('academic')}
-                          onChange={e => {
-                            const filters = searchFilters();
-                            if (e.currentTarget.checked) {
-                              setSearchFilters({
-                                ...filters,
-                                contentTypes: [...filters.contentTypes, 'academic'],
-                              });
-                            } else {
-                              setSearchFilters({
-                                ...filters,
-                                contentTypes: filters.contentTypes.filter(t => t !== 'academic'),
-                              });
-                            }
-                          }}
-                        />
-                        Academic
-                      </label>
-                      <label>
-                        <input
-                          type="checkbox"
-                          checked={searchFilters().contentTypes.includes('cultural')}
-                          onChange={e => {
-                            const filters = searchFilters();
-                            if (e.currentTarget.checked) {
-                              setSearchFilters({
-                                ...filters,
-                                contentTypes: [...filters.contentTypes, 'cultural'],
-                              });
-                            } else {
-                              setSearchFilters({
-                                ...filters,
-                                contentTypes: filters.contentTypes.filter(t => t !== 'cultural'),
-                              });
-                            }
-                          }}
-                        />
-                        Cultural
-                      </label>
-                    </div>
+                <Show when={!documents.loading && displayDocuments().length === 0}>
+                  <div class={styles['empty-state']}>
+                    <FileText size={48} class={styles['empty-icon'] || ''} />
+                    <h3>No documents found</h3>
+                    <p>
+                      {searchQuery()
+                        ? 'Try adjusting your search terms or clear the search to see all documents.'
+                        : 'Upload your first document to get started.'}
+                    </p>
+                    <Button
+                      variant="futuristic"
+                      color="purple"
+                      onClick={() => setActiveTab('upload')}
+                    >
+                      <Upload size={16} class="mr-2" />
+                      Upload Document
+                    </Button>
                   </div>
-                  <div class={styles['filter-group']}>
-                    <label>Cultural Sensitivity Level:</label>
-                    <div class={styles['filter-options']}>
-                      <For each={[1, 2, 3, 4, 5]}>
-                        {level => (
-                          <label>
-                            <input
-                              type="checkbox"
-                              checked={searchFilters().sensitivityLevels.includes(level)}
-                              onChange={e => {
-                                const filters = searchFilters();
-                                if (e.currentTarget.checked) {
-                                  setSearchFilters({
-                                    ...filters,
-                                    sensitivityLevels: [...filters.sensitivityLevels, level],
-                                  });
-                                } else {
-                                  setSearchFilters({
-                                    ...filters,
-                                    sensitivityLevels: filters.sensitivityLevels.filter(
-                                      l => l !== level
-                                    ),
-                                  });
-                                }
-                              }}
-                            />
-                            {getCulturalSensitivityLabel(level)}
-                          </label>
-                        )}
-                      </For>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Show>
+                </Show>
 
-            {/* Search Error Display */}
-            <Show when={searchError()}>
-              <div class={styles['search-error']}>
-                <AlertCircle size={24} />
-                <p>{searchError()}</p>
-              </div>
-            </Show>
+                <Show when={!documents.loading && sortedAndFilteredDocuments().length > 0}>
+                  <div class={styles['documents-grid']}>
+                    <For each={sortedAndFilteredDocuments()}>
+                      {document => (
+                        <Card
+                          class={`${styles['document-card'] || 'document-card'} ${selectedDocuments().has(document.id) ? styles.selected || 'selected' : ''}`}
+                          variant="elevated"
+                        >
+                          <div class={styles['document-header']}>
+                            {/* Selection checkbox */}
+                            <div class={styles['document-selection']}>
+                              <input
+                                type="checkbox"
+                                checked={selectedDocuments().has(document.id)}
+                                onChange={() => toggleDocumentSelection(document.id)}
+                                class={styles['selection-checkbox'] || 'selection-checkbox'}
+                              />
+                            </div>
 
-            {/* Document Grid/List */}
-            <div class={`${styles['documents-container']} ${styles[viewMode()]}`}>
-              <Show when={documents.loading}>
-                <div class={styles['loading-state']}>
-                  <div class={styles['loading-spinner']}></div>
-                  <p>Loading documents...</p>
-                </div>
-              </Show>
-
-              <Show when={!documents.loading && displayDocuments().length === 0}>
-                <div class={styles['empty-state']}>
-                  <FileText size={48} class={styles['empty-icon'] || ''} />
-                  <h3>No documents found</h3>
-                  <p>
-                    {searchQuery()
-                      ? 'Try adjusting your search terms or clear the search to see all documents.'
-                      : 'Upload your first document to get started.'}
-                  </p>
-                  <Button
-                    variant="futuristic"
-                    color="purple"
-                    onClick={() => setActiveTab('upload')}
-                  >
-                    <Upload size={16} class="mr-2" />
-                    Upload Document
-                  </Button>
-                </div>
-              </Show>
-
-              <Show when={!documents.loading && sortedAndFilteredDocuments().length > 0}>
-                <div class={styles['documents-grid']}>
-                  <For each={sortedAndFilteredDocuments()}>
-                    {document => (
-                      <Card
-                        class={`${styles['document-card'] || 'document-card'} ${selectedDocuments().has(document.id) ? styles.selected || 'selected' : ''}`}
-                        variant="elevated"
-                      >
-                        <div class={styles['document-header']}>
-                          {/* Selection checkbox */}
-                          <div class={styles['document-selection']}>
-                            <input
-                              type="checkbox"
-                              checked={selectedDocuments().has(document.id)}
-                              onChange={() => toggleDocumentSelection(document.id)}
-                              class={styles['selection-checkbox'] || 'selection-checkbox'}
-                            />
-                          </div>
-
-                          <div class={styles['document-icon']}>
-                            {document.mimeType === 'application/pdf' ? (
-                              <FileText size={24} />
-                            ) : (
-                              <BookOpen size={24} />
-                            )}
-                          </div>
-                          <div class={styles['document-actions']}>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDocumentSelect(document)}
-                              title="Preview Document"
-                            >
-                              <Eye size={16} />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDocumentAction('edit', document)}
-                              title="Edit Metadata"
-                            >
-                              <Edit size={16} />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDocumentAction('analyze', document)}
-                              title="Document Analytics"
-                            >
-                              <Settings size={16} />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDocumentAction('share', document)}
-                              title="Share Document"
-                            >
-                              <Share size={16} />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDocumentAction('delete', document)}
-                              class={styles['delete-button'] || 'delete-button'}
-                              title="Delete Document"
-                            >
-                              <Trash2 size={16} />
-                            </Button>
-                          </div>
-                        </div>
-
-                        <div class={styles['document-content']}>
-                          <h3 class={styles['document-title']}>{document.title}</h3>
-                          <p class={styles['document-description']}>{document.description}</p>
-
-                          <div class={styles['document-meta']}>
-                            <span class={styles['meta-item']}>
-                              <HardDrive size={14} />
-                              {formatFileSize(document.fileSize)}
-                            </span>
-                            <span class={styles['meta-item']}>
-                              <Calendar size={14} />
-                              {document.createdAt.toLocaleDateString()}
-                            </span>
-                            <span class={styles['meta-item']}>
-                              <Shield size={14} />
-                              {document.securityValidation.passed ? 'validated' : 'pending'}
-                            </span>
-                          </div>
-
-                          {/* Cultural Context Display (EDUCATIONAL ONLY) */}
-                          <div class={styles['cultural-context']}>
-                            <div
-                              class={`${styles['sensitivity-badge']} ${styles[getCulturalSensitivityColor(document.culturalMetadata.sensitivityLevel)]}`}
-                            >
-                              <Globe size={12} />
-                              {getCulturalSensitivityLabel(
-                                document.culturalMetadata.sensitivityLevel
+                            <div class={styles['document-icon']}>
+                              {document.mimeType === 'application/pdf' ? (
+                                <FileText size={24} />
+                              ) : (
+                                <BookOpen size={24} />
                               )}
                             </div>
-                            <Show when={document.culturalMetadata.culturalOrigin}>
-                              <span class={styles['cultural-origin']}>
-                                Origin: {document.culturalMetadata.culturalOrigin}
+                            <div class={styles['document-actions']}>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDocumentSelect(document)}
+                                title="Preview Document"
+                              >
+                                <Eye size={16} />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDocumentAction('edit', document)}
+                                title="Edit Metadata"
+                              >
+                                <Edit size={16} />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDocumentAction('analyze', document)}
+                                title="Document Analytics"
+                              >
+                                <Settings size={16} />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDocumentAction('share', document)}
+                                title="Share Document"
+                              >
+                                <Share size={16} />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDocumentAction('delete', document)}
+                                class={styles['delete-button'] || 'delete-button'}
+                                title="Delete Document"
+                              >
+                                <Trash2 size={16} />
+                              </Button>
+                            </div>
+                          </div>
+
+                          <div class={styles['document-content']}>
+                            <h3 class={styles['document-title']}>{document.title}</h3>
+                            <p class={styles['document-description']}>{document.description}</p>
+
+                            <div class={styles['document-meta']}>
+                              <span class={styles['meta-item']}>
+                                <HardDrive size={14} />
+                                {formatFileSize(document.fileSize)}
                               </span>
-                            </Show>
-                          </div>
+                              <span class={styles['meta-item']}>
+                                <Calendar size={14} />
+                                {document.createdAt.toLocaleDateString()}
+                              </span>
+                              <span class={styles['meta-item']}>
+                                <Shield size={14} />
+                                {document.securityValidation.passed ? 'validated' : 'pending'}
+                              </span>
+                            </div>
 
-                          <div class={styles['document-tags']}>
-                            <For each={document.tags}>
-                              {tag => (
-                                <span class={styles['tag']}>
-                                  <Tag size={10} />
-                                  {tag}
+                            {/* Cultural Context Display (EDUCATIONAL ONLY) */}
+                            <div class={styles['cultural-context']}>
+                              <div
+                                class={`${styles['sensitivity-badge']} ${styles[getCulturalSensitivityColor(document.culturalMetadata.sensitivityLevel)]}`}
+                              >
+                                <Globe size={12} />
+                                {getCulturalSensitivityLabel(
+                                  document.culturalMetadata.sensitivityLevel
+                                )}
+                              </div>
+                              <Show when={document.culturalMetadata.culturalOrigin}>
+                                <span class={styles['cultural-origin']}>
+                                  Origin: {document.culturalMetadata.culturalOrigin}
                                 </span>
-                              )}
-                            </For>
+                              </Show>
+                            </div>
+
+                            <div class={styles['document-tags']}>
+                              <For each={document.tags}>
+                                {tag => (
+                                  <span class={styles['tag']}>
+                                    <Tag size={10} />
+                                    {tag}
+                                  </span>
+                                )}
+                              </For>
+                            </div>
                           </div>
-                        </div>
-                      </Card>
-                    )}
-                  </For>
-                </div>
-              </Show>
-            </div>
-          </section>
-        </Show>
-
-        {/* Upload Tab */}
-        <Show when={activeTab() === 'upload'}>
-          <section class={styles['upload-section']}>
-            <Card
-              title="Upload Documents"
-              padding="lg"
-              class={styles['upload-card'] || 'upload-card'}
-            >
-              <div class={styles['upload-zone']}>
-                <div class={styles['upload-content']}>
-                  <Upload size={48} class={styles['upload-icon'] || 'upload-icon'} />
-                  <h3>Drop files here or click to browse</h3>
-                  <p>Supports PDF and EPUB files up to 100MB each</p>
-                  <p class={styles['upload-note']}>
-                    All uploads are automatically scanned for security and analyzed for cultural
-                    context
-                  </p>
-
-                  <input
-                    type="file"
-                    multiple
-                    accept=".pdf,.epub"
-                    onChange={e => e.currentTarget.files && handleFileUpload(e.currentTarget.files)}
-                    class={styles['file-input']}
-                    id="file-upload"
-                  />
-                  <label for="file-upload" class={styles['upload-button']}>
-                    <Button variant="futuristic" color="purple" size="lg">
-                      <Plus size={20} class="mr-2" />
-                      Select Files
-                    </Button>
-                  </label>
-                </div>
-
-                <Show when={isUploading()}>
-                  <div class={styles['upload-progress']}>
-                    <div class={styles['progress-bar']}>
-                      <div
-                        class={styles['progress-fill']}
-                        style={`width: ${uploadProgress()}%`}
-                      ></div>
-                    </div>
-                    <p>Uploading... {uploadProgress()}%</p>
+                        </Card>
+                      )}
+                    </For>
                   </div>
                 </Show>
               </div>
-
-              <div class={styles['upload-info']}>
-                <h4>Upload Guidelines</h4>
-                <ul>
-                  <li>Supported formats: PDF, EPUB</li>
-                  <li>Maximum file size: 100MB per file</li>
-                  <li>All files are scanned for security threats</li>
-                  <li>Cultural context is analyzed for educational purposes</li>
-                  <li>Metadata can be edited after upload</li>
-                </ul>
-              </div>
-            </Card>
-          </section>
-        </Show>
+            </section>
+          </Show>
+        </div>
+      </div>
+      <div style={{ width: '370px', flexShrink: 0 }}>
+        <DocumentManagementRightColumn
+          storage={{ used: 156.85, total: 931.41 }}
+          formats={['PDF', 'EPUB']}
+          recentUploads={[]}
+        />
       </div>
 
       {/* Document Preview Modal */}

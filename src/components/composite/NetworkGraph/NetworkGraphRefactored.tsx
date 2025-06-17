@@ -7,7 +7,7 @@ import {
   throttle,
   CanvasOptimizer,
   ObjectPool,
-} from '../../utils/performance';
+} from '../../../utils/performance';
 
 // Import our extracted components and utilities
 import type { NetworkGraphProps } from './types';

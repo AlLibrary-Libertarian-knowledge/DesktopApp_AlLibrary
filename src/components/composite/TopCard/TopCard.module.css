@@ -165,6 +165,80 @@
   justify-content: space-between;
 }
 
+/* Futuristic minimal right content for TopCard */
+.right-content-glass {
+  background: rgba(24, 28, 44, 0.55);
+  border: 1.5px solid rgba(120, 120, 255, 0.1);
+  box-shadow:
+    0 4px 32px 0 rgba(80, 120, 255, 0.08),
+    0 1.5px 8px 0 rgba(0, 0, 0, 0.1);
+  border-radius: 18px;
+  padding: 1.5rem 2rem;
+  min-width: 320px;
+  max-width: 380px;
+  margin-left: auto;
+  margin-right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  backdrop-filter: blur(12px);
+  transition:
+    box-shadow 0.4s cubic-bezier(0.4, 0.2, 0.2, 1),
+    transform 0.4s cubic-bezier(0.4, 0.2, 0.2, 1),
+    background 0.4s;
+  opacity: 0;
+  transform: translateY(24px) scale(0.98);
+  animation: glass-fade-in 0.8s cubic-bezier(0.4, 0.2, 0.2, 1) 0.1s forwards;
+}
+.right-content-glass:hover {
+  box-shadow:
+    0 8px 48px 0 rgba(120, 180, 255, 0.18),
+    0 2px 12px 0 rgba(0, 0, 0, 0.13);
+  background: rgba(44, 54, 84, 0.65);
+  transform: translateY(-2px) scale(1.01);
+}
+@keyframes glass-fade-in {
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@media (max-width: 900px) {
+  .right-content-glass {
+    min-width: 220px;
+    max-width: 100%;
+    padding: 1rem;
+  }
+}
+
+/* Minimal DocumentStatus integration for glass card */
+.status-minimal {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  animation: fade-in-status 0.7s cubic-bezier(0.4, 0.2, 0.2, 1) 0.2s backwards;
+}
+@keyframes fade-in-status {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.stats-overview,
+.info-grid,
+.library-indicators {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  animation: fade-in-status 0.7s cubic-bezier(0.4, 0.2, 0.2, 1) 0.25s backwards;
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
   .top-card {

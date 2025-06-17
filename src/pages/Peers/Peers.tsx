@@ -1,7 +1,7 @@
 import { Component, lazy, Suspense } from 'solid-js';
 
 // Lazy load the heavy NetworkGraph component
-const NetworkGraph = lazy(() => import('../../components/network/NetworkGraph'));
+const NetworkGraph = lazy(() => import('../../components/composite/NetworkGraph/NetworkGraph'));
 
 const PeersPage: Component = () => {
   return (
