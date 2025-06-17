@@ -10,7 +10,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/solid-js';
+import { render, screen, fireEvent, waitFor } from '@solidjs/testing-library';
 import { createSignal } from 'solid-js';
 import Input, { type InputProps, type CulturalTheme, type InputValidationType } from '../Input';
 import { validationService } from '../../../../services/validationService';
