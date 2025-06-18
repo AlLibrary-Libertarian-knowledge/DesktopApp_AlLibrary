@@ -296,13 +296,13 @@ const Input: Component<InputProps> = props => {
     role: props.role as any,
   });
 
-  const inputId = () => props.id || `input-${Math.random().toString(36).substr(2, 9)}`;
+  const inputId = props.id || `input-${Math.random().toString(36).substr(2, 9)}`;
   const culturalTooltip = getCulturalTooltip();
 
   return (
     <div class={styles['input-wrapper']}>
       <Show when={props.label}>
-        <label class={styles['input-label']} for={inputId()}>
+        <label class={styles['input-label']} for={inputId}>
           {props.label}
           {props.required && <span class={styles['input-required']}>*</span>}
 
@@ -324,7 +324,7 @@ const Input: Component<InputProps> = props => {
         </Show>
 
         <input
-          id={inputId()}
+          id={inputId}
           type={props.type || 'text'}
           class={inputClasses()}
           placeholder={props.placeholder}
