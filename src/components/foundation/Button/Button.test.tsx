@@ -1,4 +1,3 @@
-// jest-dom matchers are available via test-setup.ts
 import { render, screen, fireEvent, waitFor } from '@solidjs/testing-library';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import Button from './Button';
@@ -465,7 +464,11 @@ describe('Button Component', () => {
     });
 
     it('handles undefined props gracefully', () => {
-      render(() => <Button>Undefined Props</Button>);
+      render(() => (
+        <Button variant={undefined} size={undefined} color={undefined} culturalTheme={undefined}>
+          Undefined Props
+        </Button>
+      ));
 
       const button = screen.getByRole('button');
       expect(button).toBeInTheDocument();
