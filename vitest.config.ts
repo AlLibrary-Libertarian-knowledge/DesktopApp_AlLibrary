@@ -1,3 +1,5 @@
+/// <reference types="vitest" />
+/// <reference types="@testing-library/jest-dom" />
 import { defineConfig } from 'vitest/config';
 import solid from 'vite-plugin-solid';
 import { resolve } from 'path';

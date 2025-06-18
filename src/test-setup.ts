@@ -1,4 +1,5 @@
 import { vi } from 'vitest';
+import '@testing-library/jest-dom';
 
 // Mock browser APIs
 globalThis.requestAnimationFrame = vi.fn(cb => {
