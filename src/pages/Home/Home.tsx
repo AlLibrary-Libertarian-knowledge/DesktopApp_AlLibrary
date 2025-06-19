@@ -1,13 +1,15 @@
 import { Component, createSignal, onMount } from 'solid-js';
 import { Button, Card, Modal } from '../../components/foundation';
-import { NetworkGraph, ActivityListCard, type ActivityItemProps } from '../../components/composite';
+import {
+  NetworkGraph,
+  ActivityListCard,
+  StatCard,
+  type ActivityItemProps,
+} from '../../components/composite';
 import { DownloadManager, StatusBar, SecurityPanel } from '../../components/domain/dashboard';
 import {
   Download,
   Upload,
-  CheckCircle,
-  Globe,
-  Building2,
   Search,
   BarChart3,
   Settings,
@@ -21,7 +23,6 @@ import {
   University,
   Zap,
   TrendingUp,
-  TrendingDown,
   ArrowRight,
 } from 'lucide-solid';
 import styles from './Home.module.css';
@@ -34,10 +35,10 @@ const HomePage: Component = () => {
 
   onMount(() => {
     // Show welcome modal on first visit
-    const hasVisited = localStorage.getItem('allibrary-visited');
+    const hasVisited = globalThis.localStorage?.getItem('allibrary-visited');
     if (!hasVisited) {
       setShowModal(true);
-      localStorage.setItem('allibrary-visited', 'true');
+      globalThis.localStorage?.setItem('allibrary-visited', 'true');
     }
   });
 
@@ -229,203 +230,54 @@ const HomePage: Component = () => {
         {activeTab() === 'overview' && (
           <>
             {/* Enhanced Stats Section */}
-            <section class={`${styles['stats-section']} ${styles['enhanced']}`}>
-              <div class={styles['stats-header']}>
-                <h2 class={styles['section-title']}>System Overview</h2>
-                <div class={styles['stats-metrics']}>
-                  <span class={styles['metric-indicator']}>
-                    <div class={styles['metric-dot']}></div>
-                    Real-time
-                  </span>
-                </div>
-              </div>
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <Card
-                  variant="elevated"
-                  class={`${styles['stat-card']} ${styles['enhanced']} ${styles['documents']}`}
-                >
-                  <div class={styles['stat-content']}>
-                    <div class={styles['stat-header']}>
-                      <div class={styles['stat-icon']}>
-                        <BookOpen size={24} />
-                        <div class={styles['stat-indicator']}>
-                          <div class={styles['pulse-ring']}></div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class={styles['stat-info']}>
-                      <div class={styles['stat-main']}>
-                        <h3 class={styles['stat-number']}>
-                          <span class={styles['counter']} data-target="12847">
-                            0
-                          </span>
-                        </h3>
-                        <p class={styles['stat-label']}>Documents Shared</p>
-                      </div>
-                      <div class={`${styles['stat-trend']} ${styles['positive']}`}>
-                        <TrendingUp size={14} />
-                        <span class={styles['trend-value']}>+127</span>
-                        <span class={styles['trend-label']}>today</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div class={styles['stat-graph']}>
-                    <div class={styles['mini-chart']}>
-                      {Array.from({ length: 7 }, (_, i) => (
-                        <div
-                          class={styles['chart-bar']}
-                          style={`height: ${Math.random() * 60 + 20}%`}
-                        ></div>
-                      ))}
-                    </div>
-                  </div>
-                </Card>
 
-                <Card
-                  variant="elevated"
-                  class={`${styles['stat-card']} ${styles['enhanced']} ${styles['peers']}`}
-                >
-                  <div class={styles['stat-content']}>
-                    <div class={styles['stat-header']}>
-                      <div class={styles['stat-icon']}>
-                        <Users size={24} />
-                      </div>
-                      <div class={styles['stat-indicator']}>
-                        <div class={styles['pulse-ring']}></div>
-                      </div>
-                    </div>
-                    <div class={styles['stat-info']}>
-                      <div class={styles['stat-main']}>
-                        <h3 class={styles['stat-number']}>
-                          <span class={styles['counter']} data-target="89">
-                            0
-                          </span>
-                        </h3>
-                        <p class={styles['stat-label']}>Connected Peers</p>
-                      </div>
-                      <div class={`${styles['stat-trend']} ${styles['positive']}`}>
-                        <TrendingUp size={14} />
-                        <span class={styles['trend-value']}>+5</span>
-                        <span class={styles['trend-label']}>online</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div class={styles['stat-graph']}>
-                    <div class={styles['peer-visualization']}>
-                      {Array.from({ length: 6 }, (_, i) => (
-                        <div
-                          class={`${styles['peer-node']} ${i < 4 ? styles['active'] : ''}`}
-                        ></div>
-                      ))}
-                    </div>
-                  </div>
-                </Card>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <StatCard
+                type="documents"
+                icon={<BookOpen size={24} />}
+                number="12,847"
+                label="Documents Shared"
+                trendType="positive"
+                trendIcon={<TrendingUp size={12} />}
+                trendValue="+127"
+                trendLabel="today"
+                graphType="chart"
+              />
 
-                <Card
-                  variant="elevated"
-                  class={`${styles['stat-card']} ${styles['enhanced']} ${styles['institutions']}`}
-                >
-                  <div class={styles['stat-content']}>
-                    <div class={styles['stat-header']}>
-                      <div class={styles['stat-icon']}>
-                        <University size={24} />
-                      </div>
-                      <div class={styles['stat-indicator']}>
-                        <div class={styles['pulse-ring']}></div>
-                      </div>
-                    </div>
-                    <div class={styles['stat-info']}>
-                      <div class={styles['stat-main']}>
-                        <h3 class={styles['stat-number']}>
-                          <span class={styles['counter']} data-target="156">
-                            0
-                          </span>
-                        </h3>
-                        <p class={styles['stat-label']}>Cultural Institutions</p>
-                      </div>
-                      <div class={`${styles['stat-trend']} ${styles['neutral']}`}>
-                        <ArrowRight size={14} />
-                        <span class={styles['trend-value']}>stable</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div class={styles['stat-graph']}>
-                    <div class={styles['institution-map']}>
-                      <div class={styles['geo-dots']}>
-                        {Array.from({ length: 12 }, (_, i) => (
-                          <div
-                            class={styles['geo-dot']}
-                            style={`top: ${Math.random() * 80}%; left: ${Math.random() * 80}%`}
-                          ></div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </Card>
+              <StatCard
+                type="peers"
+                icon={<Users size={24} />}
+                number="89"
+                label="Connected Peers"
+                trendType="positive"
+                trendIcon={<TrendingUp size={14} />}
+                trendValue="+5"
+                trendLabel="online"
+                graphType="peers"
+              />
 
-                <Card
-                  variant="elevated"
-                  class={`${styles['stat-card']} ${styles['enhanced']} ${styles['health']}`}
-                >
-                  <div class={styles['stat-content']}>
-                    <div class={styles['stat-header']}>
-                      <div class={styles['stat-icon']}>
-                        <Zap size={24} />
-                      </div>
-                      <div class={styles['stat-indicator']}>
-                        <div class={styles['pulse-ring']}></div>
-                      </div>
-                    </div>
-                    <div class={styles['stat-info']}>
-                      <div class={styles['stat-main']}>
-                        <h3 class={styles['stat-number']}>
-                          <span class={styles['counter']} data-target="98">
-                            0
-                          </span>
-                          %
-                        </h3>
-                        <p class={styles['stat-label']}>Network Health</p>
-                      </div>
-                      <div class={`${styles['stat-trend']} ${styles['positive']}`}>
-                        <TrendingUp size={14} />
-                        <span class={styles['trend-value']}>excellent</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div class={styles['stat-graph']}>
-                    <div class={styles['health-ring']}>
-                      <svg width="60" height="60" viewBox="0 0 60 60">
-                        <circle
-                          cx="30"
-                          cy="30"
-                          r="25"
-                          fill="none"
-                          stroke="rgba(148, 163, 184, 0.2)"
-                          stroke-width="3"
-                        />
-                        <circle
-                          cx="30"
-                          cy="30"
-                          r="25"
-                          fill="none"
-                          stroke="url(#healthGradient)"
-                          stroke-width="3"
-                          stroke-dasharray={`${2 * Math.PI * 25 * 0.98} ${2 * Math.PI * 25}`}
-                          stroke-dashoffset={2 * Math.PI * 25 * 0.25}
-                          class={styles['health-arc']}
-                        />
-                        <defs>
-                          <linearGradient id="healthGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" style="stop-color: #10b981" />
-                            <stop offset="100%" style="stop-color: #34d399" />
-                          </linearGradient>
-                        </defs>
-                      </svg>
-                    </div>
-                  </div>
-                </Card>
-              </div>
-            </section>
+              <StatCard
+                type="institutions"
+                icon={<University size={24} />}
+                number="156"
+                label="Cultural Institutions"
+                trendType="neutral"
+                trendIcon={<ArrowRight size={14} />}
+                trendValue="stable"
+                graphType="map"
+              />
+
+              <StatCard
+                type="health"
+                icon={<Zap size={24} />}
+                number="98%"
+                label="Network Health"
+                trendType="positive"
+                trendIcon={<TrendingUp size={14} />}
+                trendValue="excellent"
+                graphType="health"
+              />
+            </div>
 
             {/* Enhanced Network Preview Section */}
             <section class={styles['network-preview-section']}>

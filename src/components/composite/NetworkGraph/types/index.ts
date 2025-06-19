@@ -89,6 +89,7 @@ export interface NetworkGraphProps {
   interactive?: boolean;
   showStats?: boolean;
   theme?: 'light' | 'dark';
+  testMode?: boolean; // Disables continuous animation for testing
 }
 
 export interface PhysicsConfig {

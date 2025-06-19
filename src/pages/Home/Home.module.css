@@ -252,18 +252,266 @@
   }
 }
 
-/* Enhanced Stat Cards - Minimalistic Futuristic Design */
-.stat-card {
-  flex: 1 1 0;
-  max-width: 100%;
-  margin: 0;
+/* Enhanced Stat Cards - More compact, uniform, responsive with unique personalities */
+.stat-card.enhanced {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(
+    135deg,
+    rgba(15, 23, 42, 0.98) 0%,
+    rgba(30, 41, 59, 0.95) 25%,
+    rgba(51, 65, 85, 0.92) 50%,
+    rgba(30, 41, 59, 0.95) 75%,
+    rgba(15, 23, 42, 0.98) 100%
+  );
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 20px;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    0 4px 16px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+  min-height: 140px; /* Reduced from 180px */
+  max-height: 160px; /* Set max height for uniformity */
+  cursor: pointer;
+}
+
+/* Unique accent lines for each card type */
+.stat-card.enhanced::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, currentColor, transparent);
+  border-radius: 20px 20px 0 0;
+  z-index: 2;
+  opacity: 0.6;
+  transition: all 0.3s ease;
+}
+
+/* Card-specific accent colors */
+.stat-card.documents::before {
+  background: linear-gradient(90deg, transparent, #3b82f6, #06b6d4, transparent);
+}
+
+.stat-card.peers::before {
+  background: linear-gradient(90deg, transparent, #10b981, #34d399, transparent);
+}
+
+.stat-card.institutions::before {
+  background: linear-gradient(90deg, transparent, #a855f7, #c084fc, transparent);
+}
+
+.stat-card.health::before {
+  background: linear-gradient(90deg, transparent, #f59e0b, #fbbf24, transparent);
+}
+
+/* Enhanced shimmer effect - more subtle */
+.stat-card.enhanced::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.01),
+    rgba(255, 255, 255, 0.02),
+    rgba(255, 255, 255, 0.01),
+    transparent
+  );
+  animation: enhanced-shimmer 6s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+  transform: skewX(-20deg);
+}
+
+@keyframes enhanced-shimmer {
+  0% {
+    left: -100%;
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.3;
+  }
+  75% {
+    opacity: 0.3;
+  }
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
+
+/* Enhanced hover effects */
+.stat-card.enhanced:hover {
+  transform: translate3d(0, -8px, 0) scale(1.02);
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.15),
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(255, 255, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  border-color: rgba(148, 163, 184, 0.2);
+}
+
+/* Card-specific hover glows */
+.stat-card.documents:hover {
+  box-shadow:
+    0 20px 60px rgba(59, 130, 246, 0.15),
+    0 8px 32px rgba(59, 130, 246, 0.1),
+    0 0 0 1px rgba(59, 130, 246, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.stat-card.peers:hover {
+  box-shadow:
+    0 20px 60px rgba(16, 185, 129, 0.15),
+    0 8px 32px rgba(16, 185, 129, 0.1),
+    0 0 0 1px rgba(16, 185, 129, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.stat-card.institutions:hover {
+  box-shadow:
+    0 20px 60px rgba(168, 85, 247, 0.15),
+    0 8px 32px rgba(168, 85, 247, 0.1),
+    0 0 0 1px rgba(168, 85, 247, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.stat-card.health:hover {
+  box-shadow:
+    0 20px 60px rgba(245, 158, 11, 0.15),
+    0 8px 32px rgba(245, 158, 11, 0.1),
+    0 0 0 1px rgba(245, 158, 11, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.stat-card.enhanced:hover::before {
+  height: 3px;
+  opacity: 1;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+.stat-card.enhanced:hover::after {
+  animation-duration: 3s;
+}
+
+/* Compact stat content layout */
+.stat-content {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 1rem;
+  padding: 1.5rem;
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4); /* Dark background for better text contrast */
+  border-radius: 16px;
+  backdrop-filter: blur(8px);
+}
+
+/* Compact icon design */
+.stat-icon {
+  font-size: 1.75rem;
+  width: 3.5rem;
+  height: 3.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100%;
-  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.06) 0%,
+    rgba(255, 255, 255, 0.02) 50%,
+    rgba(255, 255, 255, 0.06) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  flex-shrink: 0;
   position: relative;
-  z-index: 1;
+  overflow: hidden;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* Card-specific icon backgrounds */
+.stat-card.documents .stat-icon {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(6, 182, 212, 0.1));
+  border-color: rgba(59, 130, 246, 0.2);
+}
+
+.stat-card.peers .stat-icon {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(52, 211, 153, 0.1));
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.stat-card.institutions .stat-icon {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(192, 132, 252, 0.1));
+  border-color: rgba(168, 85, 247, 0.2);
+}
+
+.stat-card.health .stat-icon {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(251, 191, 36, 0.1));
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
+.stat-icon svg {
+  color: rgba(255, 255, 255, 0.9);
+  transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+  z-index: 2;
+  position: relative;
+}
+
+/* Icon hover effects */
+.stat-card.enhanced:hover .stat-icon {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.stat-card.enhanced:hover .stat-icon svg {
+  transform: scale(1.1);
+}
+
+/* Card-specific icon hover colors */
+.stat-card.documents:hover .stat-icon svg {
+  color: #3b82f6;
+  filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.5));
+}
+
+.stat-card.peers:hover .stat-icon svg {
+  color: #10b981;
+  filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.5));
+}
+
+.stat-card.institutions:hover .stat-icon svg {
+  color: #a855f7;
+  filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.5));
+}
+
+.stat-card.health:hover .stat-icon svg {
+  color: #f59e0b;
+  filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.5));
 }
 
 .stat-card:hover {
@@ -282,20 +530,22 @@
     rgba(30, 41, 59, 0.95) 75%,
     rgba(15, 23, 42, 0.98) 100%
   );
-  border: 1px solid rgba(148, 163, 184, 0.08);
-  border-radius: 28px;
-  backdrop-filter: blur(32px);
-  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 20px;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   box-shadow:
-    0 20px 64px rgba(0, 0, 0, 0.12),
-    0 8px 32px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.03);
-  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    0 4px 16px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
   transform: translate3d(0, 0, 0);
   backface-visibility: hidden;
   -webkit-font-smoothing: antialiased;
-  min-height: 180px;
+  min-height: 140px; /* Reduced from 180px */
+  max-height: 160px; /* Set max height for uniformity */
+  cursor: pointer;
 }
 
 /* Futuristic data flow accent */
@@ -556,33 +806,33 @@
 .stat-info {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
-  width: 100%;
+  align-items: flex-start;
+  gap: 0.5rem;
+  flex: 1;
   position: relative;
-  z-index: 2;
+  z-index: 12;
 }
 
 .stat-main {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
+  align-items: flex-start;
+  gap: 0.25rem;
 }
 
 .stat-number {
   font-size: 2.5rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 50%, #cbd5e1 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #ffffff;
   margin: 0;
   line-height: 1;
   letter-spacing: -0.02em;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.5),
+    0 1px 3px rgba(0, 0, 0, 0.8);
   position: relative;
   transition: all 0.3s ease;
+  z-index: 15; /* Ensure numbers are always on top */
 }
 
 .stat-card.enhanced:hover .stat-number {
@@ -592,14 +842,18 @@
 
 .stat-label {
   font-size: 0.95rem;
-  color: rgba(203, 213, 225, 0.8);
+  color: rgba(203, 213, 225, 1);
   margin: 0;
   font-weight: 500;
   letter-spacing: 0.02em;
-  text-align: center;
+  text-align: left;
   line-height: 1.4;
-  opacity: 0.9;
+  opacity: 1;
   transition: all 0.3s ease;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  z-index: 15; /* Ensure labels are visible */
+  position: relative;
+  width: 100%;
 }
 
 .stat-card.enhanced:hover .stat-label {
@@ -1131,15 +1385,28 @@
 
   /* Enhanced stat cards for tablet */
   .stat-card.enhanced {
-    border-radius: 20px;
+    border-radius: 16px;
+    min-height: 120px;
+    max-height: 140px;
   }
 
   .stat-content {
     flex-direction: column;
     align-items: center;
     text-align: center;
-    padding: 1.25rem;
-    gap: 1rem;
+    padding: 1rem;
+    gap: 0.75rem;
+  }
+
+  .stat-graph {
+    position: relative;
+    right: auto;
+    top: auto;
+    transform: none;
+    width: 60px;
+    height: 35px;
+    margin-top: 0.5rem;
+    opacity: 0.5;
   }
 
   .stat-icon {
@@ -1203,6 +1470,8 @@
 
   .stat-card.enhanced {
     border-radius: 18px;
+    min-height: 110px;
+    max-height: 130px;
   }
 
   .stat-content {
@@ -1316,6 +1585,53 @@
     justify-content: center;
     padding: var(--space-xs);
     font-size: var(--font-size-xs);
+  }
+
+  .stat-graph {
+    position: relative;
+    right: auto;
+    top: auto;
+    transform: none;
+    width: 50px;
+    height: 30px;
+    margin-top: 0.5rem;
+    opacity: 0.4;
+  }
+
+  .mini-chart {
+    gap: 2px;
+    padding: 2px 0;
+  }
+
+  .peer-visualization {
+    padding: 0 4px;
+  }
+
+  .peer-node {
+    width: 4px;
+    height: 4px;
+  }
+
+  .geo-dots {
+    width: 40px;
+    height: 20px;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+  }
+
+  .geo-dot {
+    width: 2px;
+    height: 2px;
+  }
+
+  .health-ring svg {
+    width: 35px;
+    height: 35px;
+  }
+
+  .health-ring::before {
+    width: 25px;
+    height: 25px;
   }
 }
 
@@ -1619,55 +1935,213 @@
   font-size: 0.875rem;
 }
 
+/* Stat Trend */
+.stat-trend {
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-top: 0.125rem;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+  border: 1px solid;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  letter-spacing: 0.025em;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-trend::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  animation: trend-shimmer 3s infinite;
+  border-radius: 12px;
+}
+
+.stat-trend svg {
+  flex-shrink: 0;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+  transition: all 0.3s ease;
+}
+
+@keyframes trend-shimmer {
+  0% {
+    transform: translateX(-100%) rotate(45deg);
+  }
+  100% {
+    transform: translateX(100%) rotate(45deg);
+  }
+}
+
+.stat-trend.positive {
+  color: rgba(34, 197, 94, 0.95);
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(16, 185, 129, 0.1));
+  border-color: rgba(34, 197, 94, 0.3);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
+}
+
+.stat-trend.positive:hover {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.15));
+  box-shadow: 0 6px 16px rgba(34, 197, 94, 0.3);
+  transform: translateY(-1px);
+}
+
+.stat-trend.positive svg {
+  color: rgba(34, 197, 94, 1);
+}
+
+.stat-trend.positive:hover svg {
+  filter: drop-shadow(0 2px 4px rgba(34, 197, 94, 0.4));
+  transform: scale(1.1);
+}
+
+.stat-trend.neutral {
+  color: rgba(148, 163, 184, 0.9);
+  background: linear-gradient(135deg, rgba(148, 163, 184, 0.15), rgba(100, 116, 139, 0.1));
+  border-color: rgba(148, 163, 184, 0.3);
+  box-shadow: 0 4px 12px rgba(148, 163, 184, 0.2);
+}
+
+.stat-trend.neutral:hover {
+  background: linear-gradient(135deg, rgba(148, 163, 184, 0.2), rgba(100, 116, 139, 0.15));
+  box-shadow: 0 6px 16px rgba(148, 163, 184, 0.3);
+  transform: translateY(-1px);
+}
+
+.stat-trend.neutral svg {
+  color: rgba(148, 163, 184, 1);
+}
+
+.stat-trend.neutral:hover svg {
+  filter: drop-shadow(0 2px 4px rgba(148, 163, 184, 0.4));
+  transform: scale(1.1);
+}
+
+.stat-trend.negative {
+  color: rgba(239, 68, 68, 0.95);
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.1));
+  border-color: rgba(239, 68, 68, 0.3);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+.stat-trend.negative:hover {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.15));
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.3);
+  transform: translateY(-1px);
+}
+
 /* Stat Graph Visualizations */
 .stat-graph {
-  margin-top: 1rem;
-  height: 60px;
-  position: relative;
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  width: 60px;
+  height: 40px;
+  opacity: 0.4;
+  transition: all 0.3s ease;
+  pointer-events: none;
+  z-index: 5; /* Lower than text content */
+}
+
+.stat-card.enhanced:hover .stat-graph {
+  opacity: 0.7;
+  transform: translateY(-50%) scale(1.05);
 }
 
 .mini-chart {
   display: flex;
   align-items: end;
-  gap: 4px;
+  gap: 3px;
   height: 100%;
-  padding: 8px 0;
+  padding: 4px 0;
 }
 
 .chart-bar {
   flex: 1;
-  background: linear-gradient(to top, #3b82f6, #8b5cf6);
   border-radius: 2px;
-  min-height: 20%;
-  opacity: 0.8;
+  min-height: 15%;
   transition: all 0.3s ease;
+  position: relative;
+}
+
+/* Card-specific chart styles */
+.stat-card.documents .chart-bar {
+  background: linear-gradient(to top, rgba(59, 130, 246, 0.6), rgba(59, 130, 246, 1));
+}
+
+.stat-card.peers .chart-bar {
+  background: linear-gradient(to top, rgba(16, 185, 129, 0.6), rgba(16, 185, 129, 1));
+}
+
+.stat-card.institutions .chart-bar {
+  background: linear-gradient(to top, rgba(168, 85, 247, 0.6), rgba(168, 85, 247, 1));
+}
+
+.stat-card.health .chart-bar {
+  background: linear-gradient(to top, rgba(245, 158, 11, 0.6), rgba(245, 158, 11, 1));
 }
 
 .stat-card:hover .chart-bar {
-  opacity: 1;
-  transform: scaleY(1.1);
+  transform: scaleY(1.2);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
 }
 
 .peer-visualization {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  gap: 8px;
   height: 100%;
+  padding: 0 8px;
+  position: relative;
 }
 
 .peer-node {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background: rgba(148, 163, 184, 0.3);
+  background: rgba(16, 185, 129, 0.3);
   transition: all 0.3s ease;
+  position: relative;
 }
 
 .peer-node.active {
   background: #10b981;
-  box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
   animation: peer-pulse 2s infinite;
+  transform: scale(1.2);
+}
+
+.peer-node::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 50%;
+  animation: peer-ring 3s infinite;
+}
+
+.peer-node.active::before {
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+@keyframes peer-ring {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
 }
 
 @keyframes peer-pulse {
@@ -1683,24 +2157,56 @@
 .institution-map {
   position: relative;
   height: 100%;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
-  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.05), rgba(192, 132, 252, 0.1));
+  border-radius: 6px;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .geo-dots {
   position: relative;
-  width: 100%;
-  height: 100%;
+  width: 60px;
+  height: 30px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 2px;
+  align-items: center;
+  justify-items: center;
 }
 
 .geo-dot {
-  position: absolute;
-  width: 4px;
-  height: 4px;
-  background: #3b82f6;
+  width: 3px;
+  height: 3px;
+  background: #a855f7;
   border-radius: 50%;
-  animation: geo-blink 3s infinite;
+  animation: geo-blink 4s infinite;
+  position: relative;
+}
+
+.geo-dot::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  right: -1px;
+  bottom: -1px;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  border-radius: 50%;
+  animation: geo-ripple 3s infinite;
+}
+
+@keyframes geo-ripple {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(3);
+    opacity: 0;
+  }
 }
 
 .geo-dot:nth-child(odd) {
@@ -1729,18 +2235,47 @@
   justify-content: center;
   align-items: center;
   height: 100%;
+  position: relative;
+}
+
+.health-ring svg {
+  width: 45px;
+  height: 45px;
+  transform: rotate(-90deg);
 }
 
 .health-arc {
-  animation: health-rotate 3s linear infinite;
+  transition: stroke-dasharray 0.5s ease;
+  filter: drop-shadow(0 0 4px rgba(245, 158, 11, 0.3));
 }
 
-@keyframes health-rotate {
-  from {
-    stroke-dashoffset: 157;
+.stat-card.health:hover .health-arc {
+  filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.5));
+  stroke-width: 4;
+}
+
+.health-ring::before {
+  content: '';
+  position: absolute;
+  width: 35px;
+  height: 35px;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 50%;
+  animation: health-pulse 2s infinite;
+}
+
+@keyframes health-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
   }
-  to {
-    stroke-dashoffset: 0;
+  50% {
+    transform: scale(1.1);
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
   }
 }
 
@@ -2338,7 +2873,7 @@
 
 /* Quick Actions Simple Styles */
 .actions-section {
-  margin: 2rem 0;
+  /* margin: 2rem 0; */
 }
 
 .actions-grid {
@@ -2524,7 +3059,7 @@
   border: 1px solid rgba(148, 163, 184, 0.1);
   border-radius: 24px;
   padding: 2rem;
-  margin: 2rem 0;
+  /* margin: 2rem 0; */
   position: relative;
   overflow: hidden;
   backdrop-filter: blur(20px);
@@ -2624,7 +3159,7 @@
   border: 1px solid rgba(148, 163, 184, 0.1);
   border-radius: 24px;
   padding: 2rem;
-  margin: 2rem 0;
+  /* margin: 2rem 0; */
   position: relative;
   overflow: hidden;
   backdrop-filter: blur(20px);
@@ -2687,7 +3222,7 @@
   border: 1px solid rgba(148, 163, 184, 0.1);
   border-radius: 24px;
   padding: 2rem;
-  margin: 2rem 0;
+  /* margin: 2rem 0; */
   position: relative;
   overflow: hidden;
   backdrop-filter: blur(20px);
@@ -2768,7 +3303,7 @@
   border: 1px solid rgba(148, 163, 184, 0.1);
   border-radius: 24px;
   padding: 2rem;
-  margin: 2rem 0;
+  /* margin: 2rem 0; */
   position: relative;
   overflow: hidden;
   backdrop-filter: blur(20px);
@@ -3788,130 +4323,31 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  height: 100%;
-  border-radius: 0.75rem;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
   position: relative;
-  overflow: hidden;
 }
 
 .upload-indicator {
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(16, 185, 129, 0.1) 100%);
-  border: 1px solid rgba(34, 197, 94, 0.25);
-  color: #22c55e;
-}
-
-.complete-indicator {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.1) 100%);
-  border: 1px solid rgba(16, 185, 129, 0.25);
+  background: rgba(16, 185, 129, 0.1);
+  border: 2px solid rgba(16, 185, 129, 0.3);
   color: #10b981;
 }
 
-.peer-indicator {
-  background: linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(8, 145, 178, 0.1) 100%);
-  border: 1px solid rgba(6, 182, 212, 0.25);
-  color: #06b6d4;
-  position: relative;
+.complete-indicator {
+  background: rgba(34, 197, 94, 0.1);
+  border: 2px solid rgba(34, 197, 94, 0.3);
+  color: #22c55e;
 }
 
-.connection-pulse {
-  position: absolute;
-  top: -2px;
-  right: -2px;
-  width: 8px;
-  height: 8px;
-  background: #22c55e;
-  border-radius: 50%;
-  animation: pulse 2s infinite;
+.peer-indicator {
+  background: rgba(59, 130, 246, 0.1);
+  border: 2px solid rgba(59, 130, 246, 0.3);
+  color: #3b82f6;
 }
 
 .institution-indicator {
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(124, 58, 237, 0.1) 100%);
-  border: 1px solid rgba(139, 92, 246, 0.25);
-  color: #8b5cf6;
-}
-
-.discovery-indicator {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(217, 119, 6, 0.1) 100%);
-  border: 1px solid rgba(245, 158, 11, 0.25);
-  color: #f59e0b;
-  position: relative;
-}
-
-.discovery-scan {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border-radius: 12px;
-  background: linear-gradient(90deg, transparent, rgba(245, 158, 11, 0.3), transparent);
-  animation: scan 2s infinite;
-}
-
-@keyframes scan {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
-}
-
-/* Activity Content Enhanced */
-.activity-content {
-  flex: 1 1 auto;
-  min-width: 0;
-  max-width: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 0.25rem;
-  overflow: hidden;
-  padding: 0 0.75rem;
-}
-
-.content-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.375rem;
-  width: 100%;
-  overflow: hidden;
-  gap: 0.75rem;
-  min-height: fit-content;
-}
-
-.activity-title {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--text-color, #e2e8f0);
-  margin: 0;
-  line-height: 1.4;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  flex: 1;
-  min-width: 0;
-}
-
-.file-size,
-.location-tag,
-.scan-progress {
-  font-size: 0.75rem;
-  color: var(--text-color-muted, #94a3b8);
-  background: rgba(148, 163, 184, 0.15);
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.375rem;
-  border: 0.0625rem solid rgba(148, 163, 184, 0.2);
-  white-space: nowrap;
-  flex-shrink: 0;
-  max-width: 20%;
-  min-width: fit-content;
-}
-
-.location-tag {
-  background: rgba(59, 130, 246, 0.1);
   border-color: rgba(59, 130, 246, 0.2);
   color: #60a5fa;
 }

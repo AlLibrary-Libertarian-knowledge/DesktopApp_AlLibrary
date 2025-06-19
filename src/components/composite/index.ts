@@ -8,3 +8,4 @@ export { default as DocumentUpload } from './DocumentUpload/DocumentUpload';
 export { default as DocumentLibrary } from './DocumentLibrary/DocumentLibrary';
 export { default as DocumentManagementRightColumn } from './DocumentManagementRightColumn';
 export { ActivityListCard, type ActivityItemProps } from './ActivityListCard';
+export { StatCard, type StatCardProps } from './StatCard';
