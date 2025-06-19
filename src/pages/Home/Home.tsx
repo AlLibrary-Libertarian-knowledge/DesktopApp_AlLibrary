@@ -248,9 +248,9 @@ const HomePage: Component = () => {
                     <div class={styles['stat-header']}>
                       <div class={styles['stat-icon']}>
                         <BookOpen size={24} />
-                      </div>
-                      <div class={styles['stat-indicator']}>
-                        <div class={styles['pulse-ring']}></div>
+                        <div class={styles['stat-indicator']}>
+                          <div class={styles['pulse-ring']}></div>
+                        </div>
                       </div>
                     </div>
                     <div class={styles['stat-info']}>

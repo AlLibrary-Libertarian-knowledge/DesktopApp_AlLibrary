@@ -255,7 +255,6 @@
 /* Enhanced Stat Cards - Minimalistic Futuristic Design */
 .stat-card {
   flex: 1 1 0;
-  min-width: 260px;
   max-width: 100%;
   margin: 0;
   display: flex;
@@ -1556,7 +1555,9 @@
 }
 
 .stat-indicator {
-  position: relative;
+  position: absolute;
+  top: 0;
+  right: 0;
 }
 
 .pulse-ring {
