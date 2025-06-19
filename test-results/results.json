@@ -9,8 +9,10 @@
     "globalTimeout": 0,
     "grep": {},
     "grepInvert": null,
-    "maxFailures": 0,
-    "metadata": {},
+    "maxFailures": 3,
+    "metadata": {
+      "actualWorkers": 3
+    },
     "preserveOutput": "always",
     "reporter": [
       [
@@ -38,7 +40,9 @@
         "outputDir": "C:/desenvolvimento/AlLybrary Project/DesktopApp_AlLibrary/test-results",
         "repeatEach": 1,
         "retries": 0,
-        "metadata": {},
+        "metadata": {
+          "actualWorkers": 3
+        },
         "id": "chromium",
         "name": "chromium",
         "testDir": "C:/desenvolvimento/AlLybrary Project/DesktopApp_AlLibrary/tests/e2e",
@@ -52,7 +56,9 @@
         "outputDir": "C:/desenvolvimento/AlLybrary Project/DesktopApp_AlLibrary/test-results",
         "repeatEach": 1,
         "retries": 0,
-        "metadata": {},
+        "metadata": {
+          "actualWorkers": 3
+        },
         "id": "firefox",
         "name": "firefox",
         "testDir": "C:/desenvolvimento/AlLybrary Project/DesktopApp_AlLibrary/tests/e2e",
@@ -66,7 +72,9 @@
         "outputDir": "C:/desenvolvimento/AlLybrary Project/DesktopApp_AlLibrary/test-results",
         "repeatEach": 1,
         "retries": 0,
-        "metadata": {},
+        "metadata": {
+          "actualWorkers": 3
+        },
         "id": "webkit",
         "name": "webkit",
         "testDir": "C:/desenvolvimento/AlLybrary Project/DesktopApp_AlLibrary/tests/e2e",
@@ -100,7 +108,7 @@
           "specs": [
             {
               "title": "should display the application title",
-              "ok": true,
+              "ok": false,
               "tags": [],
               "tests": [
                 {
@@ -109,138 +117,72 @@
                   "expectedStatus": "passed",
                   "projectId": "chromium",
                   "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "timedOut",
+                      "duration": 45634,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at C:\\desenvolvimento\\AlLybrary Project\\DesktopApp_AlLibrary\\tests\\e2e\\home-page.spec.ts:4:8",
+                        "location": {
+                          "file": "C:\\desenvolvimento\\AlLybrary Project\\DesktopApp_AlLibrary\\tests\\e2e\\home-page.spec.ts",
+                          "column": 8,
+                          "line": 4
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 2 |\u001b[39m\n \u001b[90m 3 |\u001b[39m test\u001b[33m.\u001b[39mdescribe(\u001b[32m'AlLibrary Home Page'\u001b[39m\u001b[33m,\u001b[39m () \u001b[33m=>\u001b[39m {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 4 |\u001b[39m   test\u001b[33m.\u001b[39mbeforeEach(\u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m   |\u001b[39m        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 5 |\u001b[39m     \u001b[90m// Navigate to the home page\u001b[39m\n \u001b[90m 6 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'/'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 7 |\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\desenvolvimento\\AlLybrary Project\\DesktopApp_AlLibrary\\tests\\e2e\\home-page.spec.ts",
+                            "column": 8,
+                            "line": 4
+                          },
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n\n\u001b[0m \u001b[90m 2 |\u001b[39m\n \u001b[90m 3 |\u001b[39m test\u001b[33m.\u001b[39mdescribe(\u001b[32m'AlLibrary Home Page'\u001b[39m\u001b[33m,\u001b[39m () \u001b[33m=>\u001b[39m {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 4 |\u001b[39m   test\u001b[33m.\u001b[39mbeforeEach(\u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m   |\u001b[39m        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 5 |\u001b[39m     \u001b[90m// Navigate to the home page\u001b[39m\n \u001b[90m 6 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'/'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 7 |\u001b[39m\u001b[0m\n\u001b[2m    at C:\\desenvolvimento\\AlLybrary Project\\DesktopApp_AlLibrary\\tests\\e2e\\home-page.spec.ts:4:8\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-06-19T22:12:46.658Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\desenvolvimento\\AlLybrary Project\\DesktopApp_AlLibrary\\test-results\\home-page-AlLibrary-Home-P-89838-splay-the-application-title-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\desenvolvimento\\AlLybrary Project\\DesktopApp_AlLibrary\\test-results\\home-page-AlLibrary-Home-P-89838-splay-the-application-title-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\desenvolvimento\\AlLybrary Project\\DesktopApp_AlLibrary\\test-results\\home-page-AlLibrary-Home-P-89838-splay-the-application-title-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\desenvolvimento\\AlLybrary Project\\DesktopApp_AlLibrary\\tests\\e2e\\home-page.spec.ts",
+                        "column": 8,
+                        "line": 4
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
                 }
               ],
               "id": "d186ff7d110502c4a7d9-c5659c17c165509b2470",
               "file": "home-page.spec.ts",
-              "line": 12,
-              "column": 3
-            },
-            {
-              "title": "should render main navigation elements",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "d186ff7d110502c4a7d9-0d8cd6f20683a9de769d",
-              "file": "home-page.spec.ts",
-              "line": 17,
-              "column": 3
-            },
-            {
-              "title": "should display welcome content",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "d186ff7d110502c4a7d9-a45869699f2860303d5c",
-              "file": "home-page.spec.ts",
-              "line": 28,
-              "column": 3
-            },
-            {
-              "title": "should have functional search bar",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "d186ff7d110502c4a7d9-3cb00d0a804081536673",
-              "file": "home-page.spec.ts",
-              "line": 33,
-              "column": 3
-            },
-            {
-              "title": "should handle navigation between pages",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "d186ff7d110502c4a7d9-76c884a1dd47b89b7181",
-              "file": "home-page.spec.ts",
-              "line": 43,
-              "column": 3
-            },
-            {
-              "title": "should be responsive and accessible",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "d186ff7d110502c4a7d9-60a2db9e6e9ad07f34e4",
-              "file": "home-page.spec.ts",
-              "line": 52,
-              "column": 3
-            },
-            {
-              "title": "should handle errors gracefully",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "d186ff7d110502c4a7d9-66b07473cc5486ab7cb8",
-              "file": "home-page.spec.ts",
-              "line": 62,
+              "line": 20,
               "column": 3
             },
             {
               "title": "should display the application title",
-              "ok": true,
+              "ok": false,
               "tags": [],
               "tests": [
                 {
@@ -249,138 +191,70 @@
                   "expectedStatus": "passed",
                   "projectId": "firefox",
                   "projectName": "firefox",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "timedOut",
+                      "duration": 41032,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at C:\\desenvolvimento\\AlLybrary Project\\DesktopApp_AlLibrary\\tests\\e2e\\home-page.spec.ts:4:8",
+                        "location": {
+                          "file": "C:\\desenvolvimento\\AlLybrary Project\\DesktopApp_AlLibrary\\tests\\e2e\\home-page.spec.ts",
+                          "column": 8,
+                          "line": 4
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 2 |\u001b[39m\n \u001b[90m 3 |\u001b[39m test\u001b[33m.\u001b[39mdescribe(\u001b[32m'AlLibrary Home Page'\u001b[39m\u001b[33m,\u001b[39m () \u001b[33m=>\u001b[39m {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 4 |\u001b[39m   test\u001b[33m.\u001b[39mbeforeEach(\u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m   |\u001b[39m        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 5 |\u001b[39m     \u001b[90m// Navigate to the home page\u001b[39m\n \u001b[90m 6 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'/'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 7 |\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\desenvolvimento\\AlLybrary Project\\DesktopApp_AlLibrary\\tests\\e2e\\home-page.spec.ts",
+                            "column": 8,
+                            "line": 4
+                          },
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n\n\u001b[0m \u001b[90m 2 |\u001b[39m\n \u001b[90m 3 |\u001b[39m test\u001b[33m.\u001b[39mdescribe(\u001b[32m'AlLibrary Home Page'\u001b[39m\u001b[33m,\u001b[39m () \u001b[33m=>\u001b[39m {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 4 |\u001b[39m   test\u001b[33m.\u001b[39mbeforeEach(\u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m   |\u001b[39m        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 5 |\u001b[39m     \u001b[90m// Navigate to the home page\u001b[39m\n \u001b[90m 6 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'/'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 7 |\u001b[39m\u001b[0m\n\u001b[2m    at C:\\desenvolvimento\\AlLybrary Project\\DesktopApp_AlLibrary\\tests\\e2e\\home-page.spec.ts:4:8\u001b[22m"
+                        },
+                        {
+                          "location": {
+                            "file": "C:\\desenvolvimento\\AlLybrary Project\\DesktopApp_AlLibrary\\tests\\e2e\\home-page.spec.ts",
+                            "column": 16,
+                            "line": 6
+                          },
+                          "message": "Error: page.goto: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://localhost:1420/\", waiting until \"load\"\u001b[22m\n\n\n\u001b[0m \u001b[90m 4 |\u001b[39m   test\u001b[33m.\u001b[39mbeforeEach(\u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m 5 |\u001b[39m     \u001b[90m// Navigate to the home page\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 6 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'/'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m   |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 7 |\u001b[39m\n \u001b[90m 8 |\u001b[39m     \u001b[90m// Wait for the app to be ready\u001b[39m\n \u001b[90m 9 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForLoadState(\u001b[32m'networkidle'\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at C:\\desenvolvimento\\AlLybrary Project\\DesktopApp_AlLibrary\\tests\\e2e\\home-page.spec.ts:6:16\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-06-19T22:12:46.683Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\desenvolvimento\\AlLybrary Project\\DesktopApp_AlLibrary\\test-results\\home-page-AlLibrary-Home-P-89838-splay-the-application-title-firefox\\video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\desenvolvimento\\AlLybrary Project\\DesktopApp_AlLibrary\\tests\\e2e\\home-page.spec.ts",
+                        "column": 8,
+                        "line": 4
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
                 }
               ],
               "id": "d186ff7d110502c4a7d9-5051a9121d5f2775df95",
               "file": "home-page.spec.ts",
-              "line": 12,
-              "column": 3
-            },
-            {
-              "title": "should render main navigation elements",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "firefox",
-                  "projectName": "firefox",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "d186ff7d110502c4a7d9-712e1e5c32e3301eddf0",
-              "file": "home-page.spec.ts",
-              "line": 17,
-              "column": 3
-            },
-            {
-              "title": "should display welcome content",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "firefox",
-                  "projectName": "firefox",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "d186ff7d110502c4a7d9-2d0c12ef3fa18e0d8a38",
-              "file": "home-page.spec.ts",
-              "line": 28,
-              "column": 3
-            },
-            {
-              "title": "should have functional search bar",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "firefox",
-                  "projectName": "firefox",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "d186ff7d110502c4a7d9-6c42d2a98f7c174ff02c",
-              "file": "home-page.spec.ts",
-              "line": 33,
-              "column": 3
-            },
-            {
-              "title": "should handle navigation between pages",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "firefox",
-                  "projectName": "firefox",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "d186ff7d110502c4a7d9-401046d178fb35e7875c",
-              "file": "home-page.spec.ts",
-              "line": 43,
-              "column": 3
-            },
-            {
-              "title": "should be responsive and accessible",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "firefox",
-                  "projectName": "firefox",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "d186ff7d110502c4a7d9-e59f89c05c376afb8619",
-              "file": "home-page.spec.ts",
-              "line": 52,
-              "column": 3
-            },
-            {
-              "title": "should handle errors gracefully",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "firefox",
-                  "projectName": "firefox",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "d186ff7d110502c4a7d9-5b2169be86a1486a5057",
-              "file": "home-page.spec.ts",
-              "line": 62,
+              "line": 20,
               "column": 3
             },
             {
               "title": "should display the application title",
-              "ok": true,
+              "ok": false,
               "tags": [],
               "tests": [
                 {
@@ -389,321 +263,65 @@
                   "expectedStatus": "passed",
                   "projectId": "webkit",
                   "projectName": "webkit",
-                  "results": [],
-                  "status": "skipped"
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "timedOut",
+                      "duration": 51712,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 30000ms exceeded while running \"beforeEach\" hook.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 30000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n    at C:\\desenvolvimento\\AlLybrary Project\\DesktopApp_AlLibrary\\tests\\e2e\\home-page.spec.ts:4:8",
+                        "location": {
+                          "file": "C:\\desenvolvimento\\AlLybrary Project\\DesktopApp_AlLibrary\\tests\\e2e\\home-page.spec.ts",
+                          "column": 8,
+                          "line": 4
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 2 |\u001b[39m\n \u001b[90m 3 |\u001b[39m test\u001b[33m.\u001b[39mdescribe(\u001b[32m'AlLibrary Home Page'\u001b[39m\u001b[33m,\u001b[39m () \u001b[33m=>\u001b[39m {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 4 |\u001b[39m   test\u001b[33m.\u001b[39mbeforeEach(\u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m   |\u001b[39m        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 5 |\u001b[39m     \u001b[90m// Navigate to the home page\u001b[39m\n \u001b[90m 6 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'/'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 7 |\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\desenvolvimento\\AlLybrary Project\\DesktopApp_AlLibrary\\tests\\e2e\\home-page.spec.ts",
+                            "column": 8,
+                            "line": 4
+                          },
+                          "message": "\u001b[31mTest timeout of 30000ms exceeded while running \"beforeEach\" hook.\u001b[39m\n\n\u001b[0m \u001b[90m 2 |\u001b[39m\n \u001b[90m 3 |\u001b[39m test\u001b[33m.\u001b[39mdescribe(\u001b[32m'AlLibrary Home Page'\u001b[39m\u001b[33m,\u001b[39m () \u001b[33m=>\u001b[39m {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 4 |\u001b[39m   test\u001b[33m.\u001b[39mbeforeEach(\u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m   |\u001b[39m        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 5 |\u001b[39m     \u001b[90m// Navigate to the home page\u001b[39m\n \u001b[90m 6 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'/'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 7 |\u001b[39m\u001b[0m\n\u001b[2m    at C:\\desenvolvimento\\AlLybrary Project\\DesktopApp_AlLibrary\\tests\\e2e\\home-page.spec.ts:4:8\u001b[22m"
+                        },
+                        {
+                          "location": {
+                            "file": "C:\\desenvolvimento\\AlLybrary Project\\DesktopApp_AlLibrary\\tests\\e2e\\home-page.spec.ts",
+                            "column": 16,
+                            "line": 6
+                          },
+                          "message": "Error: page.goto: Test timeout of 30000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://localhost:1420/\", waiting until \"load\"\u001b[22m\n\n\n\u001b[0m \u001b[90m 4 |\u001b[39m   test\u001b[33m.\u001b[39mbeforeEach(\u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\n \u001b[90m 5 |\u001b[39m     \u001b[90m// Navigate to the home page\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 6 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'/'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m   |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 7 |\u001b[39m\n \u001b[90m 8 |\u001b[39m     \u001b[90m// Wait for the app to be ready\u001b[39m\n \u001b[90m 9 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForLoadState(\u001b[32m'networkidle'\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at C:\\desenvolvimento\\AlLybrary Project\\DesktopApp_AlLibrary\\tests\\e2e\\home-page.spec.ts:6:16\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-06-19T22:12:46.708Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\desenvolvimento\\AlLybrary Project\\DesktopApp_AlLibrary\\test-results\\home-page-AlLibrary-Home-P-89838-splay-the-application-title-webkit\\video.webm"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\desenvolvimento\\AlLybrary Project\\DesktopApp_AlLibrary\\tests\\e2e\\home-page.spec.ts",
+                        "column": 8,
+                        "line": 4
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
                 }
               ],
               "id": "d186ff7d110502c4a7d9-c3fb7730cc64eb5527b9",
               "file": "home-page.spec.ts",
-              "line": 12,
-              "column": 3
-            },
-            {
-              "title": "should render main navigation elements",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "webkit",
-                  "projectName": "webkit",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "d186ff7d110502c4a7d9-880a29db2f5b7247f288",
-              "file": "home-page.spec.ts",
-              "line": 17,
-              "column": 3
-            },
-            {
-              "title": "should display welcome content",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "webkit",
-                  "projectName": "webkit",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "d186ff7d110502c4a7d9-98d1dc11a57a62b07db9",
-              "file": "home-page.spec.ts",
-              "line": 28,
-              "column": 3
-            },
-            {
-              "title": "should have functional search bar",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "webkit",
-                  "projectName": "webkit",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "d186ff7d110502c4a7d9-9978388240be96157f1f",
-              "file": "home-page.spec.ts",
-              "line": 33,
-              "column": 3
-            },
-            {
-              "title": "should handle navigation between pages",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "webkit",
-                  "projectName": "webkit",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "d186ff7d110502c4a7d9-67992a1508c9cdfb4345",
-              "file": "home-page.spec.ts",
-              "line": 43,
-              "column": 3
-            },
-            {
-              "title": "should be responsive and accessible",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "webkit",
-                  "projectName": "webkit",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "d186ff7d110502c4a7d9-5ab4aa8a2f2e9f6800df",
-              "file": "home-page.spec.ts",
-              "line": 52,
-              "column": 3
-            },
-            {
-              "title": "should handle errors gracefully",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "webkit",
-                  "projectName": "webkit",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "d186ff7d110502c4a7d9-9a931f045fc41a23749c",
-              "file": "home-page.spec.ts",
-              "line": 62,
-              "column": 3
-            }
-          ]
-        },
-        {
-          "title": "AlLibrary Core Features",
-          "file": "home-page.spec.ts",
-          "line": 71,
-          "column": 6,
-          "specs": [
-            {
-              "title": "should display recent documents section",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "d186ff7d110502c4a7d9-11857f60fd6874645a4e",
-              "file": "home-page.spec.ts",
-              "line": 72,
-              "column": 3
-            },
-            {
-              "title": "should display trending section",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "d186ff7d110502c4a7d9-80e88e7e8c829f8dca5c",
-              "file": "home-page.spec.ts",
-              "line": 79,
-              "column": 3
-            },
-            {
-              "title": "should handle document upload flow",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "chromium",
-                  "projectName": "chromium",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "d186ff7d110502c4a7d9-4fc753ebcb9b3136feae",
-              "file": "home-page.spec.ts",
-              "line": 86,
-              "column": 3
-            },
-            {
-              "title": "should display recent documents section",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "firefox",
-                  "projectName": "firefox",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "d186ff7d110502c4a7d9-a18573b56764e888e96e",
-              "file": "home-page.spec.ts",
-              "line": 72,
-              "column": 3
-            },
-            {
-              "title": "should display trending section",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "firefox",
-                  "projectName": "firefox",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "d186ff7d110502c4a7d9-94900e3f690e964a5fca",
-              "file": "home-page.spec.ts",
-              "line": 79,
-              "column": 3
-            },
-            {
-              "title": "should handle document upload flow",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "firefox",
-                  "projectName": "firefox",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "d186ff7d110502c4a7d9-f92d9de14473b914c0bd",
-              "file": "home-page.spec.ts",
-              "line": 86,
-              "column": 3
-            },
-            {
-              "title": "should display recent documents section",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "webkit",
-                  "projectName": "webkit",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "d186ff7d110502c4a7d9-551ce983330475d6ccb4",
-              "file": "home-page.spec.ts",
-              "line": 72,
-              "column": 3
-            },
-            {
-              "title": "should display trending section",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "webkit",
-                  "projectName": "webkit",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "d186ff7d110502c4a7d9-5d76ec07856348d23591",
-              "file": "home-page.spec.ts",
-              "line": 79,
-              "column": 3
-            },
-            {
-              "title": "should handle document upload flow",
-              "ok": true,
-              "tags": [],
-              "tests": [
-                {
-                  "timeout": 30000,
-                  "annotations": [],
-                  "expectedStatus": "passed",
-                  "projectId": "webkit",
-                  "projectName": "webkit",
-                  "results": [],
-                  "status": "skipped"
-                }
-              ],
-              "id": "d186ff7d110502c4a7d9-c252eb9f0f29858b9071",
-              "file": "home-page.spec.ts",
-              "line": 86,
+              "line": 20,
               "column": 3
             }
           ]
@@ -711,13 +329,17 @@
       ]
     }
   ],
-  "errors": [],
+  "errors": [
+    {
+      "message": "\u001b[31mTesting stopped early after 3 maximum allowed failures.\u001b[39m"
+    }
+  ],
   "stats": {
-    "startTime": "2025-06-19T21:51:13.835Z",
-    "duration": 49.115999999999985,
+    "startTime": "2025-06-19T22:12:40.873Z",
+    "duration": 69089.609,
     "expected": 0,
-    "skipped": 30,
-    "unexpected": 0,
+    "skipped": 0,
+    "unexpected": 3,
     "flaky": 0
   }
 }

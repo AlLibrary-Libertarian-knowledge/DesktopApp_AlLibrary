@@ -48,7 +48,7 @@ interface SidebarProps {
 
 const Sidebar: Component<SidebarProps> = props => {
   const [activeSection, setActiveSection] = createSignal('');
-  const [isOnline, setIsOnline] = createSignal(true);
+  const [isOnline] = createSignal(true);
   const [isTransitioning, setIsTransitioning] = createSignal(false);
   const [wasCollapsed, setWasCollapsed] = createSignal(false);
   const [pendingSection, setPendingSection] = createSignal<string | null>(null);
@@ -162,7 +162,7 @@ const Sidebar: Component<SidebarProps> = props => {
       setIsTransitioning(true);
       setActiveSection(''); // Close current first
 
-      setTimeout(() => {
+      globalThis.setTimeout(() => {
         setActiveSection(section); // Open new one after delay
         setIsTransitioning(false);
       }, 200); // Delay matches the CSS transition timing
@@ -179,7 +179,7 @@ const Sidebar: Component<SidebarProps> = props => {
   return (
     <aside class={`app-sidebar ${props.collapsed ? 'collapsed' : ''}`}>
       {/* Navigation */}
-      <nav class="sidebar-nav">
+      <nav class="sidebar-nav" data-testid="main-navigation">
         {navigationItems.map(section => (
           <div class="nav-section">
             <button

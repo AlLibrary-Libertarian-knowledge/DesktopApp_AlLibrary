@@ -32,7 +32,12 @@ const Header: Component<HeaderProps> = props => {
 
       <div class="header-center">
         <div class="search-container">
-          <input type="search" placeholder="Search documents..." class="global-search" />
+          <input
+            type="search"
+            placeholder="Search documents..."
+            class="global-search"
+            data-testid="search-input"
+          />
           <button class="search-button" aria-label="Search">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <circle cx="11" cy="11" r="8" />

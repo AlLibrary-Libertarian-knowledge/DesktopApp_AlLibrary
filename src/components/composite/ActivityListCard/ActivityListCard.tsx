@@ -22,6 +22,7 @@ interface ActivityListCardProps {
   items: ActivityItemProps[];
   cardType?: 'downloads' | 'network' | 'default';
   class?: string;
+  'data-testid'?: string;
 }
 
 const ActivityListItem = (props: { item: ActivityItemProps }) => {
@@ -122,6 +123,7 @@ export const ActivityListCard = (props: ActivityListCardProps) => {
   return (
     <div
       class={`${styles['activity-card']} ${props.cardType ? styles[props.cardType] : ''} ${props.class || ''}`}
+      data-testid={props['data-testid']}
     >
       <div class={styles['card-header']}>
         <div class={styles['header-icon']}>{props.icon}</div>

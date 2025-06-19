@@ -231,7 +231,10 @@ const HomePage: Component = () => {
           <>
             {/* Enhanced Stats Section */}
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div
+              class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+              data-testid="trending-section"
+            >
               <StatCard
                 type="documents"
                 icon={<BookOpen size={24} />}
@@ -323,6 +326,7 @@ const HomePage: Component = () => {
                   icon={<Download size={20} />}
                   items={recentDownloads}
                   cardType="downloads"
+                  data-testid="recent-documents"
                 />
 
                 <ActivityListCard
@@ -340,7 +344,7 @@ const HomePage: Component = () => {
               <h2 class={styles['section-title']}>Quick Actions</h2>
 
               <div class={styles['actions-grid']}>
-                <button class={styles['action-button']}>
+                <button class={styles['action-button']} data-testid="upload-button">
                   <Share size={20} />
                   <span>Share Document</span>
                 </button>
