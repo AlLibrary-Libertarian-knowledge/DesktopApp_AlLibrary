@@ -1,0 +1,205 @@
+# Page snapshot
+
+```yaml
+- banner:
+  - button "Toggle sidebar"
+  - img "AlLibrary Logo"
+  - heading "AlLibrary" [level=1]
+  - text: Decentralized Knowledge Sharing
+  - searchbox "Search documents..."
+  - button "Search":
+    - img
+  - button "Notifications":
+    - img
+  - button "Settings":
+    - img
+  - text: Online
+- complementary:
+  - navigation:
+    - button "Library":
+      - img
+      - text: Library
+      - img
+    - link "Dashboard":
+      - /url: /
+      - img
+      - text: Dashboard
+    - link "Documents & Search":
+      - /url: /documents
+      - img
+      - text: Documents & Search
+    - link "Collections":
+      - /url: /collections
+      - img
+      - text: Collections
+    - link "Favorites":
+      - /url: /favorites
+      - img
+      - text: Favorites
+    - link "Recent":
+      - /url: /recent
+      - img
+      - text: Recent
+    - button "Discovery":
+      - img
+      - text: Discovery
+      - img
+    - link "Search Network":
+      - /url: /search-network
+      - img
+      - text: Search Network
+    - link "Browse Categories":
+      - /url: /browse
+      - img
+      - text: Browse Categories
+    - link "Trending 12":
+      - /url: /trending
+      - img
+      - text: Trending 12
+    - link "New Arrivals New":
+      - /url: /new-arrivals
+      - img
+      - text: New Arrivals New
+    - button "Cultural Heritage":
+      - img
+      - text: Cultural Heritage
+      - img
+    - link "Cultural Contexts":
+      - /url: /cultural-contexts
+      - img
+      - text: Cultural Contexts
+    - link "Traditional Knowledge":
+      - /url: /traditional-knowledge
+      - img
+      - text: Traditional Knowledge
+    - link "Guidelines":
+      - /url: /community-guidelines
+      - img
+      - text: Guidelines
+    - link "Preservation":
+      - /url: /preservation
+      - img
+      - text: Preservation
+    - button "Network":
+      - img
+      - text: Network
+      - img
+    - link "Peer Network 8":
+      - /url: /peers
+      - img
+      - text: Peer Network 8
+    - link "Sharing Status":
+      - /url: /sharing
+      - img
+      - text: Sharing Status
+    - link "Downloads 3":
+      - /url: /downloads
+      - img
+      - text: Downloads 3
+    - link "Synchronization":
+      - /url: /sync
+      - img
+      - text: Synchronization
+  - img
+  - text: Storage 3.5GB / 10GB
+  - img
+  - text: Network Online
+- main:
+  - heading "AlLibrary Network Dashboard" [level=1]
+  - paragraph: Decentralized Cultural Heritage Preservation Network
+  - text: Network Online 98% Health ⬇ Download 2.4 MB/s 89 peers ⬆ Upload 1.2 MB/s 3 Downloads 7 Seeding 2 Discovering
+  - button "Overview":
+    - img
+    - text: Overview
+  - button "Network":
+    - img
+    - text: Network
+  - button "Downloads":
+    - img
+    - text: Downloads
+  - 'article "Documents Shared: 12,847. positive trend: +127 today"':
+    - heading "12,847" [level=3]
+    - paragraph: Documents Shared
+    - text: +127 today
+  - 'article "Connected Peers: 89. positive trend: +5 online"':
+    - heading "89" [level=3]
+    - paragraph: Connected Peers
+    - text: +5 online
+  - 'article "Cultural Institutions: 156. neutral trend: stable"':
+    - heading "156" [level=3]
+    - paragraph: Cultural Institutions
+    - text: stable
+  - 'article "Network Health: 98%. positive trend: excellent"':
+    - heading "98%" [level=3]
+    - paragraph: Network Health
+    - text: excellent
+  - text: "-"
+  - heading "Network Topology" [level=2]
+  - paragraph: Live peer connection visualization
+  - text: 89 nodes 156 connections
+  - button "Expand View":
+    - img
+    - text: Expand View
+  - button "Recenter camera view":
+    - img
+    - text: Center
+  - text: Transfer Status Guide Transfer States Downloading Files Uploading/Sending Files Reconnecting (Disconnected) Stopped/Interrupted File Status Corrupted Files Slow Downloads (3+ days) Verified/Complete Pending/Queued Connection Types ━ High Speed ┅ Medium Speed ⋯ Low/Unstable 💡
+  - strong: Hover to expand • Click to pin
+  - text: • Click nodes for detailed P2P info Peers2/4 Bandwidth3.5 MB/s Latency52ms Health60%
+  - heading "Network Activity" [level=2]
+  - paragraph: Real-time downloads and network connections
+  - img
+  - heading "Recent Downloads" [level=3]
+  - paragraph: Active downloads and uploads
+  - text: 3 items
+  - img
+  - img
+  - heading "Traditional Healing Practices.pdf" [level=4]
+  - text: 2.4 MB 67% complete 2.1 MB/s
+  - img
+  - text: Downloading
+  - img
+  - heading "Digital Archives Collection" [level=4]
+  - text: 156 MB Seeding to 12 peers 1.5 MB/s upload
+  - img
+  - text: Seeding
+  - img
+  - heading "Andean Music Methods.epub" [level=4]
+  - text: 8.2 MB Completed 2 minutes ago
+  - img
+  - text: Complete
+  - img
+  - heading "Network Activity" [level=3]
+  - paragraph: Peer connections and discoveries
+  - text: 3 items
+  - heading "Connected to peer node" [level=4]
+  - text: Library.universidadsanmarcos.pe Connected
+  - heading "Institution sharing" [level=4]
+  - text: Universidad Nacional Mayor de San Marcos Sharing
+  - heading "Network discovery" [level=4]
+  - text: Found 3 new document sources Discovered
+  - heading "Quick Actions" [level=2]
+  - button "Share Document":
+    - img
+    - text: Share Document
+  - button "Search Network":
+    - img
+    - text: Search Network
+  - button "Analytics":
+    - img
+    - text: Analytics
+  - button "Settings":
+    - img
+    - text: Settings
+  - img
+  - text: Network 16 peers 2.2 MB/s 33ms
+  - img
+  - text: "Downloads 3 active 1.2 MB/s Queue: 5"
+  - img
+  - text: Storage 847 GB / 12 TB 7%
+  - img
+  - text: Health CPU 34% RAM 78%
+  - img
+  - text: "Protection active status verified Last scan: 2 min ago"
+- contentinfo: "P2P Network: 12 peers connected Internet + TOR Last sync: 2 minutes ago 🌿 Respecting cultural heritage and traditional knowledge AlLibrary v0.1.0 Phase 1 Development Secure Private Cultural"
+```

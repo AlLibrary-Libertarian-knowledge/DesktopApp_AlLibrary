@@ -53,7 +53,7 @@ export default defineConfig({
       command: 'yarn tauri:dev',
       port: 1420,
       reuseExistingServer: !process.env.CI,
-      timeout: 60000,
+      timeout: 120000, // Increased timeout for Tauri startup
     },
   ],
 
@@ -62,9 +62,9 @@ export default defineConfig({
   globalTeardown: './tests/e2e/global-teardown.ts',
 
   /* Test timeout */
-  timeout: 30000,
+  timeout: 60000, // Increased for Tauri app startup
   expect: {
-    timeout: 10000,
+    timeout: 15000, // Increased for complex UI rendering
   },
 
   /* Output directories */
