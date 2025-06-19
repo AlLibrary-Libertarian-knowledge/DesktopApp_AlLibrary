@@ -30,6 +30,31 @@ yarn test:e2e          # Playwright (e2e)
 yarn test --run && yarn test:e2e  # This caused the previous error
 ```
 
+## 🔧 Common Issues & Solutions
+
+### Issue: `'playwright' não é reconhecido como um comando`
+
+**Problem**: Playwright CLI not found
+**Solution**: Use `npx` prefix in package.json scripts:
+
+```json
+{
+  "scripts": {
+    "test:e2e": "npx playwright test", // ✅ Correct
+    "test:e2e": "playwright test" // ❌ Incorrect
+  }
+}
+```
+
+### Issue: Missing `@playwright/test` dependency
+
+**Solution**: Install the dependency:
+
+```bash
+yarn add -D @playwright/test
+npx playwright install
+```
+
 - ✅ **Rich Debugging Tools**: Trace viewer, inspector, and VS Code integration
 
 ## Project Structure
