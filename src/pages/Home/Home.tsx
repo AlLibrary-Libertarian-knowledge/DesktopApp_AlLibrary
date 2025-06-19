@@ -243,7 +243,6 @@ const HomePage: Component = () => {
                 trendLabel="today"
                 graphType="chart"
               />
-
               <StatCard
                 type="peers"
                 icon={<Users size={24} />}
@@ -255,7 +254,6 @@ const HomePage: Component = () => {
                 trendLabel="online"
                 graphType="peers"
               />
-
               <StatCard
                 type="institutions"
                 icon={<University size={24} />}
@@ -266,7 +264,6 @@ const HomePage: Component = () => {
                 trendValue="stable"
                 graphType="map"
               />
-
               <StatCard
                 type="health"
                 icon={<Zap size={24} />}
@@ -277,6 +274,7 @@ const HomePage: Component = () => {
                 trendValue="excellent"
                 graphType="health"
               />
+              -
             </div>
 
             {/* Enhanced Network Preview Section */}

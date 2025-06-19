@@ -14,6 +14,10 @@ fi
 echo "🧪 Running full test suite..."
 yarn test --run
 
+# Run e2e tests
+echo "🎭 Running end-to-end tests..."
+yarn test:e2e
+
 # Build check to ensure everything compiles
 echo "🔨 Running build check..."
 yarn build
