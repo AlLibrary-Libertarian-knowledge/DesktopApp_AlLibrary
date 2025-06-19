@@ -4,8 +4,8 @@ import type { PhysicsConfig } from '../types';
 export const physicsConfig: PhysicsConfig = {
   minOrbitRadius: 80, // Minimum distance from center
   maxOrbitRadius: 300, // Maximum distance from center
-  baseOrbitSpeed: 0.001, // Base orbital speed (radians per frame) - original subtle speed
-  speedVariation: 0.3, // Random speed variation per node
+  baseOrbitSpeed: 0.003, // Increased from 0.001 to 0.003 - faster orbital speed for continuous movement
+  speedVariation: 0.4, // Increased variation for more dynamic movement
   drag: 0.95, // Friction when dragging
   snapBackForce: 0.02, // Force to return to orbit when released
   centerAttraction: 0.001, // Gentle pull toward center
@@ -20,8 +20,8 @@ export const physicsConfig: PhysicsConfig = {
 
 // Performance configuration
 export const performanceConfig = {
-  ACTIVITY_TIMEOUT: 3000, // 3 seconds of no activity before slowing down
-  STABLE_VELOCITY_THRESHOLD: 0.1, // Velocity below this is considered stable
+  ACTIVITY_TIMEOUT: 100, // Reduced from 3000ms to 100ms - keeps animation running more consistently
+  STABLE_VELOCITY_THRESHOLD: 0.05, // Reduced threshold for more sensitive movement detection
   THROTTLE_INTERVAL: 16, // 16ms for 60fps mouse handling
   MAX_MEMORY_THRESHOLD: 50 * 1024 * 1024, // 50MB memory warning threshold
   TARGET_FRAME_TIME: 16.67, // Target frame time for 60fps

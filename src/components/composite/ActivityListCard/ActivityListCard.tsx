@@ -27,7 +27,12 @@ interface ActivityListCardProps {
 const ActivityListItem = (props: { item: ActivityItemProps }) => {
   const getIndicator = () => {
     switch (props.item.type) {
-      case 'downloading':
+      case 'downloading': {
+        const progress = props.item.progress || 0;
+        const circumference = 2 * Math.PI * 16;
+        const strokeDasharray = circumference;
+        const strokeDashoffset = circumference - (progress / 100) * circumference;
+
         return (
           <div class={styles['progress-ring']}>
             <svg width="40" height="40" viewBox="0 0 40 40">
@@ -46,14 +51,15 @@ const ActivityListItem = (props: { item: ActivityItemProps }) => {
                 fill="none"
                 stroke="#3b82f6"
                 stroke-width="2"
-                stroke-dasharray={`${2 * Math.PI * 16 * ((props.item.progress || 0) / 100)} ${2 * Math.PI * 16}`}
-                stroke-dashoffset={2 * Math.PI * 16 * 0.25}
+                stroke-dasharray={strokeDasharray.toString()}
+                stroke-dashoffset={strokeDashoffset}
                 class={styles['progress-arc']}
               />
             </svg>
-            <Download size={16} class={styles['progress-icon']} />
+            <Download size={16} class={styles['progress-icon'] || ''} />
           </div>
         );
+      }
       case 'seeding':
         return (
           <div class={styles['upload-indicator']}>
@@ -129,8 +135,8 @@ export const ActivityListCard = (props: ActivityListCardProps) => {
       </div>
 
       <div class={styles['activity-list']}>
-        {props.items.map((item, index) => (
-          <ActivityListItem key={index} item={item} />
+        {props.items.map((item, _index) => (
+          <ActivityListItem item={item} />
         ))}
       </div>
     </div>

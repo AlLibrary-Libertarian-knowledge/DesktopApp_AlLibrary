@@ -5,7 +5,6 @@ import {
   SpatialGrid,
   Vector2D,
   throttle,
-  CanvasOptimizer,
   ObjectPool,
 } from '../../../utils/performance';
 
@@ -15,7 +14,7 @@ import { useNetworkState } from './hooks/useNetworkState';
 import { PhysicsEngine } from './physics/PhysicsEngine';
 import { NodeRenderer } from './rendering/NodeRenderer';
 import TransferLegend from './components/TransferLegend';
-import { physicsConfig, performanceConfig, animationConfig } from './config/physicsConfig';
+import { performanceConfig } from './config/physicsConfig';
 import {
   formatTimeRemaining,
   formatFileSize,
@@ -23,9 +22,7 @@ import {
   formatLatency,
   formatReliability,
   formatNodeType,
-  formatUptime,
   getNetworkTypeIcon,
-  getStatusColor,
 } from './utils/formatters';
 import './NetworkGraph.css';
 
@@ -127,35 +124,12 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
       return;
     }
 
-    // Always animate if we have orbital nodes (continuous orbital motion)
-    const hasOrbitalNodes = nodes.some(node => node.type !== 'self');
+    // FORCE 24/7 CONTINUOUS ANIMATION - Always simulate physics and render
+    simulatePhysics();
+    drawNetwork();
 
-    if (hasOrbitalNodes) {
-      // Continuous animation for orbital motion
-      simulatePhysics();
-      drawNetwork();
-      animationId = requestAnimationFrame(smartAnimate);
-    } else {
-      // Fallback to activity-based animation when no orbital nodes
-      const hasActivity = checkNetworkActivity();
-      const timeSinceActivity = Date.now() - lastActivityTime;
-
-      if (hasActivity) {
-        lastActivityTime = Date.now();
-        simulatePhysics();
-        drawNetwork();
-        animationId = requestAnimationFrame(smartAnimate);
-      } else if (timeSinceActivity < performanceConfig.ACTIVITY_TIMEOUT) {
-        simulatePhysics();
-        scheduleRender();
-        animationId = requestAnimationFrame(smartAnimate);
-      } else {
-        scheduleRender();
-        setTimeout(() => {
-          animationId = requestAnimationFrame(smartAnimate);
-        }, 100);
-      }
-    }
+    // Always schedule the next frame for 24/7 animation
+    animationId = requestAnimationFrame(smartAnimate);
   };
 
   // Physics simulation using extracted PhysicsEngine
@@ -197,26 +171,52 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
     ]);
   };
 
-  // Grid drawing
+  // Grid drawing with continuous animation
   const drawGrid = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
+    const time = Date.now() * 0.001; // Current time for animations
+
+    // Animated grid
     ctx.strokeStyle = 'var(--border-color)';
     ctx.lineWidth = 0.5;
-    ctx.globalAlpha = 0.3;
+    ctx.globalAlpha = 0.2 + Math.sin(time * 0.5) * 0.1; // Subtle breathing effect
 
     const gridSize = 25;
-    for (let x = 0; x <= width; x += gridSize) {
+    const offset = (time * 10) % gridSize; // Slow moving grid
+
+    // Vertical lines with animation
+    for (let x = -offset; x <= width + gridSize; x += gridSize) {
       ctx.beginPath();
       ctx.moveTo(x, 0);
       ctx.lineTo(x, height);
       ctx.stroke();
     }
 
-    for (let y = 0; y <= height; y += gridSize) {
+    // Horizontal lines with animation
+    for (let y = -offset; y <= height + gridSize; y += gridSize) {
       ctx.beginPath();
       ctx.moveTo(0, y);
       ctx.lineTo(width, y);
       ctx.stroke();
     }
+
+    // Add some animated highlight lines
+    ctx.strokeStyle = 'rgba(59, 130, 246, 0.3)';
+    ctx.lineWidth = 1;
+    ctx.globalAlpha = 0.4 + Math.sin(time * 2) * 0.2;
+
+    // Animated vertical highlight
+    const highlightX = width / 2 + Math.sin(time * 0.3) * (width * 0.3);
+    ctx.beginPath();
+    ctx.moveTo(highlightX, 0);
+    ctx.lineTo(highlightX, height);
+    ctx.stroke();
+
+    // Animated horizontal highlight
+    const highlightY = height / 2 + Math.cos(time * 0.4) * (height * 0.3);
+    ctx.beginPath();
+    ctx.moveTo(0, highlightY);
+    ctx.lineTo(width, highlightY);
+    ctx.stroke();
 
     ctx.globalAlpha = 1;
   };
