@@ -11,6 +11,25 @@ This directory contains end-to-end tests for the AlLibrary desktop application u
 - ✅ **Built-in Parallelization**: Runs tests concurrently for faster execution
 - ✅ **TypeScript Integration**: Perfect match for our SolidJS + TypeScript stack
 - ✅ **Tauri Compatibility**: Excellent support for testing Tauri applications
+
+## ⚠️ Important: Vitest vs Playwright Separation
+
+**These frameworks are configured to run separately to avoid conflicts:**
+
+- **Vitest** runs unit and integration tests from `src/` directory
+- **Playwright** runs e2e tests from `tests/e2e/` directory
+- **Vitest excludes** `tests/e2e/**` to prevent conflicts
+- **Run them separately** to avoid framework interference
+
+```bash
+# ✅ Correct - Run separately
+yarn test --run        # Vitest (unit/integration)
+yarn test:e2e          # Playwright (e2e)
+
+# ❌ Incorrect - Don't run together
+yarn test --run && yarn test:e2e  # This caused the previous error
+```
+
 - ✅ **Rich Debugging Tools**: Trace viewer, inspector, and VS Code integration
 
 ## Project Structure

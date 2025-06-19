@@ -27,6 +27,14 @@ export default defineConfig({
     setupFiles: ['./src/test-setup.ts'], // Setup file for mocks
     globals: true, // Enable global test functions
     css: true, // Process CSS files
+    // Exclude e2e tests from Vitest (they use Playwright)
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/cypress/**',
+      '**/.{idea,git,cache,output,temp}/**',
+      '**/tests/e2e/**', // Exclude all e2e tests
+    ],
   },
   define: {
     global: 'globalThis',

@@ -10,11 +10,11 @@ if [ "$current_branch" = "main" ] || [ "$current_branch" = "master" ]; then
     exit 1
 fi
 
-# Run full test suite
-echo "🧪 Running full test suite..."
+# Run unit/integration test suite (excluding e2e)
+echo "🧪 Running unit and integration tests..."
 yarn test --run
 
-# Run e2e tests
+# Run e2e tests separately
 echo "🎭 Running end-to-end tests..."
 yarn test:e2e
 
