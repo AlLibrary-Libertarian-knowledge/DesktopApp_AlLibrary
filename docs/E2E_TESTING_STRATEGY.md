@@ -1,118 +1,141 @@
-# E2E Testing Strategy for AlLibrary (Tauri v2)
+# 🎭 AlLibrary E2E Testing Strategy
 
-## 🏗️ **Architecture Overview**
+## 🎯 **Current Status & Quick Start**
+
+**✅ WORKING**: Chromium tests (10/10 passing) - Windows WebView2 compatibility  
+**⚠️ UNSTABLE**: WebKit tests (6/10 passing) - Known issues on Windows  
+**🔧 IN PROGRESS**: WebKit stabilization for cross-platform testing
+
+### 🚀 **Quick Commands**
+
+```bash
+# ✅ Recommended: Windows-only (stable)
+yarn test:e2e:windows
+
+# ⚠️ Full cross-platform (WebKit issues)
+yarn test:e2e
+
+# 🧪 Unit tests (284 tests passing)
+yarn test --run
+
+# 🎮 Interactive debugging
+yarn test:e2e:debug
+```
+
+## 🏗️ **Testing Architecture**
 
 AlLibrary uses **Tauri v2** which runs on platform-specific webview engines:
 
-| Platform       | Webview Engine      | Test Browser | Configuration   |
-| -------------- | ------------------- | ------------ | --------------- |
-| 🖥️ **Windows** | WebView2 (Chromium) | Chromium     | Primary testing |
-| 🍎 **macOS**   | WKWebView (WebKit)  | WebKit       | Cross-platform  |
-| 🐧 **Linux**   | WebKitGTK (WebKit)  | WebKit       | Cross-platform  |
-| 🚫 **Firefox** | ❌ Never used       | ❌ Removed   | Not applicable  |
+| Platform       | Webview Engine      | Test Browser | Status      |
+| -------------- | ------------------- | ------------ | ----------- |
+| 🖥️ **Windows** | WebView2 (Chromium) | Chromium     | ✅ Stable   |
+| 🍎 **macOS**   | WKWebView (WebKit)  | WebKit       | ⚠️ Unstable |
+| 🐧 **Linux**   | WebKitGTK (WebKit)  | WebKit       | ⚠️ Unstable |
 
 ## 🎯 **Testing Configurations**
 
-### **1. Cross-Platform Testing (Default)**
+### 1. **Windows-Only Configuration** (Recommended)
 
-```bash
-yarn test:e2e
-```
+- **File**: `playwright-windows-only.config.ts`
+- **Purpose**: Fast, stable testing for Windows development
+- **Coverage**: WebView2 compatibility (Chromium)
+- **Status**: ✅ Fully working
 
-- **Browsers**: Chromium + WebKit
-- **Coverage**: Windows, macOS, Linux webviews
-- **Duration**: ~2-3 minutes
-- **Use Case**: Pre-push, CI/CD, comprehensive validation
+### 2. **Cross-Platform Configuration** (Development)
 
-### **2. Windows-Focused Testing (Development)**
+- **File**: `playwright.config.ts`
+- **Purpose**: Full cross-platform testing
+- **Coverage**: Chromium + WebKit
+- **Status**: ⚠️ WebKit issues on Windows
 
-```bash
-yarn test:e2e:windows
-```
+## 🐛 **Known WebKit Issues**
 
-- **Browsers**: Chromium only
-- **Coverage**: Windows WebView2 simulation
-- **Duration**: ~1 minute
-- **Use Case**: Fast development feedback
+### **Root Cause**: WebKit on Windows Instability
 
-## 🚀 **Development Workflow**
+WebKit browser engine has known stability issues on Windows in Playwright:
 
-### **Daily Development**
+1. **Navigation Timeouts**: `Target page, context or browser has been closed`
+2. **Modal Interaction Failures**: Welcome modal click timeouts
+3. **Element Interaction Issues**: Search input click failures
 
-```bash
-# Fast iteration during development
-yarn test:e2e:windows
+### **Current Impact**
 
-# Quick validation: 10 tests in ~1 minute
-```
+- **Chromium Tests**: 10/10 passing ✅
+- **WebKit Tests**: 6/10 passing ⚠️
+- **Failed Tests**: Modal interactions and navigation timing
 
-### **Pre-Push Validation**
+### **Mitigation Strategy**
 
-```bash
-# Comprehensive cross-platform testing
-yarn test:e2e
-
-# Full coverage: 20 tests in ~2-3 minutes
-```
-
-### **CI/CD Pipeline**
-
-```yaml
-# Recommended CI configuration
-steps:
-  - name: Unit Tests
-    run: yarn test --run
-
-  - name: E2E Cross-Platform Tests
-    run: yarn test:e2e
-
-  - name: Build Verification
-    run: yarn build
-```
+1. **Short-term**: Use Windows-only config for development
+2. **Medium-term**: Enhanced WebKit error handling (in progress)
+3. **Long-term**: Alternative cross-platform validation approach
 
 ## 📊 **Test Coverage Matrix**
 
 | Feature           | Chromium | WebKit | Coverage |
 | ----------------- | -------- | ------ | -------- |
-| Navigation        | ✅       | ✅     | 100%     |
-| Search            | ✅       | ✅     | 100%     |
+| Navigation        | ✅       | ⚠️     | 50%      |
+| Search            | ✅       | ❌     | 50%      |
 | Dashboard         | ✅       | ✅     | 100%     |
 | Document Upload   | ✅       | ✅     | 100%     |
-| Responsive Design | ✅       | ✅     | 100%     |
-| Error Handling    | ✅       | ✅     | 100%     |
-| Recent Documents  | ✅       | ✅     | 100%     |
+| Responsive Design | ✅       | ❌     | 50%      |
+| Error Handling    | ✅       | ❌     | 50%      |
+| Recent Documents  | ✅       | ❌     | 50%      |
 | Trending Section  | ✅       | ✅     | 100%     |
-| UI Interactions   | ✅       | ✅     | 100%     |
-| Accessibility     | ✅       | ✅     | 100%     |
+| UI Interactions   | ✅       | ❌     | 50%      |
+| Accessibility     | ✅       | ❌     | 50%      |
 
 ## 🔧 **Configuration Files**
 
-### **playwright.config.ts** (Cross-Platform)
+### **Windows-Only** (`playwright-windows-only.config.ts`)
 
-- Chromium + WebKit browsers
-- Optimized for Tauri v2 webviews
-- Full feature coverage
-
-### **playwright-windows-only.config.ts** (Development)
-
-- Chromium browser only
-- Fast development feedback
-- Windows WebView2 simulation
-
-## 🛠️ **Husky Integration**
-
-### **Pre-Push Hook**
-
-```bash
-# Runs cross-platform e2e tests before push
-yarn test:e2e  # Chromium + WebKit
+```typescript
+projects: [
+  {
+    name: 'chromium',
+    use: { ...devices['Desktop Chrome'] },
+  },
+];
 ```
 
-### **Pre-Commit Hook** (Optional)
+### **Cross-Platform** (`playwright.config.ts`)
+
+```typescript
+projects: [
+  {
+    name: 'chromium',
+    use: { ...devices['Desktop Chrome'] },
+  },
+  {
+    name: 'webkit',
+    use: { ...devices['Desktop Safari'] },
+  },
+];
+```
+
+## 🚦 **CI/CD Integration**
+
+### **Current Pre-Push Hook**
 
 ```bash
-# Quick validation during commit
-yarn test:e2e:windows  # Chromium only
+# Unit tests (284 tests) - Always run
+yarn test --run
+
+# E2E tests - Temporarily disabled
+# Reason: WebKit stability issues
+# Manual testing: yarn test:e2e
+```
+
+### **GitHub Actions** (Planned)
+
+```yaml
+- name: Run E2E Tests
+  run: |
+    # Windows: Chromium only
+    yarn test:e2e:windows
+
+    # Linux/macOS: Full suite when WebKit stabilized
+    yarn test:e2e
 ```
 
 ## 📈 **Performance Metrics**
@@ -120,93 +143,111 @@ yarn test:e2e:windows  # Chromium only
 | Test Suite     | Tests | Duration | Success Rate |
 | -------------- | ----- | -------- | ------------ |
 | Windows-only   | 10    | ~1 min   | 100%         |
-| Cross-platform | 20    | ~2-3 min | 95%+         |
+| Cross-platform | 20    | ~2-3 min | 80% (WebKit) |
 
 ## 🎯 **Best Practices**
 
-### **1. Development Speed**
+### **For Developers**
 
-- Use `yarn test:e2e:windows` for fast iteration
-- Chromium tests validate 100% of functionality
-- Perfect for TDD/rapid development
+1. **Use Windows-only config** for daily development
+2. **Run cross-platform manually** before major releases
+3. **Check Chromium tests** to verify WebView2 compatibility
+4. **Report WebKit issues** with trace files for debugging
 
-### **2. Quality Assurance**
+### **For CI/CD**
 
-- Use `yarn test:e2e` before commits/pushes
-- WebKit tests catch cross-platform issues
-- Essential for release validation
+1. **Unit tests always required** (284 tests)
+2. **E2E tests recommended** but not blocking
+3. **Platform-specific configs** for different environments
+4. **Retry logic** for flaky WebKit tests
 
-### **3. CI/CD Optimization**
+### **For QA**
 
-- Run cross-platform tests in CI
-- Consider parallel execution for speed
-- Use artifacts for test reports
+1. **Manual cross-platform testing** for releases
+2. **Browser-specific test plans** for different environments
+3. **Performance benchmarking** on target platforms
+4. **Accessibility validation** across browsers
 
-## 🚫 **What We Eliminated**
+## 🔄 **Development Workflow**
 
-### **Firefox Testing**
-
-- **Why removed**: No Tauri platform uses Firefox
-- **Impact**: Zero functional loss
-- **Benefit**: 50% faster test execution
-
-### **Complex Browser Matrix**
-
-- **Before**: Chrome + Firefox + Safari + Edge
-- **After**: Chromium + WebKit (maps to actual webviews)
-- **Result**: Focused, accurate, efficient
-
-## 🎉 **Results**
-
-### **Before Optimization**
-
-- 30 tests across 3 browsers
-- 8+ minutes with timeouts
-- 26 failures due to Firefox incompatibility
-
-### **After Optimization**
-
-- 20 tests across 2 relevant browsers
-- 2-3 minutes total execution
-- 100% success rate on Windows (Chromium)
-- 95%+ success rate cross-platform
-
-## 📋 **Commands Reference**
+### **Daily Development**
 
 ```bash
-# Development
-yarn test:e2e:windows     # Fast Windows testing
-yarn test:e2e:ui          # Interactive test runner
-yarn test:e2e:debug       # Debug mode
+# 1. Unit tests (fast feedback)
+yarn test --run
 
-# Validation
-yarn test:e2e             # Cross-platform testing
-yarn playwright show-report  # View test results
+# 2. Windows E2E (stable)
+yarn test:e2e:windows
 
-# CI/CD
-yarn test:e2e --reporter=junit  # CI-friendly output
+# 3. Manual cross-platform (optional)
+yarn test:e2e
 ```
 
-## 🔍 **Troubleshooting**
+### **Before Release**
 
-### **WebKit Timeouts**
+```bash
+# 1. Full test suite
+yarn test --run
+yarn test:e2e
 
-- Usually infrastructure-related
-- Chromium success validates functionality
-- Consider timeout adjustments for slower systems
+# 2. Manual platform testing
+# - Windows: Native WebView2
+# - macOS: WKWebView
+# - Linux: WebKitGTK
+```
 
-### **Tauri Dev Server Issues**
+## 🛠️ **Troubleshooting**
 
-- Ensure ports are available (1420)
-- Check firewall settings
-- Verify cargo/rust installation
+### **WebKit Fails but Chromium Passes**
 
-### **Test Failures**
+```bash
+# Use Windows-only config
+yarn test:e2e:windows
 
-- Check video recordings in `test-results/`
-- Use `--debug` flag for step-by-step debugging
-- Verify UI changes haven't broken selectors
+# Check specific WebKit test
+yarn test:e2e --grep "search bar" --project=webkit
+```
+
+### **Modal Interaction Issues**
+
+```bash
+# Debug with headed browser
+yarn test:e2e:headed
+
+# Check trace files
+yarn playwright show-trace test-results/[test-name]/trace.zip
+```
+
+### **Navigation Timeouts**
+
+```bash
+# Increase timeout temporarily
+yarn test:e2e --timeout=120000
+
+# Check network logs
+yarn test:e2e --headed --project=webkit
+```
+
+## 🎬 **Testing Demos**
+
+### **UI Mode** (Interactive)
+
+```bash
+yarn test:e2e:ui
+```
+
+### **Debug Mode** (Step-by-step)
+
+```bash
+yarn test:e2e:debug
+```
+
+### **Headed Mode** (Visual)
+
+```bash
+yarn test:e2e:headed
+```
 
 ---
 
-_This strategy aligns with Tauri v2 architecture and provides comprehensive coverage while maintaining development speed._
+_This strategy prioritizes stability and developer experience while working toward full cross-platform coverage._

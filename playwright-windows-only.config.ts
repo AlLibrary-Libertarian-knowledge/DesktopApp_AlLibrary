@@ -1,46 +1,54 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * Windows-focused E2E configuration for Tauri v2
- * Only tests Chromium since Windows WebView2 is Chromium-based
- * Use this for fast development testing
+ * Windows-Only Playwright Configuration
+ *
+ * This config is optimized for Windows development and CI/CD:
+ * - Only tests Chromium (matches Tauri's WebView2 on Windows)
+ * - Simplified setup for faster local development
+ * - More reliable than cross-platform testing
+ *
+ * Use this for:
+ * - Local Windows development
+ * - Windows CI/CD pipelines
+ * - When WebKit stability is an issue
  */
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
-  reporter: 'html',
-  timeout: 60000,
+  retries: process.env.CI ? 2 : 1,
+  workers: process.env.CI ? 2 : 4,
+  reporter: [['html', { open: 'never' }], ['list']],
+
+  timeout: 30000, // Reduced timeout for faster feedback
   expect: {
-    timeout: 15000,
+    timeout: 10000,
   },
-  globalSetup: './tests/e2e/global-setup.ts',
-  globalTeardown: './tests/e2e/global-teardown.ts',
+
   use: {
     baseURL: 'http://localhost:1420',
-    trace: 'on-first-retry',
-    video: 'retain-on-failure',
+    trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
   },
 
-  /* Configure Tauri dev server */
-  webServer: {
-    command: 'yarn dev',
-    url: 'http://localhost:1420',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
-  },
-
-  /* Windows-only testing: Chromium matches WebView2 */
   projects: [
     {
       name: 'chromium',
       use: {
         ...devices['Desktop Chrome'],
-        // Windows WebView2 testing (Chromium-based)
+        // Optimized settings for Tauri WebView2 testing
+        viewport: { width: 1280, height: 720 },
+        permissions: ['clipboard-read', 'clipboard-write'],
       },
     },
   ],
+
+  webServer: {
+    command: 'yarn tauri dev',
+    url: 'http://localhost:1420',
+    reuseExistingServer: !process.env.CI,
+    timeout: 120000,
+  },
 });

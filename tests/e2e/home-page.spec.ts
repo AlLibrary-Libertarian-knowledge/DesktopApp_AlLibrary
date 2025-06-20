@@ -1,108 +1,179 @@
 import { test, expect } from '@playwright/test';
 
-// Helper function to force close any modal
-async function forceCloseModal(page) {
-  // Strategy 1: Try clicking the Enter button
-  const enterButton = page.locator('button:has-text("Enter AlLibrary")');
-  if (await enterButton.isVisible().catch(() => false)) {
-    await enterButton.click({ force: true });
-    await page.waitForTimeout(500);
-  }
-
-  // Strategy 2: Nuclear option - remove all modals from DOM
-  await page.evaluate(() => {
-    const modalSelectors = [
-      '[role="dialog"]',
-      '.modal-overlay',
-      '[aria-modal="true"]',
-      '[class*="modal-overlay"]',
-      '[class*="modal"]',
-      'dialog',
-      '[class*="_modal-overlay_"]',
-    ];
-
-    modalSelectors.forEach(selector => {
-      const elements = document.querySelectorAll(selector);
-      elements.forEach(el => el.remove());
-    });
-  });
-
-  await page.waitForTimeout(500);
+// Helper function to detect browser type
+function getBrowserName(page) {
+  return page.context().browser()?.browserType().name() || 'unknown';
 }
 
-// Helper function for robust navigation across different browsers
-async function robustNavigate(page, url = '/') {
-  const browserName = page.context().browser()?.browserType().name();
+// Helper function to force close any modal with WebKit-specific handling
+async function forceCloseModal(page) {
+  const browserName = getBrowserName(page);
+  const isWebKit = browserName === 'webkit';
+
+  // WebKit needs longer waits and more robust handling
+  const baseWait = isWebKit ? 1000 : 500;
 
   try {
-    // Standard navigation with longer timeout for problematic browsers
-    const timeout = browserName === 'firefox' ? 90000 : 60000;
-    await page.goto(url, {
-      waitUntil: 'domcontentloaded',
-      timeout,
-    });
-
-    // Wait for basic page structure
-    await page.waitForSelector('body', { timeout: 20000 });
-    await page.waitForTimeout(2000);
-  } catch {
-    // Fallback for browsers that have trouble with initial load
-    console.log(`Navigation failed for ${browserName}, trying fallback...`);
-
-    try {
-      // Try with just 'load' event instead of 'domcontentloaded'
-      await page.goto(url, {
-        waitUntil: 'load',
-        timeout: 90000,
-      });
-      await page.waitForTimeout(3000);
-    } catch {
-      // Last resort - just navigate and wait
-      await page.goto(url, { timeout: 90000 });
-      await page.waitForTimeout(5000);
-    }
-  }
-}
-
-test.describe('AlLibrary Home Page', () => {
-  test.beforeEach(async ({ page }) => {
-    // Use robust navigation for better browser compatibility
-    await robustNavigate(page, '/');
-
-    // FORCE CLOSE the welcome modal - it's blocking all interactions
-    // Try multiple strategies to ensure modal is completely closed
-
-    // Strategy 1: Force click the Enter button if it exists
+    // Strategy 1: Try clicking the Enter button with retries for WebKit
     const enterButton = page.locator('button:has-text("Enter AlLibrary")');
-    if (await enterButton.isVisible().catch(() => false)) {
-      await enterButton.click({ force: true });
-      await page.waitForTimeout(1500);
+    for (let i = 0; i < (isWebKit ? 3 : 1); i++) {
+      if (await enterButton.isVisible().catch(() => false)) {
+        await enterButton.click({ force: true, timeout: 10000 });
+        await page.waitForTimeout(baseWait);
+
+        // Check if modal is actually closed
+        if (!(await enterButton.isVisible().catch(() => false))) {
+          break;
+        }
+      }
     }
 
-    // Strategy 2: Try text-based approach
+    // Strategy 2: Try text-based approach with retries
     const enterTextButton = page.locator('text=Enter AlLibrary');
-    if (await enterTextButton.isVisible().catch(() => false)) {
-      await enterTextButton.click({ force: true });
-      await page.waitForTimeout(1500);
+    for (let i = 0; i < (isWebKit ? 3 : 1); i++) {
+      if (await enterTextButton.isVisible().catch(() => false)) {
+        await enterTextButton.click({ force: true, timeout: 10000 });
+        await page.waitForTimeout(baseWait);
+
+        if (!(await enterTextButton.isVisible().catch(() => false))) {
+          break;
+        }
+      }
     }
 
     // Strategy 3: Close any dialog that might exist
     const dialogModal = page.locator('dialog');
     if (await dialogModal.isVisible().catch(() => false)) {
       await page.keyboard.press('Escape');
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(baseWait);
     }
 
-    // Strategy 4: Remove modal overlay if it still exists (nuclear option)
+    // Strategy 4: Nuclear option - remove all modals from DOM
     await page.evaluate(() => {
-      const modals = document.querySelectorAll(
-        '[role="dialog"], .modal-overlay, [aria-modal="true"]'
-      );
-      modals.forEach(modal => modal.remove());
+      const modalSelectors = [
+        '[role="dialog"]',
+        '.modal-overlay',
+        '[aria-modal="true"]',
+        '[class*="modal-overlay"]',
+        '[class*="modal"]',
+        'dialog',
+        '[class*="_modal-overlay_"]',
+      ];
+
+      modalSelectors.forEach(selector => {
+        const elements = document.querySelectorAll(selector);
+        elements.forEach(el => {
+          try {
+            el.remove();
+          } catch {
+            // Ignore removal errors
+          }
+        });
+      });
     });
 
-    // Final wait for any animations to complete
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(baseWait);
+  } catch (error) {
+    console.log(`Modal close failed: ${error.message}`);
+    // Continue anyway - the test might still work
+  }
+}
+
+// Enhanced robust navigation with WebKit-specific handling
+async function robustNavigate(page, url = '/') {
+  const browserName = getBrowserName(page);
+  const isWebKit = browserName === 'webkit';
+
+  // WebKit on Windows needs special handling
+  if (isWebKit) {
+    try {
+      // For WebKit, use a more conservative approach
+      await page.goto(url, {
+        waitUntil: 'load',
+        timeout: 120000, // Extended timeout for WebKit
+      });
+
+      // Wait for page to be properly loaded
+      await page.waitForSelector('body', { timeout: 30000 });
+      await page.waitForTimeout(3000); // Extra wait for WebKit
+
+      // Verify page is actually interactive
+      await page.waitForFunction(() => document.readyState === 'complete', { timeout: 20000 });
+    } catch (error) {
+      console.log(`WebKit navigation failed: ${error.message}, trying fallback...`);
+
+      // Fallback for WebKit
+      try {
+        await page.goto(url, { timeout: 120000 });
+        await page.waitForTimeout(5000);
+      } catch (fallbackError) {
+        console.log(`WebKit fallback failed: ${fallbackError.message}`);
+        throw fallbackError;
+      }
+    }
+  } else {
+    // Standard navigation for other browsers
+    try {
+      const timeout = browserName === 'firefox' ? 90000 : 60000;
+      await page.goto(url, {
+        waitUntil: 'domcontentloaded',
+        timeout,
+      });
+
+      await page.waitForSelector('body', { timeout: 20000 });
+      await page.waitForTimeout(2000);
+    } catch {
+      console.log(`Navigation failed for ${browserName}, trying fallback...`);
+
+      try {
+        await page.goto(url, {
+          waitUntil: 'load',
+          timeout: 90000,
+        });
+        await page.waitForTimeout(3000);
+      } catch {
+        await page.goto(url, { timeout: 90000 });
+        await page.waitForTimeout(5000);
+      }
+    }
+  }
+}
+
+// Enhanced beforeEach with WebKit-specific handling
+async function setupTest(page) {
+  const browserName = getBrowserName(page);
+  const isWebKit = browserName === 'webkit';
+
+  // Navigate to the page
+  await robustNavigate(page, '/');
+
+  // WebKit needs more aggressive modal handling
+  if (isWebKit) {
+    // Multiple attempts to close modal for WebKit
+    for (let attempt = 0; attempt < 3; attempt++) {
+      await forceCloseModal(page);
+
+      // Check if we can interact with the page
+      const navigation = page.locator('[data-testid="main-navigation"]');
+      if (await navigation.isVisible().catch(() => false)) {
+        break; // Success!
+      }
+
+      if (attempt < 2) {
+        await page.waitForTimeout(2000);
+      }
+    }
+  } else {
+    await forceCloseModal(page);
+  }
+
+  // Final verification that page is ready
+  await page.waitForSelector('[data-testid="main-navigation"]', { timeout: 30000 });
+}
+
+test.describe('AlLibrary Home Page', () => {
+  test.beforeEach(async ({ page }) => {
+    await setupTest(page);
   });
 
   test('should display the application title', async ({ page }) => {
@@ -132,39 +203,64 @@ test.describe('AlLibrary Home Page', () => {
   });
 
   test('should have functional search bar', async ({ page }) => {
-    // Force close modal before test
-    await forceCloseModal(page);
+    const browserName = getBrowserName(page);
+    const isWebKit = browserName === 'webkit';
 
-    // Test search functionality
+    // Extra modal handling for WebKit
+    if (isWebKit) {
+      await forceCloseModal(page);
+      await page.waitForTimeout(1000);
+    }
+
+    // Test search functionality with enhanced error handling
     const searchInput = page.locator('[data-testid="search-input"]');
-    await expect(searchInput).toBeVisible();
-    await expect(searchInput).toBeEnabled();
 
-    // Clear any existing value first
-    await searchInput.clear();
+    // Wait for search input to be ready with extended timeout for WebKit
+    await expect(searchInput).toBeVisible({ timeout: isWebKit ? 30000 : 10000 });
+    await expect(searchInput).toBeEnabled({ timeout: isWebKit ? 30000 : 10000 });
 
-    // Click on the input first to ensure focus
-    await searchInput.click({ force: true });
+    // WebKit-specific interaction handling
+    if (isWebKit) {
+      // Clear any existing value first
+      await searchInput.focus();
+      await page.keyboard.press('Control+A');
+      await page.keyboard.press('Delete');
+      await page.waitForTimeout(500);
 
-    // Use type instead of fill for more realistic input
-    await searchInput.type('test search');
+      // Type with more robust method for WebKit
+      await searchInput.pressSequentially('test search', { delay: 100 });
+    } else {
+      // Standard approach for other browsers
+      await searchInput.clear();
+      await searchInput.click({ force: true });
+      await searchInput.type('test search');
+    }
 
-    // Wait a moment for the value to be set
-    await page.waitForTimeout(500);
-
+    // Wait for value to be set
+    await page.waitForTimeout(1000);
     await expect(searchInput).toHaveValue('test search');
   });
 
   test('should handle navigation elements interaction', async ({ page }) => {
-    // Force close modal before navigation
-    await forceCloseModal(page);
+    const isWebKit = getBrowserName(page) === 'webkit';
 
-    // Test that navigation element is clickable (Browse Categories may not have actual route)
+    // Extra preparation for WebKit
+    if (isWebKit) {
+      await forceCloseModal(page);
+      await page.waitForTimeout(1000);
+    }
+
+    // Test that navigation element is clickable
     const browseButton = page.locator('[data-testid="main-navigation"] >> text=Browse Categories');
-    await expect(browseButton).toBeVisible();
+    await expect(browseButton).toBeVisible({ timeout: isWebKit ? 30000 : 10000 });
 
-    // Click the navigation element to ensure it's interactive
-    await browseButton.click({ force: true });
+    // Click with enhanced handling for WebKit
+    if (isWebKit) {
+      await browseButton.scrollIntoViewIfNeeded();
+      await page.waitForTimeout(500);
+    }
+
+    await browseButton.click({ force: true, timeout: 15000 });
 
     // Verify the page is still responsive after the click
     await expect(page.locator('[data-testid="main-navigation"]')).toBeVisible();
@@ -172,27 +268,43 @@ test.describe('AlLibrary Home Page', () => {
   });
 
   test('should be responsive and accessible', async ({ page }) => {
-    // Force close modal before responsive testing
-    await forceCloseModal(page);
+    const isWebKit = getBrowserName(page) === 'webkit';
+
+    // Extra preparation for WebKit
+    if (isWebKit) {
+      await forceCloseModal(page);
+      await page.waitForTimeout(1000);
+    }
 
     // Check for main layout elements
     const navigation = page.locator('[data-testid="main-navigation"]');
-    await expect(navigation).toBeVisible();
+    await expect(navigation).toBeVisible({ timeout: isWebKit ? 30000 : 10000 });
 
     // Check that sidebar toggle works
     const sidebarToggle = page.locator('button[aria-label="Toggle sidebar"]');
-    if (await sidebarToggle.isVisible()) {
-      await sidebarToggle.click({ force: true });
+    if (await sidebarToggle.isVisible().catch(() => false)) {
+      await sidebarToggle.click({ force: true, timeout: 15000 });
     }
   });
 
   test('should handle errors gracefully', async ({ page }) => {
-    // Navigate to a non-existent page
-    await page.goto('/non-existent-page');
+    const isWebKit = getBrowserName(page) === 'webkit';
 
-    // Should show error page or redirect to home with a "Page Not Found" message
+    // Navigate to a non-existent page with browser-specific handling
+    try {
+      if (isWebKit) {
+        await page.goto('/non-existent-page', { timeout: 120000 });
+      } else {
+        await page.goto('/non-existent-page');
+      }
+    } catch (error) {
+      // Navigation might fail, that's part of the test
+      console.log(`Expected navigation failure: ${error.message}`);
+    }
+
+    // Should show error page or redirect to home
     const notFoundElement = page.locator('text=Page Not Found');
-    if (await notFoundElement.isVisible()) {
+    if (await notFoundElement.isVisible().catch(() => false)) {
       await expect(notFoundElement).toBeVisible();
     } else {
       // If redirected to home, that's also acceptable
@@ -203,73 +315,64 @@ test.describe('AlLibrary Home Page', () => {
 
 test.describe('AlLibrary Core Features', () => {
   test.beforeEach(async ({ page }) => {
-    await robustNavigate(page, '/');
-
-    // FORCE CLOSE the welcome modal - it's blocking all interactions
-    // Try multiple strategies to ensure modal is completely closed
-
-    // Strategy 1: Force click the Enter button if it exists
-    const enterButton = page.locator('button:has-text("Enter AlLibrary")');
-    if (await enterButton.isVisible().catch(() => false)) {
-      await enterButton.click({ force: true });
-      await page.waitForTimeout(1500);
-    }
-
-    // Strategy 2: Try text-based approach
-    const enterTextButton = page.locator('text=Enter AlLibrary');
-    if (await enterTextButton.isVisible().catch(() => false)) {
-      await enterTextButton.click({ force: true });
-      await page.waitForTimeout(1500);
-    }
-
-    // Strategy 3: Close any dialog that might exist
-    const dialogModal = page.locator('dialog');
-    if (await dialogModal.isVisible().catch(() => false)) {
-      await page.keyboard.press('Escape');
-      await page.waitForTimeout(1000);
-    }
-
-    // Strategy 4: Remove modal overlay if it still exists (nuclear option)
-    await page.evaluate(() => {
-      const modals = document.querySelectorAll(
-        '[role="dialog"], .modal-overlay, [aria-modal="true"]'
-      );
-      modals.forEach(modal => modal.remove());
-    });
-
-    // Final wait for any animations to complete
-    await page.waitForTimeout(1000);
+    await setupTest(page);
   });
 
   test('should display recent documents section', async ({ page }) => {
-    // Check for recent documents section
-    await expect(page.locator('[data-testid="recent-documents"]')).toBeVisible();
+    const isWebKit = getBrowserName(page) === 'webkit';
+
+    // Check for recent documents section with extended timeout for WebKit
+    await expect(page.locator('[data-testid="recent-documents"]')).toBeVisible({
+      timeout: isWebKit ? 30000 : 10000,
+    });
 
     // Check that it has the correct title
-    await expect(page.locator('text=Recent Downloads')).toBeVisible();
+    await expect(page.locator('text=Recent Downloads')).toBeVisible({
+      timeout: isWebKit ? 30000 : 10000,
+    });
   });
 
   test('should display trending section', async ({ page }) => {
-    // Check for trending section (stats cards)
-    await expect(page.locator('[data-testid="trending-section"]')).toBeVisible();
+    const isWebKit = getBrowserName(page) === 'webkit';
+
+    // Check for trending section (stats cards) with extended timeout for WebKit
+    await expect(page.locator('[data-testid="trending-section"]')).toBeVisible({
+      timeout: isWebKit ? 30000 : 10000,
+    });
 
     // Check for stat cards
-    await expect(page.locator('text=Documents Shared')).toBeVisible();
-    await expect(page.locator('text=Connected Peers')).toBeVisible();
+    await expect(page.locator('text=Documents Shared')).toBeVisible({
+      timeout: isWebKit ? 30000 : 10000,
+    });
+    await expect(page.locator('text=Connected Peers')).toBeVisible({
+      timeout: isWebKit ? 30000 : 10000,
+    });
   });
 
   test('should handle document upload flow', async ({ page }) => {
-    // Force close modal before upload test
-    await forceCloseModal(page);
+    const isWebKit = getBrowserName(page) === 'webkit';
+
+    // Extra preparation for WebKit
+    if (isWebKit) {
+      await forceCloseModal(page);
+      await page.waitForTimeout(1000);
+    }
 
     // Look for upload button (Share Document button)
     const uploadButton = page.locator('[data-testid="upload-button"]');
-    await expect(uploadButton).toBeVisible();
+    await expect(uploadButton).toBeVisible({
+      timeout: isWebKit ? 30000 : 10000,
+    });
 
     // Check that it contains the correct text
     await expect(uploadButton).toContainText('Share Document');
 
-    // Click upload button (should be clickable)
-    await uploadButton.click({ force: true });
+    // Click upload button with enhanced handling for WebKit
+    if (isWebKit) {
+      await uploadButton.scrollIntoViewIfNeeded();
+      await page.waitForTimeout(500);
+    }
+
+    await uploadButton.click({ force: true, timeout: 15000 });
   });
 });

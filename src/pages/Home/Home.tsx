@@ -277,7 +277,6 @@ const HomePage: Component = () => {
                 trendValue="excellent"
                 graphType="health"
               />
-              -
             </div>
 
             {/* Enhanced Network Preview Section */}
