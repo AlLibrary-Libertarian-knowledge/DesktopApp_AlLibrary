@@ -286,9 +286,32 @@ pnpm build            # Build frontend
 pnpm tauri build      # Build complete application
 
 # Testing
-pnpm test             # Run frontend tests
+
+## E2E Testing Strategy (Tauri v2 Optimized)
+
+AlLibrary uses **cross-platform e2e testing** aligned with Tauri v2 webview architecture:
+
+| Test Suite | Command | Coverage | Duration |
+|------------|---------|----------|----------|
+| **Development** | `yarn test:e2e:windows` | Windows WebView2 | ~1 min |
+| **Cross-Platform** | `yarn test:e2e` | Windows + macOS + Linux | ~2-3 min |
+| **Interactive** | `yarn test:e2e:ui` | Debug mode | Interactive |
+
+### Platform Coverage
+- **🖥️ Windows**: Chromium (WebView2 simulation)
+- **🍎 macOS**: WebKit (WKWebView simulation)
+- **🐧 Linux**: WebKit (WebKitGTK simulation)
+- **🚫 Firefox**: Removed (not used by any Tauri platform)
+
+### All Testing Commands
+pnpm test             # Run frontend unit tests
 cargo test            # Run Rust tests
-pnpm test:e2e         # Run end-to-end tests
+pnpm test:e2e         # Cross-platform e2e tests
+pnpm test:e2e:windows # Fast Windows-only e2e tests
+pnpm test:e2e:ui      # Interactive test runner
+pnpm test:e2e:debug   # Debug mode testing
+
+📖 **See [E2E Testing Strategy](./docs/E2E_TESTING_STRATEGY.md) for detailed documentation.**
 
 # Code Quality
 pnpm lint             # Lint TypeScript/JavaScript

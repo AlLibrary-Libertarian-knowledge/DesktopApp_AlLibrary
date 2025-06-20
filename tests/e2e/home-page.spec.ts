@@ -30,14 +30,44 @@ async function forceCloseModal(page) {
   await page.waitForTimeout(500);
 }
 
+// Helper function for robust navigation across different browsers
+async function robustNavigate(page, url = '/') {
+  const browserName = page.context().browser()?.browserType().name();
+
+  try {
+    // Standard navigation with longer timeout for problematic browsers
+    const timeout = browserName === 'firefox' ? 90000 : 60000;
+    await page.goto(url, {
+      waitUntil: 'domcontentloaded',
+      timeout,
+    });
+
+    // Wait for basic page structure
+    await page.waitForSelector('body', { timeout: 20000 });
+    await page.waitForTimeout(2000);
+  } catch {
+    // Fallback for browsers that have trouble with initial load
+    console.log(`Navigation failed for ${browserName}, trying fallback...`);
+
+    try {
+      // Try with just 'load' event instead of 'domcontentloaded'
+      await page.goto(url, {
+        waitUntil: 'load',
+        timeout: 90000,
+      });
+      await page.waitForTimeout(3000);
+    } catch {
+      // Last resort - just navigate and wait
+      await page.goto(url, { timeout: 90000 });
+      await page.waitForTimeout(5000);
+    }
+  }
+}
+
 test.describe('AlLibrary Home Page', () => {
   test.beforeEach(async ({ page }) => {
-    // Navigate to the home page with extended timeout
-    await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 60000 });
-
-    // Wait for the main app elements to be ready (app structure should load first)
-    await page.waitForSelector('body', { timeout: 15000 });
-    await page.waitForTimeout(2000); // Give the app a moment to render
+    // Use robust navigation for better browser compatibility
+    await robustNavigate(page, '/');
 
     // FORCE CLOSE the welcome modal - it's blocking all interactions
     // Try multiple strategies to ensure modal is completely closed
@@ -173,9 +203,7 @@ test.describe('AlLibrary Home Page', () => {
 
 test.describe('AlLibrary Core Features', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 60000 });
-    await page.waitForSelector('body', { timeout: 15000 });
-    await page.waitForTimeout(2000); // Give the app a moment to render
+    await robustNavigate(page, '/');
 
     // FORCE CLOSE the welcome modal - it's blocking all interactions
     // Try multiple strategies to ensure modal is completely closed

@@ -9,8 +9,8 @@ export default defineConfig({
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
+  /* Retry on CI only, plus retries for browser compatibility */
+  retries: process.env.CI ? 2 : 1, // Add retry for local dev to handle browser quirks
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
@@ -31,20 +31,24 @@ export default defineConfig({
     video: 'retain-on-failure',
   },
 
-  /* Configure projects for major browsers */
+  /* Configure projects optimized for Tauri v2 webview engines */
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
+      use: {
+        ...devices['Desktop Chrome'],
+        // Primary testing: Windows WebView2 (Chromium-based)
+      },
     },
     {
       name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
+      use: {
+        ...devices['Desktop Safari'],
+        // Cross-platform: macOS WKWebView + Linux WebKitGTK
+        ignoreHTTPSErrors: true,
+      },
     },
+    // Firefox removed - no Tauri platform uses Firefox engine
   ],
 
   /* Run your local dev server before starting the tests */

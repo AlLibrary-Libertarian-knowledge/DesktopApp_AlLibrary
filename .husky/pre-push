@@ -14,8 +14,9 @@ fi
 echo "🧪 Running unit and integration tests..."
 yarn test --run
 
-# Run e2e tests separately
-echo "🎭 Running end-to-end tests..."
+# Run optimized e2e tests (Chromium + WebKit for cross-platform coverage)
+echo "🎭 Running cross-platform e2e tests (Windows/macOS/Linux)..."
+echo "📋 Testing Chromium (Windows WebView2) + WebKit (macOS/Linux webviews)"
 yarn test:e2e
 
 # Build check to ensure everything compiles
