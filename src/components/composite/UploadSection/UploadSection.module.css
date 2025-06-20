@@ -1,0 +1,435 @@
+/* UploadSection.module.css */
+
+.uploadSection {
+  width: 100%;
+  padding: 1.5rem;
+  background: var(--surface-primary);
+  border-radius: var(--radius-lg);
+  transition: all 0.2s ease;
+}
+
+.uploadHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+}
+
+.titleSection {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.culturalIndicator {
+  font-size: 1.25rem;
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+  cursor: help;
+}
+
+.culturalIndicator:hover {
+  opacity: 1;
+}
+
+.infoSection {
+  text-align: right;
+}
+
+.formatInfo {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* Drop Zone Styles */
+.dropZone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  padding: 2rem;
+  border: 2px dashed var(--border-secondary);
+  border-radius: var(--radius-md);
+  background: var(--surface-secondary);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  text-align: center;
+}
+
+.dropZone:hover,
+.dropZone:focus {
+  border-color: var(--primary-500);
+  background: var(--surface-hover);
+  transform: translateY(-2px);
+}
+
+.dropZone.dragOver {
+  border-color: var(--primary-400);
+  background: var(--primary-50);
+  transform: scale(1.02);
+}
+
+.uploadIcon {
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  transition: color 0.2s ease;
+}
+
+.dropZone:hover .uploadIcon {
+  color: var(--primary-500);
+}
+
+.dropTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+  color: var(--text-primary);
+}
+
+.dropDescription {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin: 0 0 1.5rem 0;
+  max-width: 400px;
+  line-height: 1.5;
+}
+
+.fileInput {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 0;
+  height: 0;
+}
+
+/* File List Styles */
+.fileList {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-secondary);
+}
+
+.listHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+
+.listTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.files {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* File Item Styles */
+.fileItem {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  background: var(--surface-tertiary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+  gap: 0.5rem;
+}
+
+.fileItem:hover {
+  border-color: var(--border-hover);
+  background: var(--surface-hover);
+}
+
+.fileItem.status-success {
+  border-color: var(--success-500);
+  background: var(--success-50);
+}
+
+.fileItem.status-error {
+  border-color: var(--error-500);
+  background: var(--error-50);
+}
+
+.fileItem.status-uploading,
+.fileItem.status-validating {
+  border-color: var(--primary-500);
+  background: var(--primary-50);
+}
+
+.fileInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.fileIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--surface-primary);
+  border-radius: var(--radius-sm);
+}
+
+.fileDetails {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 0.25rem;
+}
+
+.fileName {
+  font-weight: 500;
+  color: var(--text-primary);
+  word-break: break-all;
+}
+
+.fileSize {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.fileStatus {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-left: auto;
+}
+
+.statusText {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* Cultural Badge Styles */
+.culturalBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  cursor: help;
+  transition: all 0.2s ease;
+}
+
+.cultural-level-1 {
+  background: var(--color-cultural-traditional);
+  color: white;
+}
+
+.cultural-level-2 {
+  background: var(--color-cultural-sacred);
+  color: white;
+}
+
+.cultural-level-3 {
+  background: var(--color-cultural-academic);
+  color: white;
+}
+
+.culturalBadge:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
+}
+
+/* Error Message Styles */
+.errorMessage {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: var(--color-error-50, #fef2f2);
+  border: 1px solid var(--color-error-200, #fecaca);
+  border-radius: var(--radius-sm);
+  color: var(--color-error-700, #b91c1c);
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+}
+
+/* Cultural Information Display */
+.culturalInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: var(--color-info-50, #eff6ff);
+  border: 1px solid var(--color-info-200, #bfdbfe);
+  border-radius: var(--radius-sm);
+  color: var(--color-info-700, #1d4ed8);
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+}
+
+.infoNote {
+  font-style: italic;
+  opacity: 0.8;
+  margin-left: auto;
+}
+
+/* Cultural Notice */
+.culturalNotice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: var(--color-info-50, #eff6ff);
+  border: 1px solid var(--color-info-200, #bfdbfe);
+  border-radius: var(--radius-md);
+  color: var(--color-info-700, #1d4ed8);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin-top: 1.5rem;
+}
+
+/* Loading Spinner */
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border-secondary);
+  border-top: 2px solid var(--primary-500);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Cultural Theme Variations */
+.uploadSection[data-cultural-theme='indigenous'] {
+  border-left: 4px solid var(--color-cultural-traditional);
+}
+
+.uploadSection[data-cultural-theme='traditional'] {
+  border-left: 4px solid var(--color-cultural-sacred);
+}
+
+.uploadSection[data-cultural-theme='ceremonial'] {
+  border-left: 4px solid var(--color-cultural-academic);
+}
+
+.uploadSection[data-cultural-theme='indigenous'] .dropZone:hover {
+  border-color: var(--color-cultural-traditional);
+}
+
+.uploadSection[data-cultural-theme='traditional'] .dropZone:hover {
+  border-color: var(--color-cultural-sacred);
+}
+
+.uploadSection[data-cultural-theme='ceremonial'] .dropZone:hover {
+  border-color: var(--color-cultural-academic);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .uploadSection {
+    padding: 1rem;
+  }
+
+  .uploadHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .infoSection {
+    text-align: left;
+  }
+
+  .dropZone {
+    min-height: 150px;
+    padding: 1.5rem;
+  }
+
+  .listHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .fileStatus {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .culturalInfo {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .infoNote {
+    margin-left: 0;
+  }
+}
+
+/* Accessibility Enhancements */
+@media (prefers-reduced-motion: reduce) {
+  .dropZone,
+  .fileItem,
+  .culturalBadge,
+  .spinner {
+    transition: none;
+    animation: none;
+  }
+
+  .dropZone.dragOver {
+    transform: none;
+  }
+
+  .culturalBadge:hover {
+    transform: none;
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .dropZone {
+    border-width: 3px;
+  }
+
+  .fileItem {
+    border-width: 2px;
+  }
+
+  .culturalBadge {
+    border: 2px solid currentColor;
+  }
+}
+
+/* Focus States */
+.dropZone:focus-visible {
+  outline: 2px solid var(--focus-ring, #3b82f6);
+  outline-offset: 2px;
+}
+
+.fileItem:focus-within {
+  outline: 2px solid var(--focus-ring, #3b82f6);
+  outline-offset: 2px;
+}

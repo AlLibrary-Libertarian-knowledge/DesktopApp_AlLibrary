@@ -1,0 +1,595 @@
+/* Batch Actions Toolbar Styles */
+/* Cultural information display only - NO access control */
+
+.batchToolbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border-top: 1px solid var(--color-border-subtle, #e5e7eb);
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  animation: slideUp 0.3s ease-out;
+}
+
+.batchToolbar:hover {
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.15);
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.toolbarCard {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px 20px;
+  border-radius: 12px;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #d1d5db);
+}
+
+.toolbarContent {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+/* Selection Summary */
+.selectionSummary {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+  min-width: 280px;
+}
+
+.selectionCount {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: var(--color-primary-50, #eff6ff);
+  border: 1px solid var(--color-primary-200, #bfdbfe);
+}
+
+.countText {
+  font-weight: 600;
+  color: var(--color-primary-700, #1d4ed8);
+  font-size: 14px;
+}
+
+.culturalIndicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: var(--color-cultural-bg, #fef3c7);
+  border: 1px solid var(--color-cultural-border, #f59e0b);
+}
+
+.culturalText {
+  font-size: 12px;
+  color: var(--color-cultural-text, #92400e);
+  font-weight: 500;
+}
+
+.infoButton {
+  padding: 4px;
+  min-width: auto;
+  height: auto;
+}
+
+.selectionActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Primary Actions */
+.primaryActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.actionButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.actionButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.actionButton:active {
+  transform: translateY(0);
+}
+
+.expandButton {
+  padding: 8px 12px;
+  font-size: 12px;
+  border-radius: 6px;
+}
+
+/* Cultural Actions */
+.culturalActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 16px;
+  border-left: 2px solid var(--color-cultural-border, #f59e0b);
+}
+
+.culturalButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: var(--color-cultural-bg, #fef3c7);
+  border: 1px solid var(--color-cultural-border, #f59e0b);
+  color: var(--color-cultural-text, #92400e);
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.culturalButton:hover {
+  background: var(--color-cultural-hover, #fde68a);
+  transform: translateY(-1px);
+}
+
+/* Cultural Information Panel (EDUCATIONAL ONLY) */
+.culturalInfoPanel {
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 8px;
+  background: var(--color-cultural-panel-bg, #fffbeb);
+  border: 1px solid var(--color-cultural-panel-border, #fbbf24);
+}
+
+.culturalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 12px;
+}
+
+.culturalTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-cultural-title, #92400e);
+  margin: 0;
+}
+
+.educationalLabel {
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: var(--color-educational-bg, #dcfce7);
+  border: 1px solid var(--color-educational-border, #16a34a);
+  color: var(--color-educational-text, #15803d);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.culturalStats {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.statItem {
+  font-size: 14px;
+  color: var(--color-text-secondary, #6b7280);
+}
+
+.sensitivityBreakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sensitivityList {
+  margin: 4px 0 0 16px;
+  padding: 0;
+  list-style: none;
+}
+
+.sensitivityList li {
+  position: relative;
+  padding-left: 16px;
+  font-size: 13px;
+  color: var(--color-text-tertiary, #9ca3af);
+  line-height: 1.4;
+}
+
+.sensitivityList li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: var(--color-cultural-accent, #f59e0b);
+  font-weight: bold;
+}
+
+.originsBreakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.originsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.originTag {
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: var(--color-origin-bg, #f3f4f6);
+  border: 1px solid var(--color-origin-border, #d1d5db);
+  color: var(--color-origin-text, #374151);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.culturalNote {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 6px;
+  background: var(--color-note-bg, #f0f9ff);
+  border: 1px solid var(--color-note-border, #0ea5e9);
+  margin-top: 8px;
+}
+
+.culturalNote span {
+  font-size: 13px;
+  color: var(--color-note-text, #0c4a6e);
+  line-height: 1.4;
+}
+
+/* Operation Results */
+.resultsPanel {
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 8px;
+  border-width: 1px;
+  border-style: solid;
+}
+
+.resultsPanel.success {
+  background: var(--color-success-bg, #f0fdf4);
+  border-color: var(--color-success-border, #16a34a);
+}
+
+.resultsPanel.error {
+  background: var(--color-error-bg, #fef2f2);
+  border-color: var(--color-error-border, #dc2626);
+}
+
+.resultsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 12px;
+}
+
+.resultsTitle {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.success .resultsTitle {
+  color: var(--color-success-text, #15803d);
+}
+
+.error .resultsTitle {
+  color: var(--color-error-text, #dc2626);
+}
+
+.successIcon {
+  color: var(--color-success-icon, #16a34a);
+}
+
+.errorIcon {
+  color: var(--color-error-icon, #dc2626);
+}
+
+.resultsContent {
+  font-size: 13px;
+  color: var(--color-text-secondary, #6b7280);
+  line-height: 1.4;
+}
+
+.errorsList,
+.skippedList {
+  margin-top: 8px;
+}
+
+.errorsList ul,
+.skippedList ul {
+  margin: 4px 0 0 16px;
+  padding: 0;
+  list-style-type: disc;
+}
+
+.errorsList li,
+.skippedList li {
+  margin: 2px 0;
+  font-size: 12px;
+}
+
+/* Anti-Censorship Notice */
+.antiCensorshipNotice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: var(--color-anti-censorship-bg, #f0f9ff);
+  border: 1px solid var(--color-anti-censorship-border, #0ea5e9);
+}
+
+.antiCensorshipNotice span {
+  font-size: 11px;
+  color: var(--color-anti-censorship-text, #0c4a6e);
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+/* Cultural Theme Variations (INFORMATION DISPLAY ONLY) */
+.batchToolbar[data-cultural-theme='indigenous'] {
+  border-top-color: var(--color-cultural-traditional, #059669);
+}
+
+.batchToolbar[data-cultural-theme='indigenous'] .toolbarCard {
+  border-left: 4px solid var(--color-cultural-traditional, #059669);
+}
+
+.batchToolbar[data-cultural-theme='traditional'] {
+  border-top-color: var(--color-cultural-sacred, #7c3aed);
+}
+
+.batchToolbar[data-cultural-theme='traditional'] .toolbarCard {
+  border-left: 4px solid var(--color-cultural-sacred, #7c3aed);
+}
+
+.batchToolbar[data-cultural-theme='ceremonial'] {
+  border-top-color: var(--color-cultural-academic, #2563eb);
+}
+
+.batchToolbar[data-cultural-theme='ceremonial'] .toolbarCard {
+  border-left: 4px solid var(--color-cultural-academic, #2563eb);
+}
+
+.batchToolbar[data-cultural-theme='community'] {
+  border-top-color: var(--color-cultural-community, #059669);
+}
+
+.batchToolbar[data-cultural-theme='community'] .toolbarCard {
+  border-left: 4px solid var(--color-cultural-community, #059669);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .batchToolbar {
+    padding: 8px 12px;
+  }
+
+  .toolbarCard {
+    padding: 12px 16px;
+  }
+
+  .toolbarContent {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .selectionSummary {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    min-width: auto;
+  }
+
+  .primaryActions {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .actionButton {
+    flex: 1;
+    min-width: 120px;
+    justify-content: center;
+  }
+
+  .culturalActions {
+    padding-left: 0;
+    border-left: none;
+    border-top: 2px solid var(--color-cultural-border, #f59e0b);
+    padding-top: 8px;
+    justify-content: center;
+  }
+
+  .culturalInfoPanel {
+    padding: 12px;
+  }
+
+  .culturalHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .originsList {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .batchToolbar {
+    padding: 6px 8px;
+  }
+
+  .toolbarCard {
+    padding: 8px 12px;
+  }
+
+  .actionButton {
+    font-size: 12px;
+    padding: 6px 10px;
+    min-width: 100px;
+  }
+
+  .selectionCount {
+    padding: 6px 8px;
+  }
+
+  .countText {
+    font-size: 12px;
+  }
+
+  .culturalText {
+    font-size: 11px;
+  }
+
+  .antiCensorshipNotice span {
+    font-size: 10px;
+  }
+}
+
+/* Accessibility Enhancements */
+@media (prefers-reduced-motion: reduce) {
+  .batchToolbar,
+  .actionButton,
+  .culturalButton {
+    animation: none;
+    transition: none;
+  }
+
+  .actionButton:hover,
+  .culturalButton:hover {
+    transform: none;
+  }
+}
+
+@media (prefers-contrast: high) {
+  .batchToolbar {
+    border-top-width: 2px;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .toolbarCard {
+    border-width: 2px;
+  }
+
+  .selectionCount,
+  .culturalIndicator,
+  .culturalInfoPanel,
+  .resultsPanel {
+    border-width: 2px;
+  }
+
+  .actionButton,
+  .culturalButton {
+    border-width: 2px;
+  }
+}
+
+/* Focus Styles for Accessibility */
+.actionButton:focus-visible,
+.culturalButton:focus-visible,
+.infoButton:focus-visible {
+  outline: 2px solid var(--color-focus, #2563eb);
+  outline-offset: 2px;
+}
+
+/* Loading State */
+.batchToolbar[data-processing='true'] {
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+.batchToolbar[data-processing='true'] .actionButton {
+  opacity: 0.6;
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .batchToolbar {
+    background: rgba(17, 24, 39, 0.95);
+    border-top-color: var(--color-border-dark, #374151);
+  }
+
+  .toolbarCard {
+    background: var(--color-surface-dark, #1f2937);
+    border-color: var(--color-border-dark, #374151);
+  }
+
+  .selectionCount {
+    background: var(--color-primary-900, #1e3a8a);
+    border-color: var(--color-primary-700, #1d4ed8);
+  }
+
+  .countText {
+    color: var(--color-primary-200, #bfdbfe);
+  }
+
+  .culturalIndicator {
+    background: var(--color-cultural-dark-bg, #451a03);
+    border-color: var(--color-cultural-dark-border, #92400e);
+  }
+
+  .culturalText {
+    color: var(--color-cultural-dark-text, #fbbf24);
+  }
+
+  .culturalInfoPanel {
+    background: var(--color-cultural-dark-panel-bg, #292524);
+    border-color: var(--color-cultural-dark-panel-border, #a16207);
+  }
+
+  .culturalTitle {
+    color: var(--color-cultural-dark-title, #fbbf24);
+  }
+
+  .antiCensorshipNotice {
+    background: var(--color-anti-censorship-dark-bg, #0c4a6e);
+    border-color: var(--color-anti-censorship-dark-border, #0ea5e9);
+  }
+
+  .antiCensorshipNotice span {
+    color: var(--color-anti-censorship-dark-text, #bae6fd);
+  }
+}
