@@ -1,0 +1,454 @@
+/* DocumentPreview Component Styles
+ * Enhanced with cultural themes, accessibility, and responsive design
+ * Follows WCAG 2.1 AA standards for universal access
+ */
+
+/* Main Container */
+.documentPreview {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+}
+
+.previewContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Header */
+.previewHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-primary);
+  gap: 1rem;
+}
+
+.documentInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.documentIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background-color: var(--primary-bg);
+  color: var(--primary-color);
+  border-radius: 0.5rem;
+  flex-shrink: 0;
+}
+
+.documentTitleSection {
+  flex: 1;
+  min-width: 0;
+}
+
+.documentTitle {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.editTitleSection {
+  flex: 1;
+  min-width: 0;
+}
+
+.titleInput {
+  width: 100%;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 0.375rem;
+  padding: 0.5rem;
+}
+
+.documentMeta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.modeToggle {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  background-color: var(--bg-primary);
+  border-radius: 0.375rem;
+  border: 1px solid var(--border-primary);
+}
+
+.actionButtons {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Cultural Badge */
+.culturalBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: white;
+}
+
+.cultural-level-1 {
+  background-color: var(--cultural-level-1, #10b981);
+}
+
+.cultural-level-2 {
+  background-color: var(--cultural-level-2, #3b82f6);
+}
+
+.cultural-level-3 {
+  background-color: var(--cultural-level-3, #f59e0b);
+}
+
+.cultural-level-4 {
+  background-color: var(--cultural-level-4, #ef4444);
+}
+
+.cultural-level-5 {
+  background-color: var(--cultural-level-5, #8b5cf6);
+}
+
+/* Content */
+.previewContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.documentViewer {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.noPreview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-secondary);
+  gap: 1rem;
+}
+
+.documentFrame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 0.5rem;
+}
+
+/* Edit Mode */
+.editMode {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.editForm {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.formSection {
+  margin-bottom: 2rem;
+}
+
+.sectionTitle {
+  margin: 0 0 1rem 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.formGroup {
+  margin-bottom: 1rem;
+}
+
+.formLabel {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.textareaInput {
+  width: 100%;
+  min-height: 80px;
+  padding: 0.75rem;
+  border: 1px solid var(--border-primary);
+  border-radius: 0.375rem;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  resize: vertical;
+  font-family: inherit;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+/* Cultural Context Mode */
+.culturalContextMode {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.noCulturalContext {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-secondary);
+  gap: 1rem;
+}
+
+.culturalContent {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.contextHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.contextTitle {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.educationalLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  background-color: var(--primary-bg);
+  color: var(--primary-color);
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.contextSection {
+  margin-bottom: 1.5rem;
+}
+
+.protocolsSection {
+  margin-top: 1rem;
+}
+
+.protocolsSection h5 {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.protocolsSection ul {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.historicalSection {
+  margin-top: 1rem;
+}
+
+.historicalSection h5 {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.alternativePerspectives {
+  margin-bottom: 1.5rem;
+}
+
+.perspectiveNote {
+  margin: 0 0 1rem 0;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.verificationSection {
+  margin-bottom: 1.5rem;
+}
+
+.verificationInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Footer */
+.previewFooter {
+  padding: 1rem 1.5rem;
+  background-color: var(--bg-secondary);
+  border-top: 1px solid var(--border-primary);
+}
+
+.footerInfo {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.infoItem {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.antiCensorshipNotice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background-color: var(--info-bg);
+  border: 1px solid var(--info-border);
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  color: var(--info-text);
+  line-height: 1.4;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .previewHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .documentInfo {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .documentMeta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .headerActions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .formRow {
+    grid-template-columns: 1fr;
+  }
+
+  .footerInfo {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (prefers-contrast: high) {
+  .documentPreview {
+    border: 2px solid var(--text-primary);
+  }
+
+  .culturalBadge {
+    border: 1px solid var(--text-primary);
+  }
+}
+
+/* Cultural Themes */
+.documentPreview[data-cultural-theme='indigenous'] {
+  --primary-color: #dc2626;
+  --primary-bg: rgba(220, 38, 38, 0.1);
+}
+
+.documentPreview[data-cultural-theme='traditional'] {
+  --primary-color: #7c3aed;
+  --primary-bg: rgba(124, 58, 237, 0.1);
+}
+
+.documentPreview[data-cultural-theme='modern'] {
+  --primary-color: #0ea5e9;
+  --primary-bg: rgba(14, 165, 233, 0.1);
+}
+
+.documentPreview[data-cultural-theme='ceremonial'] {
+  --primary-color: #ca8a04;
+  --primary-bg: rgba(202, 138, 4, 0.1);
+}
+
+.documentPreview[data-cultural-theme='community'] {
+  --primary-color: #059669;
+  --primary-bg: rgba(5, 150, 105, 0.1);
+}

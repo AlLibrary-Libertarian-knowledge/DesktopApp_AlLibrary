@@ -4,5 +4,8 @@ export { Input } from './Input';
 export { Card } from './Card';
 export { Modal } from './Modal';
 export { Loading } from './Loading';
+export { SearchBar } from './SearchBar';
+export { LoadingSpinner } from './LoadingSpinner';
+export { ErrorMessage } from './ErrorMessage';
 export { Breadcrumb } from './Navigation';
 export { default as AppRouter } from './Router/AppRouter';
