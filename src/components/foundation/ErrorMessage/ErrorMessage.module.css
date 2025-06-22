@@ -1,0 +1,542 @@
+/* ErrorMessage Component Styles
+ * Enhanced with cultural themes, accessibility, and multiple variants
+ * Follows WCAG 2.1 AA standards for universal access
+ */
+
+/* Base Error Message */
+.error-message {
+  position: relative;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin: 0.5rem 0;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Error Variants */
+.error-default {
+  display: block;
+  width: 100%;
+}
+
+.error-banner {
+  border-radius: 0;
+  margin: 0;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+}
+
+.error-toast {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  max-width: 400px;
+  z-index: 1000;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.error-inline {
+  display: inline-flex;
+  padding: 0.5rem 0.75rem;
+  margin: 0.25rem 0;
+  border-radius: 0.25rem;
+}
+
+/* Error Severity Levels */
+.error-info {
+  background-color: var(--info-bg, #eff6ff);
+  border-color: var(--info-border, #bfdbfe);
+  color: var(--info-text, #1e40af);
+}
+
+.error-warning {
+  background-color: var(--warning-bg, #fffbeb);
+  border-color: var(--warning-border, #fde68a);
+  color: var(--warning-text, #92400e);
+}
+
+.error-error {
+  background-color: var(--error-bg, #fef2f2);
+  border-color: var(--error-border, #fecaca);
+  color: var(--error-text, #dc2626);
+}
+
+.error-critical {
+  background-color: var(--critical-bg, #fdf2f8);
+  border-color: var(--critical-border, #f9a8d4);
+  color: var(--critical-text, #be185d);
+  border-width: 2px;
+  box-shadow: 0 4px 16px rgba(190, 24, 93, 0.2);
+}
+
+/* Error Types */
+.error-type-network {
+  border-left: 4px solid var(--network-color, #3b82f6);
+}
+
+.error-type-validation {
+  border-left: 4px solid var(--validation-color, #f59e0b);
+}
+
+.error-type-security {
+  border-left: 4px solid var(--security-color, #ef4444);
+}
+
+.error-type-cultural {
+  border-left: 4px solid var(--cultural-color, #8b5cf6);
+}
+
+.error-type-system {
+  border-left: 4px solid var(--system-color, #6b7280);
+}
+
+.error-type-general {
+  border-left: 4px solid var(--general-color, #64748b);
+}
+
+/* Cultural Theme Styles (INFORMATION ONLY - NO ACCESS RESTRICTION) */
+.error-cultural-indigenous {
+  border-color: var(--cultural-indigenous);
+  background-color: var(--cultural-indigenous-bg);
+}
+
+.error-cultural-traditional {
+  border-color: var(--cultural-traditional);
+  background-color: var(--cultural-traditional-bg);
+}
+
+.error-cultural-modern {
+  border-color: var(--cultural-modern);
+  background-color: var(--cultural-modern-bg);
+}
+
+.error-cultural-ceremonial {
+  border-color: var(--cultural-ceremonial);
+  background-color: var(--cultural-ceremonial-bg);
+}
+
+.error-cultural-community {
+  border-color: var(--cultural-community);
+  background-color: var(--cultural-community-bg);
+}
+
+/* Cultural Indicator */
+.error-cultural-indicator {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  font-size: 1rem;
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+  z-index: 5;
+}
+
+.error-cultural-indicator:hover {
+  opacity: 1;
+}
+
+/* Error Content */
+.error-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Error Header */
+.error-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+/* Error Icon */
+.error-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.error-info .error-icon {
+  color: var(--info-icon, #3b82f6);
+}
+
+.error-warning .error-icon {
+  color: var(--warning-icon, #f59e0b);
+}
+
+.error-error .error-icon {
+  color: var(--error-icon, #ef4444);
+}
+
+.error-critical .error-icon {
+  color: var(--critical-icon, #dc2626);
+}
+
+/* Error Text */
+.error-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.error-title {
+  margin: 0 0 0.25rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: inherit;
+}
+
+.error-message-text {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: inherit;
+}
+
+/* Dismiss Button */
+.error-dismiss {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: currentColor;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.error-dismiss:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+  opacity: 1;
+}
+
+.error-dismiss:focus {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+/* Error Details */
+.error-details {
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  padding-top: 0.75rem;
+}
+
+.error-details-toggle {
+  background: none;
+  border: none;
+  color: currentColor;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: underline;
+  padding: 0;
+  transition: opacity 0.2s ease;
+}
+
+.error-details-toggle:hover {
+  opacity: 0.8;
+}
+
+.error-details-toggle:focus {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.error-details-content {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.error-description,
+.error-code,
+.error-timestamp,
+.error-contact {
+  margin-bottom: 0.5rem;
+}
+
+.error-description:last-child,
+.error-code:last-child,
+.error-timestamp:last-child,
+.error-contact:last-child {
+  margin-bottom: 0;
+}
+
+/* Error Actions */
+.error-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.error-retry {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: currentColor;
+  color: var(--bg-primary);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.error-retry:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.error-retry:focus {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.error-retry:active {
+  transform: translateY(0);
+}
+
+/* Cultural Information */
+.error-cultural-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.cultural-badge {
+  background-color: var(--cultural-bg, rgba(139, 92, 246, 0.1));
+  color: var(--cultural-text, #7c3aed);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.error-context-badge {
+  background-color: var(--context-bg, rgba(59, 130, 246, 0.1));
+  color: var(--context-text, #2563eb);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* Cultural Context Tooltip */
+.error-cultural-tooltip {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: var(--bg-tooltip);
+  border: 1px solid var(--border-tooltip);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-top: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 20;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.2s ease;
+  pointer-events: none;
+}
+
+.error-message:hover .error-cultural-tooltip {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.tooltip-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.tooltip-content strong {
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.sensitivity-level {
+  background-color: var(--cultural-sensitivity-bg);
+  color: var(--cultural-sensitivity-text);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  align-self: flex-start;
+}
+
+.error-context {
+  background-color: var(--error-context-bg);
+  color: var(--error-context-text);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  align-self: flex-start;
+}
+
+.tooltip-description {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  font-style: italic;
+}
+
+/* Hidden State */
+.error-hidden {
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .error-message {
+    border-width: 2px;
+  }
+
+  .error-critical {
+    border-width: 3px;
+  }
+
+  .error-dismiss:focus,
+  .error-details-toggle:focus,
+  .error-retry:focus {
+    outline-width: 3px;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .error-message,
+  .error-cultural-tooltip,
+  .error-retry {
+    transition: none;
+  }
+
+  .error-retry:hover {
+    transform: none;
+  }
+
+  .error-retry:active {
+    transform: none;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .error-message {
+    background-color: var(--bg-primary-dark);
+    border-color: var(--border-primary-dark);
+  }
+
+  .error-cultural-tooltip {
+    background-color: var(--bg-tooltip-dark);
+    border-color: var(--border-tooltip-dark);
+  }
+
+  .error-details-content {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .error-toast {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    right: 1rem;
+    max-width: none;
+  }
+
+  .error-header {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .error-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .error-retry {
+    justify-content: center;
+  }
+
+  .error-cultural-tooltip {
+    position: fixed;
+    top: auto;
+    bottom: 1rem;
+    left: 1rem;
+    right: 1rem;
+    margin-top: 0;
+    z-index: 1000;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .error-message {
+    border: 1px solid #000;
+    background-color: transparent;
+    box-shadow: none;
+  }
+
+  .error-cultural-tooltip,
+  .error-dismiss,
+  .error-retry {
+    display: none;
+  }
+}
+
+/* Focus Management */
+.error-message:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+/* Animation for Toast Variant */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.error-toast {
+  animation: slideInRight 0.3s ease-out;
+}
+
+/* Screen Reader Support */
+.error-message[aria-live='assertive']::after {
+  content: 'Critical error';
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}

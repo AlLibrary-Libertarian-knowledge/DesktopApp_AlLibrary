@@ -13,29 +13,66 @@
  * - Security validation for technical threats only
  */
 
-import type { Document, DocumentMetadata } from '@/types/Document';
-import type { CulturalAnalysis, CulturalSensitivityLevel } from '@/types/Cultural';
+import type { Document } from '@/types/Document';
+import type { CulturalAnalysis } from '@/types/Cultural';
+import { CulturalSensitivityLevel } from '@/types/Cultural';
 import type { SecurityValidationResult, SafetyResult } from '@/types/Security';
 import { culturalValidator } from './culturalValidator';
 import { securityValidator } from './securityValidator';
 
+/**
+ * Document validation result
+ */
 export interface DocumentValidationResult {
+  /** Validation passed */
   valid: boolean;
+
+  /** Validated document */
   document?: Document;
+
+  /** Cultural analysis */
   culturalAnalysis: CulturalAnalysis;
+
+  /** Security validation */
   securityValidation: SecurityValidationResult;
+
+  /** Safety assessment */
   safetyAssessment: SafetyResult;
+
+  /** Validation errors */
   errors: string[];
+
+  /** Validation warnings */
   warnings: string[];
+
+  /** Validation timestamp */
   validatedAt: Date;
 }
 
+/**
+ * Document upload context
+ */
 export interface DocumentUploadContext {
+  /** User ID */
   userId: string;
+
+  /** File name */
   fileName: string;
-  fileType: string;
+
+  /** File size */
   fileSize: number;
-  source?: string;
+
+  /** File type */
+  fileType: string;
+
+  /** MIME type */
+  mimeType: string;
+
+  /** Upload source */
+  source: 'user_upload' | 'import' | 'sync';
+
+  /** Cultural sensitivity level */
+  culturalSensitivityLevel?: CulturalSensitivityLevel;
 }
 
 /**

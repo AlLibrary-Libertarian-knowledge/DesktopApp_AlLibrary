@@ -1,0 +1,653 @@
+/**
+ * Enhanced Browse Categories Page Styles
+ * 
+ * Comprehensive styling for category browsing with cultural awareness
+ * Supports multiple view modes and responsive design
+ */
+
+/* Main Container */
+.browsePage {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--background-color);
+  color: var(--text-color);
+  font-family: var(--font-family-body);
+}
+
+/* Header Section */
+.pageHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 2rem;
+  background: var(--surface-color);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.titleSection {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.pageTitle {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  color: var(--primary-color);
+  font-family: var(--font-family-heading);
+}
+
+.pageSubtitle {
+  font-size: 1.125rem;
+  color: var(--text-color-secondary);
+  margin: 0;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+}
+
+/* View Controls */
+.viewControls {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.viewButton {
+  padding: 0.75rem 1.5rem;
+  border: 2px solid var(--border-color);
+  border-radius: 0.5rem;
+  background: var(--background-color);
+  color: var(--text-color);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+}
+
+.viewButton:hover {
+  border-color: var(--primary-color);
+  background: var(--primary-color-light);
+}
+
+.viewButton.active {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+/* Cultural Controls */
+.culturalControls {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.culturalButton {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--cultural-color, var(--accent-color));
+  border-radius: 0.25rem;
+  background: var(--background-color);
+  color: var(--cultural-color, var(--accent-color));
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+}
+
+.culturalButton:hover {
+  background: var(--cultural-color-light, var(--accent-color-light));
+}
+
+.culturalButton.active {
+  background: var(--cultural-color, var(--accent-color));
+  color: white;
+}
+
+/* Breadcrumb Navigation */
+.breadcrumbNav {
+  margin: 0 2rem 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border-color-light);
+}
+
+/* Search and Filter Section */
+.searchFilterSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0 2rem 1rem;
+  background: var(--surface-color);
+}
+
+.searchContainer {
+  display: flex;
+  justify-content: center;
+}
+
+.categorySearch {
+  max-width: 600px;
+  width: 100%;
+}
+
+.filterPanel {
+  align-self: center;
+  max-width: 800px;
+  width: 100%;
+}
+
+/* Cultural Context Section */
+.culturalContextSection {
+  margin: 0 2rem 1rem;
+  padding: 1.5rem;
+  background: var(--cultural-background, var(--accent-color-light));
+  border: 1px solid var(--cultural-color, var(--accent-color));
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Traditional Classifications Section */
+.traditionalSection {
+  margin: 0 2rem 1rem;
+  padding: 1.5rem;
+  background: var(--traditional-background, var(--surface-color));
+  border: 1px solid var(--traditional-color, var(--border-color));
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Loading Container */
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4rem 2rem;
+  min-height: 200px;
+}
+
+/* Main Content */
+.mainContent {
+  flex: 1;
+  padding: 0 2rem 2rem;
+}
+
+/* Current Category Info */
+.currentCategoryInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: var(--surface-color);
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.categoryHeader {
+  flex: 1;
+}
+
+.categoryTitle {
+  font-size: 1.875rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+  color: var(--primary-color);
+}
+
+.categoryDescription {
+  font-size: 1rem;
+  color: var(--text-color-secondary);
+  margin: 0 0 1rem 0;
+  line-height: 1.6;
+}
+
+.culturalInfo {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.culturalBadge {
+  padding: 0.25rem 0.75rem;
+  background: var(--cultural-color-light, var(--accent-color-light));
+  color: var(--cultural-color, var(--accent-color));
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.elderApprovalBadge {
+  padding: 0.25rem 0.75rem;
+  background: var(--success-color-light);
+  color: var(--success-color);
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.categoryStats {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.statItem {
+  padding: 0.5rem 1rem;
+  background: var(--background-color);
+  border: 1px solid var(--border-color);
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.backButton {
+  padding: 0.75rem 1.5rem;
+  background: var(--secondary-color);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+}
+
+.backButton:hover {
+  background: var(--secondary-color-dark);
+}
+
+/* Categories Container */
+.categoriesContainer {
+  margin-top: 1rem;
+}
+
+/* Grid View */
+.categoriesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.categoryCard {
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.categoryCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* List View */
+.categoriesList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.categoryListItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.categoryListItem:hover {
+  border-color: var(--primary-color);
+  background: var(--primary-color-light);
+  transform: translateX(4px);
+}
+
+.categoryInfo {
+  flex: 1;
+}
+
+.categoryName {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+  color: var(--primary-color);
+}
+
+.categoryDescription {
+  font-size: 0.875rem;
+  color: var(--text-color-secondary);
+  margin: 0 0 0.5rem 0;
+  line-height: 1.5;
+}
+
+.culturalTags {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.culturalTag {
+  padding: 0.125rem 0.5rem;
+  background: var(--cultural-color-light, var(--accent-color-light));
+  color: var(--cultural-color, var(--accent-color));
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.approvalTag {
+  padding: 0.125rem 0.5rem;
+  background: var(--success-color-light);
+  color: var(--success-color);
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.categoryMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  text-align: right;
+  min-width: 120px;
+}
+
+.contentCount,
+.subcategoryCount {
+  font-size: 0.875rem;
+  color: var(--text-color-secondary);
+  font-weight: 500;
+}
+
+/* Traditional Classifications View */
+.traditionalView {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.traditionalClassification {
+  padding: 1.5rem;
+  background: var(--surface-color);
+  border: 1px solid var(--traditional-color, var(--border-color));
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.classificationTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+  color: var(--traditional-color, var(--primary-color));
+}
+
+.classificationDescription {
+  font-size: 1rem;
+  color: var(--text-color-secondary);
+  margin: 0 0 1.5rem 0;
+  line-height: 1.6;
+}
+
+.traditionalCategories {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.traditionalCategory {
+  padding: 1rem;
+  background: var(--background-color);
+  border: 1px solid var(--border-color);
+  border-radius: 0.25rem;
+  transition: border-color 0.2s ease;
+}
+
+.traditionalCategory:hover {
+  border-color: var(--traditional-color, var(--accent-color));
+}
+
+.traditionalCategory h4 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+  color: var(--traditional-color, var(--primary-color));
+}
+
+.traditionalCategory p {
+  font-size: 0.875rem;
+  color: var(--text-color-secondary);
+  margin: 0 0 0.5rem 0;
+  line-height: 1.5;
+}
+
+.modernEquivalent {
+  font-size: 0.75rem;
+  color: var(--accent-color);
+  font-weight: 500;
+  font-style: italic;
+}
+
+/* Empty State */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  min-height: 200px;
+}
+
+.emptyState h3 {
+  font-size: 1.5rem;
+  color: var(--text-color-secondary);
+  margin: 0 0 0.5rem 0;
+}
+
+.emptyState p {
+  font-size: 1rem;
+  color: var(--text-color-muted);
+  margin: 0;
+}
+
+/* Page Footer */
+.pageFooter {
+  margin-top: auto;
+  padding: 2rem;
+  background: var(--surface-color);
+  border-top: 1px solid var(--border-color);
+}
+
+.culturalAcknowledgment {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.culturalAcknowledgment p {
+  font-size: 0.875rem;
+  color: var(--text-color-secondary);
+  line-height: 1.6;
+  margin: 0;
+  padding: 1rem;
+  background: var(--cultural-background, var(--accent-color-light));
+  border-radius: 0.5rem;
+  border: 1px solid var(--cultural-color, var(--accent-color));
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .pageHeader {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .pageTitle {
+    font-size: 2rem;
+  }
+
+  .viewControls,
+  .culturalControls {
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+
+  .viewButton,
+  .culturalButton {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+  }
+
+  .searchFilterSection {
+    padding: 0 1rem 1rem;
+  }
+
+  .mainContent {
+    padding: 0 1rem 1rem;
+  }
+
+  .currentCategoryInfo {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .categoriesGrid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .categoryListItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .categoryMeta {
+    flex-direction: row;
+    gap: 1rem;
+    text-align: left;
+    min-width: auto;
+  }
+
+  .traditionalCategories {
+    grid-template-columns: 1fr;
+  }
+
+  .culturalContextSection,
+  .traditionalSection {
+    margin: 0 1rem 1rem;
+    padding: 1rem;
+  }
+
+  .pageFooter {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .pageTitle {
+    font-size: 1.75rem;
+  }
+
+  .pageSubtitle {
+    font-size: 1rem;
+  }
+
+  .viewControls,
+  .culturalControls {
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+  }
+
+  .currentCategoryInfo {
+    padding: 1rem;
+  }
+
+  .categoryTitle {
+    font-size: 1.5rem;
+  }
+
+  .categoryStats {
+    gap: 0.5rem;
+  }
+
+  .statItem {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.75rem;
+  }
+}
+
+/* Accessibility Improvements */
+@media (prefers-reduced-motion: reduce) {
+  .viewButton,
+  .culturalButton,
+  .categoryCard,
+  .categoryListItem,
+  .traditionalCategory {
+    transition: none;
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .browsePage {
+    border: 2px solid currentColor;
+  }
+
+  .viewButton,
+  .culturalButton {
+    border-width: 2px;
+  }
+
+  .categoryCard,
+  .categoryListItem,
+  .traditionalClassification {
+    border-width: 2px;
+  }
+}
+
+/* Focus Styles for Accessibility */
+.viewButton:focus,
+.culturalButton:focus,
+.backButton:focus {
+  outline: 2px solid var(--focus-color, var(--primary-color));
+  outline-offset: 2px;
+}
+
+.categoryListItem:focus {
+  outline: 2px solid var(--focus-color, var(--primary-color));
+  outline-offset: 2px;
+}
+
+/* Print Styles */
+@media print {
+  .pageHeader,
+  .searchFilterSection,
+  .viewControls,
+  .culturalControls {
+    display: none;
+  }
+
+  .browsePage {
+    background: white;
+    color: black;
+  }
+
+  .mainContent {
+    padding: 0;
+  }
+}

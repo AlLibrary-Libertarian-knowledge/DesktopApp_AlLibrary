@@ -1,18 +1,29 @@
 import js from '@eslint/js';
+import tsPlugin from '@typescript-eslint/eslint-plugin';
+import tsParser from '@typescript-eslint/parser';
 
 export default [
   js.configs.recommended,
   {
     files: ['**/*.{js,ts,tsx}'],
     languageOptions: {
+      parser: tsParser,
       ecmaVersion: 2022,
       sourceType: 'module',
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true,
+        },
+      },
       globals: {
         console: 'readonly',
         process: 'readonly',
         window: 'readonly',
         document: 'readonly',
       },
+    },
+    plugins: {
+      '@typescript-eslint': tsPlugin,
     },
     rules: {
       // General rules
@@ -22,7 +33,8 @@ export default [
       'no-var': 'error',
       'object-shorthand': 'error',
       'prefer-template': 'error',
-      'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      'no-unused-vars': 'off', // Turn off base rule
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     },
   },
   {
@@ -34,8 +46,6 @@ export default [
       'src-tauri/gen/**',
       '*.config.js',
       '*.config.ts',
-      '**/*.tsx',
-      '**/*.jsx',
     ],
   },
 ];

@@ -1,22 +1,43 @@
-/* Input Wrapper */
+/* Input Component Styles
+ * Enhanced with cultural themes, validation states, and accessibility
+ * Follows WCAG 2.1 AA standards for universal access
+ */
+
+/* Base Input Wrapper */
 .input-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.5rem;
   width: 100%;
+  position: relative;
 }
 
 /* Input Label */
 .input-label {
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--text-color);
-  margin-bottom: 0.25rem;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  line-height: 1.4;
 }
 
 .input-required {
-  color: var(--color-danger);
-  margin-left: 0.125rem;
+  color: var(--error-primary);
+  font-weight: 600;
+}
+
+/* Cultural Indicator */
+.input-cultural-indicator {
+  font-size: 0.75rem;
+  margin-left: 0.25rem;
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+}
+
+.input-cultural-indicator:hover {
+  opacity: 1;
 }
 
 /* Input Container */
@@ -26,68 +47,166 @@
   align-items: center;
 }
 
-/* Input Base */
+/* Base Input Styles */
 .input {
   width: 100%;
-  font-family: inherit;
+  border: 2px solid var(--border-primary);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
   font-size: 1rem;
   line-height: 1.5;
-  color: var(--text-color);
-  background-color: var(--color-surface);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
-  transition: all 0.2s ease-in-out;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+  font-family: inherit;
+  outline: none;
   box-sizing: border-box;
 }
 
 .input:focus {
-  outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-primary-alpha);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-color-alpha);
 }
 
-.input::placeholder {
-  color: var(--text-color-muted);
+.input:disabled {
+  background-color: var(--bg-disabled);
+  color: var(--text-disabled);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.input:readonly {
+  background-color: var(--bg-readonly);
+  cursor: default;
 }
 
 /* Input Sizes */
 .input-sm {
-  padding: 0.375rem 0.75rem;
+  padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
-  min-height: 2rem;
 }
 
 .input-md {
-  padding: 0.5rem 0.75rem;
+  padding: 0.75rem 1rem;
   font-size: 1rem;
-  min-height: 2.5rem;
 }
 
 .input-lg {
-  padding: 0.75rem 1rem;
+  padding: 1rem 1.25rem;
   font-size: 1.125rem;
-  min-height: 3rem;
 }
 
 /* Input Variants */
 .input-default {
-  background-color: var(--color-background);
-  border-color: var(--border-color);
+  border-color: var(--border-primary);
 }
 
 .input-filled {
-  background-color: var(--color-surface);
-  border-color: transparent;
+  background-color: var(--bg-secondary);
+  border-color: var(--border-secondary);
 }
 
 .input-filled:focus {
-  background-color: var(--color-background);
-  border-color: var(--color-primary);
+  background-color: var(--bg-primary);
+  border-color: var(--primary-color);
 }
 
 .input-outline {
   background-color: transparent;
-  border-color: var(--border-color);
+  border-color: var(--border-primary);
+}
+
+.input-outline:focus {
+  border-color: var(--primary-color);
+  background-color: var(--bg-primary);
+}
+
+/* Cultural Theme Styles (INFORMATION ONLY - NO ACCESS RESTRICTION) */
+.input-cultural-indigenous {
+  border-color: var(--cultural-indigenous);
+  background-color: var(--cultural-indigenous-bg);
+}
+
+.input-cultural-indigenous:focus {
+  border-color: var(--cultural-indigenous-focus);
+  box-shadow: 0 0 0 3px var(--cultural-indigenous-alpha);
+}
+
+.input-cultural-traditional {
+  border-color: var(--cultural-traditional);
+  background-color: var(--cultural-traditional-bg);
+}
+
+.input-cultural-traditional:focus {
+  border-color: var(--cultural-traditional-focus);
+  box-shadow: 0 0 0 3px var(--cultural-traditional-alpha);
+}
+
+.input-cultural-modern {
+  border-color: var(--cultural-modern);
+  background-color: var(--cultural-modern-bg);
+}
+
+.input-cultural-modern:focus {
+  border-color: var(--cultural-modern-focus);
+  box-shadow: 0 0 0 3px var(--cultural-modern-alpha);
+}
+
+.input-cultural-ceremonial {
+  border-color: var(--cultural-ceremonial);
+  background-color: var(--cultural-ceremonial-bg);
+}
+
+.input-cultural-ceremonial:focus {
+  border-color: var(--cultural-ceremonial-focus);
+  box-shadow: 0 0 0 3px var(--cultural-ceremonial-alpha);
+}
+
+.input-cultural-community {
+  border-color: var(--cultural-community);
+  background-color: var(--cultural-community-bg);
+}
+
+.input-cultural-community:focus {
+  border-color: var(--cultural-community-focus);
+  box-shadow: 0 0 0 3px var(--cultural-community-alpha);
+}
+
+/* Traditional Input Pattern */
+.input-traditional {
+  font-family: var(--font-traditional, inherit);
+  letter-spacing: 0.05em;
+}
+
+/* Input States */
+.input-error {
+  border-color: var(--error-primary);
+  background-color: var(--error-bg);
+}
+
+.input-error:focus {
+  border-color: var(--error-primary);
+  box-shadow: 0 0 0 3px var(--error-alpha);
+}
+
+.input-validation-error {
+  border-color: var(--warning-primary);
+  background-color: var(--warning-bg);
+}
+
+.input-validation-error:focus {
+  border-color: var(--warning-primary);
+  box-shadow: 0 0 0 3px var(--warning-alpha);
+}
+
+.input-focused {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-color-alpha);
+}
+
+.input-validating {
+  border-color: var(--info-primary);
+  background-color: var(--info-bg);
 }
 
 /* Input with Icon */
@@ -98,73 +217,195 @@
 .input-icon {
   position: absolute;
   left: 0.75rem;
-  display: flex;
-  align-items: center;
-  color: var(--text-color-muted);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  font-size: 1.125rem;
   pointer-events: none;
   z-index: 1;
 }
 
-/* Input States */
-.input-error {
-  border-color: var(--color-danger);
-  background-color: var(--color-danger-bg);
+/* Validation Indicator */
+.input-validation-indicator {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1rem;
+  pointer-events: none;
+  z-index: 1;
+  transition: opacity 0.2s ease;
 }
 
-.input-error:focus {
-  border-color: var(--color-danger);
-  box-shadow: 0 0 0 3px var(--color-danger-alpha);
-}
-
-.input-disabled {
-  background-color: var(--color-surface-disabled);
-  color: var(--text-color-disabled);
-  border-color: var(--border-color-disabled);
-  cursor: not-allowed;
-}
-
-.input-focused {
-  border-color: var(--color-primary);
-}
-
-/* Input Messages */
+/* Error Message */
 .input-error-message {
+  color: var(--error-primary);
   font-size: 0.875rem;
-  color: var(--color-danger);
+  font-weight: 500;
   margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
+.input-error-message::before {
+  content: '⚠️';
+  font-size: 0.75rem;
+}
+
+/* Hint Message */
 .input-hint {
+  color: var(--text-secondary);
   font-size: 0.875rem;
-  color: var(--text-color-muted);
   margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  .input-lg {
-    padding: 0.5rem 0.75rem;
-    font-size: 1rem;
-    min-height: 2.75rem;
+.input-hint::before {
+  content: '💡';
+  font-size: 0.75rem;
+}
+
+/* Cultural Context Tooltip */
+.input-cultural-tooltip {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: var(--bg-tooltip);
+  border: 1px solid var(--border-tooltip);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-top: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.2s ease;
+  pointer-events: none;
+}
+
+.input-wrapper:hover .input-cultural-tooltip {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.tooltip-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.tooltip-content strong {
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.sensitivity-level {
+  background-color: var(--cultural-sensitivity-bg);
+  color: var(--cultural-sensitivity-text);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  align-self: flex-start;
+}
+
+.tooltip-description {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  font-style: italic;
+}
+
+/* Placeholder Styles */
+.input::placeholder {
+  color: var(--text-placeholder);
+  opacity: 0.7;
+}
+
+.input:focus::placeholder {
+  opacity: 0.5;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .input {
+    border-width: 3px;
   }
 
-  .input-with-icon {
-    padding-left: 2.25rem;
+  .input:focus {
+    border-width: 4px;
   }
 
-  .input-icon {
-    left: 0.5rem;
+  .input-error {
+    border-width: 4px;
   }
 }
 
-/* Dark Mode */
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .input,
+  .input-cultural-tooltip,
+  .input-validation-indicator {
+    transition: none;
+  }
+}
+
+/* Dark Mode Support */
 @media (prefers-color-scheme: dark) {
-  .input-default {
-    background-color: var(--color-surface-dark);
-    border-color: var(--border-color-dark);
+  .input {
+    background-color: var(--bg-primary-dark);
+    color: var(--text-primary-dark);
+    border-color: var(--border-primary-dark);
   }
 
-  .input-filled {
-    background-color: var(--color-surface-dark);
+  .input:focus {
+    border-color: var(--primary-color-dark);
+    box-shadow: 0 0 0 3px var(--primary-color-alpha-dark);
+  }
+
+  .input-cultural-tooltip {
+    background-color: var(--bg-tooltip-dark);
+    border-color: var(--border-tooltip-dark);
+  }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .input {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  .input-lg {
+    padding: 1.125rem 1.375rem;
+  }
+
+  .input-cultural-tooltip {
+    position: fixed;
+    top: auto;
+    bottom: 1rem;
+    left: 1rem;
+    right: 1rem;
+    margin-top: 0;
+    z-index: 1000;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .input {
+    border: 1px solid #000;
+    background-color: transparent;
+    color: #000;
+  }
+
+  .input-cultural-tooltip,
+  .input-validation-indicator {
+    display: none;
   }
 }

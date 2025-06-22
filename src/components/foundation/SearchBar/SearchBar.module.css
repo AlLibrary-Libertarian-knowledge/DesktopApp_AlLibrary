@@ -1,0 +1,523 @@
+/* SearchBar Component Styles
+ * Enhanced with cultural themes, accessibility, and responsive design
+ * Follows WCAG 2.1 AA standards for universal access
+ */
+
+/* SearchBar Wrapper */
+.search-bar-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Base SearchBar */
+.search-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background-color: var(--bg-primary);
+  border: 2px solid var(--border-primary);
+  border-radius: 0.75rem;
+  transition: all 0.2s ease;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.search-bar:hover {
+  border-color: var(--border-hover);
+}
+
+.search-bar-focused {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-color-alpha);
+}
+
+/* SearchBar Sizes */
+.search-bar-sm {
+  min-height: 2.5rem;
+  padding: 0 0.75rem;
+}
+
+.search-bar-md {
+  min-height: 3rem;
+  padding: 0 1rem;
+}
+
+.search-bar-lg {
+  min-height: 3.5rem;
+  padding: 0 1.25rem;
+}
+
+/* SearchBar Variants */
+.search-bar-default {
+  background-color: var(--bg-primary);
+  border-color: var(--border-primary);
+}
+
+.search-bar-filled {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-secondary);
+}
+
+.search-bar-filled:focus-within {
+  background-color: var(--bg-primary);
+  border-color: var(--primary-color);
+}
+
+.search-bar-outline {
+  background-color: transparent;
+  border-color: var(--border-primary);
+}
+
+.search-bar-outline:focus-within {
+  background-color: var(--bg-primary);
+  border-color: var(--primary-color);
+}
+
+/* Cultural Theme Styles (INFORMATION ONLY - NO ACCESS RESTRICTION) */
+.search-bar-cultural-indigenous {
+  border-color: var(--cultural-indigenous);
+  background-color: var(--cultural-indigenous-bg);
+}
+
+.search-bar-cultural-indigenous:focus-within {
+  border-color: var(--cultural-indigenous-focus);
+  box-shadow: 0 0 0 3px var(--cultural-indigenous-alpha);
+}
+
+.search-bar-cultural-traditional {
+  border-color: var(--cultural-traditional);
+  background-color: var(--cultural-traditional-bg);
+}
+
+.search-bar-cultural-traditional:focus-within {
+  border-color: var(--cultural-traditional-focus);
+  box-shadow: 0 0 0 3px var(--cultural-traditional-alpha);
+}
+
+.search-bar-cultural-modern {
+  border-color: var(--cultural-modern);
+  background-color: var(--cultural-modern-bg);
+}
+
+.search-bar-cultural-modern:focus-within {
+  border-color: var(--cultural-modern-focus);
+  box-shadow: 0 0 0 3px var(--cultural-modern-alpha);
+}
+
+.search-bar-cultural-ceremonial {
+  border-color: var(--cultural-ceremonial);
+  background-color: var(--cultural-ceremonial-bg);
+}
+
+.search-bar-cultural-ceremonial:focus-within {
+  border-color: var(--cultural-ceremonial-focus);
+  box-shadow: 0 0 0 3px var(--cultural-ceremonial-alpha);
+}
+
+.search-bar-cultural-community {
+  border-color: var(--cultural-community);
+  background-color: var(--cultural-community-bg);
+}
+
+.search-bar-cultural-community:focus-within {
+  border-color: var(--cultural-community-focus);
+  box-shadow: 0 0 0 3px var(--cultural-community-alpha);
+}
+
+/* Search Icon */
+.search-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  margin-right: 0.75rem;
+  flex-shrink: 0;
+}
+
+.search-bar-focused .search-icon {
+  color: var(--primary-color);
+}
+
+/* Cultural Indicator */
+.search-cultural-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  margin-right: 0.5rem;
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+  flex-shrink: 0;
+}
+
+.search-cultural-indicator:hover {
+  opacity: 1;
+}
+
+/* Search Input */
+.search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+  font-family: inherit;
+  min-width: 0;
+}
+
+.search-input::placeholder {
+  color: var(--text-placeholder);
+  opacity: 0.7;
+}
+
+.search-input:focus::placeholder {
+  opacity: 0.5;
+}
+
+.search-bar-sm .search-input {
+  font-size: 0.875rem;
+}
+
+.search-bar-lg .search-input {
+  font-size: 1.125rem;
+}
+
+/* Loading Indicator */
+.search-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0.5rem;
+  flex-shrink: 0;
+}
+
+.search-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid var(--border-primary);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Clear Button */
+.search-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  margin-left: 0.5rem;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.search-clear:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.search-clear:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Filter Button */
+.search-filter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  margin-left: 0.5rem;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.search-filter:hover {
+  background-color: var(--bg-hover);
+  color: var(--primary-color);
+}
+
+.search-filter:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Suggestions Dropdown */
+.suggestions-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  margin-top: 0.25rem;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.suggestion-item {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.suggestion-item:hover,
+.suggestion-selected {
+  background-color: var(--bg-hover);
+}
+
+.suggestion-icon {
+  color: var(--text-secondary);
+  margin-right: 0.75rem;
+  flex-shrink: 0;
+}
+
+.suggestion-text {
+  flex: 1;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+}
+
+/* Cultural Context Tooltip */
+.search-cultural-tooltip {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: var(--bg-tooltip);
+  border: 1px solid var(--border-tooltip);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-top: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.2s ease;
+  pointer-events: none;
+}
+
+.search-bar-wrapper:hover .search-cultural-tooltip {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.tooltip-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.tooltip-content strong {
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.sensitivity-level {
+  background-color: var(--cultural-sensitivity-bg);
+  color: var(--cultural-sensitivity-text);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  align-self: flex-start;
+}
+
+.search-type {
+  background-color: var(--search-type-bg);
+  color: var(--search-type-text);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  align-self: flex-start;
+}
+
+.tooltip-description {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  font-style: italic;
+}
+
+/* Disabled State */
+.search-bar-disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.search-bar-disabled .search-input {
+  cursor: not-allowed;
+}
+
+/* Loading State */
+.search-bar-loading .search-input {
+  cursor: wait;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .search-bar {
+    border-width: 3px;
+  }
+
+  .search-bar-focused {
+    border-width: 4px;
+  }
+
+  .suggestions-dropdown {
+    border-width: 2px;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .search-bar,
+  .search-cultural-tooltip,
+  .search-spinner {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .search-bar {
+    background-color: var(--bg-primary-dark);
+    border-color: var(--border-primary-dark);
+  }
+
+  .search-input {
+    color: var(--text-primary-dark);
+  }
+
+  .suggestions-dropdown {
+    background-color: var(--bg-primary-dark);
+    border-color: var(--border-primary-dark);
+  }
+
+  .search-cultural-tooltip {
+    background-color: var(--bg-tooltip-dark);
+    border-color: var(--border-tooltip-dark);
+  }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .search-bar {
+    min-height: 2.75rem;
+  }
+
+  .search-bar-lg {
+    min-height: 3rem;
+  }
+
+  .search-input {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  .suggestions-dropdown {
+    max-height: 200px;
+  }
+
+  .search-cultural-tooltip {
+    position: fixed;
+    top: auto;
+    bottom: 1rem;
+    left: 1rem;
+    right: 1rem;
+    margin-top: 0;
+    z-index: 1000;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .search-bar {
+    border: 1px solid #000;
+    background-color: transparent;
+  }
+
+  .suggestions-dropdown,
+  .search-cultural-tooltip,
+  .search-loading,
+  .search-clear,
+  .search-filter {
+    display: none;
+  }
+}
+
+/* Focus Management */
+.search-bar:focus-within {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-color-alpha);
+}
+
+/* Keyboard Navigation */
+.search-input:focus-visible {
+  outline: none;
+}
+
+/* Screen Reader Support */
+.search-bar[aria-busy='true']::after {
+  content: 'Searching...';
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* Scrollbar Styling for Suggestions */
+.suggestions-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.suggestions-dropdown::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+.suggestions-dropdown::-webkit-scrollbar-thumb {
+  background: var(--border-primary);
+  border-radius: 3px;
+}
+
+.suggestions-dropdown::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}

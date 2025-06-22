@@ -1,0 +1,787 @@
+/* StatCard Component Styles
+ * Enhanced stat card with visualizations and cultural themes
+ * Follows WCAG 2.1 AA standards for universal access
+ */
+
+/* Base Card Styles */
+.stat-card {
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  backdrop-filter: blur(20px);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    0 2px 16px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+  overflow: hidden;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.stat-card.enhanced {
+  background: linear-gradient(
+    135deg,
+    rgba(30, 41, 59, 0.8) 0%,
+    rgba(51, 65, 85, 0.6) 50%,
+    rgba(30, 41, 59, 0.4) 100%
+  );
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Enhanced card background effects */
+.stat-card.enhanced::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    45deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.02) 50%,
+    transparent 60%
+  );
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+  pointer-events: none;
+}
+
+/* Card type specific colors */
+.stat-card.documents::before {
+  background: linear-gradient(45deg, transparent 40%, rgba(59, 130, 246, 0.1) 50%, transparent 60%);
+}
+
+.stat-card.peers::before {
+  background: linear-gradient(45deg, transparent 40%, rgba(34, 197, 94, 0.1) 50%, transparent 60%);
+}
+
+.stat-card.institutions::before {
+  background: linear-gradient(45deg, transparent 40%, rgba(168, 85, 247, 0.1) 50%, transparent 60%);
+}
+
+.stat-card.health::before {
+  background: linear-gradient(45deg, transparent 40%, rgba(245, 158, 11, 0.1) 50%, transparent 60%);
+}
+
+/* Shimmer effect */
+.stat-card.enhanced::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.03), transparent);
+  animation: enhanced-shimmer 8s infinite;
+  pointer-events: none;
+}
+
+@keyframes enhanced-shimmer {
+  0% {
+    left: -100%;
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
+}
+
+/* Hover states */
+.stat-card.enhanced:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.15),
+    0 8px 24px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  border-color: rgba(148, 163, 184, 0.3);
+}
+
+.stat-card.documents:hover {
+  border-color: rgba(59, 130, 246, 0.4);
+  box-shadow:
+    0 20px 40px rgba(59, 130, 246, 0.1),
+    0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card.peers:hover {
+  border-color: rgba(34, 197, 94, 0.4);
+  box-shadow:
+    0 20px 40px rgba(34, 197, 94, 0.1),
+    0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card.institutions:hover {
+  border-color: rgba(168, 85, 247, 0.4);
+  box-shadow:
+    0 20px 40px rgba(168, 85, 247, 0.1),
+    0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card.health:hover {
+  border-color: rgba(245, 158, 11, 0.4);
+  box-shadow:
+    0 20px 40px rgba(245, 158, 11, 0.1),
+    0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card.enhanced:hover::before {
+  transform: translateX(100%);
+}
+
+.stat-card.enhanced:hover::after {
+  animation-duration: 2s;
+}
+
+/* Content Layout */
+.stat-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  position: relative;
+  z-index: 2;
+}
+
+/* Icon Styles */
+.stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card.documents .stat-icon {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.1));
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.stat-card.peers .stat-icon {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(34, 197, 94, 0.1));
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.stat-card.institutions .stat-icon {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(168, 85, 247, 0.1));
+  border-color: rgba(168, 85, 247, 0.3);
+}
+
+.stat-card.health .stat-icon {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.1));
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.stat-icon svg {
+  width: 24px;
+  height: 24px;
+  color: rgba(255, 255, 255, 0.9);
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.stat-card.enhanced:hover .stat-icon {
+  transform: scale(1.1);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.stat-card.enhanced:hover .stat-icon svg {
+  transform: scale(1.1);
+  filter: brightness(1.2);
+}
+
+.stat-card.documents:hover .stat-icon svg {
+  color: rgba(59, 130, 246, 1);
+}
+
+.stat-card.peers:hover .stat-icon svg {
+  color: rgba(34, 197, 94, 1);
+}
+
+.stat-card.institutions:hover .stat-icon svg {
+  color: rgba(168, 85, 247, 1);
+}
+
+.stat-card.health:hover .stat-icon svg {
+  color: rgba(245, 158, 11, 1);
+}
+
+/* Info Section */
+.stat-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.stat-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.95);
+  margin: 0;
+  line-height: 1;
+  transition: all 0.3s ease;
+}
+
+.stat-card.enhanced:hover .stat-number {
+  color: rgba(255, 255, 255, 1);
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: rgba(203, 213, 225, 0.8);
+  margin: 0;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  line-height: 1.4;
+}
+
+.stat-card.enhanced:hover .stat-label {
+  color: rgba(203, 213, 225, 1);
+}
+
+/* Trend Information */
+.stat-trend {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-trend::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.stat-trend svg {
+  width: 14px;
+  height: 14px;
+  transition: all 0.3s ease;
+}
+
+.stat-trend.positive {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.2);
+  color: rgba(34, 197, 94, 1);
+}
+
+.stat-trend.positive:hover {
+  background: rgba(34, 197, 94, 0.15);
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.stat-trend.positive svg {
+  color: rgba(34, 197, 94, 1);
+}
+
+.stat-trend.positive:hover svg {
+  transform: translateY(-1px);
+}
+
+.stat-trend.neutral {
+  background: rgba(148, 163, 184, 0.1);
+  border-color: rgba(148, 163, 184, 0.2);
+  color: rgba(148, 163, 184, 1);
+}
+
+.stat-trend.neutral:hover {
+  background: rgba(148, 163, 184, 0.15);
+  border-color: rgba(148, 163, 184, 0.3);
+}
+
+.stat-trend.neutral svg {
+  color: rgba(148, 163, 184, 1);
+}
+
+.stat-trend.neutral:hover svg {
+  transform: translateX(2px);
+}
+
+.stat-trend.negative {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.2);
+  color: rgba(239, 68, 68, 1);
+}
+
+.trend-value {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.trend-label {
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+/* Graph Section */
+.stat-graph {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: auto;
+  position: relative;
+  z-index: 2;
+  transition: all 0.3s ease;
+}
+
+.stat-card.enhanced:hover .stat-graph {
+  transform: scale(1.05);
+}
+
+/* Mini Chart */
+.mini-chart {
+  display: flex;
+  align-items: end;
+  gap: 3px;
+  height: 40px;
+  width: 100%;
+  max-width: 120px;
+}
+
+.chart-bar {
+  flex: 1;
+  background: linear-gradient(to top, rgba(59, 130, 246, 0.6), rgba(59, 130, 246, 0.3));
+  border-radius: 2px;
+  min-height: 8px;
+  transition: all 0.3s ease;
+}
+
+.stat-card.documents .chart-bar {
+  background: linear-gradient(to top, rgba(59, 130, 246, 0.6), rgba(59, 130, 246, 0.3));
+}
+
+.stat-card.peers .chart-bar {
+  background: linear-gradient(to top, rgba(34, 197, 94, 0.6), rgba(34, 197, 94, 0.3));
+}
+
+.stat-card.institutions .chart-bar {
+  background: linear-gradient(to top, rgba(168, 85, 247, 0.6), rgba(168, 85, 247, 0.3));
+}
+
+.stat-card.health .chart-bar {
+  background: linear-gradient(to top, rgba(245, 158, 11, 0.6), rgba(245, 158, 11, 0.3));
+}
+
+.stat-card:hover .chart-bar {
+  transform: scaleY(1.1);
+}
+
+/* Peer Visualization */
+.peer-visualization {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  width: 100%;
+  max-width: 120px;
+}
+
+.peer-node {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(148, 163, 184, 0.3);
+  border: 2px solid rgba(148, 163, 184, 0.5);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.peer-node.active {
+  background: rgba(34, 197, 94, 0.6);
+  border-color: rgba(34, 197, 94, 0.8);
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
+}
+
+.peer-node::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: 50%;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all 0.3s ease;
+}
+
+.peer-node.active::before {
+  opacity: 1;
+  transform: scale(1.2);
+  animation: peer-ring 2s infinite;
+}
+
+@keyframes peer-ring {
+  0% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+/* Institution Map */
+.institution-map {
+  position: relative;
+  width: 100%;
+  max-width: 120px;
+  height: 40px;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(168, 85, 247, 0.05) 100%);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.geo-dots {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.geo-dot {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: rgba(168, 85, 247, 0.8);
+  border-radius: 50%;
+  box-shadow: 0 0 4px rgba(168, 85, 247, 0.6);
+}
+
+.geo-dot::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: rgba(168, 85, 247, 0.3);
+  border-radius: 50%;
+  animation: geo-ripple 3s infinite;
+}
+
+@keyframes geo-ripple {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+/* Health Ring */
+.health-ring {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.health-ring svg {
+  width: 60px;
+  height: 60px;
+  transform: rotate(-90deg);
+}
+
+.health-arc {
+  transition: all 0.3s ease;
+}
+
+.stat-card.health:hover .health-arc {
+  stroke-dasharray: 157 157;
+  stroke-dashoffset: 10;
+}
+
+.health-ring::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 30px;
+  height: 30px;
+  background: rgba(245, 158, 11, 0.2);
+  border-radius: 50%;
+  animation: health-pulse 2s infinite;
+}
+
+@keyframes health-pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 0.3;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.7;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .stat-card.enhanced {
+    min-height: 180px;
+    padding: 1.25rem;
+  }
+
+  .stat-content {
+    gap: 0.75rem;
+  }
+
+  .stat-graph {
+    height: 50px;
+  }
+
+  .stat-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .stat-icon svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .stat-number {
+    font-size: 1.75rem;
+  }
+
+  .stat-label {
+    font-size: 0.8125rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .stat-card.enhanced {
+    min-height: 160px;
+    padding: 1rem;
+  }
+
+  .stat-content {
+    flex-direction: column;
+    gap: 0.75rem;
+    text-align: center;
+  }
+
+  .stat-icon {
+    width: 36px;
+    height: 36px;
+    align-self: center;
+  }
+
+  .stat-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .stat-info {
+    align-items: center;
+  }
+
+  .stat-number {
+    font-size: 1.5rem;
+  }
+
+  .stat-label {
+    font-size: 0.8125rem;
+  }
+
+  .stat-trend {
+    align-self: center;
+    padding: 0.375rem 0.625rem;
+  }
+
+  .stat-graph {
+    height: 40px;
+  }
+
+  .mini-chart {
+    max-width: 100px;
+  }
+
+  .peer-visualization {
+    max-width: 100px;
+  }
+
+  .institution-map {
+    max-width: 100px;
+    height: 32px;
+  }
+
+  .health-ring svg {
+    width: 50px;
+    height: 50px;
+  }
+}
+
+@media (max-width: 480px) {
+  .stat-card.enhanced {
+    min-height: 140px;
+    padding: 0.875rem;
+  }
+
+  .stat-content {
+    gap: 0.5rem;
+  }
+
+  .stat-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .stat-icon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .stat-number {
+    font-size: 1.25rem;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+  }
+
+  .stat-trend {
+    padding: 0.25rem 0.5rem;
+    gap: 0.375rem;
+  }
+
+  .trend-value {
+    font-size: 0.75rem;
+  }
+
+  .trend-label {
+    font-size: 0.6875rem;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .stat-icon {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04));
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .stat-trend {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .stat-card,
+  .stat-card.enhanced {
+    border-width: 2px;
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+
+  .stat-icon {
+    border-width: 2px;
+  }
+
+  .stat-trend {
+    border-width: 2px;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .stat-card,
+  .stat-card.enhanced,
+  .stat-icon,
+  .stat-graph,
+  .chart-bar,
+  .peer-node,
+  .geo-dot,
+  .health-arc {
+    transition: none;
+    animation: none;
+  }
+
+  .stat-card.enhanced:hover {
+    transform: none;
+  }
+
+  .stat-card.enhanced:hover .stat-icon {
+    transform: none;
+  }
+
+  .stat-card:hover .chart-bar {
+    transform: none;
+  }
+}
+
+/* Focus States for Accessibility */
+.stat-card:focus {
+  outline: 2px solid rgba(59, 130, 246, 0.6);
+  outline-offset: 2px;
+}
+
+.stat-card:focus-visible {
+  outline: 2px solid rgba(59, 130, 246, 0.8);
+  outline-offset: 2px;
+}
+
+/* Screen Reader Support */
+.stat-card[aria-busy='true']::after {
+  content: 'Loading...';
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}

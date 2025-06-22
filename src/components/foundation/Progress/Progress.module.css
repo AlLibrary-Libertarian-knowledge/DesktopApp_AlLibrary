@@ -1,0 +1,279 @@
+/* Progress.module.css */
+
+.progressContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+/* Progress Label */
+.progressLabel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.labelText {
+  font-weight: 500;
+}
+
+.labelPercentage {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+}
+
+/* Progress Bar Container */
+.progress {
+  position: relative;
+  width: 100%;
+  background-color: var(--color-surface-elevated);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+}
+
+/* Size Variants */
+.progress-sm {
+  height: 4px;
+}
+
+.progress-md {
+  height: 8px;
+}
+
+.progress-lg {
+  height: 12px;
+}
+
+/* Progress Fill */
+.progressFill {
+  height: 100%;
+  background-color: var(--color-primary-500);
+  border-radius: inherit;
+  transition: width 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Color Variants */
+.progress-primary .progressFill {
+  background-color: var(--color-primary-500);
+}
+
+.progress-secondary .progressFill {
+  background-color: var(--color-secondary-500);
+}
+
+.progress-success .progressFill {
+  background-color: var(--color-success);
+}
+
+.progress-warning .progressFill {
+  background-color: var(--color-warning);
+}
+
+.progress-error .progressFill {
+  background-color: var(--color-error);
+}
+
+.progress-info .progressFill {
+  background-color: var(--color-info);
+}
+
+/* Indeterminate Progress */
+.indeterminate .progressFill {
+  width: 100% !important;
+  background: transparent;
+}
+
+.progressIndeterminate {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, var(--color-primary-500), transparent);
+  width: 30%;
+  animation: indeterminateProgress 1.5s infinite linear;
+}
+
+@keyframes indeterminateProgress {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(400%);
+  }
+}
+
+/* Gradient Effect for Progress Fill */
+.progressFill::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.2) 50%,
+    transparent 100%
+  );
+  animation: progressShine 2s infinite;
+}
+
+@keyframes progressShine {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .progress {
+    border: 2px solid var(--color-border);
+  }
+
+  .progressFill {
+    border: 1px solid var(--color-text-primary);
+  }
+
+  .progress-primary .progressFill {
+    background-color: var(--color-primary-700);
+  }
+
+  .progress-secondary .progressFill {
+    background-color: var(--color-secondary-700);
+  }
+
+  .progress-success .progressFill {
+    background-color: var(--color-success-dark);
+  }
+
+  .progress-warning .progressFill {
+    background-color: var(--color-warning-dark);
+  }
+
+  .progress-error .progressFill {
+    background-color: var(--color-error-dark);
+  }
+
+  .progress-info .progressFill {
+    background-color: var(--color-info-dark);
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .progressFill {
+    transition: none;
+  }
+
+  .progressFill::before {
+    animation: none;
+  }
+
+  .progressIndeterminate {
+    animation: none;
+    background: var(--color-primary-500);
+    width: 100%;
+  }
+}
+
+/* Dark Theme Adjustments */
+@media (prefers-color-scheme: dark) {
+  .progress {
+    background-color: var(--color-surface-dark);
+    border-color: var(--color-border-dark);
+  }
+
+  .progressLabel {
+    color: var(--color-text-secondary-dark);
+  }
+}
+
+/* Focus Styles */
+.progress:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* Cultural Theme Support */
+.progress[data-cultural-theme='indigenous'] .progressFill {
+  background: linear-gradient(
+    90deg,
+    var(--color-cultural-traditional),
+    var(--color-cultural-traditional-light)
+  );
+}
+
+.progress[data-cultural-theme='traditional'] .progressFill {
+  background: linear-gradient(
+    90deg,
+    var(--color-cultural-sacred),
+    var(--color-cultural-sacred-light)
+  );
+}
+
+.progress[data-cultural-theme='academic'] .progressFill {
+  background: linear-gradient(
+    90deg,
+    var(--color-cultural-academic),
+    var(--color-cultural-academic-light)
+  );
+}
+
+/* Loading States */
+.progress.loading {
+  opacity: 0.7;
+}
+
+.progress.loading .progressFill {
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .progressLabel {
+    font-size: var(--font-size-xs);
+  }
+
+  .labelPercentage {
+    font-size: var(--font-size-2xs);
+  }
+}
+
+/* Print Styles */
+@media print {
+  .progress {
+    border: 1px solid #000;
+    background-color: #fff;
+  }
+
+  .progressFill {
+    background-color: #000 !important;
+  }
+
+  .progressFill::before {
+    display: none;
+  }
+
+  .progressIndeterminate {
+    display: none;
+  }
+}

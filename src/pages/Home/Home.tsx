@@ -1,13 +1,15 @@
 import { Component, createSignal, onMount } from 'solid-js';
 import { Button, Card, Modal } from '../../components/foundation';
-import NetworkGraph from '../../components/network/NetworkGraph';
+import {
+  NetworkGraph,
+  ActivityListCard,
+  StatCard,
+  type ActivityItemProps,
+} from '../../components/composite';
 import { DownloadManager, StatusBar, SecurityPanel } from '../../components/domain/dashboard';
 import {
   Download,
   Upload,
-  CheckCircle,
-  Globe,
-  Building2,
   Search,
   BarChart3,
   Settings,
@@ -21,7 +23,6 @@ import {
   University,
   Zap,
   TrendingUp,
-  TrendingDown,
   ArrowRight,
 } from 'lucide-solid';
 import styles from './Home.module.css';
@@ -34,12 +35,65 @@ const HomePage: Component = () => {
 
   onMount(() => {
     // Show welcome modal on first visit
-    const hasVisited = localStorage.getItem('allibrary-visited');
+    const hasVisited = globalThis.localStorage?.getItem('allibrary-visited');
     if (!hasVisited) {
       setShowModal(true);
-      localStorage.setItem('allibrary-visited', 'true');
+      globalThis.localStorage?.setItem('allibrary-visited', 'true');
     }
   });
+
+  // Sample data for recent downloads
+  const recentDownloads: ActivityItemProps[] = [
+    {
+      type: 'downloading',
+      title: 'Traditional Healing Practices.pdf',
+      fileSize: '2.4 MB',
+      progress: 67,
+      speed: '2.1 MB/s',
+      status: 'Downloading',
+      metadata: '67% complete',
+    },
+    {
+      type: 'seeding',
+      title: 'Digital Archives Collection',
+      fileSize: '156 MB',
+      speed: '1.5 MB/s upload',
+      status: 'Seeding',
+      metadata: 'Seeding to 12 peers',
+    },
+    {
+      type: 'completed',
+      title: 'Andean Music Methods.epub',
+      fileSize: '8.2 MB',
+      status: 'Complete',
+      metadata: 'Completed 2 minutes ago',
+    },
+  ];
+
+  // Sample data for network activity
+  const networkActivity: ActivityItemProps[] = [
+    {
+      type: 'peer-connected',
+      title: 'Connected to peer node',
+      status: 'Connected',
+      metadata: 'Library.universidadsanmarcos.pe',
+      peerCount: 24,
+    },
+    {
+      type: 'institution',
+      title: 'Institution sharing',
+      status: 'Sharing',
+      metadata: 'Universidad Nacional Mayor de San Marcos',
+      resultCount: 847,
+    },
+    {
+      type: 'discovery',
+      title: 'Network discovery',
+      status: 'Discovered',
+      metadata: 'Found 3 new document sources',
+      resultCount: 3,
+    },
+  ];
 
   return (
     <div class={styles['home-page']}>
@@ -176,251 +230,139 @@ const HomePage: Component = () => {
         {activeTab() === 'overview' && (
           <>
             {/* Enhanced Stats Section */}
-            <section class={`${styles['stats-section']} ${styles['enhanced']}`}>
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card variant="elevated" class={`${styles['stat-card']} ${styles['enhanced']}`}>
-                  <div class={styles['stat-content']}>
-                    <div class={styles['stat-icon']}>
-                      <BookOpen size={32} />
-                    </div>
-                    <div class={styles['stat-info']}>
-                      <div class={styles['stat-main']}>
-                        <h3 class={styles['stat-number']}>12,847</h3>
-                        <p class={styles['stat-label']}>Documents Shared</p>
-                      </div>
-                      <div class={`${styles['stat-trend']} ${styles['positive']}`}>
-                        <TrendingUp size={12} />
-                        +127 today
-                      </div>
-                    </div>
-                  </div>
-                </Card>
 
-                <Card variant="elevated" class={`${styles['stat-card']} ${styles['enhanced']}`}>
-                  <div class={styles['stat-content']}>
-                    <div class={styles['stat-icon']}>
-                      <Users size={32} />
-                    </div>
-                    <div class={styles['stat-info']}>
-                      <div class={styles['stat-main']}>
-                        <h3 class={styles['stat-number']}>89</h3>
-                        <p class={styles['stat-label']}>Connected Peers</p>
-                      </div>
-                      <div class={`${styles['stat-trend']} ${styles['positive']}`}>
-                        <TrendingUp size={12} />
-                        +5 online
-                      </div>
-                    </div>
-                  </div>
-                </Card>
+            <div
+              class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+              data-testid="trending-section"
+            >
+              <StatCard
+                type="documents"
+                icon={<BookOpen size={24} />}
+                number="12,847"
+                label="Documents Shared"
+                trendType="positive"
+                trendIcon={<TrendingUp size={12} />}
+                trendValue="+127"
+                trendLabel="today"
+                graphType="chart"
+              />
+              <StatCard
+                type="peers"
+                icon={<Users size={24} />}
+                number="89"
+                label="Connected Peers"
+                trendType="positive"
+                trendIcon={<TrendingUp size={14} />}
+                trendValue="+5"
+                trendLabel="online"
+                graphType="peers"
+              />
+              <StatCard
+                type="institutions"
+                icon={<University size={24} />}
+                number="156"
+                label="Cultural Institutions"
+                trendType="neutral"
+                trendIcon={<ArrowRight size={14} />}
+                trendValue="stable"
+                graphType="map"
+              />
+              <StatCard
+                type="health"
+                icon={<Zap size={24} />}
+                number="98%"
+                label="Network Health"
+                trendType="positive"
+                trendIcon={<TrendingUp size={14} />}
+                trendValue="excellent"
+                graphType="health"
+              />
+            </div>
 
-                <Card variant="elevated" class={`${styles['stat-card']} ${styles['enhanced']}`}>
-                  <div class={styles['stat-content']}>
-                    <div class={styles['stat-icon']}>
-                      <University size={32} />
-                    </div>
-                    <div class={styles['stat-info']}>
-                      <div class={styles['stat-main']}>
-                        <h3 class={styles['stat-number']}>156</h3>
-                        <p class={styles['stat-label']}>Cultural Institutions</p>
-                      </div>
-                      <div class={`${styles['stat-trend']} ${styles['neutral']}`}>
-                        <ArrowRight size={12} />
-                        stable
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-
-                <Card variant="elevated" class={`${styles['stat-card']} ${styles['enhanced']}`}>
-                  <div class={styles['stat-content']}>
-                    <div class={styles['stat-icon']}>
-                      <Zap size={32} />
-                    </div>
-                    <div class={styles['stat-info']}>
-                      <div class={styles['stat-main']}>
-                        <h3 class={styles['stat-number']}>98%</h3>
-                        <p class={styles['stat-label']}>Network Health</p>
-                      </div>
-                      <div class={`${styles['stat-trend']} ${styles['positive']}`}>
-                        <TrendingUp size={12} />
-                        excellent
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              </div>
-            </section>
-
-            {/* Mini Network Graph Preview */}
+            {/* Enhanced Network Preview Section */}
             <section class={styles['network-preview-section']}>
               <div class={styles['section-header']}>
-                <h2>Network Overview</h2>
-                <Button variant="ghost" size="sm" onClick={() => setActiveTab('network')}>
-                  View Full Network →
-                </Button>
+                <div class={styles['header-content']}>
+                  <h2 class={styles['section-title']}>Network Topology</h2>
+                  <p class={styles['section-subtitle']}>Live peer connection visualization</p>
+                </div>
+                <div class={styles['header-actions']}>
+                  <div class={styles['network-stats']}>
+                    <span class={styles['stat-item']}>
+                      <span class={styles['stat-dot']}></span>
+                      89 nodes
+                    </span>
+                    <span class={styles['stat-item']}>
+                      <span class={styles['stat-dot']}></span>
+                      156 connections
+                    </span>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={() => setActiveTab('network')}>
+                    <ArrowRight size={16} class="ml-2" />
+                    Expand View
+                  </Button>
+                </div>
               </div>
-              <Card class={styles['network-preview-card']!}>
-                <NetworkGraph width="100%" height={350} showStats={true} theme="light" />
-              </Card>
+
+              <NetworkGraph width="100%" height={350} showStats={true} theme="light" />
             </section>
 
             {/* Enhanced Activity Section */}
             <section class={`${styles['activity-section']} ${styles['enhanced']}`}>
-              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card title="Recent Downloads" padding="lg">
-                  <div class={`${styles['activity-list']} ${styles['modern']}`}>
-                    <div class={styles['activity-item']}>
-                      <div class={`${styles['activity-icon']} ${styles['downloading']}`}>
-                        <Download size={16} />
-                      </div>
-                      <div class={styles['activity-content']}>
-                        <h4 class={styles['activity-title']}>Traditional Healing Practices.pdf</h4>
-                        <p class={styles['activity-meta']}>67% complete • 2.1 MB/s</p>
-                        <div class={styles['activity-progress']}>
-                          <div class={styles['progress-bar']}>
-                            <div class={styles['progress-fill']} style="width: 67%"></div>
-                          </div>
-                        </div>
-                      </div>
-                      <div class={styles['activity-status']}>
-                        <span class={`${styles['status-badge']} ${styles['downloading']}`}>
-                          Downloading
-                        </span>
-                      </div>
-                    </div>
-                    <div class={styles['activity-item']}>
-                      <div class={`${styles['activity-icon']} ${styles['seeding']}`}>
-                        <Upload size={16} />
-                      </div>
-                      <div class={styles['activity-content']}>
-                        <h4 class={styles['activity-title']}>Digital Archives Collection</h4>
-                        <p class={styles['activity-meta']}>Seeding • 1.5 MB/s upload</p>
-                      </div>
-                      <div class={styles['activity-status']}>
-                        <span class={`${styles['status-badge']} ${styles['seeding']}`}>
-                          Seeding
-                        </span>
-                      </div>
-                    </div>
-                    <div class={styles['activity-item']}>
-                      <div class={`${styles['activity-icon']} ${styles['completed']}`}>
-                        <CheckCircle size={16} />
-                      </div>
-                      <div class={styles['activity-content']}>
-                        <h4 class={styles['activity-title']}>Andean Music Methods.epub</h4>
-                        <p class={styles['activity-meta']}>Completed • Ready to share</p>
-                      </div>
-                      <div class={styles['activity-status']}>
-                        <span class={`${styles['status-badge']} ${styles['completed']}`}>
-                          Complete
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div class={styles['activity-footer']}>
-                    <Button variant="ghost" size="sm" onClick={() => setActiveTab('downloads')}>
-                      View Download Manager
-                    </Button>
-                  </div>
-                </Card>
+              <div class={styles['section-header']}>
+                <div class={styles['header-content']}>
+                  <h2 class={styles['section-title']}>Network Activity</h2>
+                  <p class={styles['section-subtitle']}>
+                    Real-time downloads and network connections
+                  </p>
+                </div>
+              </div>
 
-                <Card title="Network Activity" padding="lg">
-                  <div class={`${styles['activity-list']} ${styles['modern']}`}>
-                    <div class={styles['activity-item']}>
-                      <div class={`${styles['activity-icon']} ${styles['peer']}`}>
-                        <Globe size={16} />
-                      </div>
-                      <div class={styles['activity-content']}>
-                        <h4 class={styles['activity-title']}>Pacific Cultural Center</h4>
-                        <p class={styles['activity-meta']}>Connected • 45ms latency</p>
-                      </div>
-                      <div class={styles['activity-status']}>
-                        <span class={`${styles['status-badge']} ${styles['connected']}`}>
-                          Connected
-                        </span>
-                      </div>
-                    </div>
-                    <div class={styles['activity-item']}>
-                      <div class={`${styles['activity-icon']} ${styles['institution']}`}>
-                        <Building2 size={16} />
-                      </div>
-                      <div class={styles['activity-content']}>
-                        <h4 class={styles['activity-title']}>Instituto Socioambiental</h4>
-                        <p class={styles['activity-meta']}>New documents shared • Brazil</p>
-                      </div>
-                      <div class={styles['activity-status']}>
-                        <span class={`${styles['status-badge']} ${styles['sharing']}`}>
-                          Sharing
-                        </span>
-                      </div>
-                    </div>
-                    <div class={styles['activity-item']}>
-                      <div class={`${styles['activity-icon']} ${styles['discovery']}`}>
-                        <Search size={16} />
-                      </div>
-                      <div class={styles['activity-content']}>
-                        <h4 class={styles['activity-title']}>DHT Discovery</h4>
-                        <p class={styles['activity-meta']}>Found 12 new cultural archives</p>
-                      </div>
-                      <div class={styles['activity-status']}>
-                        <span class={`${styles['status-badge']} ${styles['discovered']}`}>
-                          Discovered
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div class={styles['activity-footer']}>
-                    <Button variant="ghost" size="sm">
-                      View Network Status
-                    </Button>
-                  </div>
-                </Card>
+              <div class={styles['grid']}>
+                <ActivityListCard
+                  title="Recent Downloads"
+                  subtitle="Active downloads and uploads"
+                  icon={<Download size={20} />}
+                  items={recentDownloads}
+                  cardType="downloads"
+                  data-testid="recent-documents"
+                />
+
+                <ActivityListCard
+                  title="Network Activity"
+                  subtitle="Peer connections and discoveries"
+                  icon={<Upload size={20} />}
+                  items={networkActivity}
+                  cardType="network"
+                />
               </div>
             </section>
 
-            {/* Enhanced Quick Actions */}
-            <section class={`${styles['actions-section']} ${styles['enhanced']}`}>
-              <Card title="Quick Actions" padding="lg">
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <Button
-                    variant="outline"
-                    class={`${styles['action-button']} ${styles['modern']}`}
-                  >
-                    <span class={styles['action-icon']}>
-                      <Share size={20} />
-                    </span>
-                    <span class={styles['action-text']}>Share Document</span>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    class={`${styles['action-button']} ${styles['modern']}`}
-                  >
-                    <span class={styles['action-icon']}>
-                      <Search size={20} />
-                    </span>
-                    <span class={styles['action-text']}>Search Network</span>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    class={`${styles['action-button']} ${styles['modern']}`}
-                  >
-                    <span class={styles['action-icon']}>
-                      <BarChart3 size={20} />
-                    </span>
-                    <span class={styles['action-text']}>Analytics</span>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    class={`${styles['action-button']} ${styles['modern']}`}
-                  >
-                    <span class={styles['action-icon']}>
-                      <Settings size={20} />
-                    </span>
-                    <span class={styles['action-text']}>Settings</span>
-                  </Button>
-                </div>
-              </Card>
+            {/* Quick Actions */}
+            <section class={styles['actions-section']}>
+              <h2 class={styles['section-title']}>Quick Actions</h2>
+
+              <div class={styles['actions-grid']}>
+                <button class={styles['action-button']} data-testid="upload-button">
+                  <Share size={20} />
+                  <span>Share Document</span>
+                </button>
+
+                <button class={styles['action-button']}>
+                  <Search size={20} />
+                  <span>Search Network</span>
+                </button>
+
+                <button class={styles['action-button']}>
+                  <BarChart3 size={20} />
+                  <span>Analytics</span>
+                </button>
+
+                <button class={styles['action-button']}>
+                  <Settings size={20} />
+                  <span>Settings</span>
+                </button>
+              </div>
             </section>
           </>
         )}

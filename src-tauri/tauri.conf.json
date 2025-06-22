@@ -4,9 +4,9 @@
   "version": "0.1.0",
   "identifier": "com.allibrary.app",
   "build": {
-    "beforeDevCommand": "yarn dev",
+    "beforeDevCommand": "yarn dev:frontend",
     "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "yarn build",
+    "beforeBuildCommand": "yarn build:frontend",
     "frontendDist": "../dist"
   },
   "app": {

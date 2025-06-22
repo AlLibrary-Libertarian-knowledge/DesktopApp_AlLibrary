@@ -1,0 +1,684 @@
+/* LibrarySection.module.css */
+
+.librarySection {
+  width: 100%;
+  padding: 1.5rem;
+  background: var(--surface-primary);
+  border-radius: var(--radius-lg);
+  transition: all 0.2s ease;
+}
+
+/* Header Styles */
+.libraryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+}
+
+.searchSection {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+  max-width: 600px;
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 300px;
+}
+
+.filterToggle {
+  white-space: nowrap;
+}
+
+.viewControls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.sortControls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sortSelect {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  background: var(--surface-secondary);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.sortSelect:hover {
+  border-color: var(--border-hover);
+}
+
+.sortSelect:focus {
+  outline: 2px solid var(--focus-ring, #3b82f6);
+  outline-offset: 2px;
+  border-color: var(--primary-500);
+}
+
+.viewTypeControls {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: var(--surface-secondary);
+  border-radius: var(--radius-sm);
+  padding: 0.25rem;
+}
+
+/* Filters Panel */
+.filtersPanel {
+  margin-bottom: 1.5rem;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.filtersContent {
+  padding: 1rem;
+}
+
+.filtersTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+  color: var(--text-primary);
+}
+
+.filterGroup {
+  margin-bottom: 1.5rem;
+}
+
+.filterGroup:last-child {
+  margin-bottom: 0;
+}
+
+.filterLabel {
+  display: block;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.checkboxGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.checkboxLabel:hover {
+  color: var(--text-primary);
+}
+
+.checkboxLabel input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--primary-500);
+  cursor: pointer;
+}
+
+/* Bulk Actions Bar */
+.bulkActionsBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: var(--primary-50);
+  border: 1px solid var(--primary-200);
+  border-radius: var(--radius-md);
+  margin-bottom: 1rem;
+  animation: slideDown 0.2s ease-out;
+}
+
+.selectedCount {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--primary-700);
+}
+
+.bulkActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Documents Container */
+.documentsContainer {
+  position: relative;
+  min-height: 200px;
+}
+
+.documentsContainer.view-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1rem;
+}
+
+.documentsContainer.view-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Document Card Styles */
+.documentCard {
+  position: relative;
+  padding: 1rem;
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.documentCard:hover {
+  border-color: var(--border-hover);
+  background: var(--surface-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.documentCard.selected {
+  border-color: var(--primary-500);
+  background: var(--primary-50);
+  box-shadow: 0 0 0 2px var(--primary-100);
+}
+
+.view-list .documentCard {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+}
+
+.view-list .documentCard:hover {
+  transform: none;
+}
+
+.documentContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.view-list .documentContent {
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+}
+
+.documentCheckbox {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary-500);
+  cursor: pointer;
+  z-index: 2;
+}
+
+.view-list .documentCheckbox {
+  position: static;
+  margin: 0;
+}
+
+.documentInfo {
+  flex: 1;
+}
+
+.view-list .documentInfo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+}
+
+.documentHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.view-list .documentHeader {
+  margin-bottom: 0;
+  flex: 1;
+}
+
+.documentTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.view-list .documentTitle {
+  font-size: 0.875rem;
+  flex: 0 0 200px;
+}
+
+.documentDescription {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin: 0 0 0.5rem 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.view-list .documentDescription {
+  -webkit-line-clamp: 1;
+  flex: 0 0 150px;
+}
+
+.documentMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+}
+
+.view-list .documentMeta {
+  flex: 0 0 120px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  margin-bottom: 0;
+}
+
+.metaItem {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  background: var(--surface-tertiary);
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--radius-xs);
+  white-space: nowrap;
+}
+
+.view-list .metaItem {
+  background: none;
+  padding: 0;
+}
+
+/* Cultural Information Display */
+.culturalBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  cursor: help;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.cultural-level-1 {
+  background: var(--color-cultural-traditional, #059669);
+  color: white;
+}
+
+.cultural-level-2 {
+  background: var(--color-cultural-sacred, #7c3aed);
+  color: white;
+}
+
+.cultural-level-3 {
+  background: var(--color-cultural-academic, #2563eb);
+  color: white;
+}
+
+.culturalBadge:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
+}
+
+.culturalInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: var(--color-info-50, #eff6ff);
+  border: 1px solid var(--color-info-200, #bfdbfe);
+  border-radius: var(--radius-sm);
+  color: var(--color-info-700, #1d4ed8);
+  font-size: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.view-list .culturalInfo {
+  flex: 0 0 200px;
+  margin-bottom: 0;
+}
+
+.culturalContext {
+  flex: 1;
+  line-height: 1.3;
+}
+
+.infoNote {
+  font-style: italic;
+  opacity: 0.8;
+  white-space: nowrap;
+}
+
+.view-list .infoNote {
+  display: none;
+}
+
+/* Document Tags */
+.documentTags {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+}
+
+.view-list .documentTags {
+  flex: 0 0 120px;
+  justify-content: flex-end;
+}
+
+.tag {
+  font-size: 0.75rem;
+  color: var(--primary-700);
+  background: var(--primary-100);
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--radius-xs);
+  transition: all 0.2s ease;
+}
+
+.tag:hover {
+  background: var(--primary-200);
+  transform: scale(1.05);
+}
+
+.view-list .tag {
+  display: none;
+}
+
+.view-list .tag:first-child {
+  display: inline-block;
+}
+
+/* Document Actions */
+.documentActions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+}
+
+.view-list .documentActions {
+  margin-top: 0;
+  flex: 0 0 auto;
+}
+
+.favorited {
+  color: var(--error-500) !important;
+}
+
+/* Empty States */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  text-align: center;
+}
+
+.loadingState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border-secondary);
+  border-top: 3px solid var(--primary-500);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.noDocuments {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  color: var(--text-secondary);
+}
+
+.noDocuments h3 {
+  font-size: 1.25rem;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.noDocuments p {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+/* Cultural Notice */
+.culturalNotice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: var(--color-info-50, #eff6ff);
+  border: 1px solid var(--color-info-200, #bfdbfe);
+  border-radius: var(--radius-md);
+  color: var(--color-info-700, #1d4ed8);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin-top: 1.5rem;
+}
+
+/* Cultural Theme Variations */
+.librarySection[data-cultural-theme='indigenous'] {
+  border-left: 4px solid var(--color-cultural-traditional, #059669);
+}
+
+.librarySection[data-cultural-theme='traditional'] {
+  border-left: 4px solid var(--color-cultural-sacred, #7c3aed);
+}
+
+.librarySection[data-cultural-theme='ceremonial'] {
+  border-left: 4px solid var(--color-cultural-academic, #2563eb);
+}
+
+.librarySection[data-cultural-theme='indigenous'] .documentCard:hover {
+  border-color: var(--color-cultural-traditional, #059669);
+}
+
+.librarySection[data-cultural-theme='traditional'] .documentCard:hover {
+  border-color: var(--color-cultural-sacred, #7c3aed);
+}
+
+.librarySection[data-cultural-theme='ceremonial'] .documentCard:hover {
+  border-color: var(--color-cultural-academic, #2563eb);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .documentsContainer.view-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+
+  .view-list .documentInfo {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .view-list .documentMeta,
+  .view-list .documentTags,
+  .view-list .culturalInfo {
+    flex: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .librarySection {
+    padding: 1rem;
+  }
+
+  .libraryHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .searchSection {
+    flex-direction: column;
+    max-width: none;
+  }
+
+  .searchInput {
+    min-width: auto;
+  }
+
+  .viewControls {
+    justify-content: space-between;
+  }
+
+  .documentsContainer.view-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .documentCard {
+    padding: 0.75rem;
+  }
+
+  .documentCheckbox {
+    top: 0.5rem;
+    right: 0.5rem;
+  }
+
+  .bulkActionsBar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .bulkActions {
+    justify-content: center;
+  }
+
+  .filtersContent {
+    padding: 0.75rem;
+  }
+
+  .checkboxGroup {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.75rem;
+  }
+}
+
+/* Accessibility Enhancements */
+@media (prefers-reduced-motion: reduce) {
+  .documentCard,
+  .culturalBadge,
+  .tag,
+  .spinner,
+  .filtersPanel {
+    transition: none;
+    animation: none;
+  }
+
+  .documentCard:hover {
+    transform: none;
+  }
+
+  .culturalBadge:hover,
+  .tag:hover {
+    transform: none;
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .documentCard {
+    border-width: 2px;
+  }
+
+  .culturalBadge {
+    border: 2px solid currentColor;
+  }
+
+  .tag {
+    border: 1px solid currentColor;
+  }
+
+  .sortSelect {
+    border-width: 2px;
+  }
+}
+
+/* Focus States */
+.documentCard:focus-visible {
+  outline: 2px solid var(--focus-ring, #3b82f6);
+  outline-offset: 2px;
+}
+
+.sortSelect:focus-visible {
+  outline: 2px solid var(--focus-ring, #3b82f6);
+  outline-offset: 2px;
+}
+
+.checkboxLabel:focus-within {
+  outline: 2px solid var(--focus-ring, #3b82f6);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}

@@ -48,7 +48,7 @@ interface SidebarProps {
 
 const Sidebar: Component<SidebarProps> = props => {
   const [activeSection, setActiveSection] = createSignal('');
-  const [isOnline, setIsOnline] = createSignal(true);
+  const [isOnline] = createSignal(true);
   const [isTransitioning, setIsTransitioning] = createSignal(false);
   const [wasCollapsed, setWasCollapsed] = createSignal(false);
   const [pendingSection, setPendingSection] = createSignal<string | null>(null);
@@ -61,7 +61,7 @@ const Sidebar: Component<SidebarProps> = props => {
       icon: BookOpen,
       items: [
         { path: '/', label: 'Dashboard', icon: HardDrive },
-        { path: '/documents', label: 'Document Management', icon: FileText },
+        { path: '/documents', label: 'Documents & Search', icon: FileText },
         { path: '/collections', label: 'Collections', icon: Folder },
         { path: '/favorites', label: 'Favorites', icon: Star },
         { path: '/recent', label: 'Recent', icon: Clock },
@@ -72,7 +72,7 @@ const Sidebar: Component<SidebarProps> = props => {
       title: 'Discovery',
       icon: Search,
       items: [
-        { path: '/search', label: 'Search Network', icon: Globe },
+        { path: '/search-network', label: 'Search Network', icon: Globe },
         { path: '/browse', label: 'Browse Categories', icon: FolderOpen },
         { path: '/trending', label: 'Trending', icon: TrendingUp, badge: '12' },
         { path: '/new-arrivals', label: 'New Arrivals', icon: Sparkles, badge: 'New' },
@@ -162,7 +162,7 @@ const Sidebar: Component<SidebarProps> = props => {
       setIsTransitioning(true);
       setActiveSection(''); // Close current first
 
-      setTimeout(() => {
+      globalThis.setTimeout(() => {
         setActiveSection(section); // Open new one after delay
         setIsTransitioning(false);
       }, 200); // Delay matches the CSS transition timing
@@ -179,7 +179,7 @@ const Sidebar: Component<SidebarProps> = props => {
   return (
     <aside class={`app-sidebar ${props.collapsed ? 'collapsed' : ''}`}>
       {/* Navigation */}
-      <nav class="sidebar-nav">
+      <nav class="sidebar-nav" data-testid="main-navigation">
         {navigationItems.map(section => (
           <div class="nav-section">
             <button

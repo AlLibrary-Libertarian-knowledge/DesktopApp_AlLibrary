@@ -1,0 +1,347 @@
+/* Select Foundation Component Styles */
+
+.select {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+  font-family: var(--font-family-primary);
+}
+
+/* Size Variants */
+.select-sm {
+  font-size: var(--font-size-sm);
+}
+
+.select-md {
+  font-size: var(--font-size-base);
+}
+
+.select-lg {
+  font-size: var(--font-size-lg);
+}
+
+/* Trigger Button */
+.trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: inherit;
+  font-family: inherit;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  min-height: 2.5rem;
+}
+
+.trigger:hover:not(:disabled) {
+  border-color: var(--color-primary-300);
+  background: var(--color-surface-hover);
+}
+
+.trigger:focus {
+  outline: none;
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 3px var(--color-primary-100);
+}
+
+.trigger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--color-surface-disabled);
+}
+
+/* Variant Styles */
+.select-outline .trigger {
+  background: transparent;
+  border: 2px solid var(--color-border);
+}
+
+.select-filled .trigger {
+  background: var(--color-surface-subtle);
+  border: 1px solid transparent;
+}
+
+.select-filled .trigger:hover:not(:disabled) {
+  background: var(--color-surface-hover);
+}
+
+/* Size-specific trigger styles */
+.select-sm .trigger {
+  padding: var(--space-xs) var(--space-sm);
+  min-height: 2rem;
+}
+
+.select-lg .trigger {
+  padding: var(--space-md) var(--space-lg);
+  min-height: 3rem;
+}
+
+/* Value Display */
+.value {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-text-primary);
+}
+
+.trigger:disabled .value {
+  color: var(--color-text-disabled);
+}
+
+/* Chevron Icon */
+.chevron {
+  flex-shrink: 0;
+  margin-left: var(--space-sm);
+  color: var(--color-text-secondary);
+  transition: transform 0.2s ease;
+}
+
+.chevronUp {
+  transform: rotate(180deg);
+}
+
+/* Error State */
+.error .trigger {
+  border-color: var(--color-error);
+}
+
+.error .trigger:focus {
+  border-color: var(--color-error);
+  box-shadow: 0 0 0 3px var(--color-error-100);
+}
+
+/* Open State */
+.open .trigger {
+  border-color: var(--color-primary-500);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+/* Dropdown */
+.dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: var(--color-surface);
+  border: 1px solid var(--color-primary-500);
+  border-top: none;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  animation: dropdownSlide 0.15s ease-out;
+}
+
+@keyframes dropdownSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Search Container */
+.searchContainer {
+  position: relative;
+  padding: var(--space-sm);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.searchIcon {
+  position: absolute;
+  left: var(--space-md);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-secondary);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  padding: var(--space-sm) var(--space-sm) var(--space-sm) var(--space-xl);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 2px var(--color-primary-100);
+}
+
+/* Options List */
+.optionsList {
+  max-height: 200px;
+  overflow-y: auto;
+  padding: var(--space-xs) 0;
+}
+
+.optionsList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.optionsList::-webkit-scrollbar-track {
+  background: var(--color-surface-subtle);
+}
+
+.optionsList::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+
+.optionsList::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-secondary);
+}
+
+/* Option Items */
+.option {
+  display: flex;
+  align-items: center;
+  padding: var(--space-sm) var(--space-md);
+  cursor: pointer;
+  color: var(--color-text-primary);
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+.option:hover {
+  background: var(--color-surface-hover);
+}
+
+.option.focused {
+  background: var(--color-primary-50);
+  color: var(--color-primary-700);
+}
+
+.option.selected {
+  background: var(--color-primary-100);
+  color: var(--color-primary-800);
+  font-weight: 500;
+}
+
+.option.optionDisabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  color: var(--color-text-disabled);
+}
+
+.option.optionDisabled:hover {
+  background: transparent;
+}
+
+/* Option Content */
+.optionIcon {
+  margin-right: var(--space-sm);
+  display: flex;
+  align-items: center;
+  color: var(--color-text-secondary);
+}
+
+.optionLabel {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.checkIcon {
+  margin-left: var(--space-sm);
+  color: var(--color-primary-600);
+}
+
+/* No Options State */
+.noOptions {
+  padding: var(--space-md);
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-style: italic;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .dropdown {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    max-height: 60vh;
+  }
+
+  .optionsList {
+    max-height: 50vh;
+  }
+
+  .option {
+    padding: var(--space-md);
+    font-size: var(--font-size-base);
+  }
+}
+
+/* Cultural Theme Support */
+.select[data-cultural-theme='indigenous'] {
+  --color-primary-500: var(--color-cultural-traditional);
+  --color-primary-100: var(--color-cultural-traditional-light);
+}
+
+.select[data-cultural-theme='traditional'] {
+  --color-primary-500: var(--color-cultural-sacred);
+  --color-primary-100: var(--color-cultural-sacred-light);
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .trigger {
+    border-width: 2px;
+  }
+
+  .option.focused {
+    background: var(--color-primary-200);
+    border: 2px solid var(--color-primary-600);
+  }
+
+  .option.selected {
+    background: var(--color-primary-300);
+    border: 2px solid var(--color-primary-700);
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .trigger,
+  .chevron,
+  .option {
+    transition: none;
+  }
+
+  .dropdown {
+    animation: none;
+  }
+}
+
+/* Dark Theme Support */
+@media (prefers-color-scheme: dark) {
+  .select {
+    --color-surface: var(--color-surface-dark);
+    --color-surface-hover: var(--color-surface-hover-dark);
+    --color-text-primary: var(--color-text-primary-dark);
+    --color-text-secondary: var(--color-text-secondary-dark);
+    --color-border: var(--color-border-dark);
+  }
+}

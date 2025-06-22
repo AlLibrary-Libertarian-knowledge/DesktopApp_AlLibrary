@@ -82,6 +82,9 @@ export interface Document {
   /** MIME type */
   mimeType: string;
 
+  /** Document content (for analysis and search) */
+  content?: string;
+
   /** Document creation timestamp */
   createdAt: Date;
 
@@ -532,4 +535,51 @@ export interface DocumentCollection {
 
   /** Collection visibility */
   visibility: 'private' | 'community' | 'public';
+}
+
+/**
+ * Document metadata for validation and processing
+ */
+export interface DocumentMetadata {
+  /** Document title */
+  title: string;
+
+  /** Document description */
+  description?: string;
+
+  /** Document format */
+  format: DocumentFormat;
+
+  /** Content type */
+  contentType: DocumentContentType;
+
+  /** File size in bytes */
+  fileSize: number;
+
+  /** File hash for integrity */
+  fileHash: string;
+
+  /** MIME type */
+  mimeType: string;
+
+  /** Language */
+  language: string;
+
+  /** Authors */
+  authors: DocumentAuthor[];
+
+  /** Tags */
+  tags: string[];
+
+  /** Categories */
+  categories: string[];
+
+  /** Cultural metadata */
+  culturalMetadata: CulturalMetadata;
+
+  /** Creation timestamp */
+  createdAt: Date;
+
+  /** Source attribution */
+  sourceAttribution: SourceAttribution;
 }

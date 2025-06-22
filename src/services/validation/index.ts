@@ -20,9 +20,9 @@ export type {
 } from '@/types/Cultural';
 
 export type {
-  SecurityValidationResult,
+  ValidationResult,
   ValidationContext,
   SecurityThreat,
-  ScanResult,
-  SafetyResult,
+  SecurityScanResult,
+  IntegrityCheckResult,
 } from '@/types/Security';

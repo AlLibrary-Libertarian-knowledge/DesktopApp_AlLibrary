@@ -1,7 +1,6 @@
-import { Component, createSignal, ParentProps, Show, onMount, lazy, Suspense } from 'solid-js';
+import { Component, createSignal, ParentProps, Show, onMount, Suspense } from 'solid-js';
 import { Router, Route } from '@solidjs/router';
 import { listen } from '@tauri-apps/api/event';
-import { invoke } from '@tauri-apps/api/core';
 import MainLayout from './components/layout/MainLayout';
 import { Loading } from './components/foundation';
 import './styles/theme.css';
@@ -12,7 +11,7 @@ import { Home as HomePage } from './pages/Home';
 import { Collections as CollectionsPage } from './pages/Collections';
 import { Favorites as FavoritesPage } from './pages/Favorites';
 import { Recent as RecentPage } from './pages/Recent';
-import { Search as SearchPage } from './pages/Search';
+// SearchPage functionality has been merged into DocumentManagement
 import { Browse as BrowsePage } from './pages/Browse';
 import { Trending as TrendingPage } from './pages/Trending';
 import { Peers as PeersPage } from './pages/Peers';
@@ -62,6 +61,8 @@ const App: Component = () => {
   const [initProgress, setInitProgress] = createSignal<InitProgress | null>(null);
 
   onMount(async () => {
+    let cleanup: (() => void) | null = null;
+
     try {
       // Listen for initialization progress from Tauri
       const unlisten = await listen<InitProgress>('init-progress', event => {
@@ -70,23 +71,25 @@ const App: Component = () => {
 
         // When initialization is complete, hide loading screen
         if (event.payload.phase === 'complete' || event.payload.progress >= 100) {
-          setTimeout(() => {
+          globalThis.setTimeout(() => {
             setIsLoading(false);
           }, 1500); // Small delay to show completion
         }
       });
 
-      // Cleanup listener when component unmounts
-      return () => {
-        unlisten();
-      };
+      cleanup = unlisten;
     } catch (error) {
       console.error('Failed to setup initialization listener:', error);
       // Fallback: hide loading after a timeout if Tauri isn't available
-      setTimeout(() => {
+      globalThis.setTimeout(() => {
         setIsLoading(false);
       }, 4000);
     }
+
+    // Return cleanup function
+    return () => {
+      cleanup?.();
+    };
   });
 
   const handleLoadingComplete = () => {
@@ -150,7 +153,16 @@ const App: Component = () => {
             path="/search"
             component={() => (
               <RouteWrapper>
-                <SearchPage />
+                <DocumentManagement />
+              </RouteWrapper>
+            )}
+          />
+
+          <Route
+            path="/search-network"
+            component={() => (
+              <RouteWrapper>
+                <DocumentManagement />
               </RouteWrapper>
             )}
           />

@@ -83,6 +83,13 @@ jspm_packages/
 tmp/
 temp/
 
+# Testing artifacts
+test-results/
+playwright-report/
+*.webm
+*.png
+*.zip
+
 # AlLibrary specific
 /database/
 /documents/

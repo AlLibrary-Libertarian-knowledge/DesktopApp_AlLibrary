@@ -1,0 +1,374 @@
+/* PeerCard Component Styles */
+
+.peerCard {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+  cursor: default;
+}
+
+.peerCard:hover {
+  border-color: var(--color-border-hover);
+  box-shadow: var(--shadow-sm);
+}
+
+.peerCard.selectable {
+  cursor: pointer;
+}
+
+.peerCard.selectable:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.peerCard.selected {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary-alpha);
+}
+
+/* Size Variants */
+.peerCard-sm {
+  padding: var(--space-sm);
+}
+
+.peerCard-md {
+  padding: var(--space-md);
+}
+
+.peerCard-lg {
+  padding: var(--space-lg);
+}
+
+/* Card Content */
+.cardContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+/* Status Indicator */
+.statusIndicator {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-xs);
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.statusDot.connecting {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.statusLabel {
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  text-transform: capitalize;
+}
+
+/* Peer Header */
+.peerHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-sm);
+}
+
+.peerIdentity {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex: 1;
+}
+
+.peerAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-primary-alpha);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.peerInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  min-width: 0;
+}
+
+.peerId {
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.peerLocation {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.country {
+  opacity: 0.7;
+}
+
+.peerBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  align-items: flex-start;
+}
+
+/* Peer Metrics */
+.peerMetrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--space-sm);
+  padding: var(--space-sm);
+  background: var(--color-background);
+  border-radius: var(--radius-sm);
+}
+
+.metric {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: var(--font-size-xs);
+}
+
+.metric svg {
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+.metricLabel {
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.metricValue {
+  color: var(--color-text-primary);
+  font-weight: 600;
+  font-family: var(--font-family-mono);
+}
+
+/* Cultural Info */
+.culturalInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: var(--space-sm);
+  background: var(--color-cultural-background);
+  border: 1px solid var(--color-cultural-border);
+  border-radius: var(--radius-sm);
+}
+
+.culturalLevel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.culturalLabel {
+  font-size: var(--font-size-xs);
+  color: var(--color-cultural-traditional);
+  font-weight: 500;
+}
+
+.culturalAffinity {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.affinityLabel {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.affinityTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+/* Reputation */
+.reputation {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm);
+  background: var(--color-background);
+  border-radius: var(--radius-sm);
+}
+
+.reputationLabel {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.reputationScore {
+  flex: 1;
+  height: 4px;
+  background: var(--color-border);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+.reputationBar {
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--color-error),
+    var(--color-warning),
+    var(--color-success)
+  );
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.reputationValue {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-primary);
+  font-weight: 600;
+  font-family: var(--font-family-mono);
+  white-space: nowrap;
+}
+
+/* Peer Actions */
+.peerActions {
+  display: flex;
+  gap: var(--space-xs);
+  justify-content: flex-end;
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--color-border);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .peerHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .peerBadges {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .peerMetrics {
+    grid-template-columns: 1fr;
+  }
+
+  .peerActions {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .peerCard-md {
+    padding: var(--space-sm);
+  }
+
+  .peerCard-lg {
+    padding: var(--space-md);
+  }
+
+  .peerIdentity {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .reputation {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-xs);
+  }
+
+  .reputationScore {
+    width: 100%;
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .peerCard {
+    border-width: 2px;
+  }
+
+  .peerCard.selected {
+    border-width: 3px;
+  }
+
+  .statusDot {
+    border: 2px solid var(--color-background);
+  }
+
+  .culturalInfo {
+    border-width: 2px;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .peerCard {
+    transition: none;
+  }
+
+  .peerCard.selectable:hover {
+    transform: none;
+  }
+
+  .statusDot.connecting {
+    animation: none;
+  }
+
+  .reputationBar {
+    transition: none;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .peerCard {
+    break-inside: avoid;
+    border: 1px solid #000;
+    background: #fff;
+  }
+
+  .peerActions {
+    display: none;
+  }
+
+  .statusDot {
+    border: 1px solid #000;
+  }
+}

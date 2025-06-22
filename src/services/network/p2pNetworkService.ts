@@ -1,0 +1,503 @@
+/**
+ * P2P Network Service - Core Decentralized Networking
+ *
+ * Implements censorship-resistant peer-to-peer networking with IPFS content addressing,
+ * TOR integration, and community-controlled information sharing.
+ *
+ * ANTI-CENSORSHIP PRINCIPLES:
+ * - No cultural content filtering or blocking
+ * - Information flows freely between peers
+ * - Cultural context shared as educational information only
+ * - Community sovereignty over their own data, not others' access
+ * - Multiple perspectives supported equally
+ */
+
+import { invoke } from '@tauri-apps/api/core';
+import type {
+  P2PNode,
+  Peer,
+  NetworkConfig,
+  ContentHash,
+  SyncRequest,
+  NetworkStatus,
+  PeerDiscoveryOptions,
+  ContentRequest,
+  NetworkMetrics,
+} from '../../types/Network';
+import type { Collection } from '../../types/Collection';
+import type { Document } from '../../types/Document';
+import type { CulturalMetadata } from '../../types/Cultural';
+
+/**
+ * P2P Network Service Interface
+ */
+export interface P2PNetworkService {
+  // Node lifecycle
+  initializeNode(config: NetworkConfig): Promise<P2PNode>;
+  startNode(): Promise<void>;
+  stopNode(): Promise<void>;
+  getNodeStatus(): Promise<NetworkStatus>;
+
+  // Peer management
+  discoverPeers(options?: PeerDiscoveryOptions): Promise<Peer[]>;
+  connectToPeer(peerId: string): Promise<void>;
+  disconnectFromPeer(peerId: string): Promise<void>;
+  getConnectedPeers(): Promise<Peer[]>;
+
+  // Content sharing
+  publishContent(content: Document | Collection, metadata?: CulturalMetadata): Promise<ContentHash>;
+  requestContent(contentHash: ContentHash, peerId?: string): Promise<Document | Collection>;
+  syncContent(syncRequest: SyncRequest): Promise<void>;
+
+  // Cultural and community features
+  joinCommunityNetwork(communityId: string): Promise<void>;
+  leaveCommunityNetwork(communityId: string): Promise<void>;
+  shareWithCommunity(content: Document | Collection, communityId: string): Promise<void>;
+
+  // Anti-censorship features
+  enableTorRouting(): Promise<void>;
+  disableTorRouting(): Promise<void>;
+  createHiddenService(): Promise<string>; // Returns onion address
+
+  // Network health and metrics
+  getNetworkMetrics(): Promise<NetworkMetrics>;
+  testCensorshipResistance(): Promise<boolean>;
+}
+
+/**
+ * P2P Network Service Implementation
+ */
+class P2PNetworkServiceImpl implements P2PNetworkService {
+  private nodeId: string | null = null;
+  private isRunning: boolean = false;
+  private connectedPeers: Map<string, Peer> = new Map();
+  private torEnabled: boolean = false;
+  private communityNetworks: Set<string> = new Set();
+
+  /**
+   * Initialize P2P node with anti-censorship configuration
+   */
+  async initializeNode(config: NetworkConfig): Promise<P2PNode> {
+    try {
+      const node = await invoke<P2PNode>('init_p2p_node', {
+        config: {
+          ...config,
+          // Enforce anti-censorship settings
+          enableCulturalFiltering: false, // NEVER filter cultural content
+          enableContentBlocking: false, // NEVER block content access
+          educationalMode: true, // Provide educational context only
+          communityInformationOnly: true, // Community provides info, not control
+          resistCensorship: true, // Enable all anti-censorship features
+          preserveAlternatives: true, // Support alternative narratives
+          torSupport: config.torSupport !== false, // Default to TOR support
+        },
+      });
+
+      this.nodeId = node.id;
+
+      // Validate anti-censorship configuration
+      if (node.config.enableCulturalFiltering || node.config.enableContentBlocking) {
+        throw new Error(
+          'Anti-censorship violation: Node cannot be configured with content filtering'
+        );
+      }
+
+      return node;
+    } catch (error) {
+      console.error('Failed to initialize P2P node:', error);
+      throw new Error('Unable to initialize P2P network node');
+    }
+  }
+
+  /**
+   * Start P2P node and begin peer discovery
+   */
+  async startNode(): Promise<void> {
+    try {
+      if (!this.nodeId) {
+        throw new Error('Node must be initialized before starting');
+      }
+
+      await invoke('start_p2p_node', { nodeId: this.nodeId });
+      this.isRunning = true;
+
+      // Start anti-censorship peer discovery
+      await this.discoverPeers({
+        includeTorPeers: true,
+        includeHiddenServices: true,
+        respectCulturalBoundaries: false, // NO cultural boundaries for peer discovery
+        enableEducationalSharing: true,
+      });
+    } catch (error) {
+      console.error('Failed to start P2P node:', error);
+      throw new Error('Unable to start P2P network');
+    }
+  }
+
+  /**
+   * Stop P2P node gracefully
+   */
+  async stopNode(): Promise<void> {
+    try {
+      if (!this.nodeId || !this.isRunning) {
+        return;
+      }
+
+      await invoke('stop_p2p_node', { nodeId: this.nodeId });
+      this.isRunning = false;
+      this.connectedPeers.clear();
+    } catch (error) {
+      console.error('Failed to stop P2P node:', error);
+      throw new Error('Unable to stop P2P network');
+    }
+  }
+
+  /**
+   * Get current network status
+   */
+  async getNodeStatus(): Promise<NetworkStatus> {
+    try {
+      return await invoke<NetworkStatus>('get_p2p_node_status', {
+        nodeId: this.nodeId,
+      });
+    } catch (error) {
+      console.error('Failed to get node status:', error);
+      throw new Error('Unable to retrieve network status');
+    }
+  }
+
+  /**
+   * Discover peers with anti-censorship focus
+   */
+  async discoverPeers(options: PeerDiscoveryOptions = {}): Promise<Peer[]> {
+    try {
+      const discoveryOptions = {
+        ...options,
+        // Anti-censorship peer discovery settings
+        includeTorPeers: options.includeTorPeers !== false,
+        includeHiddenServices: options.includeHiddenServices !== false,
+        respectCulturalBoundaries: false, // NEVER restrict peer discovery by culture
+        enableEducationalSharing: true,
+        supportAlternativeNarratives: true,
+        resistCensorship: true,
+      };
+
+      const peers = await invoke<Peer[]>('discover_peers', {
+        nodeId: this.nodeId,
+        options: discoveryOptions,
+      });
+
+      // Update connected peers list
+      peers.forEach(peer => {
+        if (peer.connected) {
+          this.connectedPeers.set(peer.id, peer);
+        }
+      });
+
+      return peers;
+    } catch (error) {
+      console.error('Failed to discover peers:', error);
+      throw new Error('Unable to discover network peers');
+    }
+  }
+
+  /**
+   * Connect to a specific peer
+   */
+  async connectToPeer(peerId: string): Promise<void> {
+    try {
+      await invoke('connect_to_peer', {
+        nodeId: this.nodeId,
+        peerId,
+        // Anti-censorship connection settings
+        enableCulturalExchange: true,
+        respectCulturalProtocols: true, // Information only, not restrictions
+        shareEducationalContext: true,
+        supportAlternativeViews: true,
+      });
+
+      // Update peer status
+      const peer = await invoke<Peer>('get_peer_info', { peerId });
+      this.connectedPeers.set(peerId, peer);
+    } catch (error) {
+      console.error(`Failed to connect to peer ${peerId}:`, error);
+      throw new Error('Unable to connect to peer');
+    }
+  }
+
+  /**
+   * Disconnect from a peer
+   */
+  async disconnectFromPeer(peerId: string): Promise<void> {
+    try {
+      await invoke('disconnect_from_peer', {
+        nodeId: this.nodeId,
+        peerId,
+      });
+
+      this.connectedPeers.delete(peerId);
+    } catch (error) {
+      console.error(`Failed to disconnect from peer ${peerId}:`, error);
+      throw new Error('Unable to disconnect from peer');
+    }
+  }
+
+  /**
+   * Get list of connected peers
+   */
+  async getConnectedPeers(): Promise<Peer[]> {
+    try {
+      const peers = await invoke<Peer[]>('get_connected_peers', {
+        nodeId: this.nodeId,
+      });
+
+      return peers;
+    } catch (error) {
+      console.error('Failed to get connected peers:', error);
+      throw new Error('Unable to retrieve connected peers');
+    }
+  }
+
+  /**
+   * Publish content to P2P network (no cultural restrictions)
+   */
+  async publishContent(
+    content: Document | Collection,
+    metadata?: CulturalMetadata
+  ): Promise<ContentHash> {
+    try {
+      // ANTI-CENSORSHIP: Never block content publication based on cultural sensitivity
+      const publishRequest = {
+        content,
+        metadata: metadata
+          ? {
+              ...metadata,
+              // Provide cultural information without restrictions
+              educationalContext:
+                metadata.educationalContext || 'Cultural context provided for educational purposes',
+              accessRestrictions: false, // NEVER restrict access
+              informationOnly: true, // Cultural info is educational only
+            }
+          : undefined,
+        antiCensorshipSettings: {
+          enableTorDistribution: true,
+          enableHiddenServiceSharing: true,
+          resistContentBlocking: true,
+          preserveAlternativeNarratives: true,
+          supportMultiplePerspectives: true,
+        },
+      };
+
+      const contentHash = await invoke<ContentHash>('publish_content', {
+        nodeId: this.nodeId,
+        publishRequest,
+      });
+
+      return contentHash;
+    } catch (error) {
+      console.error('Failed to publish content:', error);
+      throw new Error('Unable to publish content to P2P network');
+    }
+  }
+
+  /**
+   * Request content from P2P network
+   */
+  async requestContent(contentHash: ContentHash, peerId?: string): Promise<Document | Collection> {
+    try {
+      const content = await invoke<Document | Collection>('request_content', {
+        nodeId: this.nodeId,
+        contentHash,
+        peerId,
+        // Anti-censorship request settings
+        bypassCulturalFilters: true, // NEVER apply cultural filters
+        includeEducationalContext: true, // Include cultural context for learning
+        supportAlternativeViews: true, // Accept alternative narratives
+        resistCensorship: true,
+      });
+
+      return content;
+    } catch (error) {
+      console.error(`Failed to request content ${contentHash}:`, error);
+      throw new Error('Unable to retrieve content from P2P network');
+    }
+  }
+
+  /**
+   * Synchronize content with peers
+   */
+  async syncContent(syncRequest: SyncRequest): Promise<void> {
+    try {
+      await invoke('sync_content', {
+        nodeId: this.nodeId,
+        syncRequest: {
+          ...syncRequest,
+          // Anti-censorship sync settings
+          includeCulturalContent: true, // NEVER exclude cultural content
+          preserveAlternatives: true, // Keep alternative narratives
+          educationalMode: true, // Provide cultural context
+          communityInformationOnly: true, // Community info, not control
+        },
+      });
+    } catch (error) {
+      console.error('Failed to sync content:', error);
+      throw new Error('Unable to synchronize content');
+    }
+  }
+
+  /**
+   * Join a community network for information sharing
+   */
+  async joinCommunityNetwork(communityId: string): Promise<void> {
+    try {
+      await invoke('join_community_network', {
+        nodeId: this.nodeId,
+        communityId,
+        settings: {
+          // Community provides information, not access control
+          receiveEducationalContext: true,
+          shareCulturalInformation: true,
+          respectTraditionalProtocols: true, // Information only, not restrictions
+          supportCommunityNarratives: true,
+          enableInformationSharing: true,
+          blockAccessControl: false, // Communities cannot block access to others' content
+        },
+      });
+
+      this.communityNetworks.add(communityId);
+    } catch (error) {
+      console.error(`Failed to join community network ${communityId}:`, error);
+      throw new Error('Unable to join community network');
+    }
+  }
+
+  /**
+   * Leave a community network
+   */
+  async leaveCommunityNetwork(communityId: string): Promise<void> {
+    try {
+      await invoke('leave_community_network', {
+        nodeId: this.nodeId,
+        communityId,
+      });
+
+      this.communityNetworks.delete(communityId);
+    } catch (error) {
+      console.error(`Failed to leave community network ${communityId}:`, error);
+      throw new Error('Unable to leave community network');
+    }
+  }
+
+  /**
+   * Share content with community (information sharing, not control)
+   */
+  async shareWithCommunity(content: Document | Collection, communityId: string): Promise<void> {
+    try {
+      await invoke('share_with_community', {
+        nodeId: this.nodeId,
+        content,
+        communityId,
+        sharingSettings: {
+          provideEducationalContext: true,
+          includeCulturalInformation: true,
+          supportMultiplePerspectives: true,
+          enableInformationSharing: true,
+          restrictAccess: false, // NEVER restrict access based on community membership
+        },
+      });
+    } catch (error) {
+      console.error(`Failed to share with community ${communityId}:`, error);
+      throw new Error('Unable to share content with community');
+    }
+  }
+
+  /**
+   * Enable TOR routing for censorship resistance
+   */
+  async enableTorRouting(): Promise<void> {
+    try {
+      await invoke('enable_tor_routing', { nodeId: this.nodeId });
+      this.torEnabled = true;
+    } catch (error) {
+      console.error('Failed to enable TOR routing:', error);
+      throw new Error('Unable to enable TOR routing');
+    }
+  }
+
+  /**
+   * Disable TOR routing
+   */
+  async disableTorRouting(): Promise<void> {
+    try {
+      await invoke('disable_tor_routing', { nodeId: this.nodeId });
+      this.torEnabled = false;
+    } catch (error) {
+      console.error('Failed to disable TOR routing:', error);
+      throw new Error('Unable to disable TOR routing');
+    }
+  }
+
+  /**
+   * Create hidden service for censorship resistance
+   */
+  async createHiddenService(): Promise<string> {
+    try {
+      const onionAddress = await invoke<string>('create_hidden_service', {
+        nodeId: this.nodeId,
+        serviceConfig: {
+          enableCulturalSharing: true, // Share cultural information
+          enableEducationalAccess: true, // Provide educational access
+          resistCensorship: true, // Maximum censorship resistance
+          supportAlternatives: true, // Support alternative narratives
+          blockContentFiltering: true, // Block any content filtering attempts
+        },
+      });
+
+      return onionAddress;
+    } catch (error) {
+      console.error('Failed to create hidden service:', error);
+      throw new Error('Unable to create hidden service');
+    }
+  }
+
+  /**
+   * Get network health and performance metrics
+   */
+  async getNetworkMetrics(): Promise<NetworkMetrics> {
+    try {
+      return await invoke<NetworkMetrics>('get_network_metrics', {
+        nodeId: this.nodeId,
+      });
+    } catch (error) {
+      console.error('Failed to get network metrics:', error);
+      throw new Error('Unable to retrieve network metrics');
+    }
+  }
+
+  /**
+   * Test censorship resistance capabilities
+   */
+  async testCensorshipResistance(): Promise<boolean> {
+    try {
+      const result = await invoke<boolean>('test_censorship_resistance', {
+        nodeId: this.nodeId,
+        tests: {
+          torConnectivity: true,
+          hiddenServiceAccess: true,
+          contentFiltering: true, // Test that content is NOT filtered
+          culturalBlocking: true, // Test that cultural content is NOT blocked
+          alternativeNarratives: true, // Test support for alternative views
+          educationalAccess: true, // Test educational context provision
+        },
+      });
+
+      return result;
+    } catch (error) {
+      console.error('Failed to test censorship resistance:', error);
+      throw new Error('Unable to test censorship resistance');
+    }
+  }
+}
+
+// Export singleton instance
+export const p2pNetworkService: P2PNetworkService = new P2PNetworkServiceImpl();

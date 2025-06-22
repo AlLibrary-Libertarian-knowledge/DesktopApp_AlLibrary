@@ -1,12 +1,17 @@
-// Common UI Components
-export * from './common';
+// Foundation components
+export * from './foundation';
 
-// Dashboard Components
-export { default as StatusBar } from './dashboard/StatusBar';
-export { default as DownloadManager } from './dashboard/DownloadManager';
+// Domain components
+export * from './domain';
 
-// Network Components
-export { default as NetworkGraph } from './network/NetworkGraph';
+// Composite components
+export * from './composite';
 
-// Routing Components
-export { default as AppRouter } from './routing/AppRouter';
+// Cultural components
+export * from './cultural';
+
+// Layout components - TODO: Implement layout components
+// export * from './layout';
+
+// Page components - Note: Pages are exported separately from src/pages/index.ts
+// export * from './pages';
