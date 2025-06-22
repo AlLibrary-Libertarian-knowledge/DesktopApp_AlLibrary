@@ -6,20 +6,20 @@
  */
 
 // Core Pages
-export { default as HomePage } from './Home/HomePage';
-export { default as AboutPage } from './About/AboutPage';
+export { default as HomePage } from './Home/Home';
+export { default as AboutPage } from './About/About';
 export { default as LoadingScreen } from './LoadingScreen/LoadingScreen';
 
 // Document Management
-export { default as DocumentManagementPage } from './DocumentManagement/DocumentManagementPage';
-export { default as FavoritesPage } from './Favorites/FavoritesPage';
-export { default as RecentPage } from './Recent/RecentPage';
-export { default as CollectionsPage } from './Collections/CollectionsPage';
+export { default as DocumentManagementPage } from './DocumentManagement/DocumentManagement';
+export { default as FavoritesPage } from './Favorites/Favorites';
+export { default as RecentPage } from './Recent/Recent';
+export { default as CollectionsPage } from './Collections/Collections';
 
 // Enhanced Browse & Discovery
 export { default as BrowsePage } from './Browse/BrowsePage';
-export { default as SearchPage } from './Search/SearchPage';
-export { default as TrendingPage } from './Trending/TrendingPage';
+export { default as SearchPage } from './Search/Search';
+export { default as TrendingPage } from './Trending/Trending';
 
 // Cultural Education & Context
 export { default as CulturalContextsPage } from './CulturalContexts/CulturalContextsPage';

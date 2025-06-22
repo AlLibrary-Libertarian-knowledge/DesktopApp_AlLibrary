@@ -1,0 +1,43 @@
+.networkStatus {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 0.5rem;
+}
+
+.statusIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--color-primary-50, #eff6ff);
+  color: var(--color-primary, #3b82f6);
+}
+
+.statusInfo {
+  flex: 1;
+}
+
+.statusText {
+  font-weight: 600;
+  color: var(--color-text-primary, #111827);
+  margin-bottom: 0.25rem;
+}
+
+.statusDetails {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary, #6b7280);
+}
+
+.statusDetails span {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}

@@ -18,10 +18,10 @@ import {
 import { BreadcrumbNavigation } from '../../components/foundation/BreadcrumbNavigation/BreadcrumbNavigation';
 import { CategoryCard } from '../../components/composite/CategoryCard/CategoryCard';
 import { CategoryHierarchy } from '../../components/composite/CategoryHierarchy/CategoryHierarchy';
-import { SearchBar } from '../../components/foundation/SearchBar/SearchBar';
-import { FilterPanel } from '../../components/composite/FilterPanel/FilterPanel';
-import { LoadingSpinner } from '../../components/foundation/LoadingSpinner/LoadingSpinner';
-import { ErrorMessage } from '../../components/foundation/ErrorMessage/ErrorMessage';
+import SearchBar from '../../components/foundation/SearchBar/SearchBar';
+import FilterPanel from '../../components/composite/FilterPanel/FilterPanel';
+import LoadingSpinner from '../../components/foundation/LoadingSpinner/LoadingSpinner';
+import ErrorMessage from '../../components/foundation/ErrorMessage/ErrorMessage';
 import { CulturalContextDisplay } from '../../components/cultural/CulturalContextDisplay/CulturalContextDisplay';
 import { TraditionalClassificationView } from '../../components/cultural/TraditionalClassificationView/TraditionalClassificationView';
 import styles from './BrowsePage.module.css';

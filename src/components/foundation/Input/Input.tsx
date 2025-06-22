@@ -1,6 +1,6 @@
 import { Component, JSX, createSignal, createEffect, Show } from 'solid-js';
 import { validationService } from '../../../services/validationService';
-import { CULTURAL_SENSITIVITY_LEVELS, CULTURAL_LABELS } from '../../../constants/cultural';
+import { CULTURAL_LABELS } from '../../../constants/cultural';
 import styles from './Input.module.css';
 
 /**
@@ -23,6 +23,7 @@ export type InputValidationType =
   | 'text'
   | 'email'
   | 'password'
+  | 'search'
   | 'cultural'
   | 'security'
   | 'custom';
@@ -150,7 +151,15 @@ const Input: Component<InputProps> = props => {
           }
           break;
 
-        case 'security':
+        case 'search':
+          // Search validation - ensure basic format compliance
+          if (internalValue().length > 0 && internalValue().length < 2) {
+            isValid = false;
+            errors.push('Search query must be at least 2 characters');
+          }
+          break;
+
+        case 'security': {
           // Perform security validation (malware, injection attempts)
           const securityResult = await validationService.validateUserInput(internalValue(), {
             userId: 'current-user',
@@ -164,6 +173,7 @@ const Input: Component<InputProps> = props => {
             errors.push('Input contains potentially harmful content');
           }
           break;
+        }
 
         case 'cultural':
           // Cultural validation provides information only, never blocks

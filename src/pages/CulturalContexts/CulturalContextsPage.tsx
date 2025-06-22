@@ -17,7 +17,7 @@ import {
 import { SearchBar } from '../../components/foundation/SearchBar/SearchBar';
 import { FilterPanel } from '../../components/composite/FilterPanel/FilterPanel';
 import { LoadingSpinner } from '../../components/foundation/LoadingSpinner/LoadingSpinner';
-import { ErrorMessage } from '../../components/foundation/ErrorMessage/ErrorMessage';
+import ErrorMessage from '../../components/foundation/ErrorMessage/ErrorMessage';
 import { CulturalContextDisplay } from '../../components/cultural/CulturalContextDisplay/CulturalContextDisplay';
 import { TraditionalClassificationView } from '../../components/cultural/TraditionalClassificationView/TraditionalClassificationView';
 import { CulturalLearningPath } from '../../components/cultural/CulturalLearningPath/CulturalLearningPath';

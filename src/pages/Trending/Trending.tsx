@@ -436,13 +436,13 @@ const TrendingPage: Component = () => {
                     </div>
 
                     <div class={styles.cardActions}>
-                      <Button variant="primary" size="small">
+                      <Button variant="primary" size="sm">
                         View Document
                       </Button>
-                      <Button variant="secondary" size="small">
+                      <Button variant="secondary" size="sm">
                         Cultural Context
                       </Button>
-                      <Button variant="ghost" size="small">
+                      <Button variant="ghost" size="sm">
                         Add to Favorites
                       </Button>
                     </div>

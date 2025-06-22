@@ -146,7 +146,7 @@ const CategoryCard: Component<CategoryCardProps> = props => {
         tabIndex={props.interactive !== false ? 0 : -1}
         role={props.interactive !== false ? 'button' : 'article'}
         aria-label={props.ariaLabel || `Category: ${props.category.name}`}
-        data-testid={props.testId}
+        data-testid={props.testId || undefined}
       >
         {/* Category Header */}
         <div class={styles['category-header']}>
@@ -309,3 +309,4 @@ const CategoryCard: Component<CategoryCardProps> = props => {
 };
 
 export default CategoryCard;
+export { CategoryCard };

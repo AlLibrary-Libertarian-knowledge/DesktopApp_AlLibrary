@@ -1,17 +1,17 @@
-// Foundation Components (Basic UI Elements)
+// Foundation components
 export * from './foundation';
 
-// Domain Components (Business Logic)
+// Domain components
 export * from './domain';
 
-// Composite Components (Complex UI)
+// Composite components
 export * from './composite';
 
-// Layout Components
-export * from './layout';
-
-// Pages Components
-export * from './pages';
-
-// Cultural Components
+// Cultural components
 export * from './cultural';
+
+// Layout components - TODO: Implement layout components
+// export * from './layout';
+
+// Page components - Note: Pages are exported separately from src/pages/index.ts
+// export * from './pages';

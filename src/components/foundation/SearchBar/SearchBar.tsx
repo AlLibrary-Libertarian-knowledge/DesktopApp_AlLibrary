@@ -427,3 +427,4 @@ const SearchBar: Component<SearchBarProps> = props => {
 };
 
 export default SearchBar;
+export { SearchBar };

@@ -5,6 +5,12 @@
  * configurations, and system information.
  */
 
+// Re-export commonly used types
+export type { Document } from './Document';
+export { DocumentFormat, DocumentStatus, DocumentContentType } from './Document';
+export type { CulturalMetadata, CulturalSensitivityLevel, CulturalInformation } from './Cultural';
+export type { Collection } from './Collection';
+
 export interface Project {
   id: number;
   name: string;
@@ -55,4 +61,13 @@ export interface StorageInfo {
   available_size: number;
   file_count: number;
   directory_count: number;
+}
+
+// Additional common types
+export interface SearchResult {
+  id: string;
+  title: string;
+  description?: string;
+  relevanceScore: number;
+  culturalContext?: string;
 }

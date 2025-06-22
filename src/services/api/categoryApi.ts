@@ -319,6 +319,3 @@ export class CategoryApiService {
 
 // Export singleton instance
 export const categoryApi = new CategoryApiService();
-
-// Export types for use in components
-export type { Category, CategoryNode, CategoryTree, CategoryFilters, CategorySearchResult };

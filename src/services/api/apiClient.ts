@@ -258,14 +258,43 @@ class ApiClient {
       return {
         ...validation,
         valid: true, // Never block operations based on cultural validation
-        informational: true,
+        warnings: [
+          {
+            code: 'CULTURAL_INFO',
+            message: 'Cultural context provided for educational purposes',
+            category: 'information',
+            recommendation: 'Review cultural context for educational value',
+          },
+        ],
       };
     } catch (error) {
       // Cultural validation failure doesn't block operations
       return {
         valid: true,
-        informational: true,
-        culturalNotes: 'Cultural context analysis not available',
+        errors: [],
+        warnings: [
+          {
+            code: 'CULTURAL_UNAVAILABLE',
+            message: 'Cultural context analysis not available',
+            category: 'information',
+          },
+        ],
+        securityScanResults: [],
+        validationMetadata: {
+          validationEngineVersion: '1.0.0',
+          rulesVersion: '1.0.0',
+          startTime: new Date(),
+          endTime: new Date(),
+          duration: 0,
+          requestId: 'cultural-validation',
+          context: {
+            inputType: 'metadata',
+            source: 'api',
+            timestamp: new Date(),
+            requestId: 'cultural-validation',
+            scope: 'content_integrity',
+          },
+        },
       };
     }
   }
@@ -280,6 +309,3 @@ class ApiClient {
 
 // Export singleton instance
 export const apiClient = new ApiClient();
-
-// Export types for use in other services
-export type { ApiResponse, ApiRequestConfig, ApiCulturalContext };

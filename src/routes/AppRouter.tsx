@@ -1,6 +1,6 @@
 import { Router, Route } from '@solidjs/router';
 import { Home } from '../pages/Home';
-import { Search } from '../pages/Search';
+import { SearchPage } from '../pages/Search';
 import { Collections } from '../pages/Collections';
 import { Favorites } from '../pages/Favorites';
 import { Recent } from '../pages/Recent';
@@ -18,7 +18,8 @@ const AppRouter = () => {
       <Route path="/recent" component={Recent} />
 
       {/* Discovery Routes */}
-      <Route path="/search" component={Search} />
+      <Route path="/search" component={SearchPage} />
+      <Route path="/search-network" component={SearchPage} />
       <Route path="/browse" component={Browse} />
       <Route path="/trending" component={Trending} />
       <Route path="/new-arrivals" component={() => <div>New Arrivals Page</div>} />

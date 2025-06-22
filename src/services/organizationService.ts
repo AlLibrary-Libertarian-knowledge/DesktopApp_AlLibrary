@@ -6,9 +6,10 @@
  */
 
 import { invoke } from '@tauri-apps/api/core';
-import type { Collection, OrganizationRule, CollectionOrganization } from '../types/Collection';
+import type { Collection, OrganizationRule } from '../types/Collection';
 import type { Document } from '../types/Document';
-import type { CulturalMetadata, CulturalSensitivityLevel } from '../types/Cultural';
+import type { CulturalMetadata } from '../types/Cultural';
+import { CulturalSensitivityLevel } from '../types/Cultural';
 
 /**
  * Auto-tagging suggestion with confidence score

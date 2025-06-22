@@ -3,6 +3,204 @@
  * Follows WCAG 2.1 AA standards for universal access
  */
 
+/* Overlay */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--space-md);
+}
+
+/* Modal Container */
+.modal {
+  background-color: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  border: 1px solid var(--color-border);
+}
+
+/* Size Variants */
+.sm {
+  width: 100%;
+  max-width: 400px;
+}
+
+.md {
+  width: 100%;
+  max-width: 600px;
+}
+
+.lg {
+  width: 100%;
+  max-width: 800px;
+}
+
+.xl {
+  width: 100%;
+  max-width: 1200px;
+}
+
+.full {
+  width: 95vw;
+  height: 95vh;
+  max-width: none;
+  max-height: none;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-lg);
+  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-surface-elevated);
+}
+
+.title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  margin: 0;
+  color: var(--color-text-primary);
+  line-height: 1.2;
+}
+
+.closeButton {
+  flex-shrink: 0;
+  margin-left: var(--space-md);
+}
+
+/* Content */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-lg);
+  color: var(--color-text-primary);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .overlay {
+    padding: var(--space-sm);
+  }
+
+  .modal {
+    max-height: 95vh;
+  }
+
+  .header {
+    padding: var(--space-md);
+  }
+
+  .title {
+    font-size: var(--font-size-md);
+  }
+
+  .content {
+    padding: var(--space-md);
+  }
+
+  /* Make all modals full width on mobile */
+  .sm,
+  .md,
+  .lg,
+  .xl {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .overlay {
+    padding: var(--space-xs);
+  }
+
+  .header {
+    padding: var(--space-sm);
+  }
+
+  .content {
+    padding: var(--space-sm);
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .overlay {
+    backdrop-filter: none;
+  }
+}
+
+@media (prefers-contrast: high) {
+  .modal {
+    border: 2px solid var(--color-border);
+  }
+
+  .header {
+    border-bottom: 2px solid var(--color-border);
+  }
+}
+
+/* Focus Management */
+.modal:focus {
+  outline: none;
+}
+
+/* Animation */
+.overlay {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal {
+  animation: slideIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Cultural Theme Support */
+.modal[data-cultural-theme='indigenous'] {
+  border-color: var(--color-cultural-traditional);
+}
+
+.modal[data-cultural-theme='traditional'] {
+  border-color: var(--color-cultural-sacred);
+}
+
+.modal[data-cultural-theme='academic'] {
+  border-color: var(--color-cultural-academic);
+}
+
 /* Modal Overlay */
 .modal-overlay {
   position: fixed;
@@ -431,64 +629,6 @@
   .modal-cultural-tooltip {
     background-color: var(--bg-tooltip-dark);
     border-color: var(--border-tooltip-dark);
-  }
-}
-
-/* Mobile Responsive */
-@media (max-width: 768px) {
-  .modal-overlay {
-    padding: 0.5rem;
-  }
-
-  .modal-content {
-    width: 100%;
-    max-width: 100vw;
-    max-height: 100vh;
-    border-radius: 0.5rem;
-  }
-
-  .modal-sm,
-  .modal-md,
-  .modal-lg,
-  .modal-xl {
-    width: 100%;
-    max-width: 100vw;
-  }
-
-  .modal-header {
-    padding: 1rem 1rem 0.75rem 1rem;
-  }
-
-  .modal-body {
-    padding: 1rem;
-  }
-
-  .modal-footer {
-    padding: 0.75rem 1rem 1rem 1rem;
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .modal-footer > * {
-    width: 100%;
-  }
-
-  .modal-cultural-tooltip {
-    position: fixed;
-    top: auto;
-    bottom: 1rem;
-    left: 1rem;
-    right: 1rem;
-    margin-top: 0;
-    z-index: 1000;
-  }
-
-  .modal-title {
-    font-size: 1.25rem;
-  }
-
-  .modal-subtitle {
-    font-size: 0.875rem;
   }
 }
 

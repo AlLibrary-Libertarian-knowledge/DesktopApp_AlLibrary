@@ -5,13 +5,11 @@
  * and progress tracking. Follows SOLID principles and anti-censorship core.
  */
 
+/// <reference lib="dom" />
+
 import { validationService } from '../validationService';
-import type {
-  Document,
-  DocumentInput,
-  DocumentFormat,
-  DocumentContentType,
-} from '@/types/Document';
+import type { Document, DocumentInput, DocumentAuthor } from '@/types/Document';
+import { DocumentFormat, DocumentContentType, DocumentStatus } from '@/types/Document';
 import type { CulturalSensitivityLevel } from '@/types/Cultural';
 import type { CompleteValidationResult } from '../validationService';
 
@@ -66,7 +64,12 @@ export interface UploadOptions {
 export class UploadService {
   private activeSessions = new Map<string, UploadSession>();
   private readonly maxFileSize = 100 * 1024 * 1024; // 100MB
-  private readonly supportedFormats: DocumentFormat[] = ['pdf', 'epub', 'text', 'markdown'];
+  private readonly supportedFormats: DocumentFormat[] = [
+    DocumentFormat.PDF,
+    DocumentFormat.EPUB,
+    DocumentFormat.TEXT,
+    DocumentFormat.MARKDOWN,
+  ];
 
   /**
    * Upload a document with comprehensive validation
@@ -263,9 +266,10 @@ export class UploadService {
       id: documentId,
       title: metadata.title || file.name.replace(/\.[^/.]+$/, ''),
       description: metadata.description,
-      format: this.getDocumentFormat(file.name.split('.').pop()?.toLowerCase()) || 'pdf',
+      format:
+        this.getDocumentFormat(file.name.split('.').pop()?.toLowerCase()) || DocumentFormat.PDF,
       contentType,
-      status: 'active',
+      status: DocumentStatus.ACTIVE,
       filePath: `/documents/${documentId}/${file.name}`,
       originalFilename: file.name,
       fileSize: file.size,
@@ -388,10 +392,10 @@ export class UploadService {
     if (!extension) return null;
 
     const formatMap: Record<string, DocumentFormat> = {
-      pdf: 'pdf',
-      epub: 'epub',
-      txt: 'text',
-      md: 'markdown',
+      pdf: DocumentFormat.PDF,
+      epub: DocumentFormat.EPUB,
+      txt: DocumentFormat.TEXT,
+      md: DocumentFormat.MARKDOWN,
     };
 
     return formatMap[extension] || null;
@@ -408,33 +412,33 @@ export class UploadService {
 
     // Analyze content based on validation result
     if (validationResult?.culturalAnalysis.detectedLevel > 2) {
-      return 'traditional_knowledge';
+      return DocumentContentType.TRADITIONAL_KNOWLEDGE;
     }
 
     // Default based on file name and content
     const fileName = metadata.title?.toLowerCase() || '';
 
     if (fileName.includes('traditional') || fileName.includes('indigenous')) {
-      return 'traditional_knowledge';
+      return DocumentContentType.TRADITIONAL_KNOWLEDGE;
     }
 
     if (fileName.includes('ceremonial') || fileName.includes('sacred')) {
-      return 'ceremonial';
+      return DocumentContentType.CEREMONIAL;
     }
 
     if (fileName.includes('community')) {
-      return 'community';
+      return DocumentContentType.COMMUNITY;
     }
 
     if (fileName.includes('academic') || fileName.includes('research')) {
-      return 'academic';
+      return DocumentContentType.ACADEMIC;
     }
 
     if (fileName.includes('historical')) {
-      return 'historical';
+      return DocumentContentType.HISTORICAL;
     }
 
-    return 'educational';
+    return DocumentContentType.EDUCATIONAL;
   }
 
   private async calculateFileHash(file: File): Promise<string> {

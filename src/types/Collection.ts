@@ -696,3 +696,51 @@ export interface CollectionAnalytics {
     culturalSignificance: number;
   }[];
 }
+
+/**
+ * Collection service interface for managing collections
+ */
+export interface CollectionService {
+  // Collection CRUD operations
+  createCollection(request: CreateCollectionRequest): Promise<Collection>;
+  getCollection(id: string): Promise<Collection | null>;
+  updateCollection(id: string, request: UpdateCollectionRequest): Promise<Collection>;
+  deleteCollection(id: string): Promise<void>;
+
+  // Collection listing and search
+  listCollections(userId: string, filters?: CollectionSearchFilters): Promise<Collection[]>;
+  searchCollections(query: string, filters?: CollectionSearchFilters): Promise<Collection[]>;
+
+  // Document management
+  addDocumentToCollection(collectionId: string, documentId: string): Promise<void>;
+  removeDocumentFromCollection(collectionId: string, documentId: string): Promise<void>;
+
+  // Collaboration management
+  addCollaborator(
+    collectionId: string,
+    collaborator: Omit<CollectionCollaborator, 'addedAt' | 'addedBy'>
+  ): Promise<void>;
+  removeCollaborator(collectionId: string, userId: string): Promise<void>;
+  updateCollaboratorPermission(
+    collectionId: string,
+    userId: string,
+    permission: CollectionSharingPermission
+  ): Promise<void>;
+
+  // Cultural validation
+  requestCulturalValidation(collectionId: string, reason: string): Promise<void>;
+  submitCommunityFeedback(
+    collectionId: string,
+    feedback: Omit<CommunityFeedback, 'id' | 'createdAt'>
+  ): Promise<void>;
+
+  // P2P operations
+  shareCollectionP2P(collectionId: string): Promise<string>; // Returns IPFS hash
+  syncWithPeers(collectionId: string): Promise<void>;
+
+  // Analytics
+  getCollectionAnalytics(
+    collectionId: string,
+    period: { start: Date; end: Date }
+  ): Promise<CollectionAnalytics>;
+}

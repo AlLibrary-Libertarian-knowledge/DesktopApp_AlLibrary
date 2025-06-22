@@ -15,7 +15,7 @@ import {
   PeerCapability,
 } from '../../services/api';
 import { LoadingSpinner } from '../../components/foundation/LoadingSpinner/LoadingSpinner';
-import { ErrorMessage } from '../../components/foundation/ErrorMessage/ErrorMessage';
+import ErrorMessage from '../../components/foundation/ErrorMessage/ErrorMessage';
 import styles from './PeerNetworkPage.module.css';
 
 export const PeerNetworkPage: Component = () => {

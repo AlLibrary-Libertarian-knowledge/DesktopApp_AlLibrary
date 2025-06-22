@@ -273,7 +273,7 @@ const BatchActionsToolbar: Component<BatchActionsToolbarProps> = props => {
         class={`${styles.batchToolbar} ${props.class || ''}`}
         data-cultural-theme={props.culturalTheme}
       >
-        <Card class={styles.toolbarCard} variant="elevated">
+        <Card class={styles.toolbarCard || ''} variant="elevated">
           <div class={styles.toolbarContent}>
             {/* Selection Summary */}
             <div class={styles.selectionSummary}>
@@ -296,7 +296,7 @@ const BatchActionsToolbar: Component<BatchActionsToolbarProps> = props => {
                     size="sm"
                     onClick={() => setShowCulturalInfo(prev => !prev)}
                     ariaLabel="View cultural information"
-                    class={styles.infoButton}
+                    class={styles.infoButton || ''}
                   >
                     <Info size={12} />
                   </Button>
@@ -307,7 +307,7 @@ const BatchActionsToolbar: Component<BatchActionsToolbarProps> = props => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={props.onSelectAll}
+                  onClick={(e: MouseEvent) => props.onSelectAll?.()}
                   ariaLabel="Select all documents"
                 >
                   <Square size={16} />
@@ -317,7 +317,7 @@ const BatchActionsToolbar: Component<BatchActionsToolbarProps> = props => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={props.onClearSelection}
+                  onClick={(e: MouseEvent) => props.onClearSelection?.()}
                   ariaLabel="Clear selection"
                 >
                   <X size={16} />

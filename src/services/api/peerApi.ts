@@ -477,6 +477,3 @@ export class PeerApiService {
 
 // Export singleton instance
 export const peerApi = new PeerApiService();
-
-// Export types
-export type { PeerInfo, NetworkHealth, ContentExchange };

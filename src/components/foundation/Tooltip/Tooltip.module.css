@@ -1,0 +1,244 @@
+/**
+ * Tooltip Foundation Component Styles
+ * 
+ * Accessible tooltip styling with cultural theme support
+ */
+
+.tooltipWrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip {
+  position: absolute;
+  z-index: 1000;
+  padding: var(--space-sm) var(--space-md);
+  background-color: var(--color-surface-elevated);
+  color: var(--color-text-primary);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  font-size: var(--font-size-sm);
+  line-height: 1.4;
+  max-width: 300px;
+  word-wrap: break-word;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.2s ease,
+    visibility 0.2s ease,
+    transform 0.2s ease;
+  pointer-events: none;
+}
+
+.tooltip.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Placement styles */
+.tooltip-top {
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-8px);
+  margin-bottom: 8px;
+}
+
+.tooltip-top.visible {
+  transform: translateX(-50%) translateY(0);
+}
+
+.tooltip-bottom {
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(8px);
+  margin-top: 8px;
+}
+
+.tooltip-bottom.visible {
+  transform: translateX(-50%) translateY(0);
+}
+
+.tooltip-left {
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%) translateX(-8px);
+  margin-right: 8px;
+}
+
+.tooltip-left.visible {
+  transform: translateY(-50%) translateX(0);
+}
+
+.tooltip-right {
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%) translateX(8px);
+  margin-left: 8px;
+}
+
+.tooltip-right.visible {
+  transform: translateY(-50%) translateX(0);
+}
+
+/* Size variants */
+.tooltip-sm {
+  padding: var(--space-xs) var(--space-sm);
+  font-size: var(--font-size-xs);
+  max-width: 200px;
+}
+
+.tooltip-md {
+  padding: var(--space-sm) var(--space-md);
+  font-size: var(--font-size-sm);
+  max-width: 300px;
+}
+
+.tooltip-lg {
+  padding: var(--space-md) var(--space-lg);
+  font-size: var(--font-size-base);
+  max-width: 400px;
+}
+
+/* Variant styles */
+.tooltip-default {
+  background-color: var(--color-surface-elevated);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+}
+
+.tooltip-info {
+  background-color: var(--color-info);
+  color: white;
+}
+
+.tooltip-warning {
+  background-color: var(--color-warning);
+  color: white;
+}
+
+.tooltip-error {
+  background-color: var(--color-error);
+  color: white;
+}
+
+.tooltip-success {
+  background-color: var(--color-success);
+  color: white;
+}
+
+/* Cultural themes */
+.tooltip-cultural-indigenous {
+  background-color: var(--color-cultural-indigenous);
+  color: white;
+  border: 1px solid var(--color-cultural-indigenous-border);
+}
+
+.tooltip-cultural-traditional {
+  background-color: var(--color-cultural-traditional);
+  color: white;
+  border: 1px solid var(--color-cultural-traditional-border);
+}
+
+.tooltip-cultural-ceremonial {
+  background-color: var(--color-cultural-ceremonial);
+  color: white;
+  border: 1px solid var(--color-cultural-ceremonial-border);
+}
+
+/* Arrow styles */
+.tooltipArrow {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border: 6px solid transparent;
+}
+
+.tooltip-top .tooltipArrow {
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-top-color: var(--color-surface-elevated);
+  border-bottom: none;
+}
+
+.tooltip-bottom .tooltipArrow {
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-bottom-color: var(--color-surface-elevated);
+  border-top: none;
+}
+
+.tooltip-left .tooltipArrow {
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border-left-color: var(--color-surface-elevated);
+  border-right: none;
+}
+
+.tooltip-right .tooltipArrow {
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border-right-color: var(--color-surface-elevated);
+  border-left: none;
+}
+
+/* Variant arrow colors */
+.tooltip-info .tooltipArrow {
+  border-color: transparent;
+}
+
+.tooltip-top.tooltip-info .tooltipArrow {
+  border-top-color: var(--color-info);
+}
+
+.tooltip-bottom.tooltip-info .tooltipArrow {
+  border-bottom-color: var(--color-info);
+}
+
+.tooltip-left.tooltip-info .tooltipArrow {
+  border-left-color: var(--color-info);
+}
+
+.tooltip-right.tooltip-info .tooltipArrow {
+  border-right-color: var(--color-info);
+}
+
+/* Content styling */
+.tooltipContent {
+  position: relative;
+  z-index: 1;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .tooltip {
+    max-width: 250px;
+    font-size: var(--font-size-xs);
+  }
+
+  .tooltip-lg {
+    max-width: 300px;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .tooltip {
+    border: 2px solid var(--color-border-strong);
+  }
+
+  .tooltip-default {
+    background-color: var(--color-surface-high-contrast);
+    color: var(--color-text-high-contrast);
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .tooltip {
+    transition: none;
+  }
+}

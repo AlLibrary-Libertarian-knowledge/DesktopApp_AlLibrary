@@ -395,6 +395,3 @@ export class CulturalApiService {
 
 // Export singleton instance
 export const culturalApi = new CulturalApiService();
-
-// Export types
-export type { CulturalContext, TraditionalClassification, CulturalEducationContent };

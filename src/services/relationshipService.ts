@@ -7,7 +7,8 @@
 
 import { invoke } from '@tauri-apps/api/core';
 import type { Collection, CollectionRelationship } from '../types/Collection';
-import type { CulturalMetadata, CulturalSensitivityLevel } from '../types/Cultural';
+import type { CulturalMetadata } from '../types/Cultural';
+import { CulturalSensitivityLevel } from '../types/Cultural';
 
 /**
  * Relationship types with cultural awareness
