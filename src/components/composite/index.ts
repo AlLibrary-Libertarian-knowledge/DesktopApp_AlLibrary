@@ -16,4 +16,8 @@ export { DocumentUpload } from './DocumentUpload';
 export { CollectionOrganizer } from './CollectionOrganizer';
 export { NetworkGraph } from './NetworkGraph';
 export { NetworkHealthDashboard } from './NetworkHealthDashboard';
+export { CensorshipResistantSearch } from './CensorshipResistantSearch';
+export { InformationIntegrityVerification } from './InformationIntegrityVerification';
+export { DecentralizedContentDiscovery } from './DecentralizedContentDiscovery';
+export { NetworkResilienceTools } from './NetworkResilienceTools';
 export { default as DocumentManagementRightColumn } from './DocumentManagementRightColumn';

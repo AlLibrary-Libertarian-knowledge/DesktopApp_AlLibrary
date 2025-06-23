@@ -30,6 +30,11 @@ import type {
   SearchOptions,
   SearchResult,
 } from '../../components/domain/network/P2PSearchInterface/types';
+import type {
+  CommunityNetwork,
+  NetworkParticipation,
+  JoinNetworkRequest,
+} from '../../components/cultural/CommunityNetworks/types/CommunityNetworksTypes';
 
 /**
  * P2P Network Service Interface
@@ -53,7 +58,9 @@ export interface P2PNetworkService {
   syncContent(syncRequest: SyncRequest): Promise<void>;
 
   // Cultural and community features
-  joinCommunityNetwork(communityId: string): Promise<void>;
+  discoverCommunityNetworks(): Promise<CommunityNetwork[]>;
+  getNetworkParticipation(): Promise<NetworkParticipation[]>;
+  joinCommunityNetwork(request: JoinNetworkRequest): Promise<void>;
   leaveCommunityNetwork(communityId: string): Promise<void>;
   shareWithCommunity(content: Document | Collection, communityId: string): Promise<void>;
 
@@ -352,27 +359,164 @@ class P2PNetworkServiceImpl implements P2PNetworkService {
   }
 
   /**
+   * Discover available community networks
+   */
+  async discoverCommunityNetworks(): Promise<CommunityNetwork[]> {
+    try {
+      // Mock community networks for development
+      const mockNetworks: CommunityNetwork[] = [
+        {
+          id: 'indigenous-knowledge-1',
+          name: 'Indigenous Knowledge Sharing',
+          description:
+            'Educational network for sharing traditional indigenous knowledge and cultural practices',
+          culturalSensitivityLevel: 2,
+          culturalContext:
+            'Traditional indigenous knowledge with educational context provided for learning',
+          culturalRegion: 'Global Indigenous Communities',
+          primaryLanguage: 'Multilingual',
+          memberCount: 1247,
+          createdAt: '2024-01-15T10:00:00Z',
+          lastActivity: new Date().toISOString(),
+          category: 'indigenous-knowledge',
+          status: 'active',
+          visibility: 'public',
+          educationalResources: [
+            'Traditional knowledge systems',
+            'Cultural preservation methods',
+            'Community protocols',
+            'Historical context',
+          ],
+          knowledgeAreas: ['Traditional Medicine', 'Cultural Practices', 'Environmental Knowledge'],
+        },
+        {
+          id: 'storytelling-traditions-1',
+          name: 'Global Storytelling Traditions',
+          description:
+            'Sharing oral traditions and storytelling methods from diverse cultures worldwide',
+          culturalSensitivityLevel: 1,
+          culturalContext:
+            'Cultural storytelling traditions for educational and entertainment purposes',
+          culturalRegion: 'Worldwide',
+          primaryLanguage: 'Multilingual',
+          memberCount: 2156,
+          createdAt: '2024-02-01T12:00:00Z',
+          lastActivity: new Date().toISOString(),
+          category: 'storytelling',
+          status: 'active',
+          visibility: 'public',
+          educationalResources: [
+            'Storytelling techniques',
+            'Cultural narratives',
+            'Oral tradition preservation',
+            'Cross-cultural storytelling',
+          ],
+          knowledgeAreas: ['Oral Traditions', 'Cultural Narratives', 'Performance Arts'],
+        },
+        {
+          id: 'academic-cultural-studies-1',
+          name: 'Academic Cultural Studies Network',
+          description:
+            'Academic research and educational resources for cultural studies and anthropology',
+          culturalSensitivityLevel: 3,
+          culturalContext:
+            'Academic research with comprehensive educational context and multiple perspectives',
+          culturalRegion: 'Global Academic Community',
+          primaryLanguage: 'English',
+          memberCount: 892,
+          createdAt: '2024-01-20T14:00:00Z',
+          lastActivity: new Date().toISOString(),
+          category: 'educational-initiatives',
+          status: 'active',
+          visibility: 'public',
+          educationalResources: [
+            'Academic papers',
+            'Research methodologies',
+            'Educational frameworks',
+            'Peer review processes',
+          ],
+          knowledgeAreas: ['Cultural Studies', 'Anthropology', 'Sociology', 'Educational Research'],
+        },
+      ];
+
+      return mockNetworks;
+    } catch (error) {
+      console.error('Failed to discover community networks:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get current network participation status
+   */
+  async getNetworkParticipation(): Promise<NetworkParticipation[]> {
+    try {
+      // Mock participation data for development
+      const mockParticipation: NetworkParticipation[] = Array.from(this.communityNetworks).map(
+        networkId => ({
+          networkId,
+          userId: this.nodeId || 'anonymous-user',
+          isActive: true,
+          joinedAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
+          lastInteraction: new Date().toISOString(),
+          participationType: 'information-sharing',
+          educationalProgress: {
+            pathsEnrolled: Math.floor(Math.random() * 5) + 1,
+            pathsCompleted: Math.floor(Math.random() * 3),
+            learningStreak: Math.floor(Math.random() * 30),
+            lastActivity: new Date().toISOString(),
+            certificatesEarned: ['Cultural Awareness 101'],
+            competencyAreas: ['Cultural Context', 'Educational Sharing'],
+          },
+          culturalLearningCompleted: [
+            'Cultural Sensitivity Training',
+            'Information Sharing Ethics',
+          ],
+          contributions: [
+            {
+              id: 'contrib-1',
+              type: 'knowledge-share',
+              title: 'Educational resource contribution',
+              contributedAt: new Date().toISOString(),
+              appreciationReceived: Math.floor(Math.random() * 50),
+              educationalImpact: Math.floor(Math.random() * 100),
+            },
+          ],
+        })
+      );
+
+      return mockParticipation;
+    } catch (error) {
+      console.error('Failed to get network participation:', error);
+      return [];
+    }
+  }
+
+  /**
    * Join a community network for information sharing
    */
-  async joinCommunityNetwork(communityId: string): Promise<void> {
+  async joinCommunityNetwork(request: JoinNetworkRequest): Promise<void> {
     try {
       await invoke('join_community_network', {
         nodeId: this.nodeId,
-        communityId,
+        communityId: request.networkId,
+        participationType: request.participationType,
         settings: {
           // Community provides information, not access control
-          receiveEducationalContext: true,
+          receiveEducationalContext: request.educationalContext,
           shareCulturalInformation: true,
-          respectTraditionalProtocols: true, // Information only, not restrictions
+          respectTraditionalProtocols: request.respectCulturalProtocols, // Information only, not restrictions
           supportCommunityNarratives: true,
           enableInformationSharing: true,
           blockAccessControl: false, // Communities cannot block access to others' content
+          learningInterests: request.learningInterests,
+          backgroundInfo: request.backgroundInfo,
         },
       });
 
-      this.communityNetworks.add(communityId);
+      this.communityNetworks.add(request.networkId);
     } catch (error) {
-      console.error(`Failed to join community network ${communityId}:`, error);
+      console.error(`Failed to join community network ${request.networkId}:`, error);
       throw new Error('Unable to join community network');
     }
   }
