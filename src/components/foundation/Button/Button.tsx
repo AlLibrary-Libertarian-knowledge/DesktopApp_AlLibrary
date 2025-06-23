@@ -1,5 +1,6 @@
 import { Component, ParentProps, createSignal, createEffect } from 'solid-js';
 import { CULTURAL_SENSITIVITY_LEVELS, CULTURAL_LABELS } from '../../../constants/cultural';
+import { useTranslation } from '../../../i18n/hooks';
 import styles from './Button.module.css';
 
 /**
@@ -90,6 +91,9 @@ export interface ButtonProps extends ParentProps {
  * ```
  */
 const Button: Component<ButtonProps> = props => {
+  // Initialize i18n translation hook
+  const { t } = useTranslation('components');
+
   // Internal state for validation and accessibility
   const [isValidated, setIsValidated] = createSignal(false);
   const [validationError, setValidationError] = createSignal<string | null>(null);
@@ -119,11 +123,11 @@ const Button: Component<ButtonProps> = props => {
       setIsValidated(isValid);
 
       if (!isValid) {
-        setValidationError('Security validation failed - please check your input');
+        setValidationError(t('button.validationFailed'));
       }
     } catch (error) {
       console.error('Security validation error:', error);
-      setValidationError('Security validation error occurred');
+      setValidationError(t('button.validationError'));
     }
   };
 
@@ -149,7 +153,7 @@ const Button: Component<ButtonProps> = props => {
 
     // Perform security validation if required
     if (props.requiresValidation && !isValidated()) {
-      setValidationError('Please complete security validation');
+      setValidationError(t('button.validationRequired'));
       return;
     }
 

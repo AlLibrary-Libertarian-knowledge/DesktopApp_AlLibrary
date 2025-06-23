@@ -1,0 +1,145 @@
+{
+  "home": {
+    "title": "Welcome to AlLibrary",
+    "subtitle": "Decentralized Cultural Heritage Preservation Network",
+    "networkStatus": {
+      "online": "Network Online",
+      "health": "98% Health",
+      "peers": "peers",
+      "nodes": "nodes",
+      "connections": "connections"
+    },
+    "dataFlow": {
+      "download": "Download",
+      "upload": "Upload"
+    },
+    "activityIndicators": {
+      "downloads": "Downloads",
+      "seeding": "Seeding",
+      "discovering": "Discovering"
+    },
+    "tabs": {
+      "overview": "Overview",
+      "network": "Network",
+      "downloads": "Downloads"
+    },
+    "stats": {
+      "documentsShared": "Documents Shared",
+      "connectedPeers": "Connected Peers",
+      "culturalInstitutions": "Cultural Institutions",
+      "networkHealth": "Network Health",
+      "today": "today",
+      "online": "online",
+      "stable": "stable",
+      "excellent": "excellent"
+    },
+    "networkTopology": {
+      "title": "Network Topology",
+      "subtitle": "Live peer connection visualization",
+      "expandView": "Expand View"
+    },
+    "networkActivity": {
+      "title": "Network Activity",
+      "subtitle": "Real-time downloads and network connections",
+      "recentDownloads": "Recent Downloads",
+      "recentDownloadsSubtitle": "Active downloads and uploads",
+      "networkActivitySubtitle": "Peer connections and discoveries"
+    },
+    "quickActions": {
+      "title": "Quick Actions",
+      "shareDocument": "Share Document",
+      "searchNetwork": "Search Network",
+      "analytics": "Analytics",
+      "settings": "Settings"
+    },
+    "networkSection": {
+      "title": "Network Topology & Analysis",
+      "refresh": "Refresh",
+      "statistics": "Statistics",
+      "configure": "Configure"
+    },
+    "downloadsSection": {
+      "title": "Download Manager",
+      "addDownload": "Add Download",
+      "queue": "Queue",
+      "preferences": "Preferences"
+    },
+    "welcomeModal": {
+      "title": "Welcome to AlLibrary",
+      "description": "AlLibrary is a sophisticated decentralized platform for preserving and sharing cultural heritage documents. Built on advanced P2P technology with TOR integration, we ensure traditional knowledge is preserved securely.",
+      "features": {
+        "encryption": "Military-grade encryption with TOR anonymity",
+        "globalNetwork": "Global P2P network with 156+ institutions",
+        "performance": "High-performance libp2p with DHT routing",
+        "culturalProtection": "Cultural protection protocols & permissions",
+        "advancedSearch": "Advanced search with cultural context filtering",
+        "realTimeAnalytics": "Real-time network analytics & monitoring"
+      },
+      "takeTour": "Take Tour",
+      "enterLibrary": "Enter AlLibrary"
+    },
+    "recentActivity": "Recent Activity",
+    "culturalHighlights": "Cultural Knowledge Highlights"
+  },
+  "search": {
+    "title": "Search",
+    "subtitle": "Find documents and content",
+    "searchPlaceholder": "Search documents, collections, and cultural content...",
+    "advancedFilters": "Advanced Filters",
+    "culturalFilters": "Cultural Context Filters",
+    "searchResults": "Search Results",
+    "noResults": "No results found",
+    "searching": "Searching...",
+    "clearSearch": "Clear Search",
+    "showFilters": "Show Filters",
+    "hideFilters": "Hide Filters",
+    "sortBy": "Sort by",
+    "viewMode": "View Mode",
+    "gridView": "Grid View",
+    "listView": "List View"
+  },
+  "documents": {
+    "title": "My Documents",
+    "subtitle": "Manage your document collection",
+    "uploadNew": "Upload New Document",
+    "organizeLibrary": "Organize Library",
+    "culturalContext": "Cultural Context",
+    "sensitivityLevel": "Sensitivity Level",
+    "searchPlaceholder": "Search your documents..."
+  },
+  "collections": {
+    "title": "Collections",
+    "subtitle": "Organized document collections",
+    "createNew": "Create New Collection",
+    "manageExisting": "Manage Collections",
+    "collaborativeCollections": "Collaborative Collections",
+    "culturalCollections": "Cultural Heritage Collections"
+  },
+  "network": {
+    "title": "Network",
+    "subtitle": "Connect with peers",
+    "connectionStatus": "Connection Status",
+    "activePeers": "Active Peers",
+    "networkHealth": "Network Health",
+    "p2pSearch": "P2P Search"
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Configure your preferences",
+    "general": "General",
+    "privacy": "Privacy",
+    "security": "Security",
+    "cultural": "Cultural Preferences",
+    "network": "Network Settings",
+    "language": "Language"
+  },
+  "cultural": {
+    "title": "Cultural Contexts",
+    "subtitle": "Educational cultural information",
+    "traditionalKnowledge": "Traditional Knowledge",
+    "communityGuidelines": "Community Guidelines",
+    "educationalResources": "Educational Resources",
+    "culturalOrigins": "Cultural Origins",
+    "sensitivityLevels": "Sensitivity Levels"
+  }
+}

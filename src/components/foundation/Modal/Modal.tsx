@@ -33,6 +33,7 @@ import { Component, ParentProps, createEffect, onCleanup, Show } from 'solid-js'
 import { Portal } from 'solid-js/web';
 import { X } from 'lucide-solid';
 import { Button } from '../Button';
+import { useTranslation } from '../../../i18n/hooks';
 import styles from './Modal.module.css';
 
 export interface ModalProps extends ParentProps {
@@ -57,6 +58,9 @@ export interface ModalProps extends ParentProps {
 }
 
 export const Modal: Component<ModalProps> = props => {
+  // Initialize i18n translation hook
+  const { t } = useTranslation('components');
+
   // Default props
   const size = () => props.size || 'md';
   const showCloseButton = () => props.showCloseButton !== false;
@@ -119,7 +123,12 @@ export const Modal: Component<ModalProps> = props => {
                 </Show>
 
                 <Show when={showCloseButton()}>
-                  <Button variant="ghost" size="sm" onClick={props.onClose} ariaLabel="Close modal">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={props.onClose}
+                    ariaLabel={t('modal.closeModal')}
+                  >
                     <X size={20} />
                   </Button>
                 </Show>

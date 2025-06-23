@@ -191,7 +191,10 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
     navigate(`/document/${document.id}`);
   };
 
-    return (
+  // Add any missing state declarations here
+  const [hasSearched, setHasSearched] = createSignal(false);
+
+  return (
     <div class={styles['search-network-page']}>
       {/* Enhanced Page Header */}
       <header class={`${styles['page-header']} ${styles.enhanced}`}>

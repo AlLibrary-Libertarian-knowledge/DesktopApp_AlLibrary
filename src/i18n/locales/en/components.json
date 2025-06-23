@@ -1,0 +1,163 @@
+{
+  "button": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "submit": "Submit",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "update": "Update",
+    "upload": "Upload",
+    "download": "Download",
+    "share": "Share",
+    "copy": "Copy",
+    "move": "Move",
+    "loading": "Loading...",
+    "defaultAriaLabel": "Button",
+    "defaultTitle": "Click to perform action",
+    "validationFailed": "Security validation failed - please check your input",
+    "validationError": "Security validation error occurred",
+    "validationRequired": "Please complete security validation",
+    "securityValidated": "Security validated",
+    "securityValidationRequired": "Security validation required",
+    "culturalTheme": "Cultural theme: {{theme}}"
+  },
+  "modal": {
+    "close": "Close",
+    "defaultTitle": "Modal Dialog",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "closeModal": "Close modal"
+  },
+  "input": {
+    "required": "This field is required",
+    "invalid": "Invalid input",
+    "placeholder": "Enter value...",
+    "search": "Search...",
+    "filter": "Filter results..."
+  },
+  "card": {
+    "viewDetails": "View Details",
+    "showMore": "Show More",
+    "showLess": "Show Less",
+    "actions": "Actions"
+  },
+  "badge": {
+    "new": "New",
+    "updated": "Updated",
+    "featured": "Featured",
+    "trending": "Trending",
+    "popular": "Popular"
+  },
+  "loading": {
+    "general": "Loading...",
+    "documents": "Loading documents...",
+    "collections": "Loading collections...",
+    "network": "Connecting to network...",
+    "search": "Searching..."
+  },
+  "errorBoundary": {
+    "title": "Something went wrong",
+    "message": "An unexpected error occurred. Please try refreshing the page.",
+    "refresh": "Refresh Page",
+    "reportIssue": "Report Issue"
+  },
+  "culturalIndicator": {
+    "informationOnly": "Information Only",
+    "educationalPurpose": "Educational Purpose",
+    "culturalContext": "Cultural Context",
+    "learnMore": "Learn More"
+  },
+  "networkStatus": {
+    "online": "Online",
+    "offline": "Offline",
+    "connecting": "Connecting",
+    "connected": "Connected",
+    "disconnected": "Disconnected",
+    "peers": "Peers",
+    "networkHealth": "Network Health"
+  },
+  "activityList": {
+    "types": {
+      "downloading": "Downloading",
+      "seeding": "Seeding",
+      "completed": "Complete",
+      "peerConnected": "Connected to peer node",
+      "institution": "Institution sharing",
+      "discovery": "Network discovery"
+    },
+    "status": {
+      "downloading": "Downloading",
+      "seeding": "Seeding",
+      "complete": "Complete",
+      "connected": "Connected",
+      "sharing": "Sharing",
+      "discovered": "Discovered"
+    },
+    "metadata": {
+      "complete": "{{progress}}% complete",
+      "seedingToPeers": "Seeding to {{count}} peers",
+      "completedAgo": "Completed {{time}} ago",
+      "foundSources": "Found {{count}} new document sources"
+    }
+  },
+  "statusBar": {
+    "network": {
+      "title": "Network",
+      "peers": "peers",
+      "latency": "{{latency}}ms"
+    },
+    "downloads": {
+      "title": "Downloads",
+      "active": "active",
+      "queue": "Queue: {{count}}"
+    },
+    "storage": {
+      "title": "Storage"
+    },
+    "system": {
+      "title": "System",
+      "cpu": "CPU",
+      "memory": "Memory",
+      "temperature": "Temperature"
+    },
+    "cultural": {
+      "title": "Cultural Protection",
+      "threats": "{{count}} threats blocked",
+      "lastScan": "Last scan: {{time}}"
+    }
+  },
+  "documentCard": {
+    "createdDate": "Created",
+    "modifiedDate": "Modified",
+    "fileSize": "Size",
+    "author": "Author",
+    "culturalLevel": "Cultural Level",
+    "actions": {
+      "open": "Open",
+      "edit": "Edit",
+      "share": "Share",
+      "delete": "Delete",
+      "download": "Download"
+    }
+  },
+  "collectionCard": {
+    "itemCount": "{{count}} items",
+    "itemCount_one": "{{count}} item",
+    "lastUpdated": "Last updated",
+    "collaborators": "Collaborators",
+    "visibility": "Visibility"
+  },
+  "searchBar": {
+    "placeholder": "Search documents, collections, and cultural content...",
+    "suggestions": "Suggestions",
+    "recentSearches": "Recent Searches",
+    "clearSearch": "Clear search"
+  },
+  "search": {
+    "placeholder": "Search documents, collections, and more..."
+  },
+  "languageSwitch": {
+    "selectLanguage": "Select Language"
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "button": {
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "submit": "Senden",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "create": "Erstellen",
+    "update": "Aktualisieren",
+    "upload": "Hochladen",
+    "download": "Herunterladen",
+    "share": "Teilen",
+    "copy": "Kopieren",
+    "move": "Verschieben",
+    "loading": "Lädt...",
+    "defaultAriaLabel": "Schaltfläche",
+    "defaultTitle": "Klicken Sie, um eine Aktion auszuführen"
+  },
+  "modal": {
+    "close": "Schließen",
+    "defaultTitle": "Modal-Dialog",
+    "confirm": "Bestätigen",
+    "cancel": "Abbrechen",
+    "closeModal": "Modal schließen"
+  },
+  "input": {
+    "required": "Dieses Feld ist erforderlich",
+    "invalid": "Ungültige Eingabe",
+    "placeholder": "Wert eingeben...",
+    "search": "Suchen...",
+    "filter": "Ergebnisse filtern..."
+  },
+  "languageSwitch": {
+    "selectLanguage": "Sprache auswählen",
+    "changeLanguage": "Sprache ändern",
+    "currentLanguage": "Aktuelle Sprache",
+    "switchTo": "Wechseln zu {{language}}"
+  },
+  "networkStatus": {
+    "online": "Online",
+    "offline": "Offline",
+    "connecting": "Verbindung wird hergestellt",
+    "connected": "Verbunden",
+    "disconnected": "Verbindung getrennt",
+    "peers": "Peers",
+    "networkHealth": "Netzwerkgesundheit"
+  },
+  "activityList": {
+    "types": {
+      "downloading": "Download",
+      "seeding": "Seeding",
+      "completed": "Abgeschlossen",
+      "peerConnected": "Mit Peer-Knoten verbunden",
+      "institution": "Institution teilt",
+      "discovery": "Netzwerk-Entdeckung"
+    },
+    "status": {
+      "downloading": "Download läuft",
+      "seeding": "Seeding",
+      "complete": "Abgeschlossen",
+      "connected": "Verbunden",
+      "sharing": "Teilen",
+      "discovered": "Entdeckt"
+    },
+    "metadata": {
+      "complete": "{{progress}}% abgeschlossen",
+      "seedingToPeers": "Seeding an {{count}} Peers",
+      "completedAgo": "Vor {{time}} abgeschlossen",
+      "foundSources": "{{count}} neue Dokumentquellen gefunden"
+    }
+  },
+  "statusBar": {
+    "network": {
+      "title": "Netzwerk",
+      "peers": "Peers",
+      "latency": "{{latency}}ms"
+    },
+    "downloads": {
+      "title": "Downloads",
+      "active": "aktiv",
+      "queue": "Warteschlange: {{count}}"
+    },
+    "storage": {
+      "title": "Speicher"
+    },
+    "system": {
+      "title": "System",
+      "cpu": "CPU",
+      "memory": "Arbeitsspeicher",
+      "temperature": "Temperatur"
+    },
+    "cultural": {
+      "title": "Kultureller Schutz",
+      "threats": "{{count}} Bedrohungen blockiert",
+      "lastScan": "Letzter Scan: {{time}}"
+    }
+  }
+}

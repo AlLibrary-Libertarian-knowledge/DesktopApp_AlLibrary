@@ -1,0 +1,156 @@
+{
+  "button": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "submit": "Enviar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "create": "Crear",
+    "update": "Actualizar",
+    "upload": "Subir",
+    "download": "Descargar",
+    "share": "Compartir",
+    "copy": "Copiar",
+    "move": "Mover",
+    "loading": "Cargando...",
+    "defaultAriaLabel": "Botón",
+    "defaultTitle": "Haz clic para realizar la acción"
+  },
+  "modal": {
+    "close": "Cerrar",
+    "defaultTitle": "Diálogo Modal",
+    "confirm": "Confirmar",
+    "cancel": "Cancelar"
+  },
+  "input": {
+    "required": "Este campo es obligatorio",
+    "invalid": "Entrada inválida",
+    "placeholder": "Ingrese valor...",
+    "search": "Buscar...",
+    "filter": "Filtrar resultados..."
+  },
+  "card": {
+    "viewDetails": "Ver Detalles",
+    "showMore": "Mostrar Más",
+    "showLess": "Mostrar Menos",
+    "actions": "Acciones"
+  },
+  "badge": {
+    "new": "Nuevo",
+    "updated": "Actualizado",
+    "featured": "Destacado",
+    "trending": "Tendencia",
+    "popular": "Popular"
+  },
+  "loading": {
+    "general": "Cargando...",
+    "documents": "Cargando documentos...",
+    "collections": "Cargando colecciones...",
+    "network": "Conectando a la red...",
+    "search": "Buscando..."
+  },
+  "errorBoundary": {
+    "title": "Algo salió mal",
+    "message": "Ocurrió un error inesperado. Por favor, intenta actualizar la página.",
+    "refresh": "Actualizar Página",
+    "reportIssue": "Reportar Problema"
+  },
+  "culturalIndicator": {
+    "informationOnly": "Solo Información",
+    "educationalPurpose": "Propósito Educativo",
+    "culturalContext": "Contexto Cultural",
+    "learnMore": "Aprender Más"
+  },
+  "networkStatus": {
+    "online": "En línea",
+    "offline": "Desconectado",
+    "connecting": "Conectando",
+    "connected": "Conectado",
+    "disconnected": "Desconectado",
+    "peers": "Pares",
+    "networkHealth": "Salud de la Red"
+  },
+  "activityList": {
+    "types": {
+      "downloading": "Descargando",
+      "seeding": "Compartiendo",
+      "completed": "Completo",
+      "peerConnected": "Conectado al nodo par",
+      "institution": "Compartiendo institución",
+      "discovery": "Descubrimiento de red"
+    },
+    "status": {
+      "downloading": "Descargando",
+      "seeding": "Compartiendo",
+      "complete": "Completo",
+      "connected": "Conectado",
+      "sharing": "Compartiendo",
+      "discovered": "Descubierto"
+    },
+    "metadata": {
+      "complete": "{{progress}}% completo",
+      "seedingToPeers": "Compartiendo a {{count}} pares",
+      "completedAgo": "Completado hace {{time}}",
+      "foundSources": "Encontradas {{count}} nuevas fuentes de documentos"
+    }
+  },
+  "statusBar": {
+    "network": {
+      "title": "Red",
+      "peers": "pares",
+      "latency": "{{latency}}ms"
+    },
+    "downloads": {
+      "title": "Descargas",
+      "active": "activos",
+      "queue": "Cola: {{count}}"
+    },
+    "storage": {
+      "title": "Almacenamiento"
+    },
+    "system": {
+      "title": "Sistema",
+      "cpu": "CPU",
+      "memory": "Memoria",
+      "temperature": "Temperatura"
+    },
+    "cultural": {
+      "title": "Protección Cultural",
+      "threats": "{{count}} amenazas bloqueadas",
+      "lastScan": "Último escaneo: {{time}}"
+    }
+  },
+  "documentCard": {
+    "createdDate": "Creado",
+    "modifiedDate": "Modificado",
+    "fileSize": "Tamaño",
+    "author": "Autor",
+    "culturalLevel": "Nivel Cultural",
+    "actions": {
+      "open": "Abrir",
+      "edit": "Editar",
+      "share": "Compartir",
+      "delete": "Eliminar",
+      "download": "Descargar"
+    }
+  },
+  "collectionCard": {
+    "itemCount": "{{count}} elementos",
+    "itemCount_one": "{{count}} elemento",
+    "lastUpdated": "Última actualización",
+    "collaborators": "Colaboradores",
+    "visibility": "Visibilidad"
+  },
+  "searchBar": {
+    "placeholder": "Buscar documentos, colecciones y contenido cultural...",
+    "suggestions": "Sugerencias",
+    "recentSearches": "Búsquedas Recientes",
+    "clearSearch": "Limpiar búsqueda"
+  },
+  "search": {
+    "placeholder": "Buscar documentos, colecciones y más..."
+  },
+  "languageSwitch": {
+    "selectLanguage": "Seleccionar Idioma"
+  }
+}

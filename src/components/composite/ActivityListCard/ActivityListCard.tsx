@@ -1,5 +1,6 @@
 import { JSX } from 'solid-js';
 import { Download, Upload, CheckCircle } from 'lucide-solid';
+import { useTranslation } from '../../../i18n/hooks';
 import styles from './ActivityListCard.module.css';
 
 export interface ActivityItemProps {
@@ -120,6 +121,8 @@ const ActivityListItem = (props: { item: ActivityItemProps }) => {
 };
 
 export const ActivityListCard = (props: ActivityListCardProps) => {
+  const { t } = useTranslation('components');
+
   return (
     <div
       class={`${styles['activity-card']} ${props.cardType ? styles[props.cardType] : ''} ${props.class || ''}`}
@@ -132,7 +135,9 @@ export const ActivityListCard = (props: ActivityListCardProps) => {
           {props.subtitle && <p class={styles['card-subtitle']}>{props.subtitle}</p>}
         </div>
         <div class={styles['header-metrics']}>
-          <span class={styles['metric-badge']}>{props.items.length} items</span>
+          <span class={styles['metric-badge']}>
+            {t('collectionCard.itemCount', { count: props.items.length })}
+          </span>
         </div>
       </div>
 

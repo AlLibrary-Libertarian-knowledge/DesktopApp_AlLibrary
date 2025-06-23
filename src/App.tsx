@@ -3,6 +3,7 @@ import { Router, Route } from '@solidjs/router';
 import { listen } from '@tauri-apps/api/event';
 import MainLayout from './components/layout/MainLayout';
 import { Loading } from './components/foundation';
+import { initializeI18n } from './i18n';
 import './styles/theme.css';
 import './App.css';
 
@@ -73,6 +74,10 @@ const App: Component = () => {
     let cleanup: (() => void) | null = null;
 
     try {
+      // Initialize i18n system
+      await initializeI18n();
+      console.log('i18n system initialized successfully');
+
       // Listen for initialization progress from Tauri
       const unlisten = await listen<InitProgress>('init-progress', event => {
         console.log('Received init progress:', event.payload);

@@ -1,0 +1,17 @@
+{
+  "sensitivity": {
+    "public": "Öffentlich",
+    "educational": "Bildungsbereich",
+    "community": "Gemeinschaft",
+    "traditional": "Traditionell",
+    "guardian": "Hüter",
+    "sacred": "Heilig",
+    "ceremonial": "Zeremoniell"
+  },
+  "context": {
+    "informationOnly": "Nur zur Information",
+    "educationalPurpose": "Bildungszweck",
+    "noAccessRestrictions": "Keine Zugriffsbeschränkungen",
+    "multiplePerspectives": "Mehrere Perspektiven"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "home": {
+    "title": "Benvenuto in AlLibrary",
+    "subtitle": "Rete Decentralizzata per il Patrimonio Culturale"
+  },
+  "search": {
+    "title": "Cerca",
+    "subtitle": "Trova documenti e contenuti",
+    "placeholder": "Cerca documenti, collezioni e contenuti culturali..."
+  },
+  "documents": {
+    "title": "I Miei Documenti",
+    "subtitle": "Gestisci la tua collezione di documenti"
+  },
+  "collections": {
+    "title": "Collezioni",
+    "subtitle": "Collezioni organizzate di documenti"
+  },
+  "settings": {
+    "title": "Impostazioni",
+    "subtitle": "Configura le tue preferenze"
+  }
+}

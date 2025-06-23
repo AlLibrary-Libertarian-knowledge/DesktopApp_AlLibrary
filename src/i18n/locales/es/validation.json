@@ -1,0 +1,7 @@
+{
+  "required": "Este campo es obligatorio",
+  "email": "Dirección de correo electrónico inválida",
+  "minLength": "Debe tener al menos {{min}} caracteres",
+  "maxLength": "No puede exceder {{max}} caracteres",
+  "pattern": "Formato inválido"
+}

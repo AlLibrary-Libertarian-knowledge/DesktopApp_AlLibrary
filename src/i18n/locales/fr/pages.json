@@ -1,0 +1,146 @@
+{
+  "home": {
+    "title": "Bienvenue sur AlLibrary",
+    "subtitle": "Réseau Décentralisé de Préservation du Patrimoine Culturel",
+    "networkStatus": {
+      "online": "Réseau En Ligne",
+      "health": "98% Santé",
+      "peers": "pairs",
+      "nodes": "nœuds",
+      "connections": "connexions"
+    },
+    "dataFlow": {
+      "download": "Téléchargement",
+      "upload": "Téléversement"
+    },
+    "activityIndicators": {
+      "downloads": "Téléchargements",
+      "seeding": "Partage",
+      "discovering": "Découverte"
+    },
+    "tabs": {
+      "overview": "Aperçu",
+      "network": "Réseau",
+      "downloads": "Téléchargements"
+    },
+    "stats": {
+      "documentsShared": "Documents Partagés",
+      "connectedPeers": "Pairs Connectés",
+      "culturalInstitutions": "Institutions Culturelles",
+      "networkHealth": "Santé du Réseau",
+      "today": "aujourd'hui",
+      "online": "en ligne",
+      "stable": "stable",
+      "excellent": "excellent"
+    },
+    "networkTopology": {
+      "title": "Topologie du Réseau",
+      "subtitle": "Visualisation en direct des connexions entre pairs",
+      "expandView": "Étendre la Vue"
+    },
+    "networkActivity": {
+      "title": "Activité du Réseau",
+      "subtitle": "Téléchargements et connexions réseau en temps réel",
+      "recentDownloads": "Téléchargements Récents",
+      "recentDownloadsSubtitle": "Téléchargements et téléversements actifs",
+      "networkActivitySubtitle": "Connexions de pairs et découvertes"
+    },
+    "quickActions": {
+      "title": "Actions Rapides",
+      "shareDocument": "Partager Document",
+      "searchNetwork": "Rechercher Réseau",
+      "analytics": "Analyses",
+      "settings": "Paramètres"
+    },
+    "networkSection": {
+      "title": "Topologie et Analyse du Réseau",
+      "refresh": "Actualiser",
+      "statistics": "Statistiques",
+      "configure": "Configurer"
+    },
+    "downloadsSection": {
+      "title": "Gestionnaire de Téléchargements",
+      "addDownload": "Ajouter Téléchargement",
+      "queue": "File d'attente",
+      "preferences": "Préférences"
+    },
+    "welcomeModal": {
+      "title": "Bienvenue sur AlLibrary",
+      "description": "AlLibrary est une plateforme décentralisée sophistiquée pour préserver et partager des documents de patrimoine culturel. Construite avec une technologie P2P avancée et une intégration TOR, nous assurons que les connaissances traditionnelles soient préservées en sécurité.",
+      "features": {
+        "encryption": "Chiffrement de niveau militaire avec anonymat TOR",
+        "globalNetwork": "Réseau P2P mondial avec plus de 156 institutions",
+        "performance": "Haute performance libp2p avec routage DHT",
+        "culturalProtection": "Protocoles de protection culturelle et permissions",
+        "advancedSearch": "Recherche avancée avec filtrage de contexte culturel",
+        "realTimeAnalytics": "Analyses de réseau et surveillance en temps réel"
+      },
+      "takeTour": "Faire le Tour",
+      "enterLibrary": "Entrer dans AlLibrary"
+    },
+    "recentActivity": "Activité Récente",
+    "culturalHighlights": "Points Forts des Connaissances Culturelles"
+  },
+  "search": {
+    "title": "Recherche",
+    "subtitle": "Trouver des documents et du contenu",
+    "searchPlaceholder": "Rechercher des documents, collections et contenu culturel...",
+    "advancedFilters": "Filtres Avancés",
+    "culturalFilters": "Filtres de Contexte Culturel",
+    "searchResults": "Résultats de Recherche",
+    "noResults": "Aucun résultat trouvé",
+    "searching": "Recherche en cours...",
+    "clearSearch": "Effacer la Recherche",
+    "showFilters": "Afficher les Filtres",
+    "hideFilters": "Masquer les Filtres",
+    "sortBy": "Trier par",
+    "viewMode": "Mode d'Affichage",
+    "gridView": "Vue Grille",
+    "listView": "Vue Liste",
+    "placeholder": "Rechercher des documents, collections et contenu culturel..."
+  },
+  "documents": {
+    "title": "Mes Documents",
+    "subtitle": "Gérer votre collection de documents",
+    "uploadNew": "Télécharger un Nouveau Document",
+    "organizeLibrary": "Organiser la Bibliothèque",
+    "culturalContext": "Contexte Culturel",
+    "sensitivityLevel": "Niveau de Sensibilité",
+    "searchPlaceholder": "Rechercher dans vos documents..."
+  },
+  "collections": {
+    "title": "Collections",
+    "subtitle": "Collections de documents organisés",
+    "createNew": "Créer une Nouvelle Collection",
+    "manageExisting": "Gérer les Collections",
+    "collaborativeCollections": "Collections Collaboratives",
+    "culturalCollections": "Collections du Patrimoine Culturel"
+  },
+  "network": {
+    "title": "Réseau",
+    "subtitle": "Se connecter avec des pairs",
+    "connectionStatus": "État de la Connexion",
+    "activePeers": "Pairs Actifs",
+    "networkHealth": "Santé du Réseau",
+    "p2pSearch": "Recherche P2P"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "subtitle": "Configurer vos préférences",
+    "general": "Général",
+    "privacy": "Confidentialité",
+    "security": "Sécurité",
+    "cultural": "Préférences Culturelles",
+    "network": "Paramètres Réseau",
+    "language": "Langue"
+  },
+  "cultural": {
+    "title": "Contextes Culturels",
+    "subtitle": "Informations culturelles éducatives",
+    "traditionalKnowledge": "Savoir Traditionnel",
+    "communityGuidelines": "Directives Communautaires",
+    "educationalResources": "Ressources Éducatives",
+    "culturalOrigins": "Origines Culturelles",
+    "sensitivityLevels": "Niveaux de Sensibilité"
+  }
+}

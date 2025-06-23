@@ -1,0 +1,146 @@
+{
+  "home": {
+    "title": "Willkommen bei AlLibrary",
+    "subtitle": "Dezentrales Netzwerk zur Bewahrung des Kulturerbes",
+    "networkStatus": {
+      "online": "Netzwerk Online",
+      "health": "98% Gesundheit",
+      "peers": "Peers",
+      "nodes": "Knoten",
+      "connections": "Verbindungen"
+    },
+    "dataFlow": {
+      "download": "Download",
+      "upload": "Upload"
+    },
+    "activityIndicators": {
+      "downloads": "Downloads",
+      "seeding": "Seeding",
+      "discovering": "Entdecken"
+    },
+    "tabs": {
+      "overview": "Übersicht",
+      "network": "Netzwerk",
+      "downloads": "Downloads"
+    },
+    "stats": {
+      "documentsShared": "Geteilte Dokumente",
+      "connectedPeers": "Verbundene Peers",
+      "culturalInstitutions": "Kulturinstitutionen",
+      "networkHealth": "Netzwerkgesundheit",
+      "today": "heute",
+      "online": "online",
+      "stable": "stabil",
+      "excellent": "ausgezeichnet"
+    },
+    "networkTopology": {
+      "title": "Netzwerktopologie",
+      "subtitle": "Live-Visualisierung der Peer-Verbindungen",
+      "expandView": "Ansicht Erweitern"
+    },
+    "networkActivity": {
+      "title": "Netzwerkaktivität",
+      "subtitle": "Echtzeit-Downloads und Netzwerkverbindungen",
+      "recentDownloads": "Neueste Downloads",
+      "recentDownloadsSubtitle": "Aktive Downloads und Uploads",
+      "networkActivitySubtitle": "Peer-Verbindungen und Entdeckungen"
+    },
+    "quickActions": {
+      "title": "Schnellaktionen",
+      "shareDocument": "Dokument Teilen",
+      "searchNetwork": "Netzwerk Durchsuchen",
+      "analytics": "Analysen",
+      "settings": "Einstellungen"
+    },
+    "networkSection": {
+      "title": "Netzwerktopologie und Analyse",
+      "refresh": "Aktualisieren",
+      "statistics": "Statistiken",
+      "configure": "Konfigurieren"
+    },
+    "downloadsSection": {
+      "title": "Download-Manager",
+      "addDownload": "Download Hinzufügen",
+      "queue": "Warteschlange",
+      "preferences": "Einstellungen"
+    },
+    "welcomeModal": {
+      "title": "Willkommen bei AlLibrary",
+      "description": "AlLibrary ist eine hochentwickelte dezentrale Plattform zur Bewahrung und zum Teilen von Kulturgut-Dokumenten. Aufgebaut mit fortschrittlicher P2P-Technologie und TOR-Integration stellen wir sicher, dass traditionelles Wissen sicher bewahrt wird.",
+      "features": {
+        "encryption": "Militärische Verschlüsselung mit TOR-Anonymität",
+        "globalNetwork": "Globales P2P-Netzwerk mit über 156 Institutionen",
+        "performance": "Hochleistungs-libp2p mit DHT-Routing",
+        "culturalProtection": "Kulturelle Schutzprotokolle und Berechtigungen",
+        "advancedSearch": "Erweiterte Suche mit kultureller Kontextfilterung",
+        "realTimeAnalytics": "Echtzeit-Netzwerkanalysen und Überwachung"
+      },
+      "takeTour": "Tour Machen",
+      "enterLibrary": "AlLibrary Betreten"
+    },
+    "recentActivity": "Neueste Aktivität",
+    "culturalHighlights": "Kulturwissen-Highlights"
+  },
+  "search": {
+    "title": "Suche",
+    "subtitle": "Dokumente und Inhalte finden",
+    "searchPlaceholder": "Dokumente, Sammlungen und kulturelle Inhalte suchen...",
+    "advancedFilters": "Erweiterte Filter",
+    "culturalFilters": "Kulturelle Kontextfilter",
+    "searchResults": "Suchergebnisse",
+    "noResults": "Keine Ergebnisse gefunden",
+    "searching": "Suche läuft...",
+    "clearSearch": "Suche löschen",
+    "showFilters": "Filter anzeigen",
+    "hideFilters": "Filter ausblenden",
+    "sortBy": "Sortieren nach",
+    "viewMode": "Anzeigemodus",
+    "gridView": "Rasteransicht",
+    "listView": "Listenansicht",
+    "placeholder": "Dokumente, Sammlungen und kulturelle Inhalte suchen..."
+  },
+  "documents": {
+    "title": "Meine Dokumente",
+    "subtitle": "Ihre Dokumentensammlung verwalten",
+    "uploadNew": "Neues Dokument hochladen",
+    "organizeLibrary": "Bibliothek organisieren",
+    "culturalContext": "Kultureller Kontext",
+    "sensitivityLevel": "Sensitivitätsstufe",
+    "searchPlaceholder": "In Ihren Dokumenten suchen..."
+  },
+  "collections": {
+    "title": "Sammlungen",
+    "subtitle": "Organisierte Dokumentensammlungen",
+    "createNew": "Neue Sammlung erstellen",
+    "manageExisting": "Bestehende Sammlungen verwalten",
+    "collaborativeCollections": "Kollaborative Sammlungen",
+    "culturalCollections": "Kulturelle Erbsammlungen"
+  },
+  "network": {
+    "title": "Netzwerk",
+    "subtitle": "Mit Peers verbinden",
+    "connectionStatus": "Verbindungsstatus",
+    "activePeers": "Aktive Peers",
+    "networkHealth": "Netzwerkgesundheit",
+    "p2pSearch": "P2P-Suche"
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "subtitle": "Ihre Einstellungen konfigurieren",
+    "general": "Allgemein",
+    "privacy": "Datenschutz",
+    "security": "Sicherheit",
+    "cultural": "Kulturelle Einstellungen",
+    "network": "Netzwerkeinstellungen",
+    "language": "Sprache"
+  },
+  "cultural": {
+    "title": "Kulturelle Kontexte",
+    "subtitle": "Bildungsinformationen zur Kultur",
+    "traditionalKnowledge": "Traditionelles Wissen",
+    "communityGuidelines": "Gemeinschaftsrichtlinien",
+    "educationalResources": "Bildungsressourcen",
+    "culturalOrigins": "Kulturelle Ursprünge",
+    "sensitivityLevels": "Sensitivitätsstufen"
+  }
+}

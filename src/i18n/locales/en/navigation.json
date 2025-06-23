@@ -1,0 +1,44 @@
+{
+  "main": {
+    "home": "Home",
+    "library": "Library",
+    "documents": "Documents",
+    "collections": "Collections",
+    "search": "Search",
+    "network": "Network",
+    "settings": "Settings",
+    "profile": "Profile",
+    "cultural": "Cultural"
+  },
+  "sections": {
+    "personal": "Personal",
+    "community": "Community",
+    "network": "Network",
+    "tools": "Tools",
+    "preferences": "Preferences"
+  },
+  "items": {
+    "myDocuments": "My Documents",
+    "recentDocuments": "Recent Documents",
+    "sharedDocuments": "Shared Documents",
+    "myCollections": "My Collections",
+    "browseCategories": "Browse Categories",
+    "localSearch": "Local Search",
+    "networkSearch": "Network Search",
+    "peers": "Peers",
+    "communities": "Communities",
+    "networkHealth": "Network Health",
+    "downloadManager": "Download Manager",
+    "fileOrganizer": "File Organizer",
+    "culturalSettings": "Cultural Settings",
+    "appearance": "Appearance",
+    "privacy": "Privacy",
+    "advanced": "Advanced",
+    "notifications": "Notifications"
+  },
+  "breadcrumbs": {
+    "home": "Home",
+    "back": "Back",
+    "separator": "/"
+  }
+}

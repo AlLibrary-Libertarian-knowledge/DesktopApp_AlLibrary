@@ -1,0 +1,41 @@
+{
+  "main": {
+    "home": "Home",
+    "search": "Cerca",
+    "documents": "Documenti",
+    "collections": "Collezioni",
+    "browse": "Sfoglia",
+    "recent": "Recenti",
+    "trending": "Tendenze",
+    "favorites": "Preferiti",
+    "peers": "Peer",
+    "network": "Rete",
+    "settings": "Impostazioni",
+    "about": "Informazioni",
+    "cultural": "Culturale",
+    "traditional": "Tradizionale",
+    "community": "Comunità",
+    "preservation": "Conservazione"
+  },
+  "sections": {
+    "library": "Biblioteca",
+    "community": "Comunità",
+    "network": "Rete",
+    "tools": "Strumenti",
+    "account": "Account"
+  },
+  "pages": {
+    "myDocuments": "I Miei Documenti",
+    "allDocuments": "Tutti i Documenti",
+    "myCollections": "Le Mie Collezioni",
+    "browseCategories": "Sfoglia Categorie",
+    "searchNetwork": "Cerca nella Rete",
+    "networkHealth": "Salute della Rete",
+    "culturalContexts": "Contesti Culturali",
+    "traditionalKnowledge": "Conoscenza Tradizionale",
+    "communityGuidelines": "Linee Guida della Comunità",
+    "connectionManager": "Gestore Connessioni",
+    "p2pSearch": "Ricerca P2P",
+    "newArrivals": "Nuovi Arrivi"
+  }
+}

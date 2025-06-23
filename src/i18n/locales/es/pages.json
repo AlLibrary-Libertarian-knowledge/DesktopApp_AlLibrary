@@ -1,0 +1,129 @@
+{
+  "home": {
+    "title": "Bienvenido a AlLibrary",
+    "subtitle": "Red Descentralizada de Preservación del Patrimonio Cultural",
+    "networkStatus": {
+      "online": "Red Conectada",
+      "health": "98% Salud",
+      "peers": "pares",
+      "nodes": "nodos",
+      "connections": "conexiones"
+    },
+    "dataFlow": {
+      "download": "Descarga",
+      "upload": "Subida"
+    },
+    "activityIndicators": {
+      "downloads": "Descargas",
+      "seeding": "Compartiendo",
+      "discovering": "Descubriendo"
+    },
+    "tabs": {
+      "overview": "Resumen",
+      "network": "Red",
+      "downloads": "Descargas"
+    },
+    "stats": {
+      "documentsShared": "Documentos Compartidos",
+      "connectedPeers": "Pares Conectados",
+      "culturalInstitutions": "Instituciones Culturales",
+      "networkHealth": "Salud de la Red",
+      "today": "hoy",
+      "online": "en línea",
+      "stable": "estable",
+      "excellent": "excelente"
+    },
+    "networkTopology": {
+      "title": "Topología de Red",
+      "subtitle": "Visualización en vivo de conexiones entre pares",
+      "expandView": "Expandir Vista"
+    },
+    "networkActivity": {
+      "title": "Actividad de Red",
+      "subtitle": "Descargas y conexiones de red en tiempo real",
+      "recentDownloads": "Descargas Recientes",
+      "recentDownloadsSubtitle": "Descargas y subidas activas",
+      "networkActivitySubtitle": "Conexiones de pares y descubrimientos"
+    },
+    "quickActions": {
+      "title": "Acciones Rápidas",
+      "shareDocument": "Compartir Documento",
+      "searchNetwork": "Buscar en Red",
+      "analytics": "Análisis",
+      "settings": "Configuración"
+    },
+    "networkSection": {
+      "title": "Topología y Análisis de Red",
+      "refresh": "Actualizar",
+      "statistics": "Estadísticas",
+      "configure": "Configurar"
+    },
+    "downloadsSection": {
+      "title": "Gestor de Descargas",
+      "addDownload": "Añadir Descarga",
+      "queue": "Cola",
+      "preferences": "Preferencias"
+    },
+    "welcomeModal": {
+      "title": "Bienvenido a AlLibrary",
+      "description": "AlLibrary es una plataforma descentralizada sofisticada para preservar y compartir documentos de patrimonio cultural. Construida con tecnología P2P avanzada con integración TOR, aseguramos que el conocimiento tradicional se preserve de forma segura.",
+      "features": {
+        "encryption": "Cifrado de grado militar con anonimato TOR",
+        "globalNetwork": "Red P2P global con más de 156 instituciones",
+        "performance": "Alto rendimiento libp2p con enrutamiento DHT",
+        "culturalProtection": "Protocolos de protección cultural y permisos",
+        "advancedSearch": "Búsqueda avanzada con filtrado de contexto cultural",
+        "realTimeAnalytics": "Análisis de red y monitoreo en tiempo real"
+      },
+      "takeTour": "Hacer Tour",
+      "enterLibrary": "Entrar a AlLibrary"
+    },
+    "recentActivity": "Actividad Reciente",
+    "culturalHighlights": "Destacados de Conocimiento Cultural"
+  },
+  "documents": {
+    "title": "Mis Documentos",
+    "subtitle": "Gestiona tu colección de documentos",
+    "empty": "No tienes documentos aún",
+    "addDocument": "Agregar Documento",
+    "recentDocuments": "Documentos Recientes",
+    "allDocuments": "Todos los Documentos",
+    "categories": "Categorías",
+    "uploadNew": "Subir Nuevo Documento",
+    "organizeLibrary": "Organizar Biblioteca",
+    "culturalContext": "Contexto Cultural",
+    "sensitivityLevel": "Nivel de Sensibilidad",
+    "categories": "Categorías"
+  },
+  "search": {
+    "title": "Buscar",
+    "subtitle": "Encuentra documentos y contenido",
+    "placeholder": "Buscar documentos, colecciones y contenido cultural...",
+    "filters": "Filtros",
+    "results": "Resultados",
+    "noResults": "No se encontraron resultados"
+  },
+  "collections": {
+    "title": "Colecciones",
+    "subtitle": "Colecciones organizadas de documentos",
+    "myCollections": "Mis Colecciones",
+    "sharedCollections": "Colecciones Compartidas",
+    "createCollection": "Crear Colección",
+    "empty": "No tienes colecciones aún"
+  },
+  "network": {
+    "title": "Red P2P",
+    "subtitle": "Conecta con la comunidad global",
+    "peers": "Pares Conectados",
+    "communities": "Comunidades",
+    "status": "Estado de Conexión"
+  },
+  "settings": {
+    "title": "Configuración",
+    "subtitle": "Configura tus preferencias",
+    "general": "General",
+    "privacy": "Privacidad",
+    "cultural": "Cultural",
+    "advanced": "Avanzado"
+  }
+}

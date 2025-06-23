@@ -1,0 +1,17 @@
+{
+  "sensitivity": {
+    "public": "公开",
+    "educational": "教育",
+    "community": "社区",
+    "traditional": "传统",
+    "guardian": "守护者",
+    "sacred": "神圣",
+    "ceremonial": "仪式"
+  },
+  "context": {
+    "informationOnly": "仅供信息",
+    "educationalPurpose": "教育目的",
+    "noAccessRestrictions": "无访问限制",
+    "multiplePerspectives": "多元视角"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "main": {
+    "home": "ホーム",
+    "search": "検索",
+    "documents": "ドキュメント",
+    "collections": "コレクション",
+    "browse": "閲覧",
+    "recent": "最近",
+    "trending": "トレンド",
+    "favorites": "お気に入り",
+    "peers": "ピア",
+    "network": "ネットワーク",
+    "settings": "設定",
+    "about": "について"
+  }
+}

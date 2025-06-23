@@ -1,0 +1,41 @@
+{
+  "main": {
+    "home": "Início",
+    "search": "Buscar",
+    "documents": "Documentos",
+    "collections": "Coleções",
+    "browse": "Navegar",
+    "recent": "Recente",
+    "trending": "Tendência",
+    "favorites": "Favoritos",
+    "peers": "Pares",
+    "network": "Rede",
+    "settings": "Configurações",
+    "about": "Sobre",
+    "cultural": "Cultural",
+    "traditional": "Tradicional",
+    "community": "Comunidade",
+    "preservation": "Preservação"
+  },
+  "sections": {
+    "library": "Biblioteca",
+    "community": "Comunidade",
+    "network": "Rede",
+    "tools": "Ferramentas",
+    "account": "Conta"
+  },
+  "pages": {
+    "myDocuments": "Meus Documentos",
+    "allDocuments": "Todos os Documentos",
+    "myCollections": "Minhas Coleções",
+    "browseCategories": "Navegar Categorias",
+    "searchNetwork": "Pesquisar Rede",
+    "networkHealth": "Saúde da Rede",
+    "culturalContexts": "Contextos Culturais",
+    "traditionalKnowledge": "Conhecimento Tradicional",
+    "communityGuidelines": "Diretrizes da Comunidade",
+    "connectionManager": "Gerenciador de Conexões",
+    "p2pSearch": "Pesquisa P2P",
+    "newArrivals": "Novos Documentos"
+  }
+}

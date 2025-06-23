@@ -1,0 +1,101 @@
+{
+  "home": {
+    "title": "Bem-vindo ao AlLibrary",
+    "subtitle": "Rede Descentralizada de Preservação do Patrimônio Cultural",
+    "networkStatus": {
+      "online": "Rede Online",
+      "health": "98% Saúde",
+      "peers": "peers",
+      "nodes": "nós",
+      "connections": "conexões"
+    },
+    "dataFlow": {
+      "download": "Download",
+      "upload": "Upload"
+    },
+    "activityIndicators": {
+      "downloads": "Downloads",
+      "seeding": "Compartilhando",
+      "discovering": "Descobrindo"
+    },
+    "tabs": {
+      "overview": "Visão Geral",
+      "network": "Rede",
+      "downloads": "Downloads"
+    },
+    "stats": {
+      "documentsShared": "Documentos Compartilhados",
+      "connectedPeers": "Peers Conectados",
+      "culturalInstitutions": "Instituições Culturais",
+      "networkHealth": "Saúde da Rede",
+      "today": "hoje",
+      "online": "online",
+      "stable": "estável",
+      "excellent": "excelente"
+    },
+    "networkTopology": {
+      "title": "Topologia da Rede",
+      "subtitle": "Visualização ao vivo das conexões entre peers",
+      "expandView": "Expandir Visualização"
+    },
+    "networkActivity": {
+      "title": "Atividade da Rede",
+      "subtitle": "Downloads e conexões de rede em tempo real",
+      "recentDownloads": "Downloads Recentes",
+      "recentDownloadsSubtitle": "Downloads e uploads ativos",
+      "networkActivitySubtitle": "Conexões de peers e descobertas"
+    },
+    "quickActions": {
+      "title": "Ações Rápidas",
+      "shareDocument": "Compartilhar Documento",
+      "searchNetwork": "Buscar na Rede",
+      "analytics": "Análises",
+      "settings": "Configurações"
+    },
+    "networkSection": {
+      "title": "Topologia e Análise da Rede",
+      "refresh": "Atualizar",
+      "statistics": "Estatísticas",
+      "configure": "Configurar"
+    },
+    "downloadsSection": {
+      "title": "Gerenciador de Downloads",
+      "addDownload": "Adicionar Download",
+      "queue": "Fila",
+      "preferences": "Preferências"
+    },
+    "welcomeModal": {
+      "title": "Bem-vindo ao AlLibrary",
+      "description": "AlLibrary é uma plataforma descentralizada sofisticada para preservar e compartilhar documentos de patrimônio cultural. Construída com tecnologia P2P avançada com integração TOR, garantimos que o conhecimento tradicional seja preservado com segurança.",
+      "features": {
+        "encryption": "Criptografia de nível militar com anonimato TOR",
+        "globalNetwork": "Rede P2P global com mais de 156 instituições",
+        "performance": "Alto desempenho libp2p com roteamento DHT",
+        "culturalProtection": "Protocolos de proteção cultural e permissões",
+        "advancedSearch": "Busca avançada com filtragem de contexto cultural",
+        "realTimeAnalytics": "Análises de rede e monitoramento em tempo real"
+      },
+      "takeTour": "Fazer Tour",
+      "enterLibrary": "Entrar no AlLibrary"
+    },
+    "recentActivity": "Atividade Recente",
+    "culturalHighlights": "Destaques do Conhecimento Cultural"
+  },
+  "search": {
+    "title": "Busca",
+    "subtitle": "Encontrar documentos e conteúdo",
+    "placeholder": "Buscar documentos, coleções e conteúdo cultural..."
+  },
+  "documents": {
+    "title": "Meus Documentos",
+    "subtitle": "Gerenciar sua coleção de documentos"
+  },
+  "collections": {
+    "title": "Coleções",
+    "subtitle": "Coleções organizadas de documentos"
+  },
+  "settings": {
+    "title": "Configurações",
+    "subtitle": "Configure suas preferências"
+  }
+}

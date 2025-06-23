@@ -1,0 +1,17 @@
+{
+  "sensitivity": {
+    "public": "General Cultural Context",
+    "educational": "Educational Content",
+    "community": "Community Knowledge",
+    "traditional": "Traditional Knowledge",
+    "guardian": "Guardian-Protected Content",
+    "sacred": "Sacred Content",
+    "ceremonial": "Ceremonial Content"
+  },
+  "context": {
+    "informationOnly": "Information Only",
+    "educationalPurpose": "For Educational Purposes",
+    "noAccessRestrictions": "No Access Restrictions",
+    "multiplePerspectives": "Multiple Perspectives Welcome"
+  }
+}

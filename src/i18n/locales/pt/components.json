@@ -1,0 +1,166 @@
+{
+  "button": {
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "submit": "Enviar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "create": "Criar",
+    "update": "Atualizar",
+    "upload": "Enviar",
+    "download": "Baixar",
+    "share": "Compartilhar",
+    "copy": "Copiar",
+    "move": "Mover",
+    "loading": "Carregando...",
+    "defaultAriaLabel": "Botão",
+    "defaultTitle": "Clique para executar ação",
+    "validationFailed": "Validação de segurança falhou - por favor verifique sua entrada",
+    "validationError": "Erro de validação de segurança ocorreu",
+    "validationRequired": "Por favor complete a validação de segurança",
+    "securityValidated": "Segurança validada",
+    "securityValidationRequired": "Validação de segurança necessária",
+    "culturalTheme": "Tema cultural: {{theme}}"
+  },
+  "modal": {
+    "close": "Fechar",
+    "defaultTitle": "Diálogo Modal",
+    "confirm": "Confirmar",
+    "cancel": "Cancelar",
+    "closeModal": "Fechar modal"
+  },
+  "input": {
+    "required": "Este campo é obrigatório",
+    "invalid": "Entrada inválida",
+    "placeholder": "Digite um valor...",
+    "search": "Buscar...",
+    "filter": "Filtrar resultados..."
+  },
+  "card": {
+    "viewDetails": "Ver Detalhes",
+    "showMore": "Mostrar Mais",
+    "showLess": "Mostrar Menos",
+    "actions": "Ações"
+  },
+  "badge": {
+    "new": "Novo",
+    "updated": "Atualizado",
+    "featured": "Destacado",
+    "trending": "Em Alta",
+    "popular": "Popular"
+  },
+  "loading": {
+    "general": "Carregando...",
+    "documents": "Carregando documentos...",
+    "collections": "Carregando coleções...",
+    "network": "Conectando à rede...",
+    "search": "Buscando..."
+  },
+  "errorBoundary": {
+    "title": "Algo deu errado",
+    "message": "Ocorreu um erro inesperado. Por favor tente atualizar a página.",
+    "refresh": "Atualizar Página",
+    "reportIssue": "Reportar Problema"
+  },
+  "culturalIndicator": {
+    "informationOnly": "Apenas Informação",
+    "educationalPurpose": "Propósito Educacional",
+    "culturalContext": "Contexto Cultural",
+    "learnMore": "Saiba Mais"
+  },
+  "networkStatus": {
+    "online": "Online",
+    "offline": "Offline",
+    "connecting": "Conectando",
+    "connected": "Conectado",
+    "disconnected": "Desconectado",
+    "peers": "Peers",
+    "networkHealth": "Saúde da Rede"
+  },
+  "activityList": {
+    "types": {
+      "downloading": "Baixando",
+      "seeding": "Compartilhando",
+      "completed": "Completo",
+      "peerConnected": "Conectado ao nó par",
+      "institution": "Compartilhamento institucional",
+      "discovery": "Descoberta de rede"
+    },
+    "status": {
+      "downloading": "Baixando",
+      "seeding": "Compartilhando",
+      "complete": "Completo",
+      "connected": "Conectado",
+      "sharing": "Compartilhando",
+      "discovered": "Descoberto"
+    },
+    "metadata": {
+      "complete": "{{progress}}% completo",
+      "seedingToPeers": "Compartilhando para {{count}} pares",
+      "completedAgo": "Concluído há {{time}}",
+      "foundSources": "Encontradas {{count}} novas fontes de documentos"
+    }
+  },
+  "statusBar": {
+    "network": {
+      "title": "Rede",
+      "peers": "pares",
+      "latency": "{{latency}}ms"
+    },
+    "downloads": {
+      "title": "Downloads",
+      "active": "ativos",
+      "queue": "Fila: {{count}}"
+    },
+    "storage": {
+      "title": "Armazenamento"
+    },
+    "system": {
+      "title": "Sistema",
+      "cpu": "CPU",
+      "memory": "Memória",
+      "temperature": "Temperatura"
+    },
+    "cultural": {
+      "title": "Proteção Cultural",
+      "threats": "{{count}} ameaças bloqueadas",
+      "lastScan": "Último scan: {{time}}"
+    }
+  },
+  "documentCard": {
+    "createdDate": "Criado",
+    "modifiedDate": "Modificado",
+    "fileSize": "Tamanho",
+    "author": "Autor",
+    "culturalLevel": "Nível Cultural",
+    "actions": {
+      "open": "Abrir",
+      "edit": "Editar",
+      "share": "Compartilhar",
+      "delete": "Excluir",
+      "download": "Baixar"
+    }
+  },
+  "collectionCard": {
+    "itemCount": "{{count}} itens",
+    "itemCount_one": "{{count}} item",
+    "lastUpdated": "Última atualização",
+    "collaborators": "Colaboradores",
+    "visibility": "Visibilidade"
+  },
+  "searchBar": {
+    "placeholder": "Buscar documentos, coleções e conteúdo cultural...",
+    "suggestions": "Sugestões",
+    "recentSearches": "Buscas Recentes",
+    "clearSearch": "Limpar busca"
+  },
+  "search": {
+    "placeholder": "Buscar documentos, coleções e mais..."
+  },
+  "languageSwitch": {
+    "selectLanguage": "Selecionar idioma",
+    "changeLanguage": "Alterar idioma",
+    "currentLanguage": "Idioma atual",
+    "switchTo": "Mudar para {{language}}"
+  }
+}

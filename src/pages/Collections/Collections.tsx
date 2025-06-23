@@ -38,6 +38,7 @@ import {
   Sparkles,
 } from 'lucide-solid';
 import { collectionService } from '../../services/collectionService';
+import { useTranslation } from '../../i18n/hooks';
 import type {
   Collection,
   CollectionType,
@@ -52,6 +53,9 @@ import { CulturalSensitivityLevel } from '../../types/Cultural';
 import styles from './Collections.module.css';
 
 const Collections: Component = () => {
+  // Initialize i18n translation hook
+  const { t } = useTranslation('pages');
+
   // Core state management
   const [viewMode, setViewMode] = createSignal<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = createSignal('');

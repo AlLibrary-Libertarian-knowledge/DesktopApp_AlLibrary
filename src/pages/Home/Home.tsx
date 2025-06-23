@@ -7,6 +7,7 @@ import {
   type ActivityItemProps,
 } from '../../components/composite';
 import { DownloadManager, StatusBar, SecurityPanel } from '../../components/domain/dashboard';
+import { useTranslation } from '../../i18n/hooks';
 import {
   Download,
   Upload,
@@ -28,6 +29,10 @@ import {
 import styles from './Home.module.css';
 
 const HomePage: Component = () => {
+  // Initialize i18n translation hooks
+  const { t } = useTranslation('pages');
+  const { t: tc } = useTranslation('components');
+
   const [showModal, setShowModal] = createSignal(false);
   const [activeTab, setActiveTab] = createSignal<'overview' | 'network' | 'downloads'>('overview');
 
@@ -50,23 +55,23 @@ const HomePage: Component = () => {
       fileSize: '2.4 MB',
       progress: 67,
       speed: '2.1 MB/s',
-      status: 'Downloading',
-      metadata: '67% complete',
+      status: tc('activityList.status.downloading'),
+      metadata: tc('activityList.metadata.complete', { progress: 67 }),
     },
     {
       type: 'seeding',
       title: 'Digital Archives Collection',
       fileSize: '156 MB',
       speed: '1.5 MB/s upload',
-      status: 'Seeding',
-      metadata: 'Seeding to 12 peers',
+      status: tc('activityList.status.seeding'),
+      metadata: tc('activityList.metadata.seedingToPeers', { count: 12 }),
     },
     {
       type: 'completed',
       title: 'Andean Music Methods.epub',
       fileSize: '8.2 MB',
-      status: 'Complete',
-      metadata: 'Completed 2 minutes ago',
+      status: tc('activityList.status.complete'),
+      metadata: tc('activityList.metadata.completedAgo', { time: '2 minutes' }),
     },
   ];
 
@@ -74,23 +79,23 @@ const HomePage: Component = () => {
   const networkActivity: ActivityItemProps[] = [
     {
       type: 'peer-connected',
-      title: 'Connected to peer node',
-      status: 'Connected',
+      title: tc('activityList.types.peerConnected'),
+      status: tc('activityList.status.connected'),
       metadata: 'Library.universidadsanmarcos.pe',
       peerCount: 24,
     },
     {
       type: 'institution',
-      title: 'Institution sharing',
-      status: 'Sharing',
+      title: tc('activityList.types.institution'),
+      status: tc('activityList.status.sharing'),
       metadata: 'Universidad Nacional Mayor de San Marcos',
       resultCount: 847,
     },
     {
       type: 'discovery',
-      title: 'Network discovery',
-      status: 'Discovered',
-      metadata: 'Found 3 new document sources',
+      title: tc('activityList.types.discovery'),
+      status: tc('activityList.status.discovered'),
+      metadata: tc('activityList.metadata.foundSources', { count: 3 }),
       resultCount: 3,
     },
   ];
@@ -103,17 +108,15 @@ const HomePage: Component = () => {
       {/* Enhanced Page Header */}
       <header class={`${styles['page-header']} ${styles.enhanced}`}>
         <div class={styles['header-content']}>
-          <h1 class={styles['page-title']}>AlLibrary Network Dashboard</h1>
-          <p class={styles['page-subtitle']}>
-            Decentralized Cultural Heritage Preservation Network
-          </p>
+          <h1 class={styles['page-title']}>{t('home.title')}</h1>
+          <p class={styles['page-subtitle']}>{t('home.subtitle')}</p>
         </div>
 
         <div class={styles['network-status-enhanced']}>
           {/* Network Status Indicator */}
           <div class={styles['network-status-main']}>
             <div class={styles['status-row']}>
-              <span class={styles['status-text']}>Network Online</span>
+              <span class={styles['status-text']}>{t('home.networkStatus.online')}</span>
               <div class={`${styles['status-indicator']} ${styles.online}`}>
                 <div class={styles['status-pulse']}></div>
               </div>
@@ -123,7 +126,7 @@ const HomePage: Component = () => {
                 <div class={styles['health-bar']}>
                   <div class={styles['health-fill']} style="width: 98%"></div>
                 </div>
-                <span class={styles['health-text']}>98% Health</span>
+                <span class={styles['health-text']}>{t('home.networkStatus.health')}</span>
               </div>
             </div>
           </div>
@@ -133,7 +136,7 @@ const HomePage: Component = () => {
             <div class={styles['flow-section']}>
               <div class={styles['flow-header']}>
                 <span class={`${styles['flow-icon']} ${styles.download}`}>⬇</span>
-                <span class={styles['flow-label']}>Download</span>
+                <span class={styles['flow-label']}>{t('home.dataFlow.download')}</span>
               </div>
               <div class={styles['flow-visual']}>
                 <div class={`${styles['flow-stream']} ${styles['download-stream']}`}>
@@ -153,14 +156,14 @@ const HomePage: Component = () => {
               </div>
               <div class={styles['peer-count']}>
                 <span class={styles['peer-number']}>89</span>
-                <span class={styles['peer-label']}>peers</span>
+                <span class={styles['peer-label']}>{t('home.networkStatus.peers')}</span>
               </div>
             </div>
 
             <div class={styles['flow-section']}>
               <div class={styles['flow-header']}>
                 <span class={`${styles['flow-icon']} ${styles.upload}`}>⬆</span>
-                <span class={styles['flow-label']}>Upload</span>
+                <span class={styles['flow-label']}>{t('home.dataFlow.upload')}</span>
               </div>
               <div class={styles['flow-visual']}>
                 <div class={`${styles['flow-stream']} ${styles['upload-stream']}`}>
@@ -177,15 +180,19 @@ const HomePage: Component = () => {
           <div class={styles['activity-indicators']}>
             <div class={styles['activity-item']}>
               <div class={`${styles['activity-dot']} ${styles.active}`}></div>
-              <span class={styles['activity-text']}>3 Downloads</span>
+              <span class={styles['activity-text']}>
+                3 {t('home.activityIndicators.downloads')}
+              </span>
             </div>
             <div class={styles['activity-item']}>
               <div class={`${styles['activity-dot']} ${styles.seeding}`}></div>
-              <span class={styles['activity-text']}>7 Seeding</span>
+              <span class={styles['activity-text']}>7 {t('home.activityIndicators.seeding')}</span>
             </div>
             <div class={styles['activity-item']}>
               <div class={`${styles['activity-dot']} ${styles.discovering}`}></div>
-              <span class={styles['activity-text']}>2 Discovering</span>
+              <span class={styles['activity-text']}>
+                2 {t('home.activityIndicators.discovering')}
+              </span>
             </div>
           </div>
         </div>
@@ -202,7 +209,7 @@ const HomePage: Component = () => {
         >
           <span class={styles['tab-text']}>
             <BarChart3 size={16} class="mr-2" />
-            Overview
+            {t('home.tabs.overview')}
           </span>
         </button>
         <button
@@ -211,7 +218,7 @@ const HomePage: Component = () => {
         >
           <span class={styles['tab-text']}>
             <Activity size={16} class="mr-2" />
-            Network
+            {t('home.tabs.network')}
           </span>
         </button>
         <button
@@ -220,7 +227,7 @@ const HomePage: Component = () => {
         >
           <span class={styles['tab-text']}>
             <Download size={16} class="mr-2" />
-            Downloads
+            {t('home.tabs.downloads')}
           </span>
         </button>
       </div>
@@ -239,42 +246,42 @@ const HomePage: Component = () => {
                 type="documents"
                 icon={<BookOpen size={24} />}
                 number="12,847"
-                label="Documents Shared"
+                label={t('home.stats.documentsShared')}
                 trendType="positive"
                 trendIcon={<TrendingUp size={12} />}
                 trendValue="+127"
-                trendLabel="today"
+                trendLabel={t('home.stats.today')}
                 graphType="chart"
               />
               <StatCard
                 type="peers"
                 icon={<Users size={24} />}
                 number="89"
-                label="Connected Peers"
+                label={t('home.stats.connectedPeers')}
                 trendType="positive"
                 trendIcon={<TrendingUp size={14} />}
                 trendValue="+5"
-                trendLabel="online"
+                trendLabel={t('home.stats.online')}
                 graphType="peers"
               />
               <StatCard
                 type="institutions"
                 icon={<University size={24} />}
                 number="156"
-                label="Cultural Institutions"
+                label={t('home.stats.culturalInstitutions')}
                 trendType="neutral"
                 trendIcon={<ArrowRight size={14} />}
-                trendValue="stable"
+                trendValue={t('home.stats.stable')}
                 graphType="map"
               />
               <StatCard
                 type="health"
                 icon={<Zap size={24} />}
                 number="98%"
-                label="Network Health"
+                label={t('home.stats.networkHealth')}
                 trendType="positive"
                 trendIcon={<TrendingUp size={14} />}
-                trendValue="excellent"
+                trendValue={t('home.stats.excellent')}
                 graphType="health"
               />
             </div>
@@ -283,23 +290,23 @@ const HomePage: Component = () => {
             <section class={styles['network-preview-section']}>
               <div class={styles['section-header']}>
                 <div class={styles['header-content']}>
-                  <h2 class={styles['section-title']}>Network Topology</h2>
-                  <p class={styles['section-subtitle']}>Live peer connection visualization</p>
+                  <h2 class={styles['section-title']}>{t('home.networkTopology.title')}</h2>
+                  <p class={styles['section-subtitle']}>{t('home.networkTopology.subtitle')}</p>
                 </div>
                 <div class={styles['header-actions']}>
                   <div class={styles['network-stats']}>
                     <span class={styles['stat-item']}>
                       <span class={styles['stat-dot']}></span>
-                      89 nodes
+                      89 {t('home.networkStatus.nodes')}
                     </span>
                     <span class={styles['stat-item']}>
                       <span class={styles['stat-dot']}></span>
-                      156 connections
+                      156 {t('home.networkStatus.connections')}
                     </span>
                   </div>
                   <Button variant="ghost" size="sm" onClick={() => setActiveTab('network')}>
                     <ArrowRight size={16} class="ml-2" />
-                    Expand View
+                    {t('home.networkTopology.expandView')}
                   </Button>
                 </div>
               </div>
@@ -311,17 +318,15 @@ const HomePage: Component = () => {
             <section class={`${styles['activity-section']} ${styles['enhanced']}`}>
               <div class={styles['section-header']}>
                 <div class={styles['header-content']}>
-                  <h2 class={styles['section-title']}>Network Activity</h2>
-                  <p class={styles['section-subtitle']}>
-                    Real-time downloads and network connections
-                  </p>
+                  <h2 class={styles['section-title']}>{t('home.networkActivity.title')}</h2>
+                  <p class={styles['section-subtitle']}>{t('home.networkActivity.subtitle')}</p>
                 </div>
               </div>
 
               <div class={styles['grid']}>
                 <ActivityListCard
-                  title="Recent Downloads"
-                  subtitle="Active downloads and uploads"
+                  title={t('home.networkActivity.recentDownloads')}
+                  subtitle={t('home.networkActivity.recentDownloadsSubtitle')}
                   icon={<Download size={20} />}
                   items={recentDownloads}
                   cardType="downloads"
@@ -329,8 +334,8 @@ const HomePage: Component = () => {
                 />
 
                 <ActivityListCard
-                  title="Network Activity"
-                  subtitle="Peer connections and discoveries"
+                  title={t('home.networkActivity.title')}
+                  subtitle={t('home.networkActivity.networkActivitySubtitle')}
                   icon={<Upload size={20} />}
                   items={networkActivity}
                   cardType="network"
@@ -340,27 +345,27 @@ const HomePage: Component = () => {
 
             {/* Quick Actions */}
             <section class={styles['actions-section']}>
-              <h2 class={styles['section-title']}>Quick Actions</h2>
+              <h2 class={styles['section-title']}>{t('home.quickActions.title')}</h2>
 
               <div class={styles['actions-grid']}>
                 <button class={styles['action-button']} data-testid="upload-button">
                   <Share size={20} />
-                  <span>Share Document</span>
+                  <span>{t('home.quickActions.shareDocument')}</span>
                 </button>
 
                 <button class={styles['action-button']}>
                   <Search size={20} />
-                  <span>Search Network</span>
+                  <span>{t('home.quickActions.searchNetwork')}</span>
                 </button>
 
                 <button class={styles['action-button']}>
                   <BarChart3 size={20} />
-                  <span>Analytics</span>
+                  <span>{t('home.quickActions.analytics')}</span>
                 </button>
 
                 <button class={styles['action-button']}>
                   <Settings size={20} />
-                  <span>Settings</span>
+                  <span>{t('home.quickActions.settings')}</span>
                 </button>
               </div>
             </section>
@@ -371,19 +376,19 @@ const HomePage: Component = () => {
         {activeTab() === 'network' && (
           <section class={styles['network-section']}>
             <div class={styles['section-header']}>
-              <h2>Network Topology & Analysis</h2>
+              <h2>{t('home.networkSection.title')}</h2>
               <div class={styles['network-controls']}>
                 <Button variant="ghost" size="sm">
                   <RefreshCw size={14} class="mr-2" />
-                  Refresh
+                  {t('home.networkSection.refresh')}
                 </Button>
                 <Button variant="ghost" size="sm">
                   <BarChart3 size={14} class="mr-2" />
-                  Statistics
+                  {t('home.networkSection.statistics')}
                 </Button>
                 <Button variant="outline" size="sm">
                   <Settings size={14} class="mr-2" />
-                  Configure
+                  {t('home.networkSection.configure')}
                 </Button>
               </div>
             </div>
@@ -407,19 +412,19 @@ const HomePage: Component = () => {
         {activeTab() === 'downloads' && (
           <section class={styles['downloads-section']}>
             <div class={styles['section-header']}>
-              <h2>Download Manager</h2>
+              <h2>{t('home.downloadsSection.title')}</h2>
               <div class={styles['download-controls']}>
                 <Button variant="primary" size="sm">
                   <Plus size={14} class="mr-2" />
-                  Add Download
+                  {t('home.downloadsSection.addDownload')}
                 </Button>
                 <Button variant="ghost" size="sm">
                   <ClipboardList size={14} class="mr-2" />
-                  Queue
+                  {t('home.downloadsSection.queue')}
                 </Button>
                 <Button variant="outline" size="sm">
                   <Settings size={14} class="mr-2" />
-                  Preferences
+                  {t('home.downloadsSection.preferences')}
                 </Button>
               </div>
             </div>
@@ -440,56 +445,58 @@ const HomePage: Component = () => {
       <Modal
         open={showModal()}
         onClose={handleModalClose}
-        title="Welcome to AlLibrary"
+        title={t('home.welcomeModal.title')}
         size="lg"
         footer={
           <div class="flex gap-3 justify-end">
             <Button variant="outline" onClick={handleModalClose}>
-              Take Tour
+              {t('home.welcomeModal.takeTour')}
             </Button>
             <Button variant="primary" onClick={handleModalClose}>
-              Enter AlLibrary
+              {t('home.welcomeModal.enterLibrary')}
             </Button>
           </div>
         }
       >
         <div class={`${styles['welcome-modal-content']} ${styles['enhanced']}`}>
-          <p class="text-base mb-4">
-            AlLibrary is a sophisticated decentralized platform for preserving and sharing cultural
-            heritage documents. Built on advanced P2P technology with TOR integration, we ensure
-            traditional knowledge is preserved securely.
-          </p>
+          <p class="text-base mb-4">{t('home.welcomeModal.description')}</p>
 
           <div class={`${styles['feature-list']} ${styles['enhanced']}`}>
             <div class={styles['feature-item']}>
               <span class={styles['feature-icon']}>🔐</span>
               <span class={styles['feature-text']}>
-                Military-grade encryption with TOR anonymity
+                {t('home.welcomeModal.features.encryption')}
               </span>
             </div>
             <div class={styles['feature-item']}>
               <span class={styles['feature-icon']}>🌐</span>
-              <span class={styles['feature-text']}>Global P2P network with 156+ institutions</span>
+              <span class={styles['feature-text']}>
+                {t('home.welcomeModal.features.globalNetwork')}
+              </span>
             </div>
             <div class={styles['feature-item']}>
               <span class={styles['feature-icon']}>⚡</span>
-              <span class={styles['feature-text']}>High-performance libp2p with DHT routing</span>
+              <span class={styles['feature-text']}>
+                {t('home.welcomeModal.features.performance')}
+              </span>
             </div>
             <div class={styles['feature-item']}>
               <span class={styles['feature-icon']}>🏛️</span>
               <span class={styles['feature-text']}>
-                Cultural protection protocols & permissions
+                {t('home.welcomeModal.features.culturalProtection')}
               </span>
             </div>
             <div class={styles['feature-item']}>
               <span class={styles['feature-icon']}>🔍</span>
               <span class={styles['feature-text']}>
-                Advanced search with cultural context filtering
+                {t('home.welcomeModal.features.advancedSearch')}
               </span>
             </div>
             <div class={styles['feature-item']}>
               <span class={styles['feature-icon']}>📊</span>
-              <span class={styles['feature-text']}>Real-time network analytics & monitoring</span>
+              <span class={styles['feature-text']}>
+                {t('home.welcomeModal.features.realTimeAnalytics')}
+              </span>
             </div>
           </div>
         </div>

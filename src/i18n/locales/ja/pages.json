@@ -1,0 +1,77 @@
+{
+  "home": {
+    "title": "AlLibraryへようこそ",
+    "subtitle": "分散型文化遺産ネットワーク",
+    "quickActions": {
+      "uploadDocument": "ドキュメントをアップロード",
+      "searchLibrary": "ライブラリを検索",
+      "browseCollections": "コレクションを閲覧",
+      "connectPeers": "ピアに接続"
+    },
+    "recentActivity": "最近のアクティビティ",
+    "networkStatus": "ネットワーク状態",
+    "culturalHighlights": "文化的ハイライト"
+  },
+  "search": {
+    "title": "検索",
+    "subtitle": "ドキュメントとコンテンツを検索",
+    "searchPlaceholder": "ドキュメント、コレクション、文化的コンテンツを検索...",
+    "placeholder": "ドキュメント、コレクション、文化的コンテンツを検索...",
+    "advancedFilters": "高度なフィルター",
+    "culturalFilters": "文化的コンテキストフィルター",
+    "searchResults": "検索結果",
+    "noResults": "結果が見つかりません",
+    "searching": "検索中...",
+    "clearSearch": "検索をクリア",
+    "showFilters": "フィルターを表示",
+    "hideFilters": "フィルターを非表示",
+    "sortBy": "並び替え",
+    "viewMode": "表示モード",
+    "gridView": "グリッド表示",
+    "listView": "リスト表示"
+  },
+  "documents": {
+    "title": "マイドキュメント",
+    "subtitle": "ドキュメントコレクションを管理",
+    "uploadNew": "新しいドキュメントをアップロード",
+    "organizeLibrary": "ライブラリを整理",
+    "culturalContext": "文化的コンテキスト",
+    "sensitivityLevel": "感度レベル",
+    "searchPlaceholder": "ドキュメントを検索..."
+  },
+  "collections": {
+    "title": "コレクション",
+    "subtitle": "整理されたドキュメントコレクション",
+    "createNew": "新しいコレクションを作成",
+    "manageExisting": "既存のコレクションを管理",
+    "collaborativeCollections": "協力的コレクション",
+    "culturalCollections": "文化遺産コレクション"
+  },
+  "network": {
+    "title": "ネットワーク",
+    "subtitle": "ピアと接続",
+    "connectionStatus": "接続状態",
+    "activePeers": "アクティブピア",
+    "networkHealth": "ネットワーク健全性",
+    "p2pSearch": "P2P検索"
+  },
+  "settings": {
+    "title": "設定",
+    "subtitle": "設定を構成",
+    "general": "一般",
+    "privacy": "プライバシー",
+    "security": "セキュリティ",
+    "cultural": "文化的設定",
+    "network": "ネットワーク設定",
+    "language": "言語"
+  },
+  "cultural": {
+    "title": "文化的コンテキスト",
+    "subtitle": "教育的文化情報",
+    "traditionalKnowledge": "伝統的知識",
+    "communityGuidelines": "コミュニティガイドライン",
+    "educationalResources": "教育リソース",
+    "culturalOrigins": "文化的起源",
+    "sensitivityLevels": "感度レベル"
+  }
+}

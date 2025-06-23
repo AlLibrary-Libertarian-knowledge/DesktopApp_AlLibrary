@@ -15,6 +15,7 @@ import {
   AlertCircle,
 } from 'lucide-solid';
 import { searchService } from '../../services';
+import { useTranslation } from '../../i18n/hooks';
 import type {
   SearchQuery,
   SearchResult,
@@ -48,6 +49,9 @@ export type SearchSortOrder = 'asc' | 'desc';
  * ```
  */
 const SearchPage: Component = () => {
+  // Initialize i18n translation hook
+  const { t } = useTranslation('pages');
+
   // Search state
   const [searchQuery, setSearchQuery] = createSignal('');
   const [searchResults, setSearchResults] = createSignal<SearchResult[]>([]);

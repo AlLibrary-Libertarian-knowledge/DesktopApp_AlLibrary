@@ -1,0 +1,146 @@
+{
+  "home": {
+    "title": "欢迎来到 AlLibrary",
+    "subtitle": "去中心化文化遗产保护网络",
+    "networkStatus": {
+      "online": "网络在线",
+      "health": "98% 健康",
+      "peers": "节点",
+      "nodes": "节点",
+      "connections": "连接"
+    },
+    "dataFlow": {
+      "download": "下载",
+      "upload": "上传"
+    },
+    "activityIndicators": {
+      "downloads": "下载",
+      "seeding": "分享",
+      "discovering": "发现"
+    },
+    "tabs": {
+      "overview": "概览",
+      "network": "网络",
+      "downloads": "下载"
+    },
+    "stats": {
+      "documentsShared": "已分享文档",
+      "connectedPeers": "已连接节点",
+      "culturalInstitutions": "文化机构",
+      "networkHealth": "网络健康",
+      "today": "今天",
+      "online": "在线",
+      "stable": "稳定",
+      "excellent": "优秀"
+    },
+    "networkTopology": {
+      "title": "网络拓扑",
+      "subtitle": "实时节点连接可视化",
+      "expandView": "展开视图"
+    },
+    "networkActivity": {
+      "title": "网络活动",
+      "subtitle": "实时下载和网络连接",
+      "recentDownloads": "最近下载",
+      "recentDownloadsSubtitle": "活跃的下载和上传",
+      "networkActivitySubtitle": "节点连接和发现"
+    },
+    "quickActions": {
+      "title": "快速操作",
+      "shareDocument": "分享文档",
+      "searchNetwork": "搜索网络",
+      "analytics": "分析",
+      "settings": "设置"
+    },
+    "networkSection": {
+      "title": "网络拓扑与分析",
+      "refresh": "刷新",
+      "statistics": "统计",
+      "configure": "配置"
+    },
+    "downloadsSection": {
+      "title": "下载管理器",
+      "addDownload": "添加下载",
+      "queue": "队列",
+      "preferences": "偏好设置"
+    },
+    "welcomeModal": {
+      "title": "欢迎来到 AlLibrary",
+      "description": "AlLibrary 是一个精密的去中心化平台，用于保存和分享文化遗产文档。采用先进的 P2P 技术与 TOR 集成，我们确保传统知识得到安全保存。",
+      "features": {
+        "encryption": "军用级加密与 TOR 匿名",
+        "globalNetwork": "拥有 156+ 机构的全球 P2P 网络",
+        "performance": "高性能 libp2p 与 DHT 路由",
+        "culturalProtection": "文化保护协议与权限",
+        "advancedSearch": "带文化上下文过滤的高级搜索",
+        "realTimeAnalytics": "实时网络分析与监控"
+      },
+      "takeTour": "开始导览",
+      "enterLibrary": "进入 AlLibrary"
+    },
+    "recentActivity": "最近活动",
+    "culturalHighlights": "文化知识亮点"
+  },
+  "search": {
+    "title": "搜索",
+    "subtitle": "查找文档和内容",
+    "searchPlaceholder": "搜索文档、收藏和文化内容...",
+    "placeholder": "搜索文档、收藏和文化内容...",
+    "advancedFilters": "高级过滤器",
+    "culturalFilters": "文化背景过滤器",
+    "searchResults": "搜索结果",
+    "noResults": "未找到结果",
+    "searching": "搜索中...",
+    "clearSearch": "清除搜索",
+    "showFilters": "显示过滤器",
+    "hideFilters": "隐藏过滤器",
+    "sortBy": "排序方式",
+    "viewMode": "查看模式",
+    "gridView": "网格视图",
+    "listView": "列表视图"
+  },
+  "documents": {
+    "title": "我的文档",
+    "subtitle": "管理您的文档收藏",
+    "uploadNew": "上传新文档",
+    "organizeLibrary": "整理图书馆",
+    "culturalContext": "文化背景",
+    "sensitivityLevel": "敏感度级别",
+    "searchPlaceholder": "搜索您的文档..."
+  },
+  "collections": {
+    "title": "收藏",
+    "subtitle": "有组织的文档收藏",
+    "createNew": "创建新收藏",
+    "manageExisting": "管理现有收藏",
+    "collaborativeCollections": "协作收藏",
+    "culturalCollections": "文化遗产收藏"
+  },
+  "network": {
+    "title": "网络",
+    "subtitle": "与节点连接",
+    "connectionStatus": "连接状态",
+    "activePeers": "活跃节点",
+    "networkHealth": "网络健康",
+    "p2pSearch": "P2P搜索"
+  },
+  "settings": {
+    "title": "设置",
+    "subtitle": "配置您的偏好",
+    "general": "一般",
+    "privacy": "隐私",
+    "security": "安全",
+    "cultural": "文化偏好",
+    "network": "网络设置",
+    "language": "语言"
+  },
+  "cultural": {
+    "title": "文化背景",
+    "subtitle": "教育性文化信息",
+    "traditionalKnowledge": "传统知识",
+    "communityGuidelines": "社区指南",
+    "educationalResources": "教育资源",
+    "culturalOrigins": "文化起源",
+    "sensitivityLevels": "敏感度级别"
+  }
+}

@@ -31,6 +31,7 @@ import {
 import { validationService } from '../../services';
 import { searchService } from '../../services/searchService';
 import { projectService } from '../../services/projectService';
+import { useTranslation } from '../../i18n/hooks';
 import type { Document } from '../../types/Document';
 import type {
   SearchQuery,
@@ -41,6 +42,9 @@ import type {
 import styles from './DocumentManagement.module.css';
 
 const DocumentManagement: Component = () => {
+  // Initialize i18n translation hook
+  const { t } = useTranslation('pages');
+
   // State management
   const [activeTab, setActiveTab] = createSignal<'upload' | 'library'>('library');
   const [viewMode, setViewMode] = createSignal<'grid' | 'list'>('grid');

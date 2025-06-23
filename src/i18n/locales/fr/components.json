@@ -1,0 +1,183 @@
+{
+  "button": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "submit": "Soumettre",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "create": "Créer",
+    "update": "Mettre à jour",
+    "upload": "Télécharger",
+    "download": "Télécharger",
+    "share": "Partager",
+    "copy": "Copier",
+    "move": "Déplacer",
+    "loading": "Chargement...",
+    "defaultAriaLabel": "Bouton",
+    "defaultTitle": "Cliquer pour effectuer une action",
+    "validationFailed": "La validation de sécurité a échoué - veuillez vérifier votre saisie",
+    "validationError": "Une erreur de validation de sécurité s'est produite",
+    "validationRequired": "Veuillez compléter la validation de sécurité",
+    "securityValidated": "Sécurité validée",
+    "securityValidationRequired": "Validation de sécurité requise",
+    "culturalTheme": "Thème culturel : {{theme}}"
+  },
+  "modal": {
+    "close": "Fermer",
+    "defaultTitle": "Boîte de dialogue modale",
+    "confirm": "Confirmer",
+    "cancel": "Annuler",
+    "closeModal": "Fermer la modale"
+  },
+  "input": {
+    "required": "Ce champ est obligatoire",
+    "invalid": "Saisie invalide",
+    "placeholder": "Entrer une valeur...",
+    "search": "Rechercher...",
+    "filter": "Filtrer les résultats..."
+  },
+  "card": {
+    "viewDetails": "Voir les Détails",
+    "showMore": "Afficher Plus",
+    "showLess": "Afficher Moins",
+    "actions": "Actions"
+  },
+  "badge": {
+    "new": "Nouveau",
+    "updated": "Mis à jour",
+    "featured": "En vedette",
+    "trending": "Tendance",
+    "popular": "Populaire"
+  },
+  "loading": {
+    "general": "Chargement...",
+    "documents": "Chargement des documents...",
+    "collections": "Chargement des collections...",
+    "network": "Connexion au réseau...",
+    "search": "Recherche en cours..."
+  },
+  "errorBoundary": {
+    "title": "Quelque chose s'est mal passé",
+    "message": "Une erreur inattendue s'est produite. Veuillez essayer de rafraîchir la page.",
+    "refresh": "Rafraîchir la Page",
+    "reportIssue": "Signaler un Problème"
+  },
+  "languageSwitch": {
+    "selectLanguage": "Sélectionner la langue",
+    "changeLanguage": "Changer de langue",
+    "currentLanguage": "Langue actuelle",
+    "switchTo": "Passer à {{language}}"
+  },
+  "search": {
+    "placeholder": "Rechercher des documents, collections et contenu culturel...",
+    "advancedSearch": "Recherche avancée",
+    "clearSearch": "Effacer la recherche",
+    "searchResults": "{{count}} résultats trouvés",
+    "noResults": "Aucun résultat trouvé",
+    "searching": "Recherche en cours..."
+  },
+  "navigation": {
+    "menu": "Menu",
+    "toggleSidebar": "Basculer la barre latérale",
+    "goHome": "Aller à l'accueil",
+    "goBack": "Retour",
+    "breadcrumbSeparator": "/"
+  },
+  "upload": {
+    "dropFiles": "Déposer les fichiers ici",
+    "selectFiles": "Sélectionner les fichiers",
+    "uploading": "Téléchargement en cours...",
+    "uploadComplete": "Téléchargement terminé",
+    "uploadFailed": "Échec du téléchargement",
+    "maxFileSize": "Taille maximale du fichier : {{size}}",
+    "allowedFormats": "Formats autorisés : {{formats}}"
+  },
+  "filter": {
+    "showFilters": "Afficher les filtres",
+    "hideFilters": "Masquer les filtres",
+    "clearFilters": "Effacer les filtres",
+    "applyFilters": "Appliquer les filtres",
+    "filterBy": "Filtrer par"
+  },
+  "sort": {
+    "sortBy": "Trier par",
+    "ascending": "Croissant",
+    "descending": "Décroissant",
+    "relevance": "Pertinence",
+    "date": "Date",
+    "title": "Titre",
+    "size": "Taille"
+  },
+  "pagination": {
+    "previous": "Précédent",
+    "next": "Suivant",
+    "page": "Page",
+    "of": "de",
+    "showing": "Affichage de {{start}} à {{end}} sur {{total}} résultats"
+  },
+  "tabs": {
+    "overview": "Aperçu",
+    "details": "Détails",
+    "settings": "Paramètres",
+    "history": "Historique"
+  },
+  "networkStatus": {
+    "online": "En ligne",
+    "offline": "Hors ligne",
+    "connecting": "Connexion",
+    "connected": "Connecté",
+    "disconnected": "Déconnecté",
+    "peers": "Pairs",
+    "networkHealth": "Santé du Réseau"
+  },
+  "activityList": {
+    "types": {
+      "downloading": "Téléchargement",
+      "seeding": "Partage",
+      "completed": "Terminé",
+      "peerConnected": "Connecté au nœud pair",
+      "institution": "Partage d'institution",
+      "discovery": "Découverte de réseau"
+    },
+    "status": {
+      "downloading": "Téléchargement",
+      "seeding": "Partage",
+      "complete": "Terminé",
+      "connected": "Connecté",
+      "sharing": "Partage",
+      "discovered": "Découvert"
+    },
+    "metadata": {
+      "complete": "{{progress}}% terminé",
+      "seedingToPeers": "Partage à {{count}} pairs",
+      "completedAgo": "Terminé il y a {{time}}",
+      "foundSources": "Trouvé {{count}} nouvelles sources de documents"
+    }
+  },
+  "statusBar": {
+    "network": {
+      "title": "Réseau",
+      "peers": "pairs",
+      "latency": "{{latency}}ms"
+    },
+    "downloads": {
+      "title": "Téléchargements",
+      "active": "actifs",
+      "queue": "File d'attente: {{count}}"
+    },
+    "storage": {
+      "title": "Stockage"
+    },
+    "system": {
+      "title": "Système",
+      "cpu": "CPU",
+      "memory": "Mémoire",
+      "temperature": "Température"
+    },
+    "cultural": {
+      "title": "Protection Culturelle",
+      "threats": "{{count}} menaces bloquées",
+      "lastScan": "Dernier scan: {{time}}"
+    }
+  }
+}

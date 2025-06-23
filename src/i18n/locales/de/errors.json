@@ -1,0 +1,8 @@
+{
+  "documentNotFound": "Dokument nicht gefunden",
+  "networkConnectionFailed": "Netzwerkverbindung fehlgeschlagen",
+  "uploadFailed": "Upload fehlgeschlagen",
+  "searchFailed": "Suche fehlgeschlagen",
+  "accessDenied": "Zugriff verweigert",
+  "validationFailed": "Validierung fehlgeschlagen"
+}

@@ -1,6 +1,8 @@
 import { Component } from 'solid-js';
 import './Header.css';
 import logoSvg from '/src/assets/logo.svg';
+import { LanguageSwitcher } from '@/components/foundation/LanguageSwitcher';
+import { useTranslation } from '@/i18n';
 
 interface HeaderProps {
   sidebarCollapsed?: boolean;
@@ -8,6 +10,8 @@ interface HeaderProps {
 }
 
 const Header: Component<HeaderProps> = props => {
+  const { t } = useTranslation();
+
   return (
     <header class="app-header">
       <div class="header-left">
@@ -24,7 +28,7 @@ const Header: Component<HeaderProps> = props => {
             <img src={logoSvg} alt="AlLibrary Logo" class="app-logo" />
             <div class="brand-text">
               <h1 class="app-title">AlLibrary</h1>
-              <span class="app-subtitle">Decentralized Knowledge Sharing</span>
+              <span class="app-subtitle">{t('pages.home.subtitle')}</span>
             </div>
           </div>
         </div>
@@ -34,11 +38,11 @@ const Header: Component<HeaderProps> = props => {
         <div class="search-container">
           <input
             type="search"
-            placeholder="Search documents..."
+            placeholder={t('pages.search.placeholder')}
             class="global-search"
             data-testid="search-input"
           />
-          <button class="search-button" aria-label="Search">
+          <button class="search-button" aria-label={t('common.actions.search')}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <circle cx="11" cy="11" r="8" />
               <path d="m21 21-4.35-4.35" />
@@ -48,14 +52,19 @@ const Header: Component<HeaderProps> = props => {
       </div>
 
       <div class="header-right">
-        <button class="header-action" aria-label="Notifications">
+        <LanguageSwitcher variant="compact" />
+
+        <button
+          class="header-action"
+          aria-label={t('navigation.items.notifications', 'Notifications')}
+        >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
             <path d="M13.73 21a2 2 0 0 1-3.46 0" />
           </svg>
         </button>
 
-        <button class="header-action" aria-label="Settings">
+        <button class="header-action" aria-label={t('common.actions.settings')}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <circle cx="12" cy="12" r="3" />
             <path d="M12 1v6m0 6v6" />
@@ -64,8 +73,8 @@ const Header: Component<HeaderProps> = props => {
         </button>
 
         <div class="network-status">
-          <span class="status-indicator online" title="Connected to P2P Network"></span>
-          <span class="network-text">Online</span>
+          <span class="status-indicator online" title={t('common.status.connected')}></span>
+          <span class="network-text">{t('common.status.online')}</span>
         </div>
       </div>
     </header>

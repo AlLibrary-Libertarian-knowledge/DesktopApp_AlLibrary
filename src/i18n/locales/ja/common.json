@@ -1,0 +1,32 @@
+{
+  "actions": {
+    "save": "保存",
+    "cancel": "キャンセル",
+    "delete": "削除",
+    "edit": "編集",
+    "share": "共有",
+    "upload": "アップロード",
+    "download": "ダウンロード",
+    "search": "検索",
+    "filter": "フィルター",
+    "sort": "ソート",
+    "refresh": "更新",
+    "goBack": "戻る",
+    "viewDetails": "詳細を表示",
+    "showMore": "もっと見る",
+    "showLess": "非表示"
+  },
+  "status": {
+    "loading": "読み込み中...",
+    "saving": "保存中...",
+    "uploading": "アップロード中...",
+    "connecting": "接続中...",
+    "syncing": "同期中...",
+    "completed": "完了",
+    "failed": "失敗",
+    "success": "成功",
+    "error": "エラー",
+    "warning": "警告",
+    "info": "情報"
+  }
+}

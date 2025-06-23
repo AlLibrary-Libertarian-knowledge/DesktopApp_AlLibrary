@@ -1,0 +1,54 @@
+{
+  "button": {
+    "save": "保存",
+    "cancel": "キャンセル",
+    "submit": "送信",
+    "delete": "削除",
+    "edit": "編集",
+    "create": "作成",
+    "update": "更新",
+    "upload": "アップロード",
+    "download": "ダウンロード",
+    "share": "共有",
+    "copy": "コピー",
+    "move": "移動",
+    "loading": "読み込み中...",
+    "defaultAriaLabel": "ボタン",
+    "defaultTitle": "クリックしてアクションを実行"
+  },
+  "modal": {
+    "close": "閉じる",
+    "defaultTitle": "モーダルダイアログ",
+    "confirm": "確認",
+    "cancel": "キャンセル",
+    "closeModal": "モーダルを閉じる"
+  },
+  "input": {
+    "required": "このフィールドは必須です",
+    "invalid": "無効な入力",
+    "placeholder": "値を入力...",
+    "search": "検索...",
+    "filter": "結果をフィルター..."
+  },
+  "languageSwitch": {
+    "selectLanguage": "言語を選択",
+    "changeLanguage": "言語を変更",
+    "currentLanguage": "現在の言語",
+    "switchTo": "{{language}}に切り替え"
+  },
+  "search": {
+    "placeholder": "ドキュメント、コレクション、文化的コンテンツを検索...",
+    "advancedSearch": "高度な検索",
+    "clearSearch": "検索をクリア",
+    "searchResults": "{{count}}件の結果が見つかりました",
+    "noResults": "結果が見つかりません",
+    "searching": "検索中..."
+  },
+  "loading": {
+    "general": "読み込み中...",
+    "documents": "ドキュメントを読み込み中...",
+    "collections": "コレクションを読み込み中...",
+    "network": "ネットワークに接続中...",
+    "search": "検索中..."
+  }
+}

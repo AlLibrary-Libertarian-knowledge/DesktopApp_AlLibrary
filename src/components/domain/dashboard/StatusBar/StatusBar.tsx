@@ -18,6 +18,7 @@ import {
   Circle,
   Cpu,
 } from 'lucide-solid';
+import { useTranslation } from '../../../../i18n/hooks';
 import styles from './StatusBar.module.css';
 
 interface NetworkStatus {
@@ -66,6 +67,8 @@ interface CulturalProtection {
 }
 
 const StatusBar: Component = () => {
+  const { t } = useTranslation('components');
+
   const [networkStatus, setNetworkStatus] = createSignal<NetworkStatus>({
     connected: true,
     peers: 6,
@@ -165,19 +168,21 @@ const StatusBar: Component = () => {
         </div>
         <div class={styles['status-content']}>
           <div class={styles['status-title']}>
-            <span class={styles['title-text']}>Network</span>
+            <span class={styles['title-text']}>{t('statusBar.network.title')}</span>
           </div>
           <div class={styles['status-metrics']}>
             <div class={`${styles['metric-row']} ${styles.primary}`}>
               <span class={styles['metric-value']}>{networkStatus().peers}</span>
-              <span class={styles['metric-unit']}>peers</span>
+              <span class={styles['metric-unit']}>{t('statusBar.network.peers')}</span>
             </div>
             <div class={`${styles['metric-row']} ${styles.secondary}`}>
               <span class={styles['metric-value']}>{networkStatus().bandwidth}</span>
             </div>
           </div>
           <div class={styles['status-footer']}>
-            <span class={styles['footer-stat']}>{networkStatus().latency}ms</span>
+            <span class={styles['footer-stat']}>
+              {t('statusBar.network.latency', { latency: networkStatus().latency })}
+            </span>
           </div>
         </div>
         <div class={styles['card-border-flow']}></div>
@@ -195,19 +200,21 @@ const StatusBar: Component = () => {
         </div>
         <div class={styles['status-content']}>
           <div class={styles['status-title']}>
-            <span class={styles['title-text']}>Downloads</span>
+            <span class={styles['title-text']}>{t('statusBar.downloads.title')}</span>
           </div>
           <div class={styles['status-metrics']}>
             <div class={`${styles['metric-row']} ${styles.primary}`}>
               <span class={styles['metric-value']}>{downloadStatus().active}</span>
-              <span class={styles['metric-unit']}>active</span>
+              <span class={styles['metric-unit']}>{t('statusBar.downloads.active')}</span>
             </div>
             <div class={`${styles['metric-row']} ${styles.secondary}`}>
               <span class={styles['metric-value']}>{downloadStatus().downloadSpeed}</span>
             </div>
           </div>
           <div class={styles['status-footer']}>
-            <span class={styles['footer-stat']}>Queue: {downloadStatus().queueSize}</span>
+            <span class={styles['footer-stat']}>
+              {t('statusBar.downloads.queue', { count: downloadStatus().queueSize })}
+            </span>
           </div>
         </div>
         <div class={styles['card-border-flow']}></div>
@@ -231,7 +238,7 @@ const StatusBar: Component = () => {
         </div>
         <div class={styles['status-content']}>
           <div class={styles['status-title']}>
-            <span class={styles['title-text']}>Storage</span>
+            <span class={styles['title-text']}>{t('statusBar.storage.title')}</span>
           </div>
           <div class={styles['status-metrics']}>
             <div class={`${styles['metric-row']} ${styles.primary}`}>
