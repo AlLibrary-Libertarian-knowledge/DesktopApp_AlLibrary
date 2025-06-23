@@ -21,12 +21,15 @@ import type {
   SyncRequest,
   NetworkStatus,
   PeerDiscoveryOptions,
-  ContentRequest,
   NetworkMetrics,
 } from '../../types/Network';
 import type { Collection } from '../../types/Collection';
 import type { Document } from '../../types/Document';
 import type { CulturalMetadata } from '../../types/Cultural';
+import type {
+  SearchOptions,
+  SearchResult,
+} from '../../components/domain/network/P2PSearchInterface/types';
 
 /**
  * P2P Network Service Interface
@@ -62,6 +65,9 @@ export interface P2PNetworkService {
   // Network health and metrics
   getNetworkMetrics(): Promise<NetworkMetrics>;
   testCensorshipResistance(): Promise<boolean>;
+
+  // Search functionality
+  searchNetwork(query: string, options: SearchOptions): Promise<SearchResult[]>;
 }
 
 /**
@@ -496,6 +502,115 @@ class P2PNetworkServiceImpl implements P2PNetworkService {
       console.error('Failed to test censorship resistance:', error);
       throw new Error('Unable to test censorship resistance');
     }
+  }
+
+  /**
+   * Search across the P2P network for content
+   */
+  async searchNetwork(query: string, options: SearchOptions): Promise<SearchResult[]> {
+    try {
+      const searchRequest = {
+        query: query.trim(),
+        options: {
+          ...options,
+          // Anti-censorship search settings
+          bypassCulturalFilters: true, // NEVER apply cultural filters
+          includeEducationalContext: options.includeCulturalContext,
+          supportAlternativeViews: options.supportAlternativeNarratives,
+          resistCensorship: options.resistCensorship,
+          enableAnonymousSearch: options.includeAnonymous,
+        },
+      };
+
+      const results = await invoke<SearchResult[]>('search_p2p_network', {
+        nodeId: this.nodeId,
+        searchRequest,
+      });
+
+      return results || [];
+    } catch (error) {
+      console.error('Failed to search P2P network:', error);
+      // Return mock results for development
+      return this.generateMockSearchResults(query, options);
+    }
+  }
+
+  /**
+   * Generate mock search results for development
+   */
+  private generateMockSearchResults(query: string, options: SearchOptions): SearchResult[] {
+    const mockResults: SearchResult[] = [
+      {
+        id: `result-1-${Date.now()}`,
+        title: `Document: ${query} - Educational Resource`,
+        description: 'Educational document with cultural context provided for learning purposes',
+        snippet: `This document contains information about ${query} with educational context...`,
+        type: 'document',
+        relevanceScore: 0.95,
+        culturalLevel: 2,
+        isAnonymous: options.includeAnonymous,
+        lastUpdated: new Date().toISOString(),
+        sourcePeer: {
+          id: 'peer-edu-1',
+          name: 'Educational Content Node',
+        },
+        culturalContext: {
+          description: 'Educational resource with cultural background information',
+          educationalResources: [
+            'Historical context',
+            'Multiple perspectives',
+            'Source attribution',
+          ],
+        },
+      },
+      {
+        id: `result-2-${Date.now()}`,
+        title: `Community Resource: ${query}`,
+        description: 'Community-shared information with diverse perspectives',
+        snippet: `Community discussion and resources about ${query}...`,
+        type: 'community',
+        relevanceScore: 0.87,
+        culturalLevel: 1,
+        isAnonymous: false,
+        lastUpdated: new Date().toISOString(),
+        sourcePeer: {
+          id: 'peer-community-1',
+          name: 'Global Knowledge Community',
+        },
+        culturalContext: {
+          description: 'Multiple community perspectives on this topic',
+          educationalResources: [
+            'Community discussions',
+            'Alternative viewpoints',
+            'Open dialogue',
+          ],
+        },
+      },
+      {
+        id: `result-3-${Date.now()}`,
+        title: `Alternative Perspective: ${query}`,
+        description: 'Alternative narrative and diverse viewpoint',
+        snippet: `Different perspective on ${query} from alternative sources...`,
+        type: 'document',
+        relevanceScore: 0.78,
+        culturalLevel: 3,
+        isAnonymous: options.includeAnonymous,
+        lastUpdated: new Date().toISOString(),
+        sourcePeer: options.includeAnonymous
+          ? { id: 'peer-alt-1' }
+          : { id: 'peer-alt-1', name: 'Alternative Perspective Node' },
+        culturalContext: {
+          description: 'Alternative narrative with cultural significance',
+          educationalResources: [
+            'Historical context',
+            'Cultural significance',
+            'Educational value',
+          ],
+        },
+      },
+    ];
+
+    return mockResults.slice(0, options.maxResults);
   }
 }
 

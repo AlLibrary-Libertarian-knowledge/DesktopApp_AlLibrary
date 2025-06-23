@@ -15,7 +15,16 @@ import { Recent as RecentPage } from './pages/Recent';
 import { Browse as BrowsePage } from './pages/Browse';
 import { Trending as TrendingPage } from './pages/Trending';
 import { Peers as PeersPage } from './pages/Peers';
+import { NetworkHealth } from './pages/NetworkHealth';
+import { P2PSearch } from './pages/P2PSearch';
+import { ConnectionManager } from './pages/ConnectionManager';
 import DocumentManagement from './pages/DocumentManagement';
+
+// Cultural Heritage Pages
+import { CulturalContexts } from './pages/CulturalContexts';
+import { TraditionalKnowledge } from './pages/TraditionalKnowledge';
+import { CommunityGuidelines } from './pages/CommunityGuidelines';
+import { Preservation } from './pages/Preservation';
 
 interface InitProgress {
   phase: string;
@@ -194,6 +203,33 @@ const App: Component = () => {
             )}
           />
 
+          <Route
+            path="/network-health"
+            component={() => (
+              <RouteWrapper>
+                <NetworkHealth />
+              </RouteWrapper>
+            )}
+          />
+
+          <Route
+            path="/p2p-search"
+            component={() => (
+              <RouteWrapper>
+                <P2PSearch />
+              </RouteWrapper>
+            )}
+          />
+
+          <Route
+            path="/connection-manager"
+            component={() => (
+              <RouteWrapper>
+                <ConnectionManager />
+              </RouteWrapper>
+            )}
+          />
+
           {/* Placeholder routes for remaining pages */}
           <Route
             path="/new-arrivals"
@@ -208,40 +244,36 @@ const App: Component = () => {
           <Route
             path="/cultural-contexts"
             component={() => (
-              <div class="page-placeholder">
-                <h1>Cultural Contexts</h1>
-                <p>Understanding cultural background of shared knowledge.</p>
-              </div>
+              <RouteWrapper>
+                <CulturalContexts />
+              </RouteWrapper>
             )}
           />
 
           <Route
             path="/traditional-knowledge"
             component={() => (
-              <div class="page-placeholder">
-                <h1>Traditional Knowledge</h1>
-                <p>Respectful sharing of indigenous and traditional wisdom.</p>
-              </div>
+              <RouteWrapper>
+                <TraditionalKnowledge />
+              </RouteWrapper>
             )}
           />
 
           <Route
             path="/community-guidelines"
             component={() => (
-              <div class="page-placeholder">
-                <h1>Community Guidelines</h1>
-                <p>Rules and best practices for respectful knowledge sharing.</p>
-              </div>
+              <RouteWrapper>
+                <CommunityGuidelines />
+              </RouteWrapper>
             )}
           />
 
           <Route
             path="/preservation"
             component={() => (
-              <div class="page-placeholder">
-                <h1>Preservation</h1>
-                <p>Tools and methods for preserving cultural heritage.</p>
-              </div>
+              <RouteWrapper>
+                <Preservation />
+              </RouteWrapper>
             )}
           />
 

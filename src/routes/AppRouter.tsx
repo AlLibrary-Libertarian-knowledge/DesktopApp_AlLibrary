@@ -7,6 +7,13 @@ import { Recent } from '../pages/Recent';
 import { Trending } from '../pages/Trending';
 import { Browse } from '../pages/Browse';
 import { Peers } from '../pages/Peers';
+import { NetworkHealth } from '../pages/NetworkHealth';
+import { P2PSearch } from '../pages/P2PSearch';
+import { ConnectionManager } from '../pages/ConnectionManager';
+import { CulturalContexts } from '../pages/CulturalContexts';
+import { TraditionalKnowledge } from '../pages/TraditionalKnowledge';
+import { CommunityGuidelines } from '../pages/CommunityGuidelines';
+import { Preservation } from '../pages/Preservation';
 
 const AppRouter = () => {
   return (
@@ -25,16 +32,16 @@ const AppRouter = () => {
       <Route path="/new-arrivals" component={() => <div>New Arrivals Page</div>} />
 
       {/* Cultural Heritage Routes */}
-      <Route path="/cultural-contexts" component={() => <div>Cultural Contexts Page</div>} />
-      <Route
-        path="/traditional-knowledge"
-        component={() => <div>Traditional Knowledge Page</div>}
-      />
-      <Route path="/community-guidelines" component={() => <div>Community Guidelines Page</div>} />
-      <Route path="/preservation" component={() => <div>Preservation Page</div>} />
+      <Route path="/cultural-contexts" component={CulturalContexts} />
+      <Route path="/traditional-knowledge" component={TraditionalKnowledge} />
+      <Route path="/community-guidelines" component={CommunityGuidelines} />
+      <Route path="/preservation" component={Preservation} />
 
       {/* Network Routes */}
       <Route path="/peers" component={Peers} />
+      <Route path="/network-health" component={NetworkHealth} />
+      <Route path="/p2p-search" component={P2PSearch} />
+      <Route path="/connection-manager" component={ConnectionManager} />
       <Route path="/sharing" component={() => <div>Sharing Status Page</div>} />
       <Route path="/downloads" component={() => <div>Downloads Page</div>} />
       <Route path="/sync" component={() => <div>Synchronization Page</div>} />

@@ -1,16 +1,61 @@
-/* PeerCard Component Styles */
+/* === PEER CARD CYBERPUNK THEME === */
+:root {
+  --peer-primary: #cc00ff; /* Electric purple */
+  --peer-secondary: #9900cc; /* Deep magenta */
+  --peer-accent: #ff00aa; /* Hot pink */
+  --peer-warning: #ff6600; /* Orange warning */
+  --peer-danger: #ff0066; /* Danger pink */
+  --peer-success: #00ff99; /* Electric cyan */
+  --peer-dark: #1a051a; /* Deep purple-tinted dark */
+  --peer-darker: #0d020d; /* Darkest purple-tinted */
+  --peer-light: rgba(204, 0, 255, 0.1);
+  --peer-glow: rgba(204, 0, 255, 0.4);
+}
 
+/* === MAIN PEER CARD === */
 .peerCard {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  transition: all 0.2s ease;
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    rgba(204, 0, 255, 0.08) 0%,
+    rgba(153, 0, 204, 0.06) 50%,
+    rgba(255, 0, 170, 0.04) 100%
+  );
+  border: 1px solid rgba(204, 0, 255, 0.25);
+  border-radius: 16px;
+  backdrop-filter: blur(15px) saturate(1.1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
   cursor: default;
+  box-shadow:
+    0 8px 32px rgba(204, 0, 255, 0.12),
+    0 4px 16px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(204, 0, 255, 0.15);
+}
+
+.peerCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(204, 0, 255, 0.08), transparent);
+  transition: left 0.6s;
 }
 
 .peerCard:hover {
-  border-color: var(--color-border-hover);
-  box-shadow: var(--shadow-sm);
+  transform: translateY(-4px) translateX(4px);
+  border-color: rgba(204, 0, 255, 0.5);
+  box-shadow:
+    0 20px 60px rgba(204, 0, 255, 0.2),
+    0 8px 30px rgba(0, 0, 0, 0.3),
+    0 4px 15px rgba(255, 0, 170, 0.15),
+    inset 0 1px 0 rgba(204, 0, 255, 0.25);
+}
+
+.peerCard:hover::before {
+  left: 100%;
 }
 
 .peerCard.selectable {
@@ -18,41 +63,62 @@
 }
 
 .peerCard.selectable:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
+  transform: translateY(-6px) translateX(6px) scale(1.02);
+  border-color: rgba(204, 0, 255, 0.6);
+  box-shadow:
+    0 24px 70px rgba(204, 0, 255, 0.25),
+    0 10px 35px rgba(0, 0, 0, 0.35),
+    0 6px 20px rgba(255, 0, 170, 0.2),
+    inset 0 1px 0 rgba(204, 0, 255, 0.3);
 }
 
 .peerCard.selected {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px var(--color-primary-alpha);
+  border-color: var(--peer-primary);
+  box-shadow:
+    0 0 0 2px rgba(204, 0, 255, 0.4),
+    0 16px 48px rgba(204, 0, 255, 0.3),
+    0 8px 24px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(204, 0, 255, 0.3);
+  background: linear-gradient(
+    135deg,
+    rgba(204, 0, 255, 0.12) 0%,
+    rgba(153, 0, 204, 0.08) 50%,
+    rgba(255, 0, 170, 0.06) 100%
+  );
 }
 
-/* Size Variants */
+/* === SIZE VARIANTS === */
 .peerCard-sm {
-  padding: var(--space-sm);
+  padding: 1rem;
 }
 
 .peerCard-md {
-  padding: var(--space-md);
+  padding: 1.5rem;
 }
 
 .peerCard-lg {
-  padding: var(--space-lg);
+  padding: 2rem;
 }
 
-/* Card Content */
+/* === CARD CONTENT === */
 .cardContent {
   display: flex;
   flex-direction: column;
-  gap: var(--space-sm);
+  gap: 1rem;
+  position: relative;
+  z-index: 1;
 }
 
-/* Status Indicator */
+/* === STATUS INDICATOR === */
 .statusIndicator {
   display: flex;
   align-items: center;
-  gap: var(--space-xs);
-  margin-bottom: var(--space-xs);
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(204, 0, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(204, 0, 255, 0.1);
 }
 
 .statusDot {
@@ -60,228 +126,472 @@
   height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
+  animation: peer-status-pulse 2s ease-in-out infinite;
 }
 
 .statusDot.connecting {
-  animation: pulse 2s infinite;
+  background: var(--peer-warning);
+  box-shadow: 0 0 10px var(--peer-warning);
+  animation: peer-connecting-pulse 1.5s ease-in-out infinite;
 }
 
-@keyframes pulse {
+.statusDot.online {
+  background: var(--peer-success);
+  box-shadow: 0 0 10px var(--peer-success);
+}
+
+.statusDot.offline {
+  background: var(--peer-danger);
+  box-shadow: 0 0 10px var(--peer-danger);
+}
+
+@keyframes peer-status-pulse {
   0%,
   100% {
+    transform: scale(1);
     opacity: 1;
   }
   50% {
-    opacity: 0.5;
+    transform: scale(1.3);
+    opacity: 0.7;
+  }
+}
+
+@keyframes peer-connecting-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  25% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.4);
+    opacity: 0.6;
+  }
+  75% {
+    transform: scale(1.2);
+    opacity: 0.9;
   }
 }
 
 .statusLabel {
-  font-size: var(--font-size-xs);
-  font-weight: 500;
-  color: var(--color-text-secondary);
-  text-transform: capitalize;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgba(255, 0, 170, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 8px rgba(255, 0, 170, 0.3);
 }
 
-/* Peer Header */
+/* === PEER HEADER === */
 .peerHeader {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: var(--space-sm);
+  gap: 1rem;
+  margin-bottom: 1rem;
 }
 
 .peerIdentity {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
+  gap: 1rem;
   flex: 1;
 }
 
 .peerAvatar {
-  width: 32px;
-  height: 32px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  background: var(--color-primary-alpha);
+  background: linear-gradient(135deg, var(--peer-primary), var(--peer-accent));
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-primary);
+  color: white;
   flex-shrink: 0;
+  box-shadow: 0 4px 15px rgba(204, 0, 255, 0.3);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.peerAvatar::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(
+    45deg,
+    var(--peer-primary),
+    var(--peer-accent),
+    var(--peer-secondary)
+  );
+  border-radius: 50%;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.peerAvatar:hover {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 6px 20px rgba(204, 0, 255, 0.4);
+}
+
+.peerAvatar:hover::before {
+  opacity: 1;
 }
 
 .peerInfo {
   display: flex;
   flex-direction: column;
-  gap: var(--space-xs);
+  gap: 0.5rem;
   min-width: 0;
 }
 
 .peerId {
-  font-family: var(--font-family-mono);
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  color: var(--color-text-primary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: rgba(255, 0, 170, 0.95);
+  text-shadow: 0 0 10px rgba(255, 0, 170, 0.3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .peerLocation {
   display: flex;
   align-items: center;
-  gap: var(--space-xs);
-  font-size: var(--font-size-xs);
-  color: var(--color-text-secondary);
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: rgba(204, 0, 255, 0.7);
 }
 
 .country {
-  opacity: 0.7;
+  opacity: 0.8;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .peerBadges {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-xs);
+  gap: 0.5rem;
   align-items: flex-start;
 }
 
-/* Peer Metrics */
+/* === PEER METRICS === */
 .peerMetrics {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: var(--space-sm);
-  padding: var(--space-sm);
-  background: var(--color-background);
-  border-radius: var(--radius-sm);
+  gap: 1rem;
+  padding: 1rem;
+  background: linear-gradient(
+    135deg,
+    rgba(204, 0, 255, 0.05) 0%,
+    rgba(153, 0, 204, 0.03) 50%,
+    rgba(255, 0, 170, 0.02) 100%
+  );
+  border-radius: 12px;
+  border: 1px solid rgba(204, 0, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.peerMetrics::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    radial-gradient(circle at 25% 25%, rgba(204, 0, 255, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, rgba(255, 0, 170, 0.02) 0%, transparent 50%);
+  pointer-events: none;
 }
 
 .metric {
   display: flex;
   align-items: center;
-  gap: var(--space-xs);
-  font-size: var(--font-size-xs);
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  padding: 0.5rem;
+  background: rgba(204, 0, 255, 0.03);
+  border-radius: 8px;
+  border: 1px solid rgba(204, 0, 255, 0.08);
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.metric:hover {
+  background: rgba(204, 0, 255, 0.08);
+  border-color: rgba(204, 0, 255, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(204, 0, 255, 0.15);
 }
 
 .metric svg {
-  color: var(--color-text-secondary);
+  color: rgba(255, 0, 170, 0.7);
   flex-shrink: 0;
 }
 
 .metricLabel {
-  color: var(--color-text-secondary);
+  color: rgba(255, 0, 170, 0.7);
   font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .metricValue {
-  color: var(--color-text-primary);
-  font-weight: 600;
-  font-family: var(--font-family-mono);
+  color: rgba(204, 0, 255, 0.95);
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  text-shadow: 0 0 8px rgba(204, 0, 255, 0.3);
 }
 
-/* Cultural Info */
+/* === CULTURAL INFO === */
 .culturalInfo {
   display: flex;
   flex-direction: column;
-  gap: var(--space-sm);
-  padding: var(--space-sm);
-  background: var(--color-cultural-background);
-  border: 1px solid var(--color-cultural-border);
-  border-radius: var(--radius-sm);
+  gap: 1rem;
+  padding: 1rem;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 255, 153, 0.08) 0%,
+    rgba(204, 0, 255, 0.06) 50%,
+    rgba(255, 0, 170, 0.04) 100%
+  );
+  border: 1px solid rgba(0, 255, 153, 0.2);
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.culturalInfo::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 153, 0.05), transparent);
+  animation: cultural-scan 8s ease-in-out infinite;
+}
+
+@keyframes cultural-scan {
+  0% {
+    left: -100%;
+  }
+  50% {
+    left: 100%;
+  }
+  100% {
+    left: 100%;
+  }
 }
 
 .culturalLevel {
   display: flex;
   align-items: center;
-  gap: var(--space-xs);
+  gap: 0.5rem;
+  position: relative;
+  z-index: 1;
 }
 
 .culturalLabel {
-  font-size: var(--font-size-xs);
-  color: var(--color-cultural-traditional);
-  font-weight: 500;
+  font-size: 0.8rem;
+  color: rgba(0, 255, 153, 0.9);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 8px rgba(0, 255, 153, 0.3);
 }
 
 .culturalAffinity {
   display: flex;
   flex-direction: column;
-  gap: var(--space-xs);
+  gap: 0.5rem;
+  position: relative;
+  z-index: 1;
 }
 
 .affinityLabel {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  color: rgba(0, 255, 153, 0.8);
   font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .affinityTags {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-xs);
+  gap: 0.5rem;
 }
 
-/* Reputation */
+.affinityTag {
+  padding: 0.25rem 0.75rem;
+  background: rgba(0, 255, 153, 0.1);
+  color: rgba(0, 255, 153, 0.9);
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid rgba(0, 255, 153, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 255, 153, 0.1);
+  transition: all 0.3s ease;
+}
+
+.affinityTag:hover {
+  background: rgba(0, 255, 153, 0.15);
+  border-color: rgba(0, 255, 153, 0.4);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 255, 153, 0.2);
+}
+
+/* === REPUTATION === */
 .reputation {
   display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  padding: var(--space-sm);
-  background: var(--color-background);
-  border-radius: var(--radius-sm);
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 187, 0, 0.08) 0%,
+    rgba(204, 0, 255, 0.06) 50%,
+    rgba(255, 0, 170, 0.04) 100%
+  );
+  border: 1px solid rgba(255, 187, 0, 0.2);
+  border-radius: 12px;
 }
 
 .reputationLabel {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-secondary);
-  font-weight: 500;
-  white-space: nowrap;
+  font-size: 0.8rem;
+  color: rgba(255, 187, 0, 0.9);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 8px rgba(255, 187, 0, 0.3);
 }
 
 .reputationScore {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: rgba(255, 187, 0, 0.95);
+  text-shadow: 0 0 10px rgba(255, 187, 0, 0.3);
+}
+
+.reputationBar {
   flex: 1;
-  height: 4px;
-  background: var(--color-border);
-  border-radius: 2px;
+  height: 8px;
+  background: rgba(255, 187, 0, 0.1);
+  border-radius: 4px;
   overflow: hidden;
   position: relative;
 }
 
-.reputationBar {
+.reputationBar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    var(--color-error),
-    var(--color-warning),
-    var(--color-success)
-  );
-  border-radius: 2px;
+  background: linear-gradient(90deg, rgba(255, 187, 0, 0.8), rgba(255, 187, 0, 0.9));
+  border-radius: 4px;
   transition: width 0.3s ease;
+  box-shadow: 0 0 10px rgba(255, 187, 0, 0.3);
 }
 
 .reputationValue {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-primary);
-  font-weight: 600;
-  font-family: var(--font-family-mono);
-  white-space: nowrap;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: rgba(255, 187, 0, 0.95);
+  text-shadow: 0 0 8px rgba(255, 187, 0, 0.3);
 }
 
-/* Peer Actions */
+/* === PEER ACTIONS === */
 .peerActions {
   display: flex;
-  gap: var(--space-xs);
+  gap: 0.75rem;
   justify-content: flex-end;
-  padding-top: var(--space-sm);
-  border-top: 1px solid var(--color-border);
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(204, 0, 255, 0.1);
 }
 
-/* Responsive Design */
+.actionButton {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 8px;
+  background: rgba(204, 0, 255, 0.1);
+  color: rgba(255, 0, 170, 0.8);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  border: 1px solid rgba(204, 0, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.actionButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(204, 0, 255, 0.1), transparent);
+  transition: left 0.3s;
+}
+
+.actionButton:hover {
+  background: rgba(204, 0, 255, 0.2);
+  color: rgba(204, 0, 255, 0.95);
+  border-color: rgba(204, 0, 255, 0.4);
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(204, 0, 255, 0.2);
+}
+
+.actionButton:hover::before {
+  left: 100%;
+}
+
+.actionButton.primary {
+  background: linear-gradient(135deg, var(--peer-primary), var(--peer-accent));
+  color: white;
+  border-color: rgba(204, 0, 255, 0.3);
+  box-shadow: 0 4px 15px rgba(204, 0, 255, 0.3);
+}
+
+.actionButton.primary:hover {
+  transform: scale(1.05) translateY(-2px);
+  box-shadow: 0 8px 25px rgba(204, 0, 255, 0.4);
+}
+
+/* === RESPONSIVE DESIGN === */
 @media (max-width: 768px) {
   .peerHeader {
     flex-direction: column;
-    align-items: flex-start;
+    gap: 1rem;
   }
 
   .peerBadges {
-    width: 100%;
-    justify-content: flex-start;
+    justify-content: center;
   }
 
   .peerMetrics {
@@ -295,49 +605,52 @@
 
 @media (max-width: 480px) {
   .peerCard-md {
-    padding: var(--space-sm);
+    padding: 1rem;
   }
 
   .peerCard-lg {
-    padding: var(--space-md);
+    padding: 1.25rem;
   }
 
   .peerIdentity {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    text-align: center;
   }
 
   .reputation {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-xs);
+    align-items: center;
+    text-align: center;
   }
 
   .reputationScore {
-    width: 100%;
+    flex-direction: column;
+    gap: 0.5rem;
   }
 }
 
-/* High Contrast Mode */
+/* === ACCESSIBILITY === */
 @media (prefers-contrast: high) {
   .peerCard {
-    border-width: 2px;
+    border-color: rgba(204, 0, 255, 0.8);
+    background: rgba(204, 0, 255, 0.05);
   }
 
   .peerCard.selected {
-    border-width: 3px;
+    border-color: var(--peer-primary);
+    box-shadow: 0 0 0 3px rgba(204, 0, 255, 0.6);
   }
 
   .statusDot {
-    border: 2px solid var(--color-background);
+    border: 2px solid currentColor;
   }
 
   .culturalInfo {
-    border-width: 2px;
+    border-color: rgba(0, 255, 153, 0.6);
+    background: rgba(0, 255, 153, 0.05);
   }
 }
 
-/* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
   .peerCard {
     transition: none;
@@ -354,14 +667,26 @@
   .reputationBar {
     transition: none;
   }
+
+  .actionButton,
+  .metric,
+  .affinityTag {
+    transition: none;
+  }
+
+  .cultural-scan,
+  .peer-status-pulse,
+  .peer-connecting-pulse {
+    animation: none;
+  }
 }
 
-/* Print Styles */
+/* === PRINT STYLES === */
 @media print {
   .peerCard {
-    break-inside: avoid;
-    border: 1px solid #000;
-    background: #fff;
+    background: white !important;
+    border: 1px solid #000 !important;
+    box-shadow: none !important;
   }
 
   .peerActions {
@@ -369,6 +694,6 @@
   }
 
   .statusDot {
-    border: 1px solid #000;
+    background: #000 !important;
   }
 }

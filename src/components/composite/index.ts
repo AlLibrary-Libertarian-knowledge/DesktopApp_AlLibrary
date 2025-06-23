@@ -15,4 +15,5 @@ export { TopCard } from './TopCard';
 export { DocumentUpload } from './DocumentUpload';
 export { CollectionOrganizer } from './CollectionOrganizer';
 export { NetworkGraph } from './NetworkGraph';
+export { NetworkHealthDashboard } from './NetworkHealthDashboard';
 export { default as DocumentManagementRightColumn } from './DocumentManagementRightColumn';

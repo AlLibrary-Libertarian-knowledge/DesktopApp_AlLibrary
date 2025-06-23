@@ -1,0 +1,629 @@
+/**
+ * ConnectionManager Enhanced Component Styles
+ *
+ * Redesigned to match HomePage and DocumentManagement sophisticated design patterns
+ * with glassmorphism effects and professional visual appeal.
+ */
+
+/* === CONNECTION MANAGER CYBERPUNK COLOR SYSTEM === */
+:root {
+  --conn-primary: #ff6600; /* Vibrant neon orange */
+  --conn-secondary: #ff4400; /* Deep neon orange */
+  --conn-accent: #ffbb00; /* Electric yellow */
+  --conn-warning: #ff8800; /* Warning orange */
+  --conn-danger: #ff2200; /* Danger red-orange */
+  --conn-success: #ff9900; /* Success orange */
+  --conn-dark: #1a0f05; /* Deep orange-tinted dark */
+  --conn-darker: #0d0702; /* Darkest orange-tinted */
+  --conn-light: rgba(255, 102, 0, 0.1);
+  --conn-glow: rgba(255, 102, 0, 0.4);
+}
+
+/* ==========================================================================
+   Main Container - Enhanced Glassmorphism Design
+   ========================================================================== */
+
+.connectionManager {
+  position: relative;
+  padding: 2rem;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 102, 0, 0.12) 0%,
+    rgba(255, 68, 0, 0.08) 25%,
+    rgba(255, 187, 0, 0.06) 50%,
+    rgba(255, 136, 0, 0.08) 75%,
+    rgba(255, 102, 0, 0.12) 100%
+  );
+  border: 1px solid rgba(255, 102, 0, 0.3);
+  border-radius: 20px;
+  backdrop-filter: blur(20px) saturate(1.1);
+  transition: all 0.6s cubic-bezier(0.25, 0.1, 0.25, 1);
+  overflow: hidden;
+  box-shadow:
+    0 8px 32px rgba(255, 102, 0, 0.15),
+    0 4px 16px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 102, 0, 0.2);
+  min-height: 600px;
+}
+
+.connectionManager::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    linear-gradient(rgba(255, 102, 0, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 102, 0, 0.02) 1px, transparent 1px);
+  background-size: 40px 40px;
+  animation: connection-circuit-flow 20s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.connectionManager::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 102, 0, 0.08), transparent);
+  animation: connection-scan 15s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes connection-circuit-flow {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(40px, 40px);
+  }
+}
+
+@keyframes connection-scan {
+  0% {
+    left: -100%;
+  }
+  50% {
+    left: 100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+.connectionManager:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 16px 48px rgba(255, 102, 0, 0.25),
+    0 8px 24px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 102, 0, 0.3);
+  border-color: rgba(255, 102, 0, 0.5);
+}
+
+/* ==========================================================================
+   Header Section - Professional Design
+   ========================================================================== */
+
+.header {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 102, 0, 0.2);
+}
+
+.title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--conn-primary), var(--conn-accent));
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+  line-height: 1.2;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  text-shadow: 0 0 20px var(--conn-glow);
+  animation: connection-title-pulse 3s ease-in-out infinite alternate;
+}
+
+@keyframes connection-title-pulse {
+  0% {
+    filter: drop-shadow(0 0 10px rgba(255, 102, 0, 0.3));
+  }
+  100% {
+    filter: drop-shadow(0 0 25px rgba(255, 102, 0, 0.6));
+  }
+}
+
+.connectionCount {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, rgba(255, 102, 0, 0.15), rgba(255, 187, 0, 0.1));
+  border: 1px solid rgba(255, 102, 0, 0.4);
+  border-radius: 16px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: rgba(255, 187, 0, 0.95);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow:
+    0 4px 15px rgba(255, 102, 0, 0.2),
+    inset 0 1px 0 rgba(255, 102, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.connectionCount:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 25px rgba(255, 102, 0, 0.3);
+}
+
+/* ==========================================================================
+   Connection Controls - Enhanced Design
+   ========================================================================== */
+
+.controls {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.controls button {
+  min-width: 160px;
+  height: 48px;
+  font-weight: 700;
+  border-radius: 14px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.controls button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.6s;
+}
+
+.controls button:hover::before {
+  left: 100%;
+}
+
+.controls button.primary {
+  background: linear-gradient(135deg, var(--conn-primary), var(--conn-warning));
+  color: rgba(255, 255, 255, 0.95);
+  box-shadow:
+    0 4px 16px rgba(255, 102, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.controls button.primary:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow:
+    0 8px 30px rgba(255, 102, 0, 0.5),
+    0 4px 15px rgba(255, 187, 0, 0.3);
+}
+
+.controls button.secondary {
+  background: rgba(255, 102, 0, 0.1);
+  color: rgba(255, 187, 0, 0.9);
+  border: 1px solid rgba(255, 102, 0, 0.3);
+}
+
+.controls button.secondary:hover {
+  background: rgba(255, 102, 0, 0.15);
+  border-color: rgba(255, 102, 0, 0.5);
+  color: rgba(255, 102, 0, 0.95);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(255, 102, 0, 0.2);
+}
+
+.controls button.danger {
+  background: linear-gradient(135deg, var(--conn-danger), #cc1100);
+  color: rgba(255, 255, 255, 0.95);
+  box-shadow:
+    0 4px 16px rgba(255, 34, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.controls button.danger:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow:
+    0 8px 30px rgba(255, 34, 0, 0.5),
+    0 4px 15px rgba(255, 68, 0, 0.3);
+}
+
+/* ==========================================================================
+   Connection List - Professional Display
+   ========================================================================== */
+
+.connectionList {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.connectionList::-webkit-scrollbar {
+  width: 8px;
+}
+
+.connectionList::-webkit-scrollbar-track {
+  background: rgba(255, 102, 0, 0.1);
+  border-radius: 4px;
+}
+
+.connectionList::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, var(--conn-primary), var(--conn-accent));
+  border-radius: 4px;
+}
+
+.connectionList::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, var(--conn-accent), var(--conn-primary));
+}
+
+.connectionItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 102, 0, 0.08) 0%,
+    rgba(255, 68, 0, 0.06) 50%,
+    rgba(255, 187, 0, 0.04) 100%
+  );
+  border: 1px solid rgba(255, 102, 0, 0.2);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.connectionItem::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 102, 0, 0.05), transparent);
+  transition: left 0.5s;
+}
+
+.connectionItem:hover::before {
+  left: 100%;
+}
+
+.connectionItem:hover {
+  transform: translateY(-3px) translateX(4px);
+  border-color: rgba(255, 102, 0, 0.4);
+  box-shadow:
+    0 8px 30px rgba(255, 102, 0, 0.2),
+    0 4px 15px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 102, 0, 0.15);
+}
+
+.connectionInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.peerName {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: rgba(255, 187, 0, 0.95);
+  margin: 0;
+  text-shadow: 0 0 10px rgba(255, 187, 0, 0.3);
+}
+
+.peerDetails {
+  font-size: 0.85rem;
+  color: rgba(255, 102, 0, 0.7);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.connectionStatus {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.statusIndicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.statusDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 15px currentColor;
+}
+
+.statusDot.connected {
+  background: var(--conn-success);
+  color: var(--conn-success);
+  animation: status-pulse 2s ease-in-out infinite;
+}
+
+.statusDot.connecting {
+  background: var(--conn-warning);
+  color: var(--conn-warning);
+  animation: status-pulse 1s ease-in-out infinite;
+}
+
+.statusDot.disconnected {
+  background: var(--conn-danger);
+  color: var(--conn-danger);
+  animation: status-pulse 3s ease-in-out infinite;
+}
+
+@keyframes status-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.7;
+  }
+}
+
+.connectionActions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.connectionActions button {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  background: rgba(255, 102, 0, 0.1);
+  color: rgba(255, 187, 0, 0.8);
+  border: 1px solid rgba(255, 102, 0, 0.2);
+}
+
+.connectionActions button:hover {
+  background: rgba(255, 102, 0, 0.2);
+  color: rgba(255, 102, 0, 0.95);
+  border-color: rgba(255, 102, 0, 0.4);
+  transform: scale(1.1);
+  box-shadow: 0 4px 15px rgba(255, 102, 0, 0.3);
+}
+
+/* ==========================================================================
+   Empty State
+   ========================================================================== */
+
+.emptyState {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  min-height: 300px;
+}
+
+.emptyIcon {
+  font-size: 4rem;
+  color: rgba(255, 102, 0, 0.3);
+  margin-bottom: 1.5rem;
+  animation: connection-float 3s ease-in-out infinite;
+  filter: drop-shadow(0 0 20px rgba(255, 102, 0, 0.2));
+}
+
+@keyframes connection-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(5deg);
+  }
+}
+
+.emptyTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: rgba(255, 187, 0, 0.8);
+  margin: 0 0 1rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.emptyDescription {
+  font-size: 1rem;
+  color: rgba(255, 102, 0, 0.6);
+  line-height: 1.6;
+  margin: 0;
+  max-width: 400px;
+  font-weight: 500;
+}
+
+/* ==========================================================================
+   Responsive Design
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .connectionManager {
+    padding: 1.5rem;
+  }
+
+  .header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .connectionCount {
+    align-self: flex-end;
+  }
+
+  .controls {
+    flex-direction: column;
+  }
+
+  .controls button {
+    width: 100%;
+    min-width: auto;
+  }
+
+  .connectionItem {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .connectionStatus {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 480px) {
+  .connectionManager {
+    padding: 1rem;
+  }
+
+  .controls {
+    gap: 0.75rem;
+  }
+
+  .controls button {
+    height: 42px;
+    font-size: 0.8rem;
+  }
+
+  .emptyState {
+    padding: 2rem 1rem;
+  }
+
+  .emptyIcon {
+    font-size: 3rem;
+  }
+
+  .emptyTitle {
+    font-size: 1.2rem;
+  }
+}
+
+/* ==========================================================================
+   Accessibility & Theme Support
+   ========================================================================== */
+
+@media (prefers-contrast: high) {
+  .connectionManager {
+    border-color: rgba(255, 102, 0, 0.8);
+    background: rgba(255, 102, 0, 0.1);
+  }
+
+  .connectionManager:hover {
+    border-color: rgba(255, 102, 0, 1);
+  }
+
+  .connectionItem {
+    border-color: rgba(255, 102, 0, 0.6);
+    background: rgba(255, 102, 0, 0.05);
+  }
+
+  .connectionItem:hover {
+    border-color: rgba(255, 102, 0, 0.8);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .connectionManager::before,
+  .connectionManager::after {
+    animation: none;
+  }
+
+  .connection-title-pulse,
+  .connection-float,
+  .status-pulse {
+    animation: none;
+  }
+
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* Dark Mode Adjustments */
+@media (prefers-color-scheme: dark) {
+  .connectionManager {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 102, 0, 0.15) 0%,
+      rgba(255, 68, 0, 0.12) 25%,
+      rgba(255, 187, 0, 0.08) 50%,
+      rgba(255, 136, 0, 0.12) 75%,
+      rgba(255, 102, 0, 0.15) 100%
+    );
+  }
+
+  .connectionItem {
+    background: linear-gradient(
+      135deg,
+      rgba(255, 102, 0, 0.12) 0%,
+      rgba(255, 68, 0, 0.08) 50%,
+      rgba(255, 187, 0, 0.06) 100%
+    );
+  }
+}

@@ -24,6 +24,9 @@ import {
   HardDrive,
   Wifi,
   WifiOff,
+  Activity,
+  SearchX,
+  Settings,
 } from 'lucide-solid';
 import './Sidebar.css';
 
@@ -91,10 +94,13 @@ const Sidebar: Component<SidebarProps> = props => {
     },
     {
       section: 'network',
-      title: 'Network',
+      title: 'P2P Network',
       icon: Globe,
       items: [
         { path: '/peers', label: 'Peer Network', icon: Users, badge: '8' },
+        { path: '/network-health', label: 'Network Health', icon: Activity },
+        { path: '/p2p-search', label: 'P2P Search', icon: SearchX },
+        { path: '/connection-manager', label: 'Connections', icon: Settings },
         { path: '/sharing', label: 'Sharing Status', icon: RefreshCw },
         { path: '/downloads', label: 'Downloads', icon: Download, badge: '3' },
         { path: '/sync', label: 'Synchronization', icon: RotateCcw },

@@ -23,9 +23,15 @@ export { default as TrendingPage } from './Trending/Trending';
 
 // Cultural Education & Context
 export { default as CulturalContextsPage } from './CulturalContexts/CulturalContextsPage';
+export { default as TraditionalKnowledgePage } from './TraditionalKnowledge/TraditionalKnowledge';
+export { default as CommunityGuidelinesPage } from './CommunityGuidelines/CommunityGuidelines';
+export { default as PreservationPage } from './Preservation/Preservation';
 
 // Network & Peers
 export { default as PeerNetworkPage } from './Peers/PeerNetworkPage';
+export { NetworkHealth as NetworkHealthPage } from './NetworkHealth';
+export { P2PSearch as P2PSearchPage } from './P2PSearch';
+export { ConnectionManager as ConnectionManagerPage } from './ConnectionManager';
 
 // Export page route configurations for router
 export const pageRoutes = [
@@ -91,9 +97,45 @@ export const pageRoutes = [
     description: 'Explore cultural knowledge systems with respect and understanding',
   },
   {
+    path: '/traditional-knowledge',
+    component: 'TraditionalKnowledgePage',
+    title: 'Traditional Knowledge - AlLibrary',
+    description: 'Respectful sharing of indigenous and traditional wisdom',
+  },
+  {
+    path: '/community-guidelines',
+    component: 'CommunityGuidelinesPage',
+    title: 'Community Guidelines - AlLibrary',
+    description: 'Guidelines for respectful participation in the decentralized network',
+  },
+  {
+    path: '/preservation',
+    component: 'PreservationPage',
+    title: 'Digital Preservation - AlLibrary',
+    description: 'Digital heritage preservation methods and archival systems',
+  },
+  {
     path: '/peers',
     component: 'PeerNetworkPage',
     title: 'Peer Network - AlLibrary',
     description: 'Monitor decentralized network health and anti-censorship protocols',
+  },
+  {
+    path: '/network-health',
+    component: 'NetworkHealthPage',
+    title: 'Network Health - AlLibrary',
+    description: 'Comprehensive P2P network health monitoring and cultural community status',
+  },
+  {
+    path: '/p2p-search',
+    component: 'P2PSearchPage',
+    title: 'P2P Search - AlLibrary',
+    description: 'Distributed search across the P2P network with cultural awareness',
+  },
+  {
+    path: '/connection-manager',
+    component: 'ConnectionManagerPage',
+    title: 'Connection Manager - AlLibrary',
+    description: 'Manage P2P connections, TOR integration, and cultural network participation',
   },
 ] as const;

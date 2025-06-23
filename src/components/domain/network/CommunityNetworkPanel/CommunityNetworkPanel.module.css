@@ -1,0 +1,711 @@
+/**
+ * CommunityNetworkPanel Enhanced Component Styles
+ *
+ * Redesigned to match HomePage and DocumentManagement sophisticated design patterns
+ * with glassmorphism effects and professional visual appeal.
+ */
+
+/* ==========================================================================
+   Main Container - Enhanced Glassmorphism Design
+   ========================================================================== */
+
+.communityNetworkPanel {
+  position: relative;
+  padding: 2rem;
+  background: linear-gradient(
+    135deg,
+    rgba(15, 23, 42, 0.95) 0%,
+    rgba(30, 41, 59, 0.9) 25%,
+    rgba(51, 65, 85, 0.85) 50%,
+    rgba(30, 41, 59, 0.9) 75%,
+    rgba(15, 23, 42, 0.95) 100%
+  );
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 20px;
+  backdrop-filter: blur(20px);
+  transition: all 0.6s cubic-bezier(0.25, 0.1, 0.25, 1);
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+.communityNetworkPanel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    radial-gradient(circle at 20% 50%, rgba(168, 85, 247, 0.08) 0%, transparent 70%),
+    radial-gradient(circle at 80% 20%, rgba(147, 51, 234, 0.06) 0%, transparent 70%),
+    radial-gradient(circle at 40% 80%, rgba(124, 58, 237, 0.05) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.communityNetworkPanel::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.03), transparent);
+  animation: community-shimmer 15s infinite;
+  pointer-events: none;
+}
+
+@keyframes community-shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+.communityNetworkPanel:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.15),
+    0 4px 20px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  border-color: rgba(168, 85, 247, 0.3);
+}
+
+/* ==========================================================================
+   Header Section - Professional Design
+   ========================================================================== */
+
+.header {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 30%, #cbd5e1 60%, #94a3b8 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+
+.communityCount {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(168, 85, 247, 0.1);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgba(168, 85, 247, 0.9);
+}
+
+/* ==========================================================================
+   Community Controls - Enhanced Design
+   ========================================================================== */
+
+.controls {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.controls button {
+  min-width: 140px;
+  height: 44px;
+  font-weight: 600;
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+  letter-spacing: 0.025em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.controls button.primary {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.8) 0%, rgba(147, 51, 234, 0.8) 100%);
+  color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 4px 16px rgba(168, 85, 247, 0.3);
+}
+
+.controls button.secondary {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(203, 213, 225, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.controls button:hover {
+  transform: translateY(-2px);
+}
+
+.controls button.primary:hover {
+  box-shadow: 0 8px 32px rgba(168, 85, 247, 0.4);
+}
+
+.controls button.secondary:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(168, 85, 247, 0.3);
+  color: rgba(255, 255, 255, 0.95);
+}
+
+/* ==========================================================================
+   Community Filters
+   ========================================================================== */
+
+.filters {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.filterGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filterLabel {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(203, 213, 225, 0.8);
+  white-space: nowrap;
+}
+
+.filterSelect {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  outline: none;
+  transition: all 0.3s ease;
+  min-width: 120px;
+}
+
+.filterSelect:hover {
+  border-color: rgba(168, 85, 247, 0.4);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.filterSelect:focus {
+  border-color: rgba(168, 85, 247, 0.6);
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1);
+}
+
+/* ==========================================================================
+   Community Grid - Professional Display
+   ========================================================================== */
+
+.communityGrid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.communityCard {
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 16px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.communityCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, rgba(168, 85, 247, 0.8) 0%, rgba(147, 51, 234, 0.8) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.communityCard:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(168, 85, 247, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(168, 85, 247, 0.15);
+}
+
+.communityCard:hover::before {
+  opacity: 1;
+}
+
+.communityHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.communityName {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+.communityBadge {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.communityBadge.verified {
+  background: rgba(34, 197, 94, 0.1);
+  color: rgba(34, 197, 94, 0.9);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.communityBadge.trusted {
+  background: rgba(59, 130, 246, 0.1);
+  color: rgba(59, 130, 246, 0.9);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.communityBadge.cultural {
+  background: rgba(168, 85, 247, 0.1);
+  color: rgba(168, 85, 247, 0.9);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.communityDescription {
+  font-size: 0.875rem;
+  color: rgba(203, 213, 225, 0.8);
+  line-height: 1.5;
+  margin: 0 0 1rem 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.communityStats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.statItem {
+  text-align: center;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+}
+
+.statValue {
+  font-size: 1rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.95);
+  margin: 0 0 0.25rem 0;
+}
+
+.statLabel {
+  font-size: 0.75rem;
+  color: rgba(203, 213, 225, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.communityActions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: auto;
+}
+
+.communityActions button {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.communityActions button:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(168, 85, 247, 0.3);
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.communityActions button.primary {
+  background: rgba(168, 85, 247, 0.2);
+  border-color: rgba(168, 85, 247, 0.4);
+  color: rgba(168, 85, 247, 0.9);
+}
+
+.communityActions button.primary:hover {
+  background: rgba(168, 85, 247, 0.3);
+  border-color: rgba(168, 85, 247, 0.6);
+  color: rgba(255, 255, 255, 0.95);
+}
+
+/* ==========================================================================
+   Cultural Context Integration
+   ========================================================================== */
+
+.culturalContext {
+  position: relative;
+  z-index: 1;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.culturalHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.culturalIcon {
+  font-size: 1.25rem;
+  color: rgba(168, 85, 247, 0.8);
+}
+
+.culturalTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  margin: 0;
+}
+
+.culturalDescription {
+  font-size: 0.875rem;
+  color: rgba(203, 213, 225, 0.8);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ==========================================================================
+   Empty State
+   ========================================================================== */
+
+.emptyState {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: 3rem;
+  color: rgba(148, 163, 184, 0.4);
+  margin-bottom: 1rem;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.emptyTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 0 0.5rem 0;
+}
+
+.emptyDescription {
+  font-size: 0.875rem;
+  color: rgba(203, 213, 225, 0.6);
+  margin: 0;
+  max-width: 400px;
+  line-height: 1.6;
+}
+
+/* ==========================================================================
+   Loading State
+   ========================================================================== */
+
+.loading {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  text-align: center;
+}
+
+.loadingSpinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(148, 163, 184, 0.2);
+  border-top: 3px solid rgba(168, 85, 247, 0.8);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loadingText {
+  font-size: 0.875rem;
+  color: rgba(203, 213, 225, 0.8);
+  margin: 0;
+}
+
+/* ==========================================================================
+   Responsive Design
+   ========================================================================== */
+
+@media (max-width: 1024px) {
+  .communityGrid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+
+  .communityStats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .communityNetworkPanel {
+    padding: 1.5rem;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .title {
+    font-size: 1.25rem;
+    text-align: center;
+  }
+
+  .communityCount {
+    align-self: center;
+  }
+
+  .controls {
+    justify-content: center;
+  }
+
+  .controls button {
+    flex: 1;
+    min-width: 120px;
+  }
+
+  .filters {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .filterGroup {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .communityGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .communityStats {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .communityNetworkPanel {
+    padding: 1rem;
+  }
+
+  .controls {
+    flex-direction: column;
+  }
+
+  .controls button {
+    width: 100%;
+  }
+
+  .filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filterGroup {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .filterSelect {
+    min-width: 150px;
+  }
+
+  .communityStats {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .communityActions {
+    flex-direction: column;
+  }
+
+  .emptyState {
+    padding: 2rem 1rem;
+  }
+
+  .emptyIcon {
+    font-size: 2.5rem;
+  }
+}
+
+/* ==========================================================================
+   Accessibility & Theme Support
+   ========================================================================== */
+
+@media (prefers-contrast: high) {
+  .communityNetworkPanel {
+    border: 2px solid rgba(148, 163, 184, 0.3);
+  }
+
+  .communityNetworkPanel:hover {
+    border-color: rgba(168, 85, 247, 0.6);
+  }
+
+  .communityCard {
+    border: 2px solid rgba(148, 163, 184, 0.3);
+  }
+
+  .communityCard:hover {
+    border-color: rgba(168, 85, 247, 0.6);
+  }
+
+  .culturalContext {
+    border: 2px solid rgba(148, 163, 184, 0.3);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .communityNetworkPanel::after {
+    animation: none;
+  }
+
+  .emptyIcon {
+    animation: none;
+  }
+
+  .loadingSpinner {
+    animation: none;
+  }
+
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* Dark Mode Adjustments */
+@media (prefers-color-scheme: dark) {
+  .communityNetworkPanel {
+    background: linear-gradient(
+      135deg,
+      rgba(0, 0, 0, 0.95) 0%,
+      rgba(15, 23, 42, 0.9) 25%,
+      rgba(30, 41, 59, 0.85) 50%,
+      rgba(15, 23, 42, 0.9) 75%,
+      rgba(0, 0, 0, 0.95) 100%
+    );
+  }
+
+  .communityCard {
+    background: rgba(0, 0, 0, 0.2);
+  }
+
+  .statItem {
+    background: rgba(0, 0, 0, 0.2);
+  }
+
+  .culturalContext {
+    background: rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* Cultural Theme Support */
+.communityNetworkPanel[data-cultural-theme='traditional'] {
+  --primary-color: rgba(168, 85, 247, 0.8);
+  --accent-color: rgba(124, 58, 237, 0.8);
+}
+
+.communityNetworkPanel[data-cultural-theme='traditional']::before {
+  background:
+    radial-gradient(circle at 20% 50%, rgba(168, 85, 247, 0.08) 0%, transparent 70%),
+    radial-gradient(circle at 80% 20%, rgba(124, 58, 237, 0.06) 0%, transparent 70%);
+}
