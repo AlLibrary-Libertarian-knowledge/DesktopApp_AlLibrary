@@ -1,9 +1,10 @@
 {
   "main": {
     "home": "ホーム",
-    "search": "検索",
+    "library": "ライブラリ",
     "documents": "ドキュメント",
     "collections": "コレクション",
+    "search": "検索",
     "browse": "閲覧",
     "recent": "最近",
     "trending": "トレンド",
@@ -11,6 +12,42 @@
     "peers": "ピア",
     "network": "ネットワーク",
     "settings": "設定",
+    "profile": "プロフィール",
+    "cultural": "文化的",
+    "traditional": "伝統的",
+    "community": "コミュニティ",
+    "preservation": "保存",
     "about": "について"
+  },
+  "sections": {
+    "personal": "個人",
+    "community": "コミュニティ",
+    "network": "ネットワーク",
+    "tools": "ツール",
+    "preferences": "設定"
+  },
+  "items": {
+    "myDocuments": "マイドキュメント",
+    "recentDocuments": "最近のドキュメント",
+    "sharedDocuments": "共有ドキュメント",
+    "myCollections": "マイコレクション",
+    "browseCategories": "カテゴリを閲覧",
+    "localSearch": "ローカル検索",
+    "networkSearch": "ネットワーク検索",
+    "peers": "ピア",
+    "communities": "コミュニティ",
+    "networkHealth": "ネットワーク健全性",
+    "downloadManager": "ダウンロードマネージャー",
+    "fileOrganizer": "ファイル整理ツール",
+    "culturalSettings": "文化的設定",
+    "appearance": "外観",
+    "privacy": "プライバシー",
+    "advanced": "詳細",
+    "notifications": "通知"
+  },
+  "breadcrumbs": {
+    "home": "ホーム",
+    "back": "戻る",
+    "separator": "/"
   }
 }

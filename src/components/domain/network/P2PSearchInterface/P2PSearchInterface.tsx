@@ -12,6 +12,7 @@
  */
 
 import { Component, createSignal, createResource, Show, For, onMount } from 'solid-js';
+import { useTranslation } from '../../../../i18n/hooks';
 import { Card } from '@/components/foundation/Card';
 import { Button } from '@/components/foundation/Button';
 import { Input } from '@/components/foundation/Input';
@@ -30,6 +31,8 @@ import styles from './P2PSearchInterface.module.css';
  * Comprehensive distributed search interface with cultural awareness and anti-censorship features
  */
 export const P2PSearchInterface: Component<P2PSearchInterfaceProps> = props => {
+  const { t } = useTranslation('components');
+
   // State management
   const [searchQuery, setSearchQuery] = createSignal('');
   const [searchType, setSearchType] = createSignal<'content' | 'peer' | 'community'>('content');

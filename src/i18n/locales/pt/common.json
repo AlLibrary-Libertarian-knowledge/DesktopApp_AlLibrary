@@ -29,7 +29,8 @@
     "help": "Ajuda",
     "settings": "Configurações",
     "logout": "Sair",
-    "login": "Entrar"
+    "login": "Entrar",
+    "changeLanguage": "Alterar Idioma"
   },
   "status": {
     "loading": "Carregando...",

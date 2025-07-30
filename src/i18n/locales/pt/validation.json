@@ -3,5 +3,6 @@
   "email": "Endereço de email inválido",
   "minLength": "Deve ter pelo menos {{min}} caracteres",
   "maxLength": "Não pode exceder {{max}} caracteres",
-  "pattern": "Formato inválido"
+  "pattern": "Formato inválido",
+  "numeric": "Apenas números são permitidos"
 }

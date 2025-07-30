@@ -6,6 +6,7 @@
  */
 
 import { Component, JSX, Show, For } from 'solid-js';
+import { useTranslation } from '../../../i18n/hooks';
 import styles from './PageHeader.module.css';
 
 export interface BreadcrumbItem {
@@ -48,6 +49,8 @@ export interface PageHeaderProps {
 }
 
 export const PageHeader: Component<PageHeaderProps> = props => {
+  const { t } = useTranslation('components');
+
   // Default props
   const showBackButton = () => props.showBackButton ?? false;
   const variant = () => props.variant || 'default';
@@ -78,7 +81,10 @@ export const PageHeader: Component<PageHeaderProps> = props => {
     <div class={headerClasses()} data-testid={props['data-testid']}>
       {/* Breadcrumbs */}
       <Show when={props.breadcrumbs && props.breadcrumbs.length > 0}>
-        <nav class={styles.breadcrumbs} aria-label="Breadcrumb navigation">
+        <nav
+          class={styles.breadcrumbs}
+          aria-label={t('pageHeader.accessibility.breadcrumbNavigation')}
+        >
           <ol class={styles.breadcrumbList}>
             <For each={props.breadcrumbs}>
               {(item, index) => (
@@ -115,7 +121,11 @@ export const PageHeader: Component<PageHeaderProps> = props => {
         <div class={styles.headerLeft}>
           {/* Back Button */}
           <Show when={showBackButton()}>
-            <button class={styles.backButton} onClick={handleBackClick} aria-label="Go back">
+            <button
+              class={styles.backButton}
+              onClick={handleBackClick}
+              aria-label={t('pageHeader.accessibility.goBack')}
+            >
               ← Back
             </button>
           </Show>

@@ -1,5 +1,6 @@
 import { Component, createSignal, Show, For, createMemo, Switch, Match } from 'solid-js';
 import { Button, Card, Modal } from '../../foundation';
+import { useTranslation } from '../../../i18n/hooks';
 import {
   FolderOpen,
   BarChart3,
@@ -82,6 +83,8 @@ export interface OrganizationToolsProps {
  * Cultural information is displayed for educational purposes only - never restricts operations.
  */
 const OrganizationTools: Component<OrganizationToolsProps> = props => {
+  const { t } = useTranslation('components');
+
   const [currentView, setCurrentView] = createSignal<'overview' | 'rules' | 'bulk' | 'analytics'>(
     'overview'
   );
@@ -140,7 +143,7 @@ const OrganizationTools: Component<OrganizationToolsProps> = props => {
 
   const executeAutoOrganization = async () => {
     if (props.readonly) return;
-    alert('Auto-organization completed!');
+    alert(t('organizationTools.notifications.autoOrganizationCompleted'));
     setShowAutoOrganize(false);
   };
 
@@ -159,7 +162,7 @@ const OrganizationTools: Component<OrganizationToolsProps> = props => {
           </div>
           <div class={styles.statContent}>
             <div class={styles.statValue}>{analytics().organizationScore}%</div>
-            <div class={styles.statLabel}>Organization Score</div>
+            <div class={styles.statLabel}>{t('organizationTools.stats.organizationScore')}</div>
           </div>
         </Card>
 
@@ -169,7 +172,7 @@ const OrganizationTools: Component<OrganizationToolsProps> = props => {
           </div>
           <div class={styles.statContent}>
             <div class={styles.statValue}>{analytics().organizedDocuments}</div>
-            <div class={styles.statLabel}>Organized Documents</div>
+            <div class={styles.statLabel}>{t('organizationTools.stats.organizedDocuments')}</div>
           </div>
         </Card>
 
@@ -179,7 +182,9 @@ const OrganizationTools: Component<OrganizationToolsProps> = props => {
           </div>
           <div class={styles.statContent}>
             <div class={styles.statValue}>{analytics().averageTagsPerDocument}</div>
-            <div class={styles.statLabel}>Avg Tags per Document</div>
+            <div class={styles.statLabel}>
+              {t('organizationTools.stats.averageTagsPerDocument')}
+            </div>
           </div>
         </Card>
 
@@ -189,7 +194,7 @@ const OrganizationTools: Component<OrganizationToolsProps> = props => {
           </div>
           <div class={styles.statContent}>
             <div class={styles.statValue}>{analytics().culturalDistribution.length}</div>
-            <div class={styles.statLabel}>Cultural Contexts</div>
+            <div class={styles.statLabel}>{t('organizationTools.stats.culturalContexts')}</div>
           </div>
         </Card>
       </div>
@@ -202,12 +207,14 @@ const OrganizationTools: Component<OrganizationToolsProps> = props => {
           disabled={props.readonly}
         >
           <Sparkles size={16} />
-          Auto-Organize
+          {t('organizationTools.quickActions.autoOrganize')}
         </Button>
 
         <Button variant="secondary" disabled={!props.selectedDocuments?.length || props.readonly}>
           <Layers size={16} />
-          Bulk Actions ({props.selectedDocuments?.length || 0})
+          {t('organizationTools.quickActions.bulkActions', {
+            count: props.selectedDocuments?.length || 0,
+          })}
         </Button>
       </div>
 
@@ -216,8 +223,10 @@ const OrganizationTools: Component<OrganizationToolsProps> = props => {
         <Card class={styles.culturalOverview}>
           <div class={styles.culturalHeader}>
             <Globe size={20} />
-            <h3>Cultural Context Distribution</h3>
-            <span class={styles.educationalBadge}>Educational Info</span>
+            <h3>{t('organizationTools.culturalDistribution.title')}</h3>
+            <span class={styles.educationalBadge}>
+              {t('organizationTools.culturalDistribution.badge')}
+            </span>
           </div>
           <div class={styles.culturalDistribution}>
             <For each={analytics().culturalDistribution}>

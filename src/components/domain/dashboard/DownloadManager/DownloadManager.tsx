@@ -1,5 +1,6 @@
 import { Component, createSignal, For, Show } from 'solid-js';
 import { createStore } from 'solid-js/store';
+import { useTranslation } from '../../../../i18n/hooks';
 import {
   Play,
   Pause,
@@ -47,6 +48,8 @@ interface DownloadManagerProps {
 }
 
 const DownloadManager: Component<DownloadManagerProps> = props => {
+  const { t } = useTranslation('components');
+
   const [selectedItems, setSelectedItems] = createSignal<string[]>([]);
   const [sortBy, setSortBy] = createSignal<keyof DownloadItem>('addedDate');
   const [sortOrder, setSortOrder] = createSignal<'asc' | 'desc'>('desc');
@@ -283,7 +286,7 @@ const DownloadManager: Component<DownloadManagerProps> = props => {
             class={styles['add-button'] || ''}
           >
             <Plus size={16} class="mr-2" />
-            Add Download
+            {t('downloadManager.actions.addDownload')}
           </Button>
           <Button
             variant="outline"
@@ -292,8 +295,8 @@ const DownloadManager: Component<DownloadManagerProps> = props => {
             class={styles['select-all-button'] || ''}
           >
             {selectedItems().length === downloads.length && downloads.length > 0
-              ? 'Deselect All'
-              : 'Select All'}
+              ? t('downloadManager.actions.deselectAll')
+              : t('downloadManager.actions.selectAll')}
           </Button>
           <Button
             variant="outline"
@@ -303,7 +306,7 @@ const DownloadManager: Component<DownloadManagerProps> = props => {
             class={styles['bulk-action-button'] || ''}
           >
             <Pause size={16} class="mr-2" />
-            Pause Selected
+            {t('downloadManager.batchActions.pauseSelected')}
           </Button>
           <Button
             variant="outline"
@@ -313,7 +316,7 @@ const DownloadManager: Component<DownloadManagerProps> = props => {
             class={styles['bulk-action-button'] || ''}
           >
             <Play size={16} class="mr-2" />
-            Resume Selected
+            {t('downloadManager.batchActions.resumeSelected')}
           </Button>
         </div>
         <div class={styles['toolbar-group']}>
@@ -322,11 +325,11 @@ const DownloadManager: Component<DownloadManagerProps> = props => {
             value={filter()}
             onChange={e => setFilter(e.target.value)}
           >
-            <option value="all">All Downloads</option>
-            <option value="downloading">Downloading</option>
-            <option value="completed">Completed</option>
-            <option value="paused">Paused</option>
-            <option value="error">Error</option>
+            <option value="all">{t('downloadManager.filters.all')}</option>
+            <option value="downloading">{t('downloadManager.filters.downloading')}</option>
+            <option value="completed">{t('downloadManager.filters.completed')}</option>
+            <option value="paused">{t('downloadManager.filters.paused')}</option>
+            <option value="error">{t('downloadManager.filters.error')}</option>
           </select>
           <div class={styles['view-toggle']}>
             <Button
@@ -373,7 +376,7 @@ const DownloadManager: Component<DownloadManagerProps> = props => {
               class={`${styles['header-cell']} ${styles['name-cell']}`}
               onClick={() => handleSort('name')}
             >
-              Name
+              {t('downloadManager.table.headers.name')}
               {sortBy() === 'name' &&
                 (sortOrder() === 'asc' ? <ChevronDown size={14} /> : <ChevronUp size={14} />)}
             </div>
@@ -381,20 +384,30 @@ const DownloadManager: Component<DownloadManagerProps> = props => {
               class={`${styles['header-cell']} ${styles['size-cell']}`}
               onClick={() => handleSort('size')}
             >
-              Size
+              {t('downloadManager.table.headers.size')}
               {sortBy() === 'size' &&
                 (sortOrder() === 'asc' ? <ChevronDown size={14} /> : <ChevronUp size={14} />)}
             </div>
-            <div class={`${styles['header-cell']} ${styles['progress-cell']}`}>Progress</div>
-            <div class={`${styles['header-cell']} ${styles['speed-cell']}`}>Speed</div>
-            <div class={`${styles['header-cell']} ${styles['peers-cell']}`}>Peers</div>
-            <div class={`${styles['header-cell']} ${styles['eta-cell']}`}>ETA</div>
-            <div class={`${styles['header-cell']} ${styles['ratio-cell']}`}>Ratio</div>
+            <div class={`${styles['header-cell']} ${styles['progress-cell']}`}>
+              {t('downloadManager.table.headers.progress')}
+            </div>
+            <div class={`${styles['header-cell']} ${styles['speed-cell']}`}>
+              {t('downloadManager.table.headers.speed')}
+            </div>
+            <div class={`${styles['header-cell']} ${styles['peers-cell']}`}>
+              {t('downloadManager.table.headers.peers')}
+            </div>
+            <div class={`${styles['header-cell']} ${styles['eta-cell']}`}>
+              {t('downloadManager.table.headers.eta')}
+            </div>
+            <div class={`${styles['header-cell']} ${styles['ratio-cell']}`}>
+              {t('downloadManager.table.headers.ratio')}
+            </div>
             <div
               class={`${styles['header-cell']} ${styles['status-cell']}`}
               onClick={() => handleSort('status')}
             >
-              Status
+              {t('downloadManager.table.headers.status')}
               {sortBy() === 'status' &&
                 (sortOrder() === 'asc' ? <ChevronDown size={14} /> : <ChevronUp size={14} />)}
             </div>

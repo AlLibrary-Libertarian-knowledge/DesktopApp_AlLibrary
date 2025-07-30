@@ -2,14 +2,179 @@
   "home": {
     "title": "AlLibraryへようこそ",
     "subtitle": "分散型文化遺産ネットワーク",
+    "networkStatus": {
+      "online": "ネットワークオンライン",
+      "offline": "ネットワークオフライン",
+      "connecting": "接続中",
+      "health": "98% 健全性",
+      "peers": "ピア",
+      "nodes": "ノード",
+      "connections": "接続",
+      "latency": "レイテンシ",
+      "bandwidth": "帯域幅"
+    },
+    "dataFlow": {
+      "download": "ダウンロード",
+      "upload": "アップロード",
+      "incoming": "受信",
+      "outgoing": "送信",
+      "totalTransfer": "総転送量",
+      "activeTransfers": "アクティブ転送"
+    },
+    "activityIndicators": {
+      "downloads": "ダウンロード",
+      "seeding": "シーディング",
+      "discovering": "発見",
+      "active": "アクティブ",
+      "idle": "アイドル",
+      "paused": "一時停止"
+    },
+    "tabs": {
+      "overview": "概要",
+      "network": "ネットワーク",
+      "downloads": "ダウンロード",
+      "analytics": "分析"
+    },
+    "stats": {
+      "documentsShared": "共有されたドキュメント",
+      "connectedPeers": "接続されたピア",
+      "culturalInstitutions": "文化機関",
+      "networkHealth": "ネットワーク健全性",
+      "totalStorage": "総ストレージ",
+      "availableStorage": "利用可能ストレージ",
+      "uploadSpeed": "アップロード速度",
+      "downloadSpeed": "ダウンロード速度",
+      "today": "今日",
+      "thisWeek": "今週",
+      "thisMonth": "今月",
+      "online": "オンライン",
+      "offline": "オフライン",
+      "stable": "安定",
+      "excellent": "優秀",
+      "good": "良好",
+      "fair": "普通",
+      "poor": "不良",
+      "trendPositive": "上昇傾向",
+      "trendNegative": "下降傾向",
+      "trendNeutral": "安定"
+    },
+    "networkTopology": {
+      "title": "ネットワークトポロジ",
+      "subtitle": "ピア間接続のリアルタイム可視化",
+      "expandView": "ビューを展開",
+      "viewDetails": "詳細を表示",
+      "refreshData": "データを更新",
+      "exportData": "データをエクスポート",
+      "legend": "凡例",
+      "nodeTypes": {
+        "library": "ライブラリノード",
+        "institution": "機関",
+        "peer": "ピア",
+        "bridge": "ブリッジノード",
+        "relay": "リレーノード"
+      }
+    },
+    "networkActivity": {
+      "title": "ネットワークアクティビティ",
+      "subtitle": "リアルタイムのダウンロードとネットワーク接続",
+      "recentDownloads": "最近のダウンロード",
+      "recentDownloadsSubtitle": "アクティブなダウンロードとアップロード",
+      "networkActivitySubtitle": "ピア接続と発見",
+      "recentUploads": "最近のアップロード",
+      "networkConnections": "ネットワーク接続",
+      "peerDiscovery": "ピア発見",
+      "institutionSharing": "機関共有",
+      "culturalExchange": "文化交流"
+    },
     "quickActions": {
-      "uploadDocument": "ドキュメントをアップロード",
-      "searchLibrary": "ライブラリを検索",
-      "browseCollections": "コレクションを閲覧",
-      "connectPeers": "ピアに接続"
+      "title": "クイックアクション",
+      "shareDocument": "ドキュメントを共有",
+      "searchNetwork": "ネットワークを検索",
+      "analytics": "分析",
+      "settings": "設定",
+      "uploadFile": "ファイルをアップロード",
+      "createCollection": "コレクションを作成",
+      "browseLibrary": "ライブラリを閲覧",
+      "viewHistory": "履歴を表示",
+      "manageConnections": "接続を管理",
+      "culturalContext": "文化的コンテキスト",
+      "securityAudit": "セキュリティ監査",
+      "communityGuidelines": "コミュニティガイドライン"
+    },
+    "networkSection": {
+      "title": "ネットワークトポロジと分析",
+      "subtitle": "ネットワーク接続とパフォーマンスを探索",
+      "refresh": "更新",
+      "statistics": "統計",
+      "configure": "設定",
+      "export": "エクスポート",
+      "fullscreen": "全画面",
+      "filters": "フィルター",
+      "layout": "レイアウト",
+      "controls": {
+        "zoomIn": "ズームイン",
+        "zoomOut": "ズームアウト",
+        "resetView": "ビューをリセット",
+        "centerView": "ビューを中央に",
+        "fitToScreen": "画面に合わせる"
+      },
+      "metrics": {
+        "totalNodes": "総ノード数",
+        "activeConnections": "アクティブ接続",
+        "avgLatency": "平均レイテンシ",
+        "networkDensity": "ネットワーク密度",
+        "clusteringCoeff": "クラスタリング係数"
+      }
+    },
+    "downloadsSection": {
+      "title": "ダウンロードマネージャー",
+      "subtitle": "ダウンロードとアップロードを管理",
+      "addDownload": "ダウンロードを追加",
+      "queue": "キュー",
+      "preferences": "設定",
+      "pauseAll": "すべて一時停止",
+      "resumeAll": "すべて再開",
+      "clearCompleted": "完了したものをクリア",
+      "bandwidth": "帯域幅",
+      "filters": {
+        "all": "すべて",
+        "downloading": "ダウンロード中",
+        "seeding": "シーディング中",
+        "completed": "完了",
+        "paused": "一時停止",
+        "failed": "失敗"
+      },
+      "sortBy": {
+        "name": "名前",
+        "size": "サイズ",
+        "progress": "進行状況",
+        "speed": "速度",
+        "eta": "推定時間",
+        "priority": "優先度"
+      }
+    },
+    "welcomeModal": {
+      "title": "AlLibraryへようこそ",
+      "description": "AlLibraryは、文化遺産文書を保存・共有するための洗練された分散型プラットフォームです。高度なP2P技術とTOR統合により構築され、伝統的知識が安全に保存されることを保証します。",
+      "features": {
+        "encryption": "軍事レベルの暗号化とTOR匿名性",
+        "globalNetwork": "156以上の機関を持つグローバルP2Pネットワーク",
+        "performance": "DHTルーティングによる高性能libp2p",
+        "culturalProtection": "文化保護プロトコルと権限",
+        "advancedSearch": "文化的コンテキストフィルタリングによる高度な検索",
+        "realTimeAnalytics": "リアルタイムネットワーク分析と監視",
+        "decentralized": "完全に分散化されたアーキテクチャ",
+        "preservation": "長期デジタル保存",
+        "collaboration": "協調的知識共有",
+        "accessibility": "ユニバーサルアクセシビリティサポート"
+      },
+      "takeTour": "ツアーを開始",
+      "enterLibrary": "AlLibraryに入る",
+      "learnMore": "詳細を見る",
+      "skipIntro": "紹介をスキップ",
+      "gettingStarted": "はじめにガイド"
     },
     "recentActivity": "最近のアクティビティ",
-    "networkStatus": "ネットワーク状態",
     "culturalHighlights": "文化的ハイライト"
   },
   "search": {
@@ -28,7 +193,30 @@
     "sortBy": "並び替え",
     "viewMode": "表示モード",
     "gridView": "グリッド表示",
-    "listView": "リスト表示"
+    "listView": "リスト表示",
+    "filters": {
+      "all": "すべて",
+      "documents": "ドキュメント",
+      "collections": "コレクション",
+      "cultural": "文化的",
+      "traditional": "伝統的",
+      "educational": "教育的",
+      "community": "コミュニティ"
+    },
+    "sortOptions": {
+      "relevance": "関連性",
+      "date": "日付",
+      "title": "タイトル",
+      "size": "サイズ",
+      "popularity": "人気"
+    },
+    "culturalContext": {
+      "title": "文化的コンテキスト",
+      "sensitivity": "感度",
+      "accessLevel": "アクセスレベル",
+      "educationalPurpose": "教育目的",
+      "traditionalKnowledge": "伝統的知識"
+    }
   },
   "documents": {
     "title": "マイドキュメント",
@@ -37,7 +225,38 @@
     "organizeLibrary": "ライブラリを整理",
     "culturalContext": "文化的コンテキスト",
     "sensitivityLevel": "感度レベル",
-    "searchPlaceholder": "ドキュメントを検索..."
+    "searchPlaceholder": "ドキュメントを検索...",
+    "filters": {
+      "all": "すべて",
+      "recent": "最近",
+      "favorites": "お気に入り",
+      "shared": "共有",
+      "private": "プライベート"
+    },
+    "actions": {
+      "edit": "編集",
+      "delete": "削除",
+      "share": "共有",
+      "download": "ダウンロード",
+      "move": "移動",
+      "copy": "コピー"
+    },
+    "metadata": {
+      "title": "メタデータ",
+      "author": "著者",
+      "date": "日付",
+      "size": "サイズ",
+      "type": "タイプ",
+      "tags": "タグ",
+      "description": "説明"
+    },
+    "culturalInfo": {
+      "origin": "文化的起源",
+      "context": "コンテキスト",
+      "sensitivity": "感度",
+      "accessRestrictions": "アクセス制限",
+      "educationalUse": "教育的使用"
+    }
   },
   "collections": {
     "title": "コレクション",
@@ -45,7 +264,32 @@
     "createNew": "新しいコレクションを作成",
     "manageExisting": "既存のコレクションを管理",
     "collaborativeCollections": "協力的コレクション",
-    "culturalCollections": "文化遺産コレクション"
+    "culturalCollections": "文化遺産コレクション",
+    "actions": {
+      "create": "作成",
+      "edit": "編集",
+      "delete": "削除",
+      "share": "共有",
+      "export": "エクスポート",
+      "import": "インポート"
+    },
+    "types": {
+      "personal": "個人",
+      "shared": "共有",
+      "public": "公開",
+      "cultural": "文化的",
+      "educational": "教育的",
+      "research": "研究"
+    },
+    "metadata": {
+      "name": "名前",
+      "description": "説明",
+      "creator": "作成者",
+      "created": "作成日",
+      "modified": "修正日",
+      "items": "アイテム",
+      "size": "サイズ"
+    }
   },
   "network": {
     "title": "ネットワーク",
@@ -53,7 +297,35 @@
     "connectionStatus": "接続状態",
     "activePeers": "アクティブピア",
     "networkHealth": "ネットワーク健全性",
-    "p2pSearch": "P2P検索"
+    "p2pSearch": "P2P検索",
+    "peers": {
+      "title": "ピア",
+      "connected": "接続済み",
+      "available": "利用可能",
+      "blocked": "ブロック済み",
+      "pending": "保留中"
+    },
+    "connections": {
+      "title": "接続",
+      "active": "アクティブ",
+      "inactive": "非アクティブ",
+      "failed": "失敗",
+      "establishing": "確立中"
+    },
+    "discovery": {
+      "title": "発見",
+      "searching": "検索中...",
+      "found": "発見済み",
+      "connecting": "接続中...",
+      "failed": "失敗"
+    },
+    "analytics": {
+      "title": "分析",
+      "bandwidth": "帯域幅",
+      "latency": "レイテンシ",
+      "uptime": "稼働時間",
+      "reliability": "信頼性"
+    }
   },
   "settings": {
     "title": "設定",
@@ -63,7 +335,39 @@
     "security": "セキュリティ",
     "cultural": "文化的設定",
     "network": "ネットワーク設定",
-    "language": "言語"
+    "language": "言語",
+    "appearance": {
+      "title": "外観",
+      "theme": "テーマ",
+      "darkMode": "ダークモード",
+      "lightMode": "ライトモード",
+      "auto": "自動",
+      "fontSize": "フォントサイズ",
+      "contrast": "コントラスト"
+    },
+    "notifications": {
+      "title": "通知",
+      "enabled": "有効",
+      "disabled": "無効",
+      "downloads": "ダウンロード",
+      "uploads": "アップロード",
+      "network": "ネットワーク",
+      "cultural": "文化的"
+    },
+    "storage": {
+      "title": "ストレージ",
+      "location": "場所",
+      "quota": "クォータ",
+      "cleanup": "クリーンアップ",
+      "backup": "バックアップ"
+    },
+    "advanced": {
+      "title": "詳細",
+      "debug": "デバッグ",
+      "logs": "ログ",
+      "reset": "リセット",
+      "export": "設定をエクスポート"
+    }
   },
   "cultural": {
     "title": "文化的コンテキスト",
@@ -72,6 +376,90 @@
     "communityGuidelines": "コミュニティガイドライン",
     "educationalResources": "教育リソース",
     "culturalOrigins": "文化的起源",
-    "sensitivityLevels": "感度レベル"
+    "sensitivityLevels": "感度レベル",
+    "context": {
+      "title": "コンテキスト",
+      "geographic": "地理的",
+      "temporal": "時間的",
+      "social": "社会的",
+      "religious": "宗教的",
+      "linguistic": "言語的"
+    },
+    "permissions": {
+      "title": "権限",
+      "view": "表示",
+      "edit": "編集",
+      "share": "共有",
+      "download": "ダウンロード",
+      "restricted": "制限"
+    },
+    "education": {
+      "title": "教育",
+      "resources": "リソース",
+      "guidelines": "ガイドライン",
+      "bestPractices": "ベストプラクティス",
+      "training": "トレーニング"
+    }
+  },
+  "dashboard": {
+    "title": "ダッシュボード",
+    "subtitle": "システム概要",
+    "lastUpdated": "最終更新",
+    "autoRefresh": "自動更新",
+    "dataSource": "データソース",
+    "exportData": "データをエクスポート",
+    "shareView": "ビューを共有",
+    "customizeLayout": "レイアウトをカスタマイズ",
+    "widgets": {
+      "networkStatus": "ネットワーク状態",
+      "recentActivity": "最近のアクティビティ",
+      "storageUsage": "ストレージ使用量",
+      "culturalHighlights": "文化的ハイライト",
+      "quickActions": "クイックアクション"
+    }
+  },
+  "accessibility": {
+    "title": "アクセシビリティ",
+    "skipToContent": "メインコンテンツにスキップ",
+    "skipToNavigation": "ナビゲーションにスキップ",
+    "highContrast": "高コントラスト",
+    "largeText": "大きなテキスト",
+    "screenReader": "スクリーンリーダー",
+    "keyboardNavigation": "キーボードナビゲーション",
+    "ariaLabels": {
+      "networkStatus": "ネットワーク状態: {{status}}、{{peers}}ピア接続済み、{{health}}健全性",
+      "statCard": "{{label}}: {{value}}、傾向{{trend}}",
+      "activityItem": "アクティビティ{{type}}: {{title}}、{{status}}",
+      "downloadProgress": "ダウンロード進行状況: {{progress}}パーセント完了",
+      "networkGraph": "{{nodes}}ノードと{{connections}}接続を示すネットワークトポロジ可視化"
+    }
+  },
+  "errors": {
+    "title": "エラー",
+    "networkConnectionFailed": "ネットワーク接続に失敗しました",
+    "dataLoadFailed": "ダッシュボードデータの読み込みに失敗しました",
+    "statUpdateFailed": "統計の更新に失敗しました",
+    "downloadStartFailed": "ダウンロードの開始に失敗しました",
+    "uploadFailed": "アップロードに失敗しました",
+    "searchFailed": "検索に失敗しました",
+    "accessDenied": "アクセスが拒否されました",
+    "validationFailed": "検証に失敗しました",
+    "unknownError": "不明なエラー",
+    "retry": "再試行",
+    "reportIssue": "問題を報告"
+  },
+  "loading": {
+    "title": "読み込み",
+    "loading": "読み込み中...",
+    "initializing": "初期化中...",
+    "connecting": "接続中...",
+    "syncing": "同期中...",
+    "processing": "処理中...",
+    "phases": {
+      "startup": "システム起動中...",
+      "network": "ネットワーク接続中...",
+      "data": "データ読み込み中...",
+      "ready": "準備完了！"
+    }
   }
 }

@@ -4,65 +4,154 @@
     "subtitle": "去中心化文化遗产保护网络",
     "networkStatus": {
       "online": "网络在线",
+      "offline": "网络离线",
+      "connecting": "连接中",
       "health": "98% 健康",
       "peers": "节点",
       "nodes": "节点",
-      "connections": "连接"
+      "connections": "连接",
+      "latency": "延迟",
+      "bandwidth": "带宽"
     },
     "dataFlow": {
       "download": "下载",
-      "upload": "上传"
+      "upload": "上传",
+      "incoming": "接收",
+      "outgoing": "发送",
+      "totalTransfer": "总传输量",
+      "activeTransfers": "活跃传输"
     },
     "activityIndicators": {
       "downloads": "下载",
       "seeding": "分享",
-      "discovering": "发现"
+      "discovering": "发现",
+      "active": "活跃",
+      "idle": "空闲",
+      "paused": "暂停"
     },
     "tabs": {
       "overview": "概览",
       "network": "网络",
-      "downloads": "下载"
+      "downloads": "下载",
+      "analytics": "分析"
     },
     "stats": {
       "documentsShared": "已分享文档",
       "connectedPeers": "已连接节点",
       "culturalInstitutions": "文化机构",
       "networkHealth": "网络健康",
+      "totalStorage": "总存储",
+      "availableStorage": "可用存储",
+      "uploadSpeed": "上传速度",
+      "downloadSpeed": "下载速度",
       "today": "今天",
+      "thisWeek": "本周",
+      "thisMonth": "本月",
       "online": "在线",
+      "offline": "离线",
       "stable": "稳定",
-      "excellent": "优秀"
+      "excellent": "优秀",
+      "good": "良好",
+      "fair": "一般",
+      "poor": "差",
+      "trendPositive": "上升趋势",
+      "trendNegative": "下降趋势",
+      "trendNeutral": "稳定"
     },
     "networkTopology": {
       "title": "网络拓扑",
       "subtitle": "实时节点连接可视化",
-      "expandView": "展开视图"
+      "expandView": "展开视图",
+      "viewDetails": "查看详情",
+      "refreshData": "刷新数据",
+      "exportData": "导出数据",
+      "legend": "图例",
+      "nodeTypes": {
+        "library": "图书馆节点",
+        "institution": "机构",
+        "peer": "节点",
+        "bridge": "桥接节点",
+        "relay": "中继节点"
+      }
     },
     "networkActivity": {
       "title": "网络活动",
       "subtitle": "实时下载和网络连接",
       "recentDownloads": "最近下载",
       "recentDownloadsSubtitle": "活跃的下载和上传",
-      "networkActivitySubtitle": "节点连接和发现"
+      "networkActivitySubtitle": "节点连接和发现",
+      "recentUploads": "最近上传",
+      "networkConnections": "网络连接",
+      "peerDiscovery": "节点发现",
+      "institutionSharing": "机构分享",
+      "culturalExchange": "文化交流"
     },
     "quickActions": {
       "title": "快速操作",
       "shareDocument": "分享文档",
       "searchNetwork": "搜索网络",
       "analytics": "分析",
-      "settings": "设置"
+      "settings": "设置",
+      "uploadFile": "上传文件",
+      "createCollection": "创建收藏",
+      "browseLibrary": "浏览图书馆",
+      "viewHistory": "查看历史",
+      "manageConnections": "管理连接",
+      "culturalContext": "文化背景",
+      "securityAudit": "安全审计",
+      "communityGuidelines": "社区指南"
     },
     "networkSection": {
       "title": "网络拓扑与分析",
+      "subtitle": "探索网络连接和性能",
       "refresh": "刷新",
       "statistics": "统计",
-      "configure": "配置"
+      "configure": "配置",
+      "export": "导出",
+      "fullscreen": "全屏",
+      "filters": "过滤器",
+      "layout": "布局",
+      "controls": {
+        "zoomIn": "放大",
+        "zoomOut": "缩小",
+        "resetView": "重置视图",
+        "centerView": "居中视图",
+        "fitToScreen": "适应屏幕"
+      },
+      "metrics": {
+        "totalNodes": "总节点数",
+        "activeConnections": "活跃连接",
+        "avgLatency": "平均延迟",
+        "networkDensity": "网络密度",
+        "clusteringCoeff": "聚类系数"
+      }
     },
     "downloadsSection": {
       "title": "下载管理器",
+      "subtitle": "管理您的下载和上传",
       "addDownload": "添加下载",
       "queue": "队列",
-      "preferences": "偏好设置"
+      "preferences": "偏好设置",
+      "pauseAll": "全部暂停",
+      "resumeAll": "全部恢复",
+      "clearCompleted": "清除已完成",
+      "bandwidth": "带宽",
+      "filters": {
+        "all": "全部",
+        "downloading": "下载中",
+        "seeding": "分享中",
+        "completed": "已完成",
+        "paused": "已暂停",
+        "failed": "失败"
+      },
+      "sortBy": {
+        "name": "名称",
+        "size": "大小",
+        "progress": "进度",
+        "speed": "速度",
+        "eta": "预计时间",
+        "priority": "优先级"
+      }
     },
     "welcomeModal": {
       "title": "欢迎来到 AlLibrary",
@@ -73,10 +162,17 @@
         "performance": "高性能 libp2p 与 DHT 路由",
         "culturalProtection": "文化保护协议与权限",
         "advancedSearch": "带文化上下文过滤的高级搜索",
-        "realTimeAnalytics": "实时网络分析与监控"
+        "realTimeAnalytics": "实时网络分析与监控",
+        "decentralized": "完全去中心化架构",
+        "preservation": "长期数字保存",
+        "collaboration": "协作知识分享",
+        "accessibility": "通用无障碍支持"
       },
       "takeTour": "开始导览",
-      "enterLibrary": "进入 AlLibrary"
+      "enterLibrary": "进入 AlLibrary",
+      "learnMore": "了解更多",
+      "skipIntro": "跳过介绍",
+      "gettingStarted": "入门指南"
     },
     "recentActivity": "最近活动",
     "culturalHighlights": "文化知识亮点"
@@ -97,7 +193,22 @@
     "sortBy": "排序方式",
     "viewMode": "查看模式",
     "gridView": "网格视图",
-    "listView": "列表视图"
+    "listView": "列表视图",
+    "filters": {
+      "all": "全部",
+      "documents": "文档",
+      "collections": "收藏",
+      "cultural": "文化内容",
+      "traditional": "传统知识",
+      "educational": "教育资源"
+    },
+    "sortOptions": {
+      "relevance": "相关性",
+      "date": "日期",
+      "title": "标题",
+      "size": "大小",
+      "popularity": "受欢迎度"
+    }
   },
   "documents": {
     "title": "我的文档",
@@ -106,7 +217,21 @@
     "organizeLibrary": "整理图书馆",
     "culturalContext": "文化背景",
     "sensitivityLevel": "敏感度级别",
-    "searchPlaceholder": "搜索您的文档..."
+    "searchPlaceholder": "搜索您的文档...",
+    "filters": {
+      "all": "全部文档",
+      "recent": "最近",
+      "favorites": "收藏",
+      "shared": "已分享",
+      "private": "私有"
+    },
+    "actions": {
+      "edit": "编辑",
+      "share": "分享",
+      "delete": "删除",
+      "download": "下载",
+      "preview": "预览"
+    }
   },
   "collections": {
     "title": "收藏",
@@ -114,7 +239,14 @@
     "createNew": "创建新收藏",
     "manageExisting": "管理现有收藏",
     "collaborativeCollections": "协作收藏",
-    "culturalCollections": "文化遗产收藏"
+    "culturalCollections": "文化遗产收藏",
+    "filters": {
+      "all": "全部收藏",
+      "personal": "个人",
+      "shared": "已分享",
+      "public": "公开",
+      "cultural": "文化"
+    }
   },
   "network": {
     "title": "网络",
@@ -122,7 +254,19 @@
     "connectionStatus": "连接状态",
     "activePeers": "活跃节点",
     "networkHealth": "网络健康",
-    "p2pSearch": "P2P搜索"
+    "p2pSearch": "P2P搜索",
+    "peers": {
+      "title": "节点",
+      "connected": "已连接",
+      "available": "可用",
+      "blocked": "已阻止"
+    },
+    "communities": {
+      "title": "社区",
+      "join": "加入",
+      "leave": "离开",
+      "create": "创建"
+    }
   },
   "settings": {
     "title": "设置",
@@ -132,7 +276,10 @@
     "security": "安全",
     "cultural": "文化偏好",
     "network": "网络设置",
-    "language": "语言"
+    "language": "语言",
+    "appearance": "外观",
+    "notifications": "通知",
+    "advanced": "高级"
   },
   "cultural": {
     "title": "文化背景",
@@ -141,6 +288,90 @@
     "communityGuidelines": "社区指南",
     "educationalResources": "教育资源",
     "culturalOrigins": "文化起源",
-    "sensitivityLevels": "敏感度级别"
+    "sensitivityLevels": "敏感度级别",
+    "context": {
+      "title": "背景",
+      "geographic": "地理",
+      "temporal": "时间",
+      "social": "社会",
+      "religious": "宗教",
+      "linguistic": "语言"
+    },
+    "permissions": {
+      "title": "权限",
+      "view": "查看",
+      "edit": "编辑",
+      "share": "分享",
+      "download": "下载",
+      "restricted": "受限"
+    },
+    "education": {
+      "title": "教育",
+      "resources": "资源",
+      "guidelines": "指南",
+      "bestPractices": "最佳实践",
+      "training": "培训"
+    }
+  },
+  "dashboard": {
+    "title": "仪表板",
+    "subtitle": "系统概览",
+    "lastUpdated": "最后更新",
+    "autoRefresh": "自动刷新",
+    "dataSource": "数据源",
+    "exportData": "导出数据",
+    "shareView": "分享视图",
+    "customizeLayout": "自定义布局",
+    "widgets": {
+      "networkStatus": "网络状态",
+      "recentActivity": "最近活动",
+      "storageUsage": "存储使用情况",
+      "culturalHighlights": "文化亮点",
+      "quickActions": "快速操作"
+    }
+  },
+  "accessibility": {
+    "title": "无障碍",
+    "skipToContent": "跳转到主要内容",
+    "skipToNavigation": "跳转到导航",
+    "highContrast": "高对比度",
+    "largeText": "大字体",
+    "screenReader": "屏幕阅读器",
+    "keyboardNavigation": "键盘导航",
+    "ariaLabels": {
+      "networkStatus": "网络状态：{{status}}，{{peers}}个节点已连接，{{health}}健康度",
+      "statCard": "{{label}}：{{value}}，趋势{{trend}}",
+      "activityItem": "活动{{type}}：{{title}}，{{status}}",
+      "downloadProgress": "下载进度：{{progress}}百分比完成",
+      "networkGraph": "显示{{nodes}}个节点和{{connections}}个连接的网络拓扑可视化"
+    }
+  },
+  "errors": {
+    "title": "错误",
+    "networkConnectionFailed": "网络连接失败",
+    "dataLoadFailed": "仪表板数据加载失败",
+    "statUpdateFailed": "统计更新失败",
+    "downloadStartFailed": "下载启动失败",
+    "uploadFailed": "上传失败",
+    "searchFailed": "搜索失败",
+    "accessDenied": "访问被拒绝",
+    "validationFailed": "验证失败",
+    "unknownError": "未知错误",
+    "retry": "重试",
+    "reportIssue": "报告问题"
+  },
+  "loading": {
+    "title": "加载",
+    "loading": "加载中...",
+    "initializing": "初始化中...",
+    "connecting": "连接中...",
+    "syncing": "同步中...",
+    "processing": "处理中...",
+    "phases": {
+      "startup": "系统启动中...",
+      "network": "网络连接中...",
+      "data": "数据加载中...",
+      "ready": "准备就绪！"
+    }
   }
 }

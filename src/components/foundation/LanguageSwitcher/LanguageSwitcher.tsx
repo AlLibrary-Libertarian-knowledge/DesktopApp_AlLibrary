@@ -28,7 +28,7 @@ export const LanguageSwitcher: Component<LanguageSwitcherProps> = props => {
     showNativeName = true,
     size = 'md',
     className = '',
-    ariaLabel = 'Select Language',
+    ariaLabel,
     onLanguageChange,
   } = props;
 
@@ -67,7 +67,7 @@ export const LanguageSwitcher: Component<LanguageSwitcherProps> = props => {
     try {
       setIsChanging(true);
 
-      // Call the i18n system to change language
+      // Call the i18n system to change language with immediate update
       await changeLanguage(languageCode);
 
       // Also call the optional prop callback
@@ -77,6 +77,9 @@ export const LanguageSwitcher: Component<LanguageSwitcherProps> = props => {
 
       setIsOpen(false);
       console.log('Language changed to:', languageCode);
+
+      // Force a small delay to ensure all components have updated
+      await new Promise(resolve => window.setTimeout(resolve, 1));
     } catch (error) {
       console.error('Failed to change language:', error);
     } finally {
@@ -164,7 +167,7 @@ export const LanguageSwitcher: Component<LanguageSwitcherProps> = props => {
       <button
         class={styles.trigger}
         onClick={handleToggle}
-        aria-label={ariaLabel}
+        aria-label={ariaLabel || 'Select Language'}
         aria-expanded={isOpen()}
         aria-haspopup="listbox"
         disabled={isLoadingState()}
@@ -194,16 +197,19 @@ export const LanguageSwitcher: Component<LanguageSwitcherProps> = props => {
       <button
         class={styles.compactTrigger}
         onClick={handleToggle}
-        aria-label={ariaLabel}
+        aria-label={ariaLabel || `Current Language: ${currentLanguageInfo().nativeName}`}
         aria-expanded={isOpen()}
         disabled={isLoadingState()}
+        title={currentLanguageInfo().nativeName}
       >
         <Show when={showFlags}>
           <span class={styles.flag} role="img" aria-label={currentLanguageInfo().name}>
             {currentLanguageInfo().flag}
           </span>
         </Show>
-        <span class={styles.languageCode}>{currentLanguage().toUpperCase()}</span>
+        <Show when={showNativeName}>
+          <span class={styles.languageCode}>{currentLanguage().toUpperCase()}</span>
+        </Show>
       </button>
 
       <Show when={isOpen()}>
@@ -225,7 +231,9 @@ export const LanguageSwitcher: Component<LanguageSwitcherProps> = props => {
                 <span class={styles.flag} role="img" aria-label={language.name}>
                   {language.flag}
                 </span>
-                <span class={styles.compactCode}>{language.code.toUpperCase()}</span>
+                <Show when={showNativeName}>
+                  <span class={styles.compactCode}>{language.code.toUpperCase()}</span>
+                </Show>
               </button>
             )}
           </For>

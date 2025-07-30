@@ -34,7 +34,20 @@
     "invalid": "输入无效",
     "placeholder": "输入值...",
     "search": "搜索...",
-    "filter": "过滤结果..."
+    "filter": "过滤结果...",
+    "validation": {
+      "failed": "验证失败",
+      "required": "此字段为必填项",
+      "invalid": "输入无效",
+      "tooShort": "输入太短",
+      "tooLong": "输入太长"
+    },
+    "accessibility": {
+      "required": "必填字段",
+      "optional": "可选字段",
+      "validated": "输入已验证",
+      "validationRequired": "需要输入验证"
+    }
   },
   "card": {
     "viewDetails": "查看详情",
@@ -54,7 +67,15 @@
     "documents": "加载文档中...",
     "collections": "加载收藏中...",
     "network": "连接网络中...",
-    "search": "搜索中..."
+    "search": "搜索中...",
+    "phases": {
+      "initializing": "初始化文化遗产网络...",
+      "connecting": "连接到保存节点...",
+      "loading": "加载知识档案...",
+      "securing": "保护文化智慧...",
+      "preparing": "准备神圣故事...",
+      "welcome": "欢迎来到AlLibrary"
+    }
   },
   "errorBoundary": {
     "title": "出现了问题",
@@ -75,7 +96,33 @@
     "connected": "已连接",
     "disconnected": "已断开",
     "peers": "节点",
-    "networkHealth": "网络健康"
+    "networkHealth": "网络健康",
+    "latency": "延迟",
+    "bandwidth": "带宽",
+    "uptime": "运行时间",
+    "lastSeen": "最后看到",
+    "status": "状态"
+  },
+  "statCard": {
+    "ariaLabel": "{{label}}: {{value}}. 趋势{{trendType}}: {{trendValue}}",
+    "trends": {
+      "positive": "上升趋势",
+      "negative": "下降趋势",
+      "neutral": "稳定趋势"
+    },
+    "types": {
+      "documents": "文档",
+      "peers": "节点",
+      "institutions": "机构",
+      "health": "健康度",
+      "storage": "存储",
+      "bandwidth": "带宽"
+    },
+    "accessibility": {
+      "chartVisualization": "显示{{type}}数据的图表可视化",
+      "trendIndicator": "显示{{trend}}变化的趋势指标",
+      "clickToExpand": "点击展开详情"
+    }
   },
   "activityList": {
     "types": {
@@ -84,7 +131,11 @@
       "completed": "已完成",
       "peerConnected": "已连接到节点",
       "institution": "机构分享",
-      "discovery": "网络发现"
+      "discovery": "网络发现",
+      "upload": "上传",
+      "sync": "同步",
+      "backup": "备份",
+      "verification": "验证"
     },
     "status": {
       "downloading": "下载中",
@@ -92,13 +143,148 @@
       "complete": "已完成",
       "connected": "已连接",
       "sharing": "分享中",
-      "discovered": "已发现"
+      "discovered": "已发现",
+      "paused": "已暂停",
+      "failed": "失败",
+      "pending": "等待中",
+      "queued": "排队中",
+      "verifying": "验证中"
     },
     "metadata": {
       "complete": "{{progress}}% 完成",
       "seedingToPeers": "分享给 {{count}} 个节点",
       "completedAgo": "{{time}} 前完成",
-      "foundSources": "发现 {{count}} 个新文档源"
+      "foundSources": "发现 {{count}} 个新文档源",
+      "eta": "预计时间: {{time}}",
+      "speed": "速度: {{speed}}",
+      "fileSize": "大小: {{size}}",
+      "peerCount": "{{count}} 个节点",
+      "remainingTime": "剩余 {{time}}"
+    },
+    "actions": {
+      "pause": "暂停",
+      "resume": "恢复",
+      "cancel": "取消",
+      "retry": "重试",
+      "remove": "删除",
+      "openFile": "打开文件",
+      "showInFolder": "在文件夹中显示",
+      "copyLink": "复制链接",
+      "share": "分享",
+      "properties": "属性"
+    },
+    "filters": {
+      "all": "所有活动",
+      "downloads": "下载",
+      "uploads": "上传",
+      "network": "网络",
+      "completed": "已完成",
+      "active": "活跃"
+    }
+  },
+  "networkGraph": {
+    "nodes": {
+      "library": "图书馆节点",
+      "institution": "机构",
+      "peer": "节点",
+      "bridge": "桥接节点",
+      "relay": "中继节点",
+      "unknown": "未知节点"
+    },
+    "connections": {
+      "direct": "直接连接",
+      "relay": "中继连接",
+      "bridge": "桥接连接",
+      "weak": "弱连接",
+      "strong": "强连接"
+    },
+    "metrics": {
+      "totalNodes": "总节点数",
+      "activeConnections": "活跃连接",
+      "averageLatency": "平均延迟",
+      "networkDensity": "网络密度",
+      "clusteringCoefficient": "聚类系数",
+      "diameter": "网络直径",
+      "centrality": "中心性"
+    },
+    "controls": {
+      "zoomIn": "放大",
+      "zoomOut": "缩小",
+      "resetView": "重置视图",
+      "centerView": "居中视图",
+      "fitToScreen": "适应屏幕",
+      "pauseAnimation": "暂停动画",
+      "playAnimation": "播放动画",
+      "exportImage": "导出图片",
+      "fullscreen": "全屏"
+    },
+    "layouts": {
+      "forceDirected": "力导向布局",
+      "circular": "圆形布局",
+      "hierarchical": "层次布局",
+      "random": "随机布局"
+    },
+    "accessibility": {
+      "graphDescription": "显示{{nodes}}个节点和{{connections}}个连接的网络拓扑图",
+      "nodeDescription": "名为{{name}}的{{type}}节点，有{{connections}}个连接",
+      "interactionHint": "使用方向键导航节点，回车键选择"
+    }
+  },
+  "downloadManager": {
+    "title": "下载管理器",
+    "columns": {
+      "name": "名称",
+      "size": "大小",
+      "progress": "进度",
+      "speed": "速度",
+      "eta": "预计时间",
+      "status": "状态",
+      "peers": "节点",
+      "priority": "优先级"
+    },
+    "actions": {
+      "pause": "暂停",
+      "resume": "恢复",
+      "cancel": "取消",
+      "remove": "删除",
+      "retry": "重试",
+      "openFile": "打开文件",
+      "showInFolder": "在文件夹中显示",
+      "moveUp": "上移",
+      "moveDown": "下移",
+      "setHighPriority": "设置高优先级",
+      "setLowPriority": "设置低优先级"
+    },
+    "status": {
+      "downloading": "下载中",
+      "paused": "已暂停",
+      "completed": "已完成",
+      "failed": "失败",
+      "queued": "排队中",
+      "verifying": "验证中",
+      "seeding": "分享中"
+    },
+    "filters": {
+      "all": "全部",
+      "active": "活跃",
+      "completed": "已完成",
+      "failed": "失败"
+    },
+    "contextMenu": {
+      "pauseDownload": "暂停下载",
+      "resumeDownload": "恢复下载",
+      "cancelDownload": "取消下载",
+      "removeFromList": "从列表中删除",
+      "openFile": "打开文件",
+      "openFolder": "打开包含文件夹",
+      "copyMagnetLink": "复制磁力链接",
+      "properties": "属性"
+    },
+    "batchActions": {
+      "pauseAll": "全部暂停",
+      "resumeAll": "全部恢复",
+      "clearCompleted": "清除已完成",
+      "removeSelected": "删除选中项"
     }
   },
   "statusBar": {
@@ -160,5 +346,116 @@
   "languageSwitch": {
     "selectLanguage": "选择语言",
     "changeLanguage": "更改语言"
+  },
+  "organizationTools": {
+    "title": "组织工具",
+    "subtitle": "组织和管理您的文档收藏",
+    "stats": {
+      "organizationScore": "组织评分",
+      "organizedDocuments": "已组织文档",
+      "averageTagsPerDocument": "每个文档的平均标签",
+      "culturalContexts": "文化背景"
+    },
+    "notifications": {
+      "autoOrganizationCompleted": "自动组织完成！"
+    },
+    "tabs": {
+      "overview": "概览",
+      "bulk": "批量操作"
+    },
+    "quickActions": {
+      "autoOrganize": "自动组织",
+      "bulkActions": "批量操作 ({{count}})"
+    },
+    "culturalDistribution": {
+      "title": "文化背景分布",
+      "badge": "教育信息"
+    },
+    "suggestions": {
+      "title": "组织建议"
+    },
+    "bulkOperations": {
+      "title": "批量操作",
+      "selectionInfo": "已选择 {{count}} 个文档",
+      "selectionInfo_other": "已选择 {{count}} 个文档",
+      "execute": "执行"
+    },
+    "modal": {
+      "autoOrganization": {
+        "title": "自动组织",
+        "question": "执行自动组织？",
+        "culturalNotice": "文化背景将仅用于教育目的进行分析。所有文档无论文化分类如何都保持可访问。",
+        "execute": "执行自动组织",
+        "cancel": "取消"
+      }
+    }
+  },
+  "p2pSearchInterface": {
+    "title": "P2P网络搜索",
+    "subtitle": "搜索分布式网络",
+    "searchPlaceholder": "搜索P2P网络...",
+    "buttons": {
+      "search": "搜索",
+      "searching": "搜索中..."
+    },
+    "options": {
+      "searchType": "搜索类型",
+      "searchDepth": "搜索深度",
+      "includeAnonymous": "包含匿名来源",
+      "includeCultural": "包含文化背景"
+    },
+    "searchTypes": {
+      "content": "内容和文档",
+      "peer": "节点和网络",
+      "community": "社区网络"
+    },
+    "searchDepth": {
+      "local": "仅本地",
+      "network": "已连接节点",
+      "deep": "扩展网络"
+    },
+    "progress": {
+      "searchingNetwork": "搜索网络中... {{progress}}%"
+    },
+    "results": {
+      "title": "搜索结果 ({{count}})",
+      "searchTime": "搜索在{{time}}内完成",
+      "noResults": "未找到结果",
+      "noResultsDescription": "在P2P网络中未找到\"{{query}}\"的内容。",
+      "culturalLevel": "文化级别 {{level}}",
+      "anonymousSource": "匿名来源",
+      "noDescription": "无可用描述"
+    },
+    "suggestions": {
+      "title": "建议:",
+      "differentTerms": "尝试不同的搜索词",
+      "enableAnonymous": "启用匿名来源以获得更广泛的覆盖范围",
+      "increaseDepth": "将搜索深度增加到\"扩展网络\"",
+      "checkConnectivity": "检查网络连接 ({{peers}}个节点已连接)"
+    },
+    "badges": {
+      "peersConnected": "{{count}}个节点已连接",
+      "anonymousSearch": "匿名搜索"
+    },
+    "antiCensorshipInfo": {
+      "title": "反审查搜索",
+      "description": "此搜索基于去中心化P2P原则运行。所有内容均可无限制搜索。文化背景仅用于教育目的。"
+    }
+  },
+  "timeFilter": {
+    "title": "时间过滤器",
+    "placeholder": "选择时间段",
+    "dateSeparator": "至",
+    "options": {
+      "allTime": "所有时间",
+      "today": "今天",
+      "thisWeek": "本周",
+      "thisMonth": "本月",
+      "thisYear": "今年",
+      "customRange": "自定义范围"
+    }
+  },
+  "breadcrumb": {
+    "ariaLabel": "面包屑导航"
   }
 }

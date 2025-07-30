@@ -4,65 +4,154 @@
     "subtitle": "Decentralized Cultural Heritage Preservation Network",
     "networkStatus": {
       "online": "Network Online",
+      "offline": "Network Offline",
+      "connecting": "Connecting",
       "health": "98% Health",
       "peers": "peers",
       "nodes": "nodes",
-      "connections": "connections"
+      "connections": "connections",
+      "latency": "latency",
+      "bandwidth": "bandwidth"
     },
     "dataFlow": {
       "download": "Download",
-      "upload": "Upload"
+      "upload": "Upload",
+      "incoming": "Incoming",
+      "outgoing": "Outgoing",
+      "totalTransfer": "Total Transfer",
+      "activeTransfers": "Active Transfers"
     },
     "activityIndicators": {
       "downloads": "Downloads",
       "seeding": "Seeding",
-      "discovering": "Discovering"
+      "discovering": "Discovering",
+      "active": "active",
+      "idle": "idle",
+      "paused": "paused"
     },
     "tabs": {
       "overview": "Overview",
       "network": "Network",
-      "downloads": "Downloads"
+      "downloads": "Downloads",
+      "analytics": "Analytics"
     },
     "stats": {
       "documentsShared": "Documents Shared",
       "connectedPeers": "Connected Peers",
       "culturalInstitutions": "Cultural Institutions",
       "networkHealth": "Network Health",
+      "totalStorage": "Total Storage",
+      "availableStorage": "Available Storage",
+      "uploadSpeed": "Upload Speed",
+      "downloadSpeed": "Download Speed",
       "today": "today",
+      "thisWeek": "this week",
+      "thisMonth": "this month",
       "online": "online",
+      "offline": "offline",
       "stable": "stable",
-      "excellent": "excellent"
+      "excellent": "excellent",
+      "good": "good",
+      "fair": "fair",
+      "poor": "poor",
+      "trendPositive": "trending up",
+      "trendNegative": "trending down",
+      "trendNeutral": "stable"
     },
     "networkTopology": {
       "title": "Network Topology",
       "subtitle": "Live peer connection visualization",
-      "expandView": "Expand View"
+      "expandView": "Expand View",
+      "viewDetails": "View Details",
+      "refreshData": "Refresh Data",
+      "exportData": "Export Data",
+      "legend": "Legend",
+      "nodeTypes": {
+        "library": "Library Node",
+        "institution": "Institution",
+        "peer": "Peer",
+        "bridge": "Bridge Node",
+        "relay": "Relay Node"
+      }
     },
     "networkActivity": {
       "title": "Network Activity",
       "subtitle": "Real-time downloads and network connections",
       "recentDownloads": "Recent Downloads",
       "recentDownloadsSubtitle": "Active downloads and uploads",
-      "networkActivitySubtitle": "Peer connections and discoveries"
+      "networkActivitySubtitle": "Peer connections and discoveries",
+      "recentUploads": "Recent Uploads",
+      "networkConnections": "Network Connections",
+      "peerDiscovery": "Peer Discovery",
+      "institutionSharing": "Institution Sharing",
+      "culturalExchange": "Cultural Exchange"
     },
     "quickActions": {
       "title": "Quick Actions",
       "shareDocument": "Share Document",
       "searchNetwork": "Search Network",
       "analytics": "Analytics",
-      "settings": "Settings"
+      "settings": "Settings",
+      "uploadFile": "Upload File",
+      "createCollection": "Create Collection",
+      "browseLibrary": "Browse Library",
+      "viewHistory": "View History",
+      "manageConnections": "Manage Connections",
+      "culturalContext": "Cultural Context",
+      "securityAudit": "Security Audit",
+      "communityGuidelines": "Community Guidelines"
     },
     "networkSection": {
       "title": "Network Topology & Analysis",
+      "subtitle": "Explore network connections and performance",
       "refresh": "Refresh",
       "statistics": "Statistics",
-      "configure": "Configure"
+      "configure": "Configure",
+      "export": "Export",
+      "fullscreen": "Fullscreen",
+      "filters": "Filters",
+      "layout": "Layout",
+      "controls": {
+        "zoomIn": "Zoom In",
+        "zoomOut": "Zoom Out",
+        "resetView": "Reset View",
+        "centerView": "Center View",
+        "fitToScreen": "Fit to Screen"
+      },
+      "metrics": {
+        "totalNodes": "Total Nodes",
+        "activeConnections": "Active Connections",
+        "avgLatency": "Average Latency",
+        "networkDensity": "Network Density",
+        "clusteringCoeff": "Clustering Coefficient"
+      }
     },
     "downloadsSection": {
       "title": "Download Manager",
+      "subtitle": "Manage your downloads and uploads",
       "addDownload": "Add Download",
       "queue": "Queue",
-      "preferences": "Preferences"
+      "preferences": "Preferences",
+      "pauseAll": "Pause All",
+      "resumeAll": "Resume All",
+      "clearCompleted": "Clear Completed",
+      "bandwidth": "Bandwidth",
+      "filters": {
+        "all": "All",
+        "downloading": "Downloading",
+        "seeding": "Seeding",
+        "completed": "Completed",
+        "paused": "Paused",
+        "failed": "Failed"
+      },
+      "sortBy": {
+        "name": "Name",
+        "size": "Size",
+        "progress": "Progress",
+        "speed": "Speed",
+        "eta": "ETA",
+        "priority": "Priority"
+      }
     },
     "welcomeModal": {
       "title": "Welcome to AlLibrary",
@@ -73,13 +162,54 @@
         "performance": "High-performance libp2p with DHT routing",
         "culturalProtection": "Cultural protection protocols & permissions",
         "advancedSearch": "Advanced search with cultural context filtering",
-        "realTimeAnalytics": "Real-time network analytics & monitoring"
+        "realTimeAnalytics": "Real-time network analytics & monitoring",
+        "decentralized": "Fully decentralized architecture",
+        "preservation": "Long-term digital preservation",
+        "collaboration": "Collaborative knowledge sharing",
+        "accessibility": "Universal accessibility support"
       },
       "takeTour": "Take Tour",
-      "enterLibrary": "Enter AlLibrary"
+      "enterLibrary": "Enter AlLibrary",
+      "learnMore": "Learn More",
+      "skipIntro": "Skip Introduction",
+      "gettingStarted": "Getting Started Guide"
     },
     "recentActivity": "Recent Activity",
-    "culturalHighlights": "Cultural Knowledge Highlights"
+    "culturalHighlights": "Cultural Knowledge Highlights",
+    "dashboard": {
+      "lastUpdated": "Last updated",
+      "autoRefresh": "Auto-refresh",
+      "dataSource": "Data source",
+      "exportData": "Export data",
+      "shareView": "Share view",
+      "customizeLayout": "Customize layout"
+    },
+    "accessibility": {
+      "networkStatusAria": "Network status: {{status}}, {{peers}} connected peers, {{health}} health",
+      "statCardAria": "{{label}}: {{value}}, {{trend}} trend",
+      "activityItemAria": "{{type}} activity: {{title}}, {{status}}",
+      "downloadProgressAria": "Download progress: {{progress}} percent complete",
+      "networkGraphAria": "Network topology visualization showing {{nodes}} nodes and {{connections}} connections",
+      "skipToContent": "Skip to main content",
+      "skipToNavigation": "Skip to navigation"
+    },
+    "errors": {
+      "networkConnectionFailed": "Failed to connect to network",
+      "dataLoadFailed": "Failed to load dashboard data",
+      "statUpdateFailed": "Failed to update statistics",
+      "downloadStartFailed": "Failed to start download",
+      "uploadStartFailed": "Failed to start upload",
+      "retryAction": "Retry",
+      "reportIssue": "Report Issue"
+    },
+    "loading": {
+      "dashboard": "Loading dashboard...",
+      "networkData": "Loading network data...",
+      "statistics": "Loading statistics...",
+      "activities": "Loading activities...",
+      "connecting": "Connecting to network...",
+      "initializing": "Initializing..."
+    }
   },
   "search": {
     "title": "Search",

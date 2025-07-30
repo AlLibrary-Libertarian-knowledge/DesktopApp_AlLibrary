@@ -12,13 +12,19 @@
     "share": "Teilen",
     "copy": "Kopieren",
     "move": "Verschieben",
-    "loading": "Lädt...",
+    "loading": "Laden...",
     "defaultAriaLabel": "Schaltfläche",
-    "defaultTitle": "Klicken Sie, um eine Aktion auszuführen"
+    "defaultTitle": "Klicken Sie, um Aktion auszuführen",
+    "validationFailed": "Sicherheitsvalidierung fehlgeschlagen - bitte überprüfen Sie Ihre Eingabe",
+    "validationError": "Sicherheitsvalidierungsfehler aufgetreten",
+    "validationRequired": "Bitte vervollständigen Sie die Sicherheitsvalidierung",
+    "securityValidated": "Sicherheit validiert",
+    "securityValidationRequired": "Sicherheitsvalidierung erforderlich",
+    "culturalTheme": "Kulturelles Thema: {{theme}}"
   },
   "modal": {
     "close": "Schließen",
-    "defaultTitle": "Modal-Dialog",
+    "defaultTitle": "Modal Dialog",
     "confirm": "Bestätigen",
     "cancel": "Abbrechen",
     "closeModal": "Modal schließen"
@@ -28,71 +34,529 @@
     "invalid": "Ungültige Eingabe",
     "placeholder": "Wert eingeben...",
     "search": "Suchen...",
-    "filter": "Ergebnisse filtern..."
+    "filter": "Ergebnisse filtern...",
+    "validation": {
+      "failed": "Validierung fehlgeschlagen",
+      "required": "Dieses Feld ist erforderlich",
+      "invalid": "Ungültige Eingabe",
+      "tooShort": "Eingabe zu kurz",
+      "tooLong": "Eingabe zu lang"
+    },
+    "accessibility": {
+      "required": "Pflichtfeld",
+      "optional": "Optionales Feld",
+      "validated": "Eingabe validiert",
+      "validationRequired": "Eingabevalidierung erforderlich"
+    }
   },
-  "languageSwitch": {
-    "selectLanguage": "Sprache auswählen",
-    "changeLanguage": "Sprache ändern",
-    "currentLanguage": "Aktuelle Sprache",
-    "switchTo": "Wechseln zu {{language}}"
+  "card": {
+    "viewDetails": "Details Anzeigen",
+    "showMore": "Mehr Anzeigen",
+    "showLess": "Weniger Anzeigen",
+    "actions": "Aktionen"
+  },
+  "badge": {
+    "new": "Neu",
+    "updated": "Aktualisiert",
+    "featured": "Empfohlen",
+    "trending": "Im Trend",
+    "popular": "Beliebt"
+  },
+  "loading": {
+    "general": "Laden...",
+    "documents": "Dokumente werden geladen...",
+    "collections": "Sammlungen werden geladen...",
+    "network": "Verbindung zum Netzwerk...",
+    "search": "Suche..."
+  },
+  "errorBoundary": {
+    "title": "Etwas ist schiefgegangen",
+    "message": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie, die Seite zu aktualisieren.",
+    "refresh": "Seite Aktualisieren",
+    "reportIssue": "Problem Melden"
+  },
+  "culturalIndicator": {
+    "informationOnly": "Nur Information",
+    "educationalPurpose": "Bildungszweck",
+    "culturalContext": "Kultureller Kontext",
+    "learnMore": "Mehr Erfahren"
   },
   "networkStatus": {
     "online": "Online",
     "offline": "Offline",
-    "connecting": "Verbindung wird hergestellt",
+    "connecting": "Verbindung",
     "connected": "Verbunden",
-    "disconnected": "Verbindung getrennt",
+    "disconnected": "Getrennt",
     "peers": "Peers",
-    "networkHealth": "Netzwerkgesundheit"
+    "networkHealth": "Netzwerkgesundheit",
+    "latency": "Latenz",
+    "bandwidth": "Bandbreite",
+    "uptime": "Betriebszeit",
+    "lastSeen": "Zuletzt gesehen",
+    "status": "Status"
+  },
+  "statCard": {
+    "ariaLabel": "{{label}}: {{value}}. {{trendType}} Trend: {{trendValue}}",
+    "trends": {
+      "positive": "Positiver Trend",
+      "negative": "Negativer Trend",
+      "neutral": "Stabiler Trend"
+    },
+    "types": {
+      "documents": "Dokumente",
+      "peers": "Peers",
+      "institutions": "Institutionen",
+      "health": "Gesundheit",
+      "storage": "Speicher",
+      "bandwidth": "Bandbreite"
+    },
+    "accessibility": {
+      "chartVisualization": "Diagrammvisualisierung zeigt {{type}} Daten",
+      "trendIndicator": "Trendindikator zeigt {{trend}} Änderung",
+      "clickToExpand": "Klicken für Details"
+    }
   },
   "activityList": {
     "types": {
-      "downloading": "Download",
+      "downloading": "Herunterladen",
       "seeding": "Seeding",
       "completed": "Abgeschlossen",
       "peerConnected": "Mit Peer-Knoten verbunden",
-      "institution": "Institution teilt",
-      "discovery": "Netzwerk-Entdeckung"
+      "institution": "Institutioneller Austausch",
+      "discovery": "Netzwerk-Entdeckung",
+      "upload": "Upload",
+      "sync": "Synchronisation",
+      "backup": "Backup",
+      "verification": "Verifizierung"
     },
     "status": {
-      "downloading": "Download läuft",
+      "downloading": "Herunterladen",
       "seeding": "Seeding",
       "complete": "Abgeschlossen",
       "connected": "Verbunden",
       "sharing": "Teilen",
-      "discovered": "Entdeckt"
+      "discovered": "Entdeckt",
+      "paused": "Pausiert",
+      "failed": "Fehlgeschlagen",
+      "pending": "Wartend",
+      "queued": "In Warteschlange",
+      "verifying": "Verifizierung"
     },
     "metadata": {
       "complete": "{{progress}}% abgeschlossen",
-      "seedingToPeers": "Seeding an {{count}} Peers",
+      "seedingToPeers": "Teilen mit {{count}} Peers",
       "completedAgo": "Vor {{time}} abgeschlossen",
-      "foundSources": "{{count}} neue Dokumentquellen gefunden"
+      "foundSources": "{{count}} neue Dokumentquellen gefunden",
+      "eta": "Geschätzte Zeit: {{time}}",
+      "speed": "Geschwindigkeit: {{speed}}",
+      "fileSize": "Größe: {{size}}",
+      "peerCount": "{{count}} Peers",
+      "remainingTime": "{{time}} verbleibend"
+    },
+    "actions": {
+      "pause": "Pausieren",
+      "resume": "Fortsetzen",
+      "cancel": "Abbrechen",
+      "retry": "Wiederholen",
+      "remove": "Entfernen",
+      "openFile": "Datei Öffnen",
+      "showInFolder": "In Ordner Anzeigen",
+      "copyLink": "Link Kopieren",
+      "share": "Teilen",
+      "properties": "Eigenschaften"
+    },
+    "filters": {
+      "all": "Alle Aktivitäten",
+      "downloads": "Downloads",
+      "uploads": "Uploads",
+      "network": "Netzwerk",
+      "completed": "Abgeschlossen",
+      "active": "Aktiv"
+    }
+  },
+  "networkGraph": {
+    "title": "Netzwerkvisualisierung",
+    "subtitle": "Echtzeit-Netzwerktopologie und Peer-Verbindungen",
+    "tooltip": {
+      "type": "Typ",
+      "ip": "IP",
+      "location": "Standort",
+      "network": "Netzwerk",
+      "connections": "Verbindungen",
+      "peers": "Peers",
+      "bandwidth": "Bandbreite",
+      "latency": "Latenz",
+      "reliability": "Zuverlässigkeit",
+      "downloading": "HERUNTERLADEN",
+      "uploading": "HOCHLADEN",
+      "remaining": "verbleibend",
+      "andMore": "und {{count}} weitere"
+    }
+  },
+  "downloadManager": {
+    "title": "Download-Manager",
+    "columns": {
+      "name": "Name",
+      "size": "Größe",
+      "progress": "Fortschritt",
+      "speed": "Geschwindigkeit",
+      "eta": "Geschätzte Zeit",
+      "status": "Status",
+      "peers": "Peers",
+      "priority": "Priorität"
+    },
+    "actions": {
+      "pause": "Pausieren",
+      "resume": "Fortsetzen",
+      "cancel": "Abbrechen",
+      "remove": "Entfernen",
+      "retry": "Wiederholen",
+      "openFile": "Datei Öffnen",
+      "showInFolder": "In Ordner Anzeigen",
+      "moveUp": "Nach Oben",
+      "moveDown": "Nach Unten",
+      "setHighPriority": "Hohe Priorität Setzen",
+      "setLowPriority": "Niedrige Priorität Setzen"
+    },
+    "status": {
+      "downloading": "Herunterladen",
+      "paused": "Pausiert",
+      "completed": "Abgeschlossen",
+      "failed": "Fehlgeschlagen",
+      "queued": "In Warteschlange",
+      "verifying": "Verifizierung",
+      "seeding": "Seeding"
+    },
+    "filters": {
+      "all": "Alle",
+      "active": "Aktiv",
+      "completed": "Abgeschlossen",
+      "failed": "Fehlgeschlagen"
+    },
+    "contextMenu": {
+      "pauseDownload": "Download Pausieren",
+      "resumeDownload": "Download Fortsetzen",
+      "cancelDownload": "Download Abbrechen",
+      "removeFromList": "Von Liste Entfernen",
+      "openFile": "Datei Öffnen",
+      "openFolder": "Enthaltenden Ordner Öffnen",
+      "copyMagnetLink": "Magnet-Link Kopieren",
+      "properties": "Eigenschaften"
+    },
+    "batchActions": {
+      "pauseAll": "Alle Pausieren",
+      "resumeAll": "Alle Fortsetzen",
+      "clearCompleted": "Abgeschlossene Löschen",
+      "removeSelected": "Ausgewählte Entfernen"
     }
   },
   "statusBar": {
     "network": {
       "title": "Netzwerk",
       "peers": "Peers",
-      "latency": "{{latency}}ms"
+      "latency": "{{latency}}ms",
+      "online": "online",
+      "offline": "offline",
+      "connecting": "verbindend"
     },
     "downloads": {
       "title": "Downloads",
       "active": "aktiv",
-      "queue": "Warteschlange: {{count}}"
+      "queue": "Warteschlange: {{count}}",
+      "totalSpeed": "{{speed}} gesamt",
+      "eta": "{{time}} verbleibend"
     },
     "storage": {
-      "title": "Speicher"
+      "title": "Speicher",
+      "used": "{{used}} verwendet",
+      "available": "{{available}} verfügbar",
+      "total": "{{total}} gesamt"
     },
     "system": {
-      "title": "System",
+      "title": "Zustand",
       "cpu": "CPU",
-      "memory": "Arbeitsspeicher",
-      "temperature": "Temperatur"
+      "memory": "RAM",
+      "temperature": "Temperatur",
+      "uptime": "Betriebszeit"
     },
     "cultural": {
-      "title": "Kultureller Schutz",
+      "title": "Schutz",
       "threats": "{{count}} Bedrohungen blockiert",
-      "lastScan": "Letzter Scan: {{time}}"
+      "lastScan": "Letzter Scan: {{time}}",
+      "status": "Status: {{status}}",
+      "statusLabel": "status",
+      "scanTime": "Letzter Scan: {{time}}"
     }
+  },
+  "securityPanel": {
+    "title": "Netzwerk-Sicherheitsanalyse",
+    "subtitle": "Echtzeit-Sicherheitsüberwachung für Kulturerbe-Netzwerke",
+    "refreshing": "Analysiere...",
+    "refreshAction": "Analyse Aktualisieren",
+    "loadingTitle": "Netzwerk-Sicherheit Analysieren",
+    "loadingMessage": "Umfassende Sicherheitsbewertung wird durchgeführt...",
+    "errorTitle": "Sicherheitsinformationen Konnten Nicht Geladen Werden",
+    "errorMessage": "Fehler beim Abrufen der Netzwerk-Sicherheitsdaten. Überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+    "retryAction": "Analyse Wiederholen",
+    "scoreLabel": "Sicherheitsbewertung",
+    "securityLevel": "Sicherheit",
+    "threatLevel": "Bedrohungslevel",
+    "connectionType": "Verbindungstyp",
+    "networkLatency": "Netzwerk-Latenz",
+    "levels": {
+      "excellent": "Ausgezeichnet",
+      "good": "Gut",
+      "fair": "Angemessen",
+      "poor": "Schlecht"
+    },
+    "threats": {
+      "minimal": "Minimal",
+      "low": "Niedrig",
+      "moderate": "Mäßig",
+      "high": "Hoch"
+    },
+    "descriptions": {
+      "excellent": "Ihre Verbindung ist sicher und optimal für Kulturerbe-Arbeit.",
+      "good": "Kleine Sicherheitsbedenken erkannt. Überwachen Sie Ihre Verbindung.",
+      "fair": "Mäßige Sicherheitsrisiken. Erwägen Sie eine Überprüfung Ihrer Einstellungen.",
+      "poor": "Mehrere Sicherheitsprobleme erkannt. Überprüfen Sie die Warnungen sofort."
+    },
+    "latency": {
+      "testing": "Teste..."
+    },
+    "metrics": {
+      "threatLevel": "Bedrohungslevel",
+      "encryptionStatus": "Verschlüsselungsstatus",
+      "anonymityLevel": "Anonymitätslevel",
+      "trustedNodes": "Vertrauenswürdige Knoten"
+    },
+    "status": {
+      "secure": "Sicher",
+      "warning": "Warnung",
+      "critical": "Kritisch",
+      "unknown": "Unbekannt"
+    },
+    "actions": {
+      "runScan": "Sicherheitsscan Ausführen",
+      "viewDetails": "Details Anzeigen",
+      "updateRules": "Regeln Aktualisieren",
+      "reportThreat": "Bedrohung Melden"
+    }
+  },
+  "documentCard": {
+    "createdDate": "Erstellt",
+    "modifiedDate": "Geändert",
+    "fileSize": "Größe",
+    "author": "Autor",
+    "culturalLevel": "Kulturelle Ebene",
+    "downloadCount": "Downloads",
+    "rating": "Bewertung",
+    "actions": {
+      "open": "Öffnen",
+      "edit": "Bearbeiten",
+      "share": "Teilen",
+      "delete": "Löschen",
+      "download": "Herunterladen",
+      "favorite": "Zu Favoriten Hinzufügen",
+      "unfavorite": "Von Favoriten Entfernen",
+      "addToCollection": "Zu Sammlung Hinzufügen",
+      "viewDetails": "Details Anzeigen"
+    }
+  },
+  "collectionCard": {
+    "itemCount": "{{count}} Elemente",
+    "itemCount_one": "{{count}} Element",
+    "lastUpdated": "Zuletzt aktualisiert",
+    "collaborators": "Mitarbeiter",
+    "visibility": "Sichtbarkeit",
+    "owner": "Besitzer",
+    "created": "Erstellt"
+  },
+  "searchBar": {
+    "placeholder": "Dokumente, Sammlungen und kulturelle Inhalte suchen...",
+    "suggestions": "Vorschläge",
+    "recentSearches": "Neueste Suchen",
+    "clearSearch": "Suche löschen",
+    "advancedSearch": "Erweiterte Suche",
+    "filters": "Filter",
+    "noSuggestions": "Keine Vorschläge",
+    "searching": "Suche..."
+  },
+  "search": {
+    "placeholder": "Dokumente, Sammlungen und mehr suchen...",
+    "noResults": "Keine Ergebnisse gefunden",
+    "searchFilters": "Suchfilter",
+    "sortBy": "Sortieren nach",
+    "resultCount": "{{count}} Ergebnisse gefunden",
+    "suggestions": "Meinten Sie"
+  },
+  "languageSwitch": {
+    "selectLanguage": "Sprache Auswählen",
+    "currentLanguage": "Aktuelle Sprache",
+    "availableLanguages": "Verfügbare Sprachen"
+  },
+  "tooltip": {
+    "showTooltip": "Tooltip anzeigen",
+    "hideTooltip": "Tooltip ausblenden"
+  },
+  "progress": {
+    "loading": "Laden...",
+    "complete": "Abgeschlossen",
+    "failed": "Fehlgeschlagen",
+    "cancelled": "Abgebrochen",
+    "percentage": "{{percent}}%"
+  },
+  "downloadManager": {
+    "title": "Download-Manager",
+    "subtitle": "Verwalten Sie Ihre Downloads und Peer-to-Peer-Übertragungen",
+    "actions": {
+      "addDownload": "Download Hinzufügen",
+      "selectAll": "Alle Auswählen",
+      "deselectAll": "Alle Abwählen",
+      "pauseAll": "Alle Pausieren",
+      "resumeAll": "Alle Fortsetzen",
+      "clearCompleted": "Abgeschlossene Löschen",
+      "removeSelected": "Ausgewählte Entfernen"
+    },
+    "batchActions": {
+      "pauseSelected": "Ausgewählte Pausieren",
+      "resumeSelected": "Ausgewählte Fortsetzen",
+      "removeSelected": "Ausgewählte Entfernen",
+      "prioritizeSelected": "Ausgewählte Priorisieren"
+    },
+    "filters": {
+      "all": "Alle Downloads",
+      "downloading": "Herunterladen",
+      "completed": "Abgeschlossen",
+      "paused": "Pausiert",
+      "error": "Fehler",
+      "seeding": "Seeding",
+      "queued": "In Warteschlange"
+    },
+    "table": {
+      "headers": {
+        "name": "Name",
+        "size": "Größe",
+        "progress": "Fortschritt",
+        "speed": "Geschwindigkeit",
+        "peers": "Peers",
+        "eta": "Verbleibende Zeit",
+        "ratio": "Verhältnis",
+        "status": "Status",
+        "priority": "Priorität",
+        "dateAdded": "Hinzugefügt am"
+      }
+    }
+  },
+  "organizationTools": {
+    "title": "Organisationstools",
+    "subtitle": "Organisieren und verwalten Sie Ihre Dokumentensammlungen",
+    "stats": {
+      "organizationScore": "Organisationsbewertung",
+      "organizedDocuments": "Organisierte Dokumente",
+      "averageTagsPerDocument": "Durchschnittliche Tags pro Dokument",
+      "culturalContexts": "Kulturelle Kontexte"
+    },
+    "notifications": {
+      "autoOrganizationCompleted": "Auto-Organisation abgeschlossen!"
+    },
+    "tabs": {
+      "overview": "Übersicht",
+      "bulk": "Massenoperationen"
+    },
+    "quickActions": {
+      "autoOrganize": "Auto-Organisieren",
+      "bulkActions": "Massenaktionen ({{count}})"
+    },
+    "culturalDistribution": {
+      "title": "Kulturelle Kontextverteilung",
+      "badge": "Bildungsinfo"
+    },
+    "suggestions": {
+      "title": "Organisationsvorschläge"
+    },
+    "bulkOperations": {
+      "title": "Massenoperationen",
+      "selectionInfo": "{{count}} Dokument ausgewählt",
+      "selectionInfo_other": "{{count}} Dokumente ausgewählt",
+      "execute": "Ausführen"
+    },
+    "modal": {
+      "autoOrganization": {
+        "title": "Auto-Organisation",
+        "question": "Auto-Organisation ausführen?",
+        "culturalNotice": "Kultureller Kontext wird nur zu Bildungszwecken analysiert. Alle Dokumente bleiben unabhängig von der kulturellen Klassifizierung zugänglich.",
+        "execute": "Auto-Organisation ausführen",
+        "cancel": "Abbrechen"
+      }
+    }
+  },
+  "p2pSearchInterface": {
+    "title": "P2P-Netzwerksuche",
+    "subtitle": "Durchsuchen Sie das verteilte Netzwerk",
+    "searchPlaceholder": "P2P-Netzwerk durchsuchen...",
+    "buttons": {
+      "search": "Suchen",
+      "searching": "Suche läuft..."
+    },
+    "options": {
+      "searchType": "Suchtyp",
+      "searchDepth": "Suchtiefe",
+      "includeAnonymous": "Anonyme Quellen einschließen",
+      "includeCultural": "Kulturellen Kontext einschließen"
+    },
+    "searchTypes": {
+      "content": "Inhalt und Dokumente",
+      "peer": "Peers und Knoten",
+      "community": "Community-Netzwerke"
+    },
+    "searchDepth": {
+      "local": "Nur lokal",
+      "network": "Verbundene Peers",
+      "deep": "Erweitertes Netzwerk"
+    },
+    "progress": {
+      "searchingNetwork": "Netzwerk durchsuchen... {{progress}}%"
+    },
+    "results": {
+      "title": "Suchergebnisse ({{count}})",
+      "searchTime": "Suche in {{time}} abgeschlossen",
+      "noResults": "Keine Ergebnisse gefunden",
+      "noResultsDescription": "Kein Inhalt für \"{{query}}\" im P2P-Netzwerk gefunden.",
+      "culturalLevel": "Kulturelles Niveau {{level}}",
+      "anonymousSource": "Anonyme Quelle",
+      "noDescription": "Keine Beschreibung verfügbar"
+    },
+    "suggestions": {
+      "title": "Vorschläge:",
+      "differentTerms": "Versuchen Sie andere Suchbegriffe",
+      "enableAnonymous": "Aktivieren Sie anonyme Quellen für breitere Abdeckung",
+      "increaseDepth": "Erhöhen Sie die Suchtiefe auf \"Erweitertes Netzwerk\"",
+      "checkConnectivity": "Überprüfen Sie die Netzwerkverbindung ({{peers}} Peers verbunden)"
+    },
+    "badges": {
+      "peersConnected": "{{count}} Peers verbunden",
+      "anonymousSearch": "Anonyme Suche"
+    },
+    "antiCensorshipInfo": {
+      "title": "Anti-Zensur-Suche",
+      "description": "Diese Suche arbeitet nach dezentralen P2P-Prinzipien. Alle Inhalte sind ohne Einschränkungen durchsuchbar. Kultureller Kontext wird nur zu Bildungszwecken bereitgestellt."
+    }
+  },
+  "timeFilter": {
+    "title": "Zeitfilter",
+    "placeholder": "Zeitraum auswählen",
+    "dateSeparator": "bis",
+    "options": {
+      "allTime": "Alle Zeit",
+      "today": "Heute",
+      "thisWeek": "Diese Woche",
+      "thisMonth": "Dieser Monat",
+      "thisYear": "Dieses Jahr",
+      "customRange": "Benutzerdefinierter Bereich"
+    }
+  },
+  "breadcrumb": {
+    "ariaLabel": "Breadcrumb-Navigation"
   }
 }

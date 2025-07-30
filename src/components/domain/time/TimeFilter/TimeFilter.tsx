@@ -2,6 +2,7 @@ import { Component, createSignal } from 'solid-js';
 import { Calendar, Clock, Filter } from 'lucide-solid';
 import { Button } from '../../../foundation/Button';
 import { Select } from '../../../foundation/Select';
+import { useTranslation } from '../../../i18n/hooks';
 import styles from './TimeFilter.module.css';
 
 export interface TimeFilterProps {
@@ -16,17 +17,18 @@ export interface TimeFilterValue {
 }
 
 export const TimeFilter: Component<TimeFilterProps> = props => {
+  const { t } = useTranslation('components');
   const [selectedPeriod, setSelectedPeriod] = createSignal('all');
   const [customStart, setCustomStart] = createSignal('');
   const [customEnd, setCustomEnd] = createSignal('');
 
   const timeOptions = [
-    { value: 'all', label: 'All Time' },
-    { value: 'today', label: 'Today' },
-    { value: 'week', label: 'This Week' },
-    { value: 'month', label: 'This Month' },
-    { value: 'year', label: 'This Year' },
-    { value: 'custom', label: 'Custom Range' },
+    { value: 'all', label: t('timeFilter.options.allTime') },
+    { value: 'today', label: t('timeFilter.options.today') },
+    { value: 'week', label: t('timeFilter.options.thisWeek') },
+    { value: 'month', label: t('timeFilter.options.thisMonth') },
+    { value: 'year', label: t('timeFilter.options.thisYear') },
+    { value: 'custom', label: t('timeFilter.options.customRange') },
   ];
 
   const handlePeriodChange = (period: string) => {
@@ -75,7 +77,7 @@ export const TimeFilter: Component<TimeFilterProps> = props => {
     <div class={`${styles.timeFilter} ${props.class || ''}`}>
       <div class={styles.filterHeader}>
         <Clock size={16} />
-        <span>Time Filter</span>
+        <span>{t('timeFilter.title')}</span>
       </div>
 
       <div class={styles.filterControls}>
@@ -83,7 +85,7 @@ export const TimeFilter: Component<TimeFilterProps> = props => {
           options={timeOptions}
           value={selectedPeriod()}
           onChange={handlePeriodChange}
-          placeholder="Select time period"
+          placeholder={t('timeFilter.placeholder')}
         />
 
         {selectedPeriod() === 'custom' && (
@@ -98,7 +100,7 @@ export const TimeFilter: Component<TimeFilterProps> = props => {
                 class={styles.dateField}
               />
             </div>
-            <span class={styles.dateSeparator}>to</span>
+            <span class={styles.dateSeparator}>{t('timeFilter.dateSeparator')}</span>
             <div class={styles.dateInput}>
               <Calendar size={16} />
               <input

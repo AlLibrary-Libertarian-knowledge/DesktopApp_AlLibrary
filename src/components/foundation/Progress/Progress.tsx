@@ -28,6 +28,7 @@
  */
 
 import { Component, createMemo, Show } from 'solid-js';
+import { useTranslation } from '../../../i18n/hooks';
 import styles from './Progress.module.css';
 
 export interface ProgressProps {
@@ -60,6 +61,8 @@ export interface ProgressProps {
 }
 
 export const Progress: Component<ProgressProps> = props => {
+  const { t } = useTranslation('components');
+
   // Default props
   const size = () => props.size || 'md';
   const variant = () => props.variant || 'primary';
@@ -78,7 +81,7 @@ export const Progress: Component<ProgressProps> = props => {
   // Generate label text
   const labelText = createMemo(() => {
     if (props.label) return props.label;
-    if (props.indeterminate) return 'Loading...';
+    if (props.indeterminate) return t('progress.loading');
     return `${Math.round(percentage())}%`;
   });
 

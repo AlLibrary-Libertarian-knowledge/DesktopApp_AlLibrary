@@ -5,7 +5,7 @@
  * with reactive state and performance optimization
  */
 
-import { createSignal, createMemo } from 'solid-js';
+import { createSignal, createMemo, createRoot } from 'solid-js';
 import type {
   UseTranslationReturn,
   UseLanguageReturn,
@@ -17,14 +17,39 @@ import type {
 } from './types';
 import { i18nService } from './service';
 
-// Global state for language changes
-const [globalLocale, setGlobalLocale] = createSignal<SupportedLocale>(i18nService.getLanguage());
-const [isLoading, setIsLoading] = createSignal<boolean>(false);
-const [error, setError] = createSignal<string | null>(null);
+// Global state for language changes - wrapped in createRoot to prevent disposal warnings
+const {
+  globalLocale,
+  setGlobalLocale,
+  isLoading,
+  setIsLoading,
+  error,
+  setError,
+  translationVersion,
+  setTranslationVersion,
+} = createRoot(() => {
+  const [globalLocale, setGlobalLocale] = createSignal<SupportedLocale>(i18nService.getLanguage());
+  const [isLoading, setIsLoading] = createSignal<boolean>(false);
+  const [error, setError] = createSignal<string | null>(null);
+  const [translationVersion, setTranslationVersion] = createSignal(0);
 
-// Sync global state with service
+  return {
+    globalLocale,
+    setGlobalLocale,
+    isLoading,
+    setIsLoading,
+    error,
+    setError,
+    translationVersion,
+    setTranslationVersion,
+  };
+});
+
+// Sync global state with service and force re-renders
 i18nService.onLanguageChange(async locale => {
   setGlobalLocale(locale);
+  // Force all translation functions to re-evaluate by incrementing version
+  setTranslationVersion(prev => prev + 1);
 });
 
 /**
@@ -34,30 +59,44 @@ i18nService.onLanguageChange(async locale => {
  * @returns Translation functions and language state
  */
 export const useTranslation = (namespace?: TranslationNamespace): UseTranslationReturn => {
-  // Translation function with optional namespace
+  // Translation function with optional namespace that is reactive to language changes
   const t: TranslationFunction = (key, params) => {
-    const translationKey = namespace ? `${namespace}.${key}` : key;
+    // Access translationVersion to make this reactive to language changes
+    translationVersion();
+    const translationKey = namespace ? `${namespace}.${key}` : (key as any);
     return i18nService.t(translationKey, params);
   };
 
   // Plural translation function with optional namespace
   const tc: PluralTranslationFunction = (key, count, params) => {
-    const translationKey = namespace ? `${namespace}.${key}` : key;
+    // Access translationVersion to make this reactive to language changes
+    translationVersion();
+    const translationKey = namespace ? `${namespace}.${key}` : (key as any);
     return i18nService.tc(translationKey, count, params);
   };
 
   // Translation existence check with optional namespace
   const te: TranslationExistsFunction = key => {
-    const translationKey = namespace ? `${namespace}.${key}` : key;
+    // Access translationVersion to make this reactive to language changes
+    translationVersion();
+    const translationKey = namespace ? `${namespace}.${key}` : (key as any);
     return i18nService.te(translationKey);
   };
 
-  // Language change function
+  // Language change function with immediate cache clearing
   const changeLanguage = async (locale: SupportedLocale): Promise<void> => {
     try {
       setIsLoading(true);
       setError(null);
+
+      // Clear service cache first
+      i18nService.clearCache();
+
+      // Change language
       await i18nService.setLanguage(locale);
+
+      // Force immediate update
+      setTranslationVersion(prev => prev + 1);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Language change failed');
       throw err;
@@ -70,9 +109,9 @@ export const useTranslation = (namespace?: TranslationNamespace): UseTranslation
   const ready = createMemo(() => !isLoading() && !error());
 
   return {
-    t,
-    tc,
-    te,
+    t: t as any,
+    tc: tc as any,
+    te: te as any,
     locale: globalLocale,
     changeLanguage,
     ready,

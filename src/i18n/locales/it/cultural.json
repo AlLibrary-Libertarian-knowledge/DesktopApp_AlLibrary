@@ -1,0 +1,17 @@
+{
+  "sensitivity": {
+    "public": "Pubblico",
+    "educational": "Educativo",
+    "community": "Comunitario",
+    "traditional": "Tradizionale",
+    "guardian": "Guardiano",
+    "sacred": "Sacro",
+    "ceremonial": "Cerimoniale"
+  },
+  "context": {
+    "informationOnly": "Solo Informazioni",
+    "educationalPurpose": "A Scopo Educativo",
+    "noAccessRestrictions": "Nessuna Restrizione di Accesso",
+    "multiplePerspectives": "Prospettive Multiple"
+  }
+}

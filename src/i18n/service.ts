@@ -5,7 +5,7 @@
  * with performance optimization and cultural sensitivity support
  */
 
-import { createSignal, createResource, createEffect } from 'solid-js';
+import { createSignal, createResource, createEffect, createRoot } from 'solid-js';
 import type {
   I18nService,
   SupportedLocale,
@@ -127,24 +127,32 @@ const loadTranslations = async (locale: SupportedLocale): Promise<LocaleTranslat
 // Create the main i18n service
 export const createI18nService = (): I18nService => {
   const cache = new TranslationCache();
-  const [currentLocale, setCurrentLocale] = createSignal<SupportedLocale>(getInitialLanguage());
-  const [translations, { refetch }] = createResource(currentLocale, loadTranslations);
 
-  // Language change handlers
-  const changeHandlers = new Set<LanguageChangeHandler>();
+  // Wrap signals and effects in createRoot to prevent disposal warnings
+  const { currentLocale, setCurrentLocale, translations, refetch, changeHandlers } = createRoot(
+    () => {
+      const [currentLocale, setCurrentLocale] = createSignal<SupportedLocale>(getInitialLanguage());
+      const [translations, { refetch }] = createResource(currentLocale, loadTranslations);
 
-  // Save language preference when it changes
-  createEffect(() => {
-    const locale = currentLocale();
-    saveLanguagePreference(locale);
+      // Language change handlers
+      const changeHandlers = new Set<LanguageChangeHandler>();
 
-    // Notify handlers
-    changeHandlers.forEach(handler => {
-      handler(locale).catch(error => {
-        console.warn('Language change handler failed:', error);
+      // Save language preference when it changes
+      createEffect(() => {
+        const locale = currentLocale();
+        saveLanguagePreference(locale);
+
+        // Notify handlers
+        changeHandlers.forEach(handler => {
+          handler(locale).catch(error => {
+            console.warn('Language change handler failed:', error);
+          });
+        });
       });
-    });
-  });
+
+      return { currentLocale, setCurrentLocale, translations, refetch, changeHandlers };
+    }
+  );
 
   // Translation function
   const t: TranslationFunction = (key: TranslationKey, params?: TranslationParams): string => {
@@ -235,8 +243,15 @@ export const createI18nService = (): I18nService => {
       throw new Error(`Unsupported locale: ${locale}`);
     }
 
+    // Clear cache before changing language to prevent stale translations
+    cache.clear();
+
+    // Set the new locale and force refetch
     setCurrentLocale(locale);
     await refetch();
+
+    // Clear cache again after refetch to ensure immediate updates
+    cache.clear();
   };
 
   const getLanguage = (): SupportedLocale => currentLocale();

@@ -37,5 +37,8 @@
     "connectionManager": "Gerenciador de Conexões",
     "p2pSearch": "Pesquisa P2P",
     "newArrivals": "Novos Documentos"
+  },
+  "items": {
+    "notifications": "Notificações"
   }
 }

@@ -1,0 +1,8 @@
+{
+  "documentNotFound": "ドキュメントが見つかりません",
+  "networkConnectionFailed": "ネットワーク接続に失敗しました",
+  "uploadFailed": "アップロードに失敗しました",
+  "searchFailed": "検索に失敗しました",
+  "accessDenied": "アクセスが拒否されました",
+  "validationFailed": "検証に失敗しました"
+}

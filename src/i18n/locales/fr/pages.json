@@ -4,65 +4,154 @@
     "subtitle": "Réseau Décentralisé de Préservation du Patrimoine Culturel",
     "networkStatus": {
       "online": "Réseau En Ligne",
+      "offline": "Réseau Hors Ligne",
+      "connecting": "Connexion",
       "health": "98% Santé",
       "peers": "pairs",
       "nodes": "nœuds",
-      "connections": "connexions"
+      "connections": "connexions",
+      "latency": "latence",
+      "bandwidth": "bande passante"
     },
     "dataFlow": {
       "download": "Téléchargement",
-      "upload": "Téléversement"
+      "upload": "Téléversement",
+      "incoming": "Entrant",
+      "outgoing": "Sortant",
+      "totalTransfer": "Transfert Total",
+      "activeTransfers": "Transferts Actifs"
     },
     "activityIndicators": {
       "downloads": "Téléchargements",
       "seeding": "Partage",
-      "discovering": "Découverte"
+      "discovering": "Découverte",
+      "active": "actif",
+      "idle": "inactif",
+      "paused": "en pause"
     },
     "tabs": {
       "overview": "Aperçu",
       "network": "Réseau",
-      "downloads": "Téléchargements"
+      "downloads": "Téléchargements",
+      "analytics": "Analyses"
     },
     "stats": {
       "documentsShared": "Documents Partagés",
       "connectedPeers": "Pairs Connectés",
       "culturalInstitutions": "Institutions Culturelles",
       "networkHealth": "Santé du Réseau",
+      "totalStorage": "Stockage Total",
+      "availableStorage": "Stockage Disponible",
+      "uploadSpeed": "Vitesse de Téléversement",
+      "downloadSpeed": "Vitesse de Téléchargement",
       "today": "aujourd'hui",
+      "thisWeek": "cette semaine",
+      "thisMonth": "ce mois",
       "online": "en ligne",
+      "offline": "hors ligne",
       "stable": "stable",
-      "excellent": "excellent"
+      "excellent": "excellent",
+      "good": "bon",
+      "fair": "correct",
+      "poor": "faible",
+      "trendPositive": "tendance positive",
+      "trendNegative": "tendance négative",
+      "trendNeutral": "stable"
     },
     "networkTopology": {
       "title": "Topologie du Réseau",
       "subtitle": "Visualisation en direct des connexions entre pairs",
-      "expandView": "Étendre la Vue"
+      "expandView": "Étendre la Vue",
+      "viewDetails": "Voir les Détails",
+      "refreshData": "Actualiser les Données",
+      "exportData": "Exporter les Données",
+      "legend": "Légende",
+      "nodeTypes": {
+        "library": "Nœud de Bibliothèque",
+        "institution": "Institution",
+        "peer": "Pair",
+        "bridge": "Nœud Pont",
+        "relay": "Nœud Relais"
+      }
     },
     "networkActivity": {
       "title": "Activité du Réseau",
       "subtitle": "Téléchargements et connexions réseau en temps réel",
       "recentDownloads": "Téléchargements Récents",
       "recentDownloadsSubtitle": "Téléchargements et téléversements actifs",
-      "networkActivitySubtitle": "Connexions de pairs et découvertes"
+      "networkActivitySubtitle": "Connexions de pairs et découvertes",
+      "recentUploads": "Téléversements Récents",
+      "networkConnections": "Connexions Réseau",
+      "peerDiscovery": "Découverte de Pairs",
+      "institutionSharing": "Partage Institutionnel",
+      "culturalExchange": "Échange Culturel"
     },
     "quickActions": {
       "title": "Actions Rapides",
       "shareDocument": "Partager Document",
       "searchNetwork": "Rechercher Réseau",
       "analytics": "Analyses",
-      "settings": "Paramètres"
+      "settings": "Paramètres",
+      "uploadFile": "Téléverser Fichier",
+      "createCollection": "Créer Collection",
+      "browseLibrary": "Parcourir Bibliothèque",
+      "viewHistory": "Voir Historique",
+      "manageConnections": "Gérer Connexions",
+      "culturalContext": "Contexte Culturel",
+      "securityAudit": "Audit de Sécurité",
+      "communityGuidelines": "Directives Communautaires"
     },
     "networkSection": {
       "title": "Topologie et Analyse du Réseau",
+      "subtitle": "Explorer les connexions et performances du réseau",
       "refresh": "Actualiser",
       "statistics": "Statistiques",
-      "configure": "Configurer"
+      "configure": "Configurer",
+      "export": "Exporter",
+      "fullscreen": "Plein Écran",
+      "filters": "Filtres",
+      "layout": "Disposition",
+      "controls": {
+        "zoomIn": "Zoomer",
+        "zoomOut": "Dézoomer",
+        "resetView": "Réinitialiser Vue",
+        "centerView": "Centrer Vue",
+        "fitToScreen": "Ajuster à l'Écran"
+      },
+      "metrics": {
+        "totalNodes": "Total des Nœuds",
+        "activeConnections": "Connexions Actives",
+        "avgLatency": "Latence Moyenne",
+        "networkDensity": "Densité du Réseau",
+        "clusteringCoeff": "Coefficient de Clustering"
+      }
     },
     "downloadsSection": {
       "title": "Gestionnaire de Téléchargements",
+      "subtitle": "Gérer vos téléchargements et téléversements",
       "addDownload": "Ajouter Téléchargement",
       "queue": "File d'attente",
-      "preferences": "Préférences"
+      "preferences": "Préférences",
+      "pauseAll": "Tout Suspendre",
+      "resumeAll": "Tout Reprendre",
+      "clearCompleted": "Effacer Terminés",
+      "bandwidth": "Bande Passante",
+      "filters": {
+        "all": "Tous",
+        "downloading": "En Téléchargement",
+        "seeding": "En Partage",
+        "completed": "Terminés",
+        "paused": "En Pause",
+        "failed": "Échoués"
+      },
+      "sortBy": {
+        "name": "Nom",
+        "size": "Taille",
+        "progress": "Progression",
+        "speed": "Vitesse",
+        "eta": "Temps Estimé",
+        "priority": "Priorité"
+      }
     },
     "welcomeModal": {
       "title": "Bienvenue sur AlLibrary",
@@ -73,13 +162,54 @@
         "performance": "Haute performance libp2p avec routage DHT",
         "culturalProtection": "Protocoles de protection culturelle et permissions",
         "advancedSearch": "Recherche avancée avec filtrage de contexte culturel",
-        "realTimeAnalytics": "Analyses de réseau et surveillance en temps réel"
+        "realTimeAnalytics": "Analyses de réseau et surveillance en temps réel",
+        "decentralized": "Architecture entièrement décentralisée",
+        "preservation": "Préservation numérique à long terme",
+        "collaboration": "Partage collaboratif de connaissances",
+        "accessibility": "Support d'accessibilité universelle"
       },
       "takeTour": "Faire le Tour",
-      "enterLibrary": "Entrer dans AlLibrary"
+      "enterLibrary": "Entrer dans AlLibrary",
+      "learnMore": "En Savoir Plus",
+      "skipIntro": "Passer l'Introduction",
+      "gettingStarted": "Guide de Démarrage"
     },
     "recentActivity": "Activité Récente",
-    "culturalHighlights": "Points Forts des Connaissances Culturelles"
+    "culturalHighlights": "Points Forts des Connaissances Culturelles",
+    "dashboard": {
+      "lastUpdated": "Dernière mise à jour",
+      "autoRefresh": "Actualisation automatique",
+      "dataSource": "Source de données",
+      "exportData": "Exporter données",
+      "shareView": "Partager vue",
+      "customizeLayout": "Personnaliser disposition"
+    },
+    "accessibility": {
+      "networkStatusAria": "État du réseau : {{status}}, {{peers}} pairs connectés, {{health}} santé",
+      "statCardAria": "{{label}} : {{value}}, tendance {{trend}}",
+      "activityItemAria": "Activité {{type}} : {{title}}, {{status}}",
+      "downloadProgressAria": "Progression du téléchargement : {{progress}} pour cent terminé",
+      "networkGraphAria": "Visualisation de la topologie réseau montrant {{nodes}} nœuds et {{connections}} connexions",
+      "skipToContent": "Aller au contenu principal",
+      "skipToNavigation": "Aller à la navigation"
+    },
+    "errors": {
+      "networkConnectionFailed": "Échec de connexion au réseau",
+      "dataLoadFailed": "Échec du chargement des données du tableau de bord",
+      "statUpdateFailed": "Échec de mise à jour des statistiques",
+      "downloadStartFailed": "Échec du démarrage du téléchargement",
+      "uploadStartFailed": "Échec du démarrage du téléversement",
+      "retryAction": "Réessayer",
+      "reportIssue": "Signaler Problème"
+    },
+    "loading": {
+      "dashboard": "Chargement du tableau de bord...",
+      "networkData": "Chargement des données réseau...",
+      "statistics": "Chargement des statistiques...",
+      "activities": "Chargement des activités...",
+      "connecting": "Connexion au réseau...",
+      "initializing": "Initialisation..."
+    }
   },
   "search": {
     "title": "Recherche",

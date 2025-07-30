@@ -3,5 +3,6 @@
   "email": "Adresse e-mail invalide",
   "minLength": "Doit contenir au moins {{min}} caractères",
   "maxLength": "Ne peut pas dépasser {{max}} caractères",
-  "pattern": "Format invalide"
+  "pattern": "Format invalide",
+  "numeric": "Seuls les chiffres sont autorisés"
 }

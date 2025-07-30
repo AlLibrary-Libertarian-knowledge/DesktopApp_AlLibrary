@@ -1,4 +1,5 @@
 import { Component, JSX, createSignal, Show, createEffect, onCleanup } from 'solid-js';
+import { useTranslation } from '../../../i18n/hooks';
 import { Button, Input, Card, Modal } from '../../foundation';
 import {
   X,
@@ -140,6 +141,8 @@ export interface DocumentPreviewProps {
  * ```
  */
 const DocumentPreview: Component<DocumentPreviewProps> = props => {
+  const { t } = useTranslation('components');
+
   // Component state management
   const [currentMode, setCurrentMode] = createSignal<PreviewMode>(props.defaultMode || 'view');
   const [isLoading, setIsLoading] = createSignal(false);
@@ -192,9 +195,7 @@ const DocumentPreview: Component<DocumentPreviewProps> = props => {
    */
   const handleCancelEdit = () => {
     if (hasUnsavedChanges()) {
-      const confirmCancel = window.confirm(
-        'You have unsaved changes. Are you sure you want to cancel?'
-      );
+      const confirmCancel = window.confirm(t('documentPreview.confirmations.cancelChanges'));
       if (!confirmCancel) return;
     }
 
@@ -322,9 +323,7 @@ const DocumentPreview: Component<DocumentPreviewProps> = props => {
       isOpen={props.isOpen}
       onClose={() => {
         if (hasUnsavedChanges()) {
-          const confirmClose = window.confirm(
-            'You have unsaved changes. Are you sure you want to close?'
-          );
+          const confirmClose = window.confirm(t('documentPreview.confirmations.closeWithChanges'));
           if (!confirmClose) return;
         }
         props.onClose?.();
@@ -380,7 +379,7 @@ const DocumentPreview: Component<DocumentPreviewProps> = props => {
                 onClick={() => {
                   if (hasUnsavedChanges()) {
                     const confirmSwitch = window.confirm(
-                      'You have unsaved changes. Switch modes anyway?'
+                      t('documentPreview.confirmations.switchMode')
                     );
                     if (!confirmSwitch) return;
                   }

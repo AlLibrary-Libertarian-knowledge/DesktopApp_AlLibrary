@@ -1,6 +1,6 @@
 import { Component, For, JSX } from 'solid-js';
 import { A } from '@solidjs/router';
-import styles from './Breadcrumb.module.css';
+import { useTranslation } from '../../../i18n/hooks';
 
 export interface BreadcrumbItem {
   label: string;
@@ -18,6 +18,7 @@ export interface BreadcrumbProps {
 }
 
 const Breadcrumb: Component<BreadcrumbProps> = props => {
+  const { t } = useTranslation('components');
   const separator = () => props.separator || '/';
   const items = () => {
     const allItems = props.items;
@@ -36,7 +37,7 @@ const Breadcrumb: Component<BreadcrumbProps> = props => {
   const breadcrumbClasses = () => ['breadcrumb', props.class].filter(Boolean).join(' ');
 
   return (
-    <nav class={breadcrumbClasses()} aria-label="Breadcrumb">
+    <nav class={breadcrumbClasses()} aria-label={t('breadcrumb.ariaLabel')}>
       <ol class="breadcrumb-list">
         <For each={items()}>
           {(item, index) => (

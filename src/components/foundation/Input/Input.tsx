@@ -1,4 +1,5 @@
 import { Component, JSX, createSignal, createEffect, Show } from 'solid-js';
+import { useTranslation } from '../../../i18n/hooks';
 import { validationService } from '../../../services/validationService';
 import { CULTURAL_LABELS } from '../../../constants/cultural';
 import styles from './Input.module.css';
@@ -108,6 +109,8 @@ export interface InputProps {
  * ```
  */
 const Input: Component<InputProps> = props => {
+  const { t } = useTranslation('components');
+
   // Internal state for validation and accessibility
   const [isFocused, setIsFocused] = createSignal(false);
   const [internalValue, setInternalValue] = createSignal(props.value || '');
@@ -196,8 +199,8 @@ const Input: Component<InputProps> = props => {
       props.onValidationChange?.(isValid, errors);
     } catch (error) {
       console.error('Input validation error:', error);
-      setValidationError('Validation failed');
-      props.onValidationChange?.(false, ['Validation failed']);
+      setValidationError(t('input.validation.failed'));
+      props.onValidationChange?.(false, [t('input.validation.failed')]);
     } finally {
       setIsValidating(false);
     }

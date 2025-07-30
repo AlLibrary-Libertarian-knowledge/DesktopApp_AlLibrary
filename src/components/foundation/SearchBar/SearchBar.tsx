@@ -1,5 +1,6 @@
 import { Component, createSignal, createEffect, Show, For } from 'solid-js';
 import { Search, X, Filter } from 'lucide-solid';
+import { useTranslation } from '../../../i18n/hooks';
 import { CULTURAL_SENSITIVITY_LEVELS, CULTURAL_LABELS } from '../../../constants/cultural';
 import styles from './SearchBar.module.css';
 
@@ -91,6 +92,8 @@ export interface SearchBarProps {
  * ```
  */
 const SearchBar: Component<SearchBarProps> = props => {
+  const { t } = useTranslation('components');
+
   // Internal state for search functionality
   const [internalValue, setInternalValue] = createSignal(props.value || '');
   const [isFocused, setIsFocused] = createSignal(false);
@@ -353,7 +356,7 @@ const SearchBar: Component<SearchBarProps> = props => {
 
         {/* Loading Indicator */}
         <Show when={props.loading}>
-          <div class={styles['search-loading']} aria-label="Searching...">
+          <div class={styles['search-loading']} aria-label={t('searchBar.accessibility.searching')}>
             <div class={styles['search-spinner']} />
           </div>
         </Show>
@@ -366,7 +369,7 @@ const SearchBar: Component<SearchBarProps> = props => {
             type="button"
             class={styles['search-clear']}
             onClick={handleClear}
-            aria-label="Clear search"
+            aria-label={t('searchBar.accessibility.clearSearch')}
           >
             <X size={16} />
           </button>
@@ -378,7 +381,7 @@ const SearchBar: Component<SearchBarProps> = props => {
             type="button"
             class={styles['search-filter']}
             onClick={props.onFilterClick}
-            aria-label="Open filters"
+            aria-label={t('searchBar.accessibility.openFilters')}
           >
             <Filter size={16} />
           </button>

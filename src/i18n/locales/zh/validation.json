@@ -1,1 +1,8 @@
- 
+{
+  "required": "此字段为必填项",
+  "email": "请输入有效的电子邮件地址",
+  "minLength": "最少需要 {{min}} 个字符",
+  "maxLength": "不能超过 {{max}} 个字符",
+  "pattern": "格式无效",
+  "numeric": "只允许数字"
+}

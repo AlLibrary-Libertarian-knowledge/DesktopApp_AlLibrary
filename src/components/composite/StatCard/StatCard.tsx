@@ -1,4 +1,5 @@
 import { Component, JSX } from 'solid-js';
+import { useTranslation } from '../../../i18n/hooks';
 import styles from './StatCard.module.css';
 
 export interface StatCardProps {
@@ -23,43 +24,62 @@ export interface StatCardProps {
   // Accessibility
   ariaLabel?: string;
   onClick?: () => void;
+
+  // i18n
+  labelKey?: string; // Optional translation key for label
+  trendLabelKey?: string; // Optional translation key for trend label
 }
 
 /**
  * StatCard Component
  *
  * A reusable stat card component for the dashboard with enhanced visuals,
- * accessibility support, and proper component isolation.
+ * accessibility support, and proper component isolation with i18n support.
  */
 const StatCard: Component<StatCardProps> = props => {
+  const { t } = useTranslation('components');
+
   const renderGraph = () => {
+    const graphAriaLabel = t('statCard.accessibility.chartVisualization', { type: props.type });
+
     switch (props.graphType) {
       case 'chart':
         return (
-          <div class={styles['mini-chart']}>
-            {Array.from({ length: 7 }, (_, _i) => (
-              <div class={styles['chart-bar']} style={`height: ${Math.random() * 60 + 20}%`}></div>
+          <div class={styles['mini-chart']} aria-label={graphAriaLabel}>
+            {Array.from({ length: 7 }, (_, i) => (
+              <div
+                class={styles['chart-bar']}
+                style={`height: ${Math.random() * 60 + 20}%`}
+                aria-hidden="true"
+                key={i}
+              ></div>
             ))}
           </div>
         );
 
       case 'peers':
         return (
-          <div class={styles['peer-visualization']}>
-            {Array.from({ length: 6 }, (_, _i) => (
-              <div class={`${styles['peer-node']} ${_i < 4 ? styles['active'] : ''}`}></div>
+          <div class={styles['peer-visualization']} aria-label={graphAriaLabel}>
+            {Array.from({ length: 6 }, (_, i) => (
+              <div
+                class={`${styles['peer-node']} ${i < 4 ? styles['active'] : ''}`}
+                aria-hidden="true"
+                key={i}
+              ></div>
             ))}
           </div>
         );
 
       case 'map':
         return (
-          <div class={styles['institution-map']}>
+          <div class={styles['institution-map']} aria-label={graphAriaLabel}>
             <div class={styles['geo-dots']}>
-              {Array.from({ length: 12 }, (_, _i) => (
+              {Array.from({ length: 12 }, (_, i) => (
                 <div
                   class={styles['geo-dot']}
                   style={`top: ${Math.random() * 80}%; left: ${Math.random() * 80}%`}
+                  aria-hidden="true"
+                  key={i}
                 ></div>
               ))}
             </div>
@@ -68,7 +88,7 @@ const StatCard: Component<StatCardProps> = props => {
 
       case 'health':
         return (
-          <div class={styles['health-ring']}>
+          <div class={styles['health-ring']} aria-label={graphAriaLabel}>
             <svg width="60" height="60" viewBox="0 0 60 60" aria-hidden="true">
               <circle
                 cx="30"
@@ -110,11 +130,39 @@ const StatCard: Component<StatCardProps> = props => {
     }
   };
 
-  const handleKeyDown = (e: any) => {
+  const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       handleClick();
     }
+  };
+
+  // Generate comprehensive accessibility label
+  const getAriaLabel = () => {
+    if (props.ariaLabel) {
+      return props.ariaLabel;
+    }
+
+    const trendText = t(`statCard.trends.${props.trendType}`);
+    const displayLabel = props.labelKey ? t(props.labelKey) : props.label;
+    const displayTrendLabel = props.trendLabelKey ? t(props.trendLabelKey) : props.trendLabel;
+
+    return t('statCard.ariaLabel', {
+      label: displayLabel,
+      value: props.number,
+      trendType: trendText,
+      trendValue: `${props.trendValue} ${displayTrendLabel || ''}`.trim(),
+    });
+  };
+
+  // Get display label with i18n support
+  const getDisplayLabel = () => {
+    return props.labelKey ? t(props.labelKey) : props.label;
+  };
+
+  // Get trend label with i18n support
+  const getTrendLabel = () => {
+    return props.trendLabelKey ? t(props.trendLabelKey) : props.trendLabel;
   };
 
   return (
@@ -124,24 +172,31 @@ const StatCard: Component<StatCardProps> = props => {
       onKeyDown={handleKeyDown}
       tabindex={props.onClick ? 0 : undefined}
       role={props.onClick ? 'button' : 'article'}
-      aria-label={
-        props.ariaLabel ||
-        `${props.label}: ${props.number}. ${props.trendType} trend: ${props.trendValue} ${props.trendLabel || ''}`
-      }
+      aria-label={getAriaLabel()}
+      title={props.onClick ? t('statCard.accessibility.clickToExpand') : undefined}
     >
       <div class={styles['stat-content']}>
-        <div class={styles['stat-icon']} aria-hidden="true">
+        <div
+          class={styles['stat-icon']}
+          aria-hidden="true"
+          title={t(`statCard.types.${props.type}`)}
+        >
           {props.icon}
         </div>
         <div class={styles['stat-info']}>
           <div class={styles['stat-main']}>
-            <h3 class={styles['stat-number']}>{props.number}</h3>
-            <p class={styles['stat-label']}>{props.label}</p>
+            <h3 class={styles['stat-number']} aria-live="polite">
+              {props.number}
+            </h3>
+            <p class={styles['stat-label']}>{getDisplayLabel()}</p>
           </div>
-          <div class={`${styles['stat-trend']} ${styles[props.trendType]}`}>
+          <div
+            class={`${styles['stat-trend']} ${styles[props.trendType]}`}
+            aria-label={t('statCard.accessibility.trendIndicator', { trend: props.trendType })}
+          >
             <span aria-hidden="true">{props.trendIcon}</span>
             <span class={styles['trend-value']}>{props.trendValue}</span>
-            {props.trendLabel && <span class={styles['trend-label']}>{props.trendLabel}</span>}
+            {getTrendLabel() && <span class={styles['trend-label']}>{getTrendLabel()}</span>}
           </div>
         </div>
       </div>

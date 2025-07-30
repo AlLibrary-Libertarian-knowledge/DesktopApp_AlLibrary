@@ -1,16 +1,16 @@
 import { Component, createSignal, onMount, onCleanup, createEffect } from 'solid-js';
 import { Dynamic } from 'solid-js/web';
 import {
-  BookOpen,
   Globe,
-  Zap,
-  Layers,
-  Shield,
   Users,
-  Heart,
+  BookOpen,
+  Shield,
   Sparkles,
+  Heart,
   Database,
   CheckCircle,
+  Layers,
+  Zap,
 } from 'lucide-solid';
 import logoSvg from '/src/assets/logo.svg';
 import styles from './Loading.module.css';
@@ -71,8 +71,8 @@ const LoadingScreen: Component<LoadingScreenProps> = props => {
       setCurrentIcon(() => iconComponent);
 
       // Clear intervals if using Tauri progress
-      if (progressInterval) clearInterval(progressInterval);
-      if (phaseInterval) clearInterval(phaseInterval);
+      if (progressInterval) window.clearInterval(progressInterval);
+      if (phaseInterval) window.clearInterval(phaseInterval);
     }
   });
 
@@ -80,12 +80,12 @@ const LoadingScreen: Component<LoadingScreenProps> = props => {
     // Only start simulation if not using Tauri progress
     if (!props.tauriProgress) {
       // Simulate loading progress
-      progressInterval = setInterval(() => {
+      progressInterval = window.setInterval(() => {
         setLoadingProgress(prev => {
           const newProgress = Math.min(prev + Math.random() * 2 + 0.5, 100);
           if (newProgress >= 100) {
-            clearInterval(progressInterval);
-            setTimeout(() => {
+            window.clearInterval(progressInterval);
+            window.setTimeout(() => {
               props.onComplete?.();
             }, 1000);
             return 100;
@@ -95,7 +95,7 @@ const LoadingScreen: Component<LoadingScreenProps> = props => {
       }, 100);
 
       // Change phases during loading
-      phaseInterval = setInterval(() => {
+      phaseInterval = window.setInterval(() => {
         setCurrentPhase(prev => {
           const next = prev + 1;
           const nextPhase = loadingPhases[next];
@@ -104,7 +104,7 @@ const LoadingScreen: Component<LoadingScreenProps> = props => {
             setCurrentIcon(() => nextPhase.icon);
             return next;
           }
-          clearInterval(phaseInterval);
+          window.clearInterval(phaseInterval);
           return prev;
         });
       }, 2000);
@@ -112,8 +112,8 @@ const LoadingScreen: Component<LoadingScreenProps> = props => {
   });
 
   onCleanup(() => {
-    clearInterval(progressInterval);
-    clearInterval(phaseInterval);
+    window.clearInterval(progressInterval);
+    window.clearInterval(phaseInterval);
   });
 
   return (
@@ -121,7 +121,7 @@ const LoadingScreen: Component<LoadingScreenProps> = props => {
       {/* Background Pattern */}
       <div class={styles.loadingBackground}>
         <div class={styles.floatingParticles}>
-          {Array.from({ length: 20 }).map((_, i) => (
+          {Array.from({ length: 20 }).map((_, _i) => (
             <div
               class={styles.particle}
               style={`

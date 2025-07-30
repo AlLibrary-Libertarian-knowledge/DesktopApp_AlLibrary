@@ -1,0 +1,463 @@
+{
+  "button": {
+    "save": "Salva",
+    "cancel": "Annulla",
+    "submit": "Invia",
+    "delete": "Elimina",
+    "edit": "Modifica",
+    "create": "Crea",
+    "update": "Aggiorna",
+    "upload": "Carica",
+    "download": "Scarica",
+    "share": "Condividi",
+    "copy": "Copia",
+    "move": "Sposta",
+    "loading": "Caricamento...",
+    "defaultAriaLabel": "Pulsante",
+    "defaultTitle": "Clicca per eseguire azione",
+    "validationFailed": "Validazione di sicurezza fallita - controlla il tuo input",
+    "validationError": "Si è verificato un errore di validazione di sicurezza",
+    "validationRequired": "Completa la validazione di sicurezza",
+    "securityValidated": "Sicurezza validata",
+    "securityValidationRequired": "Validazione di sicurezza richiesta",
+    "culturalTheme": "Tema culturale: {{theme}}"
+  },
+  "modal": {
+    "close": "Chiudi",
+    "defaultTitle": "Dialogo Modale",
+    "confirm": "Conferma",
+    "cancel": "Annulla",
+    "closeModal": "Chiudi modale"
+  },
+  "input": {
+    "required": "Questo campo è obbligatorio",
+    "invalid": "Input non valido",
+    "placeholder": "Inserisci un valore...",
+    "search": "Cerca...",
+    "filter": "Filtra risultati..."
+  },
+  "card": {
+    "viewDetails": "Visualizza Dettagli",
+    "showMore": "Mostra Di Più",
+    "showLess": "Mostra Di Meno",
+    "actions": "Azioni"
+  },
+  "badge": {
+    "new": "Nuovo",
+    "updated": "Aggiornato",
+    "featured": "In Evidenza",
+    "trending": "Di Tendenza",
+    "popular": "Popolare"
+  },
+  "loading": {
+    "general": "Caricamento...",
+    "documents": "Caricamento documenti...",
+    "collections": "Caricamento collezioni...",
+    "network": "Connessione alla rete...",
+    "search": "Ricerca...",
+    "phases": {
+      "initializing": "Inizializzazione Rete Patrimonio Culturale...",
+      "connecting": "Connessione ai Nodi di Conservazione...",
+      "loading": "Caricamento Archivi di Conoscenza...",
+      "securing": "Sicurezza Saggezza Culturale...",
+      "preparing": "Preparazione Storie Sacre...",
+      "welcome": "Benvenuto in AlLibrary"
+    }
+  },
+  "errorBoundary": {
+    "title": "Qualcosa è andato storto",
+    "message": "Si è verificato un errore imprevisto. Prova ad aggiornare la pagina.",
+    "refresh": "Aggiorna Pagina",
+    "reportIssue": "Segnala Problema"
+  },
+  "culturalIndicator": {
+    "informationOnly": "Solo Informazioni",
+    "educationalPurpose": "Scopo Educativo",
+    "culturalContext": "Contesto Culturale",
+    "learnMore": "Scopri Di Più"
+  },
+  "networkStatus": {
+    "online": "Online",
+    "offline": "Offline",
+    "connecting": "Connessione",
+    "connected": "Connesso",
+    "disconnected": "Disconnesso",
+    "peers": "Peer",
+    "networkHealth": "Salute della Rete",
+    "latency": "Latenza",
+    "bandwidth": "Larghezza di Banda",
+    "uptime": "Tempo di Attività",
+    "lastSeen": "Visto l'ultima volta",
+    "status": "Stato"
+  },
+  "statCard": {
+    "ariaLabel": "{{label}}: {{value}}. Tendenza {{trendType}}: {{trendValue}}",
+    "trends": {
+      "positive": "Tendenza positiva",
+      "negative": "Tendenza negativa",
+      "neutral": "Tendenza stabile"
+    },
+    "types": {
+      "documents": "Documenti",
+      "peers": "Peer",
+      "institutions": "Istituzioni",
+      "health": "Salute",
+      "storage": "Archiviazione",
+      "bandwidth": "Larghezza di Banda"
+    },
+    "accessibility": {
+      "chartVisualization": "Visualizzazione grafico che mostra dati di {{type}}",
+      "trendIndicator": "Indicatore di tendenza che mostra cambiamento {{trend}}",
+      "clickToExpand": "Clicca per espandere dettagli"
+    }
+  },
+  "activityList": {
+    "types": {
+      "downloading": "Download",
+      "seeding": "Condivisione",
+      "completed": "Completato",
+      "peerConnected": "Connesso al peer",
+      "institution": "Condivisione istituzionale",
+      "discovery": "Scoperta di rete",
+      "upload": "Upload",
+      "sync": "Sincronizzazione",
+      "backup": "Backup",
+      "verification": "Verifica"
+    },
+    "status": {
+      "downloading": "Download",
+      "seeding": "Condivisione",
+      "complete": "Completato",
+      "connected": "Connesso",
+      "sharing": "Condivisione",
+      "discovered": "Scoperto",
+      "paused": "In Pausa",
+      "failed": "Fallito",
+      "pending": "In Attesa",
+      "queued": "In Coda",
+      "verifying": "Verifica"
+    },
+    "metadata": {
+      "complete": "{{progress}}% completato",
+      "seedingToPeers": "Condivisione a {{count}} peer",
+      "completedAgo": "Completato {{time}} fa",
+      "foundSources": "Trovate {{count}} nuove fonti di documenti",
+      "eta": "Tempo stimato: {{time}}",
+      "speed": "Velocità: {{speed}}",
+      "fileSize": "Dimensione: {{size}}",
+      "peerCount": "{{count}} peer",
+      "remainingTime": "{{time}} rimanente"
+    },
+    "actions": {
+      "pause": "Pausa",
+      "resume": "Riprendi",
+      "cancel": "Annulla",
+      "retry": "Riprova",
+      "remove": "Rimuovi",
+      "openFile": "Apri File",
+      "showInFolder": "Mostra nella Cartella",
+      "copyLink": "Copia Link",
+      "share": "Condividi",
+      "properties": "Proprietà"
+    },
+    "filters": {
+      "all": "Tutte le Attività",
+      "downloads": "Download",
+      "uploads": "Upload",
+      "network": "Rete",
+      "completed": "Completati",
+      "active": "Attivi"
+    }
+  },
+  "networkGraph": {
+    "nodes": {
+      "library": "Nodo Biblioteca",
+      "institution": "Istituzione",
+      "peer": "Peer",
+      "bridge": "Nodo Ponte",
+      "relay": "Nodo Relè",
+      "unknown": "Nodo Sconosciuto"
+    },
+    "connections": {
+      "direct": "Connessione Diretta",
+      "relay": "Connessione Relè",
+      "bridge": "Connessione Ponte",
+      "weak": "Connessione Debole",
+      "strong": "Connessione Forte"
+    },
+    "metrics": {
+      "totalNodes": "Totale Nodi",
+      "activeConnections": "Connessioni Attive",
+      "averageLatency": "Latenza Media",
+      "networkDensity": "Densità della Rete",
+      "clusteringCoefficient": "Coefficiente di Clustering",
+      "diameter": "Diametro della Rete",
+      "centrality": "Centralità"
+    },
+    "controls": {
+      "zoomIn": "Zoom Avanti",
+      "zoomOut": "Zoom Indietro",
+      "resetView": "Ripristina Vista",
+      "centerView": "Centra Vista",
+      "fitToScreen": "Adatta allo Schermo",
+      "pauseAnimation": "Pausa Animazione",
+      "playAnimation": "Riproduci Animazione",
+      "exportImage": "Esporta Immagine",
+      "fullscreen": "Schermo Intero"
+    },
+    "layouts": {
+      "forceDirected": "Layout Forza Diretta",
+      "circular": "Layout Circolare",
+      "hierarchical": "Layout Gerarchico",
+      "random": "Layout Casuale"
+    },
+    "accessibility": {
+      "graphDescription": "Grafico topologia di rete che mostra {{nodes}} nodi e {{connections}} connessioni",
+      "nodeDescription": "Nodo {{type}} chiamato {{name}} con {{connections}} connessioni",
+      "interactionHint": "Usa i tasti freccia per navigare i nodi, Invio per selezionare"
+    }
+  },
+  "downloadManager": {
+    "title": "Gestore Download",
+    "columns": {
+      "name": "Nome",
+      "size": "Dimensione",
+      "progress": "Progresso",
+      "speed": "Velocità",
+      "eta": "ETA",
+      "status": "Stato",
+      "peers": "Peer",
+      "priority": "Priorità"
+    },
+    "actions": {
+      "pause": "Pausa",
+      "resume": "Riprendi",
+      "cancel": "Annulla",
+      "remove": "Rimuovi",
+      "retry": "Riprova",
+      "openFile": "Apri File",
+      "showInFolder": "Mostra nella Cartella",
+      "moveUp": "Sposta Su",
+      "moveDown": "Sposta Giù",
+      "setHighPriority": "Imposta Priorità Alta",
+      "setLowPriority": "Imposta Priorità Bassa"
+    },
+    "status": {
+      "downloading": "Download",
+      "paused": "In Pausa",
+      "completed": "Completato",
+      "failed": "Fallito",
+      "queued": "In Coda",
+      "verifying": "Verifica",
+      "seeding": "Condivisione"
+    },
+    "filters": {
+      "all": "Tutti",
+      "active": "Attivi",
+      "completed": "Completati",
+      "failed": "Falliti"
+    },
+    "contextMenu": {
+      "pauseDownload": "Pausa Download",
+      "resumeDownload": "Riprendi Download",
+      "cancelDownload": "Annulla Download",
+      "removeFromList": "Rimuovi dalla Lista",
+      "openFile": "Apri File",
+      "openFolder": "Apri Cartella Contenitore",
+      "copyMagnetLink": "Copia Link Magnet",
+      "properties": "Proprietà"
+    },
+    "batchActions": {
+      "pauseAll": "Pausa Tutti",
+      "resumeAll": "Riprendi Tutti",
+      "clearCompleted": "Cancella Completati",
+      "removeSelected": "Rimuovi Selezionati"
+    }
+  },
+  "statusBar": {
+    "network": {
+      "title": "Rete",
+      "peers": "Peer",
+      "latency": "{{latency}}ms"
+    },
+    "downloads": {
+      "title": "Download",
+      "active": "Attivi",
+      "queue": "Coda: {{count}}"
+    },
+    "storage": {
+      "title": "Archiviazione"
+    },
+    "system": {
+      "title": "Sistema",
+      "cpu": "CPU",
+      "memory": "Memoria",
+      "temperature": "Temperatura"
+    },
+    "cultural": {
+      "title": "Protezione Culturale",
+      "threats": "{{count}} minacce bloccate",
+      "lastScan": "Ultima scansione: {{time}}"
+    }
+  },
+  "documentCard": {
+    "createdDate": "Data Creazione",
+    "modifiedDate": "Data Modifica",
+    "fileSize": "Dimensione",
+    "author": "Autore",
+    "culturalLevel": "Livello Culturale",
+    "actions": {
+      "open": "Apri",
+      "edit": "Modifica",
+      "share": "Condividi",
+      "delete": "Elimina",
+      "download": "Scarica"
+    }
+  },
+  "collectionCard": {
+    "itemCount": "{{count}} elementi",
+    "itemCount_one": "{{count}} elemento",
+    "lastUpdated": "Ultimo Aggiornamento",
+    "collaborators": "Collaboratori",
+    "visibility": "Visibilità"
+  },
+  "searchBar": {
+    "placeholder": "Cerca documenti, collezioni e contenuti culturali...",
+    "suggestions": "Suggerimenti",
+    "recentSearches": "Ricerche Recenti",
+    "clearSearch": "Cancella Ricerca"
+  },
+  "search": {
+    "placeholder": "Cerca documenti, collezioni, ecc..."
+  },
+  "languageSwitch": {
+    "selectLanguage": "Seleziona Lingua",
+    "changeLanguage": "Cambia Lingua"
+  },
+  "input": {
+    "validation": {
+      "failed": "Validazione fallita",
+      "required": "Questo campo è obbligatorio",
+      "invalid": "Input non valido",
+      "tooShort": "Input troppo corto",
+      "tooLong": "Input troppo lungo"
+    },
+    "accessibility": {
+      "required": "campo obbligatorio",
+      "optional": "campo opzionale",
+      "validated": "Input validato",
+      "validationRequired": "Validazione input richiesta"
+    }
+  },
+  "organizationTools": {
+    "title": "Strumenti di Organizzazione",
+    "subtitle": "Organizza e gestisci le tue collezioni di documenti",
+    "stats": {
+      "organizationScore": "Punteggio Organizzazione",
+      "organizedDocuments": "Documenti Organizzati",
+      "averageTagsPerDocument": "Media Tag per Documento",
+      "culturalContexts": "Contesti Culturali"
+    },
+    "notifications": {
+      "autoOrganizationCompleted": "Auto-organizzazione completata!"
+    },
+    "tabs": {
+      "overview": "Panoramica",
+      "bulk": "Operazioni di Massa"
+    },
+    "quickActions": {
+      "autoOrganize": "Auto-Organizza",
+      "bulkActions": "Azioni di Massa ({{count}})"
+    },
+    "culturalDistribution": {
+      "title": "Distribuzione Contesto Culturale",
+      "badge": "Info Educativa"
+    },
+    "suggestions": {
+      "title": "Suggerimenti di Organizzazione"
+    },
+    "bulkOperations": {
+      "title": "Operazioni di Massa",
+      "selectionInfo": "{{count}} documento selezionato",
+      "selectionInfo_other": "{{count}} documenti selezionati",
+      "execute": "Esegui"
+    },
+    "modal": {
+      "autoOrganization": {
+        "title": "Auto-Organizzazione",
+        "question": "Eseguire organizzazione automatica?",
+        "culturalNotice": "Il contesto culturale sarà analizzato solo per scopi educativi. Tutti i documenti rimangono accessibili indipendentemente dalla classificazione culturale.",
+        "execute": "Esegui Auto-Organizzazione",
+        "cancel": "Annulla"
+      }
+    }
+  },
+  "p2pSearchInterface": {
+    "title": "Ricerca Rete P2P",
+    "subtitle": "Cerca nella rete distribuita",
+    "searchPlaceholder": "Cerca nella rete P2P...",
+    "buttons": {
+      "search": "Cerca",
+      "searching": "Ricerca in corso..."
+    },
+    "options": {
+      "searchType": "Tipo di Ricerca",
+      "searchDepth": "Profondità di Ricerca",
+      "includeAnonymous": "Includi Fonti Anonime",
+      "includeCultural": "Includi Contesto Culturale"
+    },
+    "searchTypes": {
+      "content": "Contenuto e Documenti",
+      "peer": "Peer e Nodi",
+      "community": "Reti Comunitarie"
+    },
+    "searchDepth": {
+      "local": "Solo Locale",
+      "network": "Peer Connessi",
+      "deep": "Rete Estesa"
+    },
+    "progress": {
+      "searchingNetwork": "Ricerca nella rete... {{progress}}%"
+    },
+    "results": {
+      "title": "Risultati Ricerca ({{count}})",
+      "searchTime": "Ricerca completata in {{time}}",
+      "noResults": "Nessun Risultato Trovato",
+      "noResultsDescription": "Nessun contenuto trovato per \"{{query}}\" nella rete P2P.",
+      "culturalLevel": "Livello Culturale {{level}}",
+      "anonymousSource": "Fonte Anonima",
+      "noDescription": "Nessuna descrizione disponibile"
+    },
+    "suggestions": {
+      "title": "Suggerimenti:",
+      "differentTerms": "Prova termini di ricerca diversi",
+      "enableAnonymous": "Abilita fonti anonime per una copertura più ampia",
+      "increaseDepth": "Aumenta la profondità di ricerca a \"Rete Estesa\"",
+      "checkConnectivity": "Controlla la connettività di rete ({{peers}} peer connessi)"
+    },
+    "badges": {
+      "peersConnected": "{{count}} peer connessi",
+      "anonymousSearch": "Ricerca Anonima"
+    },
+    "antiCensorshipInfo": {
+      "title": "Ricerca Anti-Censura",
+      "description": "Questa ricerca opera sui principi P2P decentralizzati. Tutto il contenuto è ricercabile senza restrizioni. Il contesto culturale è fornito solo a scopo educativo."
+    }
+  },
+  "timeFilter": {
+    "title": "Filtro Temporale",
+    "placeholder": "Seleziona periodo temporale",
+    "dateSeparator": "a",
+    "options": {
+      "allTime": "Tutto il Tempo",
+      "today": "Oggi",
+      "thisWeek": "Questa Settimana",
+      "thisMonth": "Questo Mese",
+      "thisYear": "Quest'Anno",
+      "customRange": "Intervallo Personalizzato"
+    }
+  },
+  "breadcrumb": {
+    "ariaLabel": "Navigazione breadcrumb"
+  }
+}

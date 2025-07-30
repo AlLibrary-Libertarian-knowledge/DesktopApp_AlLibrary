@@ -281,12 +281,12 @@ const StatusBar: Component = () => {
         </div>
         <div class={styles['status-content']}>
           <div class={styles['status-title']}>
-            <span class={styles['title-text']}>Health</span>
+            <span class={styles['title-text']}>{t('statusBar.system.title')}</span>
           </div>
           <div class={styles['status-metrics']}>
             <div class={styles['health-stats']}>
               <div class={styles['health-stat']}>
-                <span class={styles['stat-label']}>CPU</span>
+                <span class={styles['stat-label']}>{t('statusBar.system.cpu')}</span>
                 <span class={styles['stat-value']}>{systemHealth().cpu}%</span>
                 <div class={styles['stat-bar']}>
                   <div
@@ -296,7 +296,7 @@ const StatusBar: Component = () => {
                 </div>
               </div>
               <div class={styles['health-stat']}>
-                <span class={styles['stat-label']}>RAM</span>
+                <span class={styles['stat-label']}>{t('statusBar.system.memory')}</span>
                 <span class={styles['stat-value']}>{systemHealth().memory}%</span>
                 <div class={styles['stat-bar']}>
                   <div
@@ -323,14 +323,14 @@ const StatusBar: Component = () => {
         </div>
         <div class={styles['status-content']}>
           <div class={styles['status-title']}>
-            <span class={styles['title-text']}>Protection</span>
+            <span class={styles['title-text']}>{t('statusBar.cultural.title')}</span>
           </div>
           <div class={styles['status-metrics']}>
             <div class={`${styles['metric-row']} ${styles.primary}`}>
               <span class={`${styles['metric-value']} ${styles['cultural-status']}`}>
                 {culturalProtection().status}
               </span>
-              <span class={styles['metric-unit']}>status</span>
+              <span class={styles['metric-unit']}>{t('statusBar.cultural.statusLabel')}</span>
             </div>
             <div class={`${styles['metric-row']} ${styles.secondary}`}>
               <span class={`${styles['metric-value']} ${styles['cultural-sensitivity']}`}>

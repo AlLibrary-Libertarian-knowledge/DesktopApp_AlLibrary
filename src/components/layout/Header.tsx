@@ -15,7 +15,11 @@ const Header: Component<HeaderProps> = props => {
   return (
     <header class="app-header">
       <div class="header-left">
-        <button class="sidebar-toggle" onClick={props.onSidebarToggle} aria-label="Toggle sidebar">
+        <button
+          class="sidebar-toggle"
+          onClick={props.onSidebarToggle}
+          aria-label={t('header.accessibility.toggleSidebar')}
+        >
           <span class="hamburger-icon">
             <span></span>
             <span></span>
@@ -25,7 +29,7 @@ const Header: Component<HeaderProps> = props => {
 
         <div class="header-brand">
           <div class="brand-content">
-            <img src={logoSvg} alt="AlLibrary Logo" class="app-logo" />
+            <img src={logoSvg} alt={t('header.accessibility.logoAlt')} class="app-logo" />
             <div class="brand-text">
               <h1 class="app-title">AlLibrary</h1>
               <span class="app-subtitle">{t('pages.home.subtitle')}</span>
@@ -52,7 +56,14 @@ const Header: Component<HeaderProps> = props => {
       </div>
 
       <div class="header-right">
-        <LanguageSwitcher variant="compact" />
+        <LanguageSwitcher
+          variant="compact"
+          showFlags={true}
+          showNativeName={false}
+          size="sm"
+          className="header-language-switcher"
+          ariaLabel={t('common.actions.changeLanguage', 'Change language')}
+        />
 
         <button
           class="header-action"

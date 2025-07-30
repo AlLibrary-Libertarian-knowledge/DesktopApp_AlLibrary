@@ -1,4 +1,5 @@
 import { Component, onMount, onCleanup } from 'solid-js';
+import { useTranslation } from '../../../i18n/hooks';
 import {
   CanvasRenderer,
   AnimationManager,
@@ -27,6 +28,8 @@ import {
 import './NetworkGraph.css';
 
 const NetworkGraph: Component<NetworkGraphProps> = props => {
+  const { t } = useTranslation('components');
+
   let canvasRef: HTMLCanvasElement | undefined;
   let animationId: number;
 
@@ -436,23 +439,27 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
 
     // Enhanced tooltip content
     lines.push(
-      `Type: ${node.type.charAt(0).toUpperCase() + node.type.slice(1)} • ${node.status.charAt(0).toUpperCase() + node.status.slice(1)}`
+      `${t('networkGraph.tooltip.type')}: ${node.type.charAt(0).toUpperCase() + node.type.slice(1)} • ${node.status.charAt(0).toUpperCase() + node.status.slice(1)}`
     );
 
     if (node.username && node.username !== node.label) {
-      lines.push(`IP: ${node.username}`);
+      lines.push(`${t('networkGraph.tooltip.ip')}: ${node.username}`);
     }
     if (node.location && node.location !== 'Unknown') {
-      lines.push(`Location: ${node.location}`);
+      lines.push(`${t('networkGraph.tooltip.location')}: ${node.location}`);
     }
     if (node.networkType) {
-      lines.push(`Network: ${node.networkType.toUpperCase()}`);
+      lines.push(`${t('networkGraph.tooltip.network')}: ${node.networkType.toUpperCase()}`);
     }
 
-    lines.push(`Connections: ${node.connections} peers`);
-    lines.push(`Bandwidth: ${(node.bandwidth / 1024).toFixed(1)} MB/s`);
     lines.push(
-      `Latency: ${node.latency.toFixed(0)}ms • Reliability: ${node.reliability.toFixed(0)}%`
+      `${t('networkGraph.tooltip.connections')}: ${node.connections} ${t('networkGraph.tooltip.peers')}`
+    );
+    lines.push(
+      `${t('networkGraph.tooltip.bandwidth')}: ${(node.bandwidth / 1024).toFixed(1)} MB/s`
+    );
+    lines.push(
+      `${t('networkGraph.tooltip.latency')}: ${node.latency.toFixed(0)}ms • ${t('networkGraph.tooltip.reliability')}: ${node.reliability.toFixed(0)}%`
     );
 
     // Active File Transfers
@@ -462,31 +469,35 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
 
       if (downloads.length > 0) {
         lines.push('');
-        lines.push(`📥 DOWNLOADING (${downloads.length}):`);
+        lines.push(`📥 ${t('networkGraph.tooltip.downloading')} (${downloads.length}):`);
         downloads.slice(0, 2).forEach((dl: any) => {
           lines.push(`  • ${dl.fileName}`);
           lines.push(
             `    ${dl.progress}% • ${(dl.speed / 1024).toFixed(1)} MB/s • ${formatFileSize(dl.fileSize)}`
           );
-          lines.push(`    ${formatTimeRemaining(dl.timeRemaining)} remaining`);
+          lines.push(
+            `    ${formatTimeRemaining(dl.timeRemaining)} ${t('networkGraph.tooltip.remaining')}`
+          );
         });
         if (downloads.length > 2) {
-          lines.push(`  ... and ${downloads.length - 2} more`);
+          lines.push(`  ... ${t('networkGraph.tooltip.andMore', { count: downloads.length - 2 })}`);
         }
       }
 
       if (uploads.length > 0) {
         lines.push('');
-        lines.push(`📤 UPLOADING (${uploads.length}):`);
+        lines.push(`📤 ${t('networkGraph.tooltip.uploading')} (${uploads.length}):`);
         uploads.slice(0, 2).forEach((ul: any) => {
           lines.push(`  • ${ul.fileName}`);
           lines.push(
             `    ${ul.progress}% • ${(ul.speed / 1024).toFixed(1)} MB/s • ${formatFileSize(ul.fileSize)}`
           );
-          lines.push(`    ${formatTimeRemaining(ul.timeRemaining)} remaining`);
+          lines.push(
+            `    ${formatTimeRemaining(ul.timeRemaining)} ${t('networkGraph.tooltip.remaining')}`
+          );
         });
         if (uploads.length > 2) {
-          lines.push(`  ... and ${uploads.length - 2} more`);
+          lines.push(`  ... ${t('networkGraph.tooltip.andMore', { count: uploads.length - 2 })}`);
         }
       }
     }

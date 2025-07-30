@@ -1,6 +1,7 @@
 import { Component, createSignal, onMount, onCleanup, Show, For } from 'solid-js';
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
+import { useTranslation } from '../../../../i18n/hooks';
 import {
   Shield,
   RefreshCw,
@@ -48,6 +49,8 @@ interface SecurityInfo {
 }
 
 const SecurityPanel: Component = () => {
+  const { t } = useTranslation('components');
+
   const [securityInfo, setSecurityInfo] = createSignal<SecurityInfo | null>(null);
   const [isLoading, setIsLoading] = createSignal(true);
   const [isRefreshing, setIsRefreshing] = createSignal(false);
@@ -179,8 +182,8 @@ const SecurityPanel: Component = () => {
             <div class={styles['header-pulse']}></div>
           </div>
           <div class={styles['header-text']}>
-            <h3>Network Security Analysis</h3>
-            <p>Real-time security monitoring for cultural heritage networks</p>
+            <h3>{t('securityPanel.title')}</h3>
+            <p>{t('securityPanel.subtitle')}</p>
           </div>
         </div>
         <div class={styles['header-actions']}>
@@ -190,7 +193,9 @@ const SecurityPanel: Component = () => {
             disabled={isRefreshing()}
           >
             <RefreshCw size={16} />
-            <span>{isRefreshing() ? 'Analyzing...' : 'Refresh Analysis'}</span>
+            <span>
+              {isRefreshing() ? t('securityPanel.refreshing') : t('securityPanel.refreshAction')}
+            </span>
           </button>
         </div>
       </div>
@@ -206,8 +211,8 @@ const SecurityPanel: Component = () => {
                 <span></span>
               </div>
             </div>
-            <h4>Analyzing Network Security</h4>
-            <p>Performing comprehensive security assessment...</p>
+            <h4>{t('securityPanel.loadingTitle')}</h4>
+            <p>{t('securityPanel.loadingMessage')}</p>
           </div>
         </div>
       </Show>
@@ -218,13 +223,11 @@ const SecurityPanel: Component = () => {
             <div class={styles['error-icon']}>
               <AlertTriangle size={48} />
             </div>
-            <h4>Unable to Load Security Information</h4>
-            <p>
-              Failed to retrieve network security data. Please check your connection and try again.
-            </p>
+            <h4>{t('securityPanel.errorTitle')}</h4>
+            <p>{t('securityPanel.errorMessage')}</p>
             <button class={styles['retry-btn']} onClick={handleRefresh}>
               <RefreshCw size={16} />
-              <span>Retry Analysis</span>
+              <span>{t('securityPanel.retryAction')}</span>
             </button>
           </div>
         </div>
@@ -262,7 +265,7 @@ const SecurityPanel: Component = () => {
                     <span class={styles['score-number-large']}>
                       {securityInfo()!.security_score}
                     </span>
-                    <span class={styles['score-label']}>Security Score</span>
+                    <span class={styles['score-label']}>{t('securityPanel.scoreLabel')}</span>
                   </div>
                   <div class={styles['score-ring']}></div>
                   <div class={styles['score-glow']}></div>
@@ -279,16 +282,19 @@ const SecurityPanel: Component = () => {
                 <h4
                   class={`${styles['security-level']} ${styles[getSecurityColor(securityInfo()!.security_score)]}`}
                 >
-                  {getSecurityLevel(securityInfo()!.security_score)} Security
+                  {t(
+                    `securityPanel.levels.${getSecurityLevel(securityInfo()!.security_score).toLowerCase()}`
+                  )}{' '}
+                  {t('securityPanel.securityLevel')}
                 </h4>
                 <p class={styles['score-description']}>
                   {securityInfo()!.security_score >= 80
-                    ? 'Your connection is secure and optimal for cultural heritage work.'
+                    ? t('securityPanel.descriptions.excellent')
                     : securityInfo()!.security_score >= 60
-                      ? 'Minor security concerns detected. Monitor your connection.'
+                      ? t('securityPanel.descriptions.good')
                       : securityInfo()!.security_score >= 40
-                        ? 'Moderate security risks. Consider reviewing your setup.'
-                        : 'Multiple security issues detected. Please review warnings immediately.'}
+                        ? t('securityPanel.descriptions.fair')
+                        : t('securityPanel.descriptions.poor')}
                 </p>
 
                 {/* Threat Level Indicator */}
@@ -305,8 +311,8 @@ const SecurityPanel: Component = () => {
                     )}
                   </div>
                   <span class={styles['threat-text']}>
-                    {getThreatLevel().charAt(0).toUpperCase() + getThreatLevel().slice(1)} Threat
-                    Level
+                    {t(`securityPanel.threats.${getThreatLevel()}`)}{' '}
+                    {t('securityPanel.threatLevel')}
                   </span>
                 </div>
               </div>
@@ -325,7 +331,7 @@ const SecurityPanel: Component = () => {
                   <div class={`${styles['stat-indicator']} ${styles['active']}`}></div>
                 </div>
                 <div class={styles['stat-content']}>
-                  <span class={styles['stat-label']}>Connection Type</span>
+                  <span class={styles['stat-label']}>{t('securityPanel.connectionType')}</span>
                   <span class={styles['stat-value']}>{securityInfo()!.connection_type}</span>
                 </div>
               </div>
@@ -340,14 +346,14 @@ const SecurityPanel: Component = () => {
                   ></div>
                 </div>
                 <div class={styles['stat-content']}>
-                  <span class={styles['stat-label']}>Network Latency</span>
+                  <span class={styles['stat-label']}>{t('securityPanel.networkLatency')}</span>
                   <div class={styles['stat-value-container']}>
                     <span
                       class={`${styles['stat-value']} ${styles[`latency-${getLatencyStatus(securityInfo()!.latency_ms).status}`]}`}
                     >
                       {securityInfo()!.latency_ms
                         ? `${securityInfo()!.latency_ms}ms`
-                        : 'Testing...'}
+                        : t('securityPanel.latency.testing')}
                     </span>
                     <div class={styles['stat-trend']}>
                       {getLatencyStatus(securityInfo()!.latency_ms).trend === 'up' ? (

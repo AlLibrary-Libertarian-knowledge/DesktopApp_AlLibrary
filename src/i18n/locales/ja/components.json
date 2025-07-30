@@ -14,7 +14,13 @@
     "move": "移動",
     "loading": "読み込み中...",
     "defaultAriaLabel": "ボタン",
-    "defaultTitle": "クリックしてアクションを実行"
+    "defaultTitle": "クリックしてアクションを実行",
+    "validationFailed": "セキュリティ検証に失敗しました - 入力を確認してください",
+    "validationError": "セキュリティ検証エラーが発生しました",
+    "validationRequired": "セキュリティ検証を完了してください",
+    "securityValidated": "セキュリティ検証済み",
+    "securityValidationRequired": "セキュリティ検証が必要です",
+    "culturalTheme": "文化的テーマ：{{theme}}"
   },
   "modal": {
     "close": "閉じる",
@@ -30,25 +36,430 @@
     "search": "検索...",
     "filter": "結果をフィルター..."
   },
-  "languageSwitch": {
-    "selectLanguage": "言語を選択",
-    "changeLanguage": "言語を変更",
-    "currentLanguage": "現在の言語",
-    "switchTo": "{{language}}に切り替え"
+  "card": {
+    "viewDetails": "詳細を表示",
+    "showMore": "もっと見る",
+    "showLess": "非表示",
+    "actions": "アクション"
   },
-  "search": {
-    "placeholder": "ドキュメント、コレクション、文化的コンテンツを検索...",
-    "advancedSearch": "高度な検索",
-    "clearSearch": "検索をクリア",
-    "searchResults": "{{count}}件の結果が見つかりました",
-    "noResults": "結果が見つかりません",
-    "searching": "検索中..."
+  "badge": {
+    "new": "新着",
+    "updated": "更新済み",
+    "featured": "注目",
+    "trending": "トレンド",
+    "popular": "人気"
   },
   "loading": {
     "general": "読み込み中...",
     "documents": "ドキュメントを読み込み中...",
     "collections": "コレクションを読み込み中...",
     "network": "ネットワークに接続中...",
-    "search": "検索中..."
+    "search": "検索中...",
+    "phases": {
+      "initializing": "文化遺産ネットワークを初期化中...",
+      "connecting": "保存ノードに接続中...",
+      "loading": "知識アーカイブを読み込み中...",
+      "securing": "文化的知恵を保護中...",
+      "preparing": "神聖な物語を準備中...",
+      "welcome": "AlLibraryへようこそ"
+    }
+  },
+  "errorBoundary": {
+    "title": "問題が発生しました",
+    "message": "予期しないエラーが発生しました。ページを更新してください。",
+    "refresh": "ページを更新",
+    "reportIssue": "問題を報告"
+  },
+  "culturalIndicator": {
+    "informationOnly": "情報のみ",
+    "educationalPurpose": "教育目的",
+    "culturalContext": "文化的コンテキスト",
+    "learnMore": "詳細を見る"
+  },
+  "networkStatus": {
+    "online": "オンライン",
+    "offline": "オフライン",
+    "connecting": "接続中",
+    "connected": "接続済み",
+    "disconnected": "切断",
+    "peers": "ピア",
+    "networkHealth": "ネットワーク健全性",
+    "latency": "レイテンシ",
+    "bandwidth": "帯域幅",
+    "uptime": "稼働時間",
+    "lastSeen": "最終確認",
+    "status": "ステータス"
+  },
+  "statCard": {
+    "ariaLabel": "{{label}}: {{value}}. トレンド{{trendType}}: {{trendValue}}",
+    "trends": {
+      "positive": "上昇トレンド",
+      "negative": "下降トレンド",
+      "neutral": "安定トレンド"
+    },
+    "types": {
+      "documents": "ドキュメント",
+      "peers": "ピア",
+      "institutions": "機関",
+      "health": "健全性",
+      "storage": "ストレージ",
+      "bandwidth": "帯域幅"
+    },
+    "accessibility": {
+      "chartVisualization": "{{type}}のデータを示すグラフ視覚化",
+      "trendIndicator": "{{trend}}の変化を示すトレンド指標",
+      "clickToExpand": "詳細を展開するにはクリック"
+    }
+  },
+  "activityList": {
+    "types": {
+      "downloading": "ダウンロード中",
+      "seeding": "シード中",
+      "completed": "完了",
+      "peerConnected": "ピアに接続",
+      "institution": "機関共有",
+      "discovery": "ネットワーク発見",
+      "upload": "アップロード",
+      "sync": "同期",
+      "backup": "バックアップ",
+      "verification": "検証"
+    },
+    "status": {
+      "downloading": "ダウンロード中",
+      "seeding": "シード中",
+      "complete": "完了",
+      "connected": "接続済み",
+      "sharing": "共有中",
+      "discovered": "発見済み",
+      "paused": "一時停止",
+      "failed": "失敗",
+      "pending": "保留中",
+      "queued": "キュー中",
+      "verifying": "検証中"
+    },
+    "metadata": {
+      "complete": "{{progress}}%完了",
+      "seedingToPeers": "{{count}}ピアにシード中",
+      "completedAgo": "{{time}}前に完了",
+      "foundSources": "{{count}}の新しいドキュメントソースを発見",
+      "eta": "推定時間: {{time}}",
+      "speed": "速度: {{speed}}",
+      "fileSize": "サイズ: {{size}}",
+      "peerCount": "{{count}}ピア",
+      "remainingTime": "残り{{time}}"
+    },
+    "actions": {
+      "pause": "一時停止",
+      "resume": "再開",
+      "cancel": "キャンセル",
+      "retry": "再試行",
+      "remove": "削除",
+      "openFile": "ファイルを開く",
+      "showInFolder": "フォルダで表示",
+      "copyLink": "リンクをコピー",
+      "share": "共有",
+      "properties": "プロパティ"
+    },
+    "filters": {
+      "all": "すべてのアクティビティ",
+      "downloads": "ダウンロード",
+      "uploads": "アップロード",
+      "network": "ネットワーク",
+      "completed": "完了済み",
+      "active": "アクティブ"
+    }
+  },
+  "networkGraph": {
+    "nodes": {
+      "library": "ライブラリノード",
+      "institution": "機関",
+      "peer": "ピア",
+      "bridge": "ブリッジノード",
+      "relay": "リレーノード",
+      "unknown": "不明なノード"
+    },
+    "connections": {
+      "direct": "直接接続",
+      "relay": "リレー接続",
+      "bridge": "ブリッジ接続",
+      "weak": "弱い接続",
+      "strong": "強い接続"
+    },
+    "metrics": {
+      "totalNodes": "総ノード数",
+      "activeConnections": "アクティブ接続",
+      "averageLatency": "平均レイテンシ",
+      "networkDensity": "ネットワーク密度",
+      "clusteringCoefficient": "クラスタリング係数",
+      "diameter": "ネットワーク直径",
+      "centrality": "中心性"
+    },
+    "controls": {
+      "zoomIn": "ズームイン",
+      "zoomOut": "ズームアウト",
+      "resetView": "ビューをリセット",
+      "centerView": "ビューを中央に",
+      "fitToScreen": "画面に合わせる",
+      "pauseAnimation": "アニメーションを一時停止",
+      "playAnimation": "アニメーションを再生",
+      "exportImage": "画像をエクスポート",
+      "fullscreen": "フルスクリーン"
+    },
+    "layouts": {
+      "forceDirected": "フォース指向レイアウト",
+      "circular": "円形レイアウト",
+      "hierarchical": "階層レイアウト",
+      "random": "ランダムレイアウト"
+    },
+    "accessibility": {
+      "graphDescription": "{{nodes}}ノードと{{connections}}接続を示すネットワークトポロジグラフ",
+      "nodeDescription": "{{connections}}接続を持つ{{name}}という{{type}}ノード",
+      "interactionHint": "矢印キーでノードをナビゲート、Enterで選択"
+    }
+  },
+  "downloadManager": {
+    "title": "ダウンロードマネージャー",
+    "columns": {
+      "name": "名前",
+      "size": "サイズ",
+      "progress": "進捗",
+      "speed": "速度",
+      "eta": "ETA",
+      "status": "ステータス",
+      "peers": "ピア",
+      "priority": "優先度"
+    },
+    "actions": {
+      "pause": "一時停止",
+      "resume": "再開",
+      "cancel": "キャンセル",
+      "remove": "削除",
+      "retry": "再試行",
+      "openFile": "ファイルを開く",
+      "showInFolder": "フォルダで表示",
+      "moveUp": "上に移動",
+      "moveDown": "下に移動",
+      "setHighPriority": "高優先度に設定",
+      "setLowPriority": "低優先度に設定"
+    },
+    "status": {
+      "downloading": "ダウンロード中",
+      "paused": "一時停止",
+      "completed": "完了",
+      "failed": "失敗",
+      "queued": "キュー中",
+      "verifying": "検証中",
+      "seeding": "シード中"
+    },
+    "filters": {
+      "all": "すべて",
+      "active": "アクティブ",
+      "completed": "完了済み",
+      "failed": "失敗"
+    },
+    "contextMenu": {
+      "pauseDownload": "ダウンロードを一時停止",
+      "resumeDownload": "ダウンロードを再開",
+      "cancelDownload": "ダウンロードをキャンセル",
+      "removeFromList": "リストから削除",
+      "openFile": "ファイルを開く",
+      "openFolder": "含むフォルダを開く",
+      "copyMagnetLink": "マグネットリンクをコピー",
+      "properties": "プロパティ"
+    },
+    "batchActions": {
+      "pauseAll": "すべて一時停止",
+      "resumeAll": "すべて再開",
+      "clearCompleted": "完了済みをクリア",
+      "removeSelected": "選択したものを削除"
+    }
+  },
+  "statusBar": {
+    "network": {
+      "title": "ネットワーク",
+      "peers": "ピア",
+      "latency": "{{latency}}ms"
+    },
+    "downloads": {
+      "title": "ダウンロード",
+      "active": "アクティブ",
+      "queue": "キュー: {{count}}"
+    },
+    "storage": {
+      "title": "ストレージ"
+    },
+    "system": {
+      "title": "システム",
+      "cpu": "CPU",
+      "memory": "メモリ",
+      "temperature": "温度"
+    },
+    "cultural": {
+      "title": "文化保護",
+      "threats": "{{count}}の脅威をブロック",
+      "lastScan": "最終スキャン: {{time}}"
+    }
+  },
+  "documentCard": {
+    "createdDate": "作成日",
+    "modifiedDate": "更新日",
+    "fileSize": "サイズ",
+    "author": "作成者",
+    "culturalLevel": "文化レベル",
+    "actions": {
+      "open": "開く",
+      "edit": "編集",
+      "share": "共有",
+      "delete": "削除",
+      "download": "ダウンロード"
+    }
+  },
+  "collectionCard": {
+    "itemCount": "{{count}}アイテム",
+    "itemCount_one": "{{count}}アイテム",
+    "lastUpdated": "最終更新",
+    "collaborators": "コラボレーター",
+    "visibility": "可視性"
+  },
+  "searchBar": {
+    "placeholder": "ドキュメント、コレクション、文化的コンテンツを検索...",
+    "suggestions": "提案",
+    "recentSearches": "最近の検索",
+    "clearSearch": "検索をクリア"
+  },
+  "search": {
+    "placeholder": "ドキュメント、コレクション、文化的コンテンツを検索..."
+  },
+  "languageSwitch": {
+    "selectLanguage": "言語を選択",
+    "changeLanguage": "言語を変更",
+    "currentLanguage": "現在の言語",
+    "switchTo": "{{language}}に切り替え"
+  },
+  "input": {
+    "validation": {
+      "failed": "検証に失敗しました",
+      "required": "このフィールドは必須です",
+      "invalid": "無効な入力",
+      "tooShort": "入力が短すぎます",
+      "tooLong": "入力が長すぎます"
+    },
+    "accessibility": {
+      "required": "必須フィールド",
+      "optional": "オプションフィールド",
+      "validated": "入力が検証されました",
+      "validationRequired": "入力検証が必要です"
+    }
+  },
+  "organizationTools": {
+    "title": "整理ツール",
+    "subtitle": "ドキュメントコレクションを整理・管理",
+    "stats": {
+      "organizationScore": "整理スコア",
+      "organizedDocuments": "整理済みドキュメント",
+      "averageTagsPerDocument": "ドキュメントあたりの平均タグ",
+      "culturalContexts": "文化的コンテキスト"
+    },
+    "notifications": {
+      "autoOrganizationCompleted": "自動整理が完了しました！"
+    },
+    "tabs": {
+      "overview": "概要",
+      "bulk": "一括操作"
+    },
+    "quickActions": {
+      "autoOrganize": "自動整理",
+      "bulkActions": "一括操作 ({{count}})"
+    },
+    "culturalDistribution": {
+      "title": "文化的コンテキスト分布",
+      "badge": "教育情報"
+    },
+    "suggestions": {
+      "title": "整理提案"
+    },
+    "bulkOperations": {
+      "title": "一括操作",
+      "selectionInfo": "{{count}}ドキュメントが選択されました",
+      "selectionInfo_other": "{{count}}ドキュメントが選択されました",
+      "execute": "実行"
+    },
+    "modal": {
+      "autoOrganization": {
+        "title": "自動整理",
+        "question": "自動整理を実行しますか？",
+        "culturalNotice": "文化的コンテキストは教育目的でのみ分析されます。すべてのドキュメントは文化的分類に関係なくアクセス可能です。",
+        "execute": "自動整理を実行",
+        "cancel": "キャンセル"
+      }
+    }
+  },
+  "p2pSearchInterface": {
+    "title": "P2Pネットワーク検索",
+    "subtitle": "分散ネットワーク全体を検索",
+    "searchPlaceholder": "P2Pネットワークを検索...",
+    "buttons": {
+      "search": "検索",
+      "searching": "検索中..."
+    },
+    "options": {
+      "searchType": "検索タイプ",
+      "searchDepth": "検索深度",
+      "includeAnonymous": "匿名ソースを含む",
+      "includeCultural": "文化的コンテキストを含む"
+    },
+    "searchTypes": {
+      "content": "コンテンツとドキュメント",
+      "peer": "ピアとノード",
+      "community": "コミュニティネットワーク"
+    },
+    "searchDepth": {
+      "local": "ローカルのみ",
+      "network": "接続されたピア",
+      "deep": "拡張ネットワーク"
+    },
+    "progress": {
+      "searchingNetwork": "ネットワークを検索中... {{progress}}%"
+    },
+    "results": {
+      "title": "検索結果 ({{count}})",
+      "searchTime": "{{time}}で検索完了",
+      "noResults": "結果が見つかりません",
+      "noResultsDescription": "P2Pネットワークで「{{query}}」のコンテンツが見つかりませんでした。",
+      "culturalLevel": "文化レベル {{level}}",
+      "anonymousSource": "匿名ソース",
+      "noDescription": "説明が利用できません"
+    },
+    "suggestions": {
+      "title": "提案:",
+      "differentTerms": "異なる検索語を試してください",
+      "enableAnonymous": "より広いカバレッジのために匿名ソースを有効にしてください",
+      "increaseDepth": "検索深度を「拡張ネットワーク」に増やしてください",
+      "checkConnectivity": "ネットワーク接続を確認してください ({{peers}}ピア接続済み)"
+    },
+    "badges": {
+      "peersConnected": "{{count}}ピア接続済み",
+      "anonymousSearch": "匿名検索"
+    },
+    "antiCensorshipInfo": {
+      "title": "検閲反対検索",
+      "description": "この検索は分散P2P原則で動作します。すべてのコンテンツは制限なく検索可能です。文化的コンテキストは教育目的でのみ提供されます。"
+    }
+  },
+  "timeFilter": {
+    "title": "時間フィルター",
+    "placeholder": "期間を選択",
+    "dateSeparator": "から",
+    "options": {
+      "allTime": "すべての時間",
+      "today": "今日",
+      "thisWeek": "今週",
+      "thisMonth": "今月",
+      "thisYear": "今年",
+      "customRange": "カスタム範囲"
+    }
+  },
+  "breadcrumb": {
+    "ariaLabel": "パンくずナビゲーション"
   }
 }
