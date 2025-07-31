@@ -14,7 +14,11 @@ export type SupportedLocale =
   | 'de' // German
   | 'it' // Italian
   | 'zh' // Chinese (Simplified)
-  | 'ja'; // Japanese
+  | 'ja' // Japanese
+  | 'ar' // Arabic (RTL)
+  | 'qu' // Quechua (Indigenous)
+  | 'mi' // Maori (Indigenous)
+  | 'nv'; // Navajo (Indigenous)
 
 // Language information with flag support
 export interface LanguageInfo {
@@ -34,7 +38,8 @@ export type TranslationNamespace =
   | 'cultural'
   | 'errors'
   | 'validation'
-  | 'navigation';
+  | 'navigation'
+  | 'accessibility';
 
 // Translation interpolation parameters
 export interface TranslationParams {
@@ -155,6 +160,7 @@ export interface LocaleTranslations {
   errors: TranslationResource;
   validation: TranslationResource;
   navigation: TranslationResource;
+  accessibility: TranslationResource;
 }
 
 // Translation function interface
@@ -205,6 +211,11 @@ export interface I18nService {
   // Utilities
   isRTL(locale?: SupportedLocale): boolean;
   getLanguageInfo(locale?: SupportedLocale): LanguageInfo;
+
+  // Cultural language support functions
+  getCulturalContext(locale: SupportedLocale): string;
+  isIndigenousLanguage(locale?: SupportedLocale): boolean;
+  getTraditionalScript(locale: SupportedLocale): string | null;
 }
 
 // Translation hook return type for SolidJS

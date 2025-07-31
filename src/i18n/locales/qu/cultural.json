@@ -1,0 +1,17 @@
+{
+  "sensitivity": {
+    "public": "Llapa runakuna",
+    "educational": "Yachachiy",
+    "community": "Llaqtakuna",
+    "traditional": "Ñawpa yachay",
+    "guardian": "Amauta kamachiy",
+    "sacred": "Wak'a",
+    "ceremonial": "Raymi"
+  },
+  "context": {
+    "informationOnly": "Willaylla",
+    "educationalPurpose": "Yachachiyrayku",
+    "noAccessRestrictions": "Manan hark'asqa",
+    "multiplePerspectives": "Achka qhaway"
+  }
+}

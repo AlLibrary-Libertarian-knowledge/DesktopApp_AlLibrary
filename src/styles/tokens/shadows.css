@@ -1,0 +1,325 @@
+/* ==========================================================================
+   Shadow Design Tokens
+   ========================================================================== */
+
+:root {
+  /* ===== BASE SHADOW SCALE ===== */
+
+  /* No Shadow */
+  --shadow-none: none;
+
+  /* Extra Small Shadows */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+
+  /* Small Shadows */
+  --shadow-base: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+
+  /* Medium Shadows */
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  /* Large Shadows */
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --shadow-3xl: 0 35px 60px -12px rgba(0, 0, 0, 0.25);
+
+  /* ===== SEMANTIC SHADOWS ===== */
+
+  /* Component Shadows */
+  --shadow-component-xs: var(--shadow-xs);
+  --shadow-component-sm: var(--shadow-sm);
+  --shadow-component-md: var(--shadow-md);
+  --shadow-component-lg: var(--shadow-lg);
+  --shadow-component-xl: var(--shadow-xl);
+  --shadow-component-2xl: var(--shadow-2xl);
+
+  /* Card Shadows */
+  --shadow-card-xs: var(--shadow-xs);
+  --shadow-card-sm: var(--shadow-sm);
+  --shadow-card-md: var(--shadow-md);
+  --shadow-card-lg: var(--shadow-lg);
+  --shadow-card-xl: var(--shadow-xl);
+  --shadow-card-2xl: var(--shadow-2xl);
+
+  /* Button Shadows */
+  --shadow-button-xs: var(--shadow-xs);
+  --shadow-button-sm: var(--shadow-sm);
+  --shadow-button-md: var(--shadow-md);
+  --shadow-button-lg: var(--shadow-lg);
+  --shadow-button-xl: var(--shadow-xl);
+
+  /* Modal Shadows */
+  --shadow-modal-xs: var(--shadow-lg);
+  --shadow-modal-sm: var(--shadow-xl);
+  --shadow-modal-md: var(--shadow-2xl);
+  --shadow-modal-lg: var(--shadow-3xl);
+
+  /* Dropdown Shadows */
+  --shadow-dropdown-xs: var(--shadow-sm);
+  --shadow-dropdown-sm: var(--shadow-md);
+  --shadow-dropdown-md: var(--shadow-lg);
+  --shadow-dropdown-lg: var(--shadow-xl);
+
+  /* ===== INTERACTIVE SHADOWS ===== */
+
+  /* Hover Shadows */
+  --shadow-hover-xs: var(--shadow-sm);
+  --shadow-hover-sm: var(--shadow-md);
+  --shadow-hover-md: var(--shadow-lg);
+  --shadow-hover-lg: var(--shadow-xl);
+  --shadow-hover-xl: var(--shadow-2xl);
+
+  /* Focus Shadows */
+  --shadow-focus-xs: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  --shadow-focus-sm: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  --shadow-focus-md: 0 0 0 3px rgba(59, 130, 246, 0.3);
+  --shadow-focus-lg: 0 0 0 4px rgba(59, 130, 246, 0.4);
+  --shadow-focus-xl: 0 0 0 4px rgba(59, 130, 246, 0.5);
+
+  /* Active Shadows */
+  --shadow-active-xs: var(--shadow-none);
+  --shadow-active-sm: var(--shadow-xs);
+  --shadow-active-md: var(--shadow-sm);
+  --shadow-active-lg: var(--shadow-md);
+  --shadow-active-xl: var(--shadow-lg);
+
+  /* ===== CULTURAL SHADOWS ===== */
+
+  /* Indigenous Shadows - Subtle and respectful */
+  --shadow-cultural-indigenous-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  --shadow-cultural-indigenous-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  --shadow-cultural-indigenous-md:
+    0 2px 4px -1px rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
+  --shadow-cultural-indigenous-lg:
+    0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --shadow-cultural-indigenous-xl:
+    0 8px 8px -2px rgba(0, 0, 0, 0.06), 0 4px 4px -1px rgba(0, 0, 0, 0.03);
+
+  /* Traditional Shadows - Balanced and harmonious */
+  --shadow-cultural-traditional-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-cultural-traditional-sm:
+    0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  --shadow-cultural-traditional-md:
+    0 3px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --shadow-cultural-traditional-lg:
+    0 6px 12px -2px rgba(0, 0, 0, 0.08), 0 3px 6px -1px rgba(0, 0, 0, 0.04);
+  --shadow-cultural-traditional-xl:
+    0 12px 16px -3px rgba(0, 0, 0, 0.08), 0 6px 8px -1px rgba(0, 0, 0, 0.04);
+
+  /* Ceremonial Shadows - Sacred and elevated */
+  --shadow-cultural-ceremonial-xs: 0 1px 3px 0 rgba(0, 0, 0, 0.08);
+  --shadow-cultural-ceremonial-sm: 0 2px 4px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-cultural-ceremonial-md:
+    0 4px 8px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-cultural-ceremonial-lg:
+    0 8px 16px -2px rgba(0, 0, 0, 0.1), 0 4px 8px -1px rgba(0, 0, 0, 0.06);
+  --shadow-cultural-ceremonial-xl:
+    0 16px 24px -4px rgba(0, 0, 0, 0.1), 0 8px 12px -2px rgba(0, 0, 0, 0.06);
+
+  /* Academic Shadows - Scholarly and precise */
+  --shadow-cultural-academic-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  --shadow-cultural-academic-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  --shadow-cultural-academic-md:
+    0 2px 4px -1px rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+  --shadow-cultural-academic-lg:
+    0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --shadow-cultural-academic-xl:
+    0 6px 8px -2px rgba(0, 0, 0, 0.06), 0 3px 4px -1px rgba(0, 0, 0, 0.04);
+
+  /* Community Shadows - Collaborative and inclusive */
+  --shadow-cultural-community-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-cultural-community-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.07), 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-cultural-community-md:
+    0 3px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.05);
+  --shadow-cultural-community-lg:
+    0 6px 12px -2px rgba(0, 0, 0, 0.07), 0 3px 6px -1px rgba(0, 0, 0, 0.05);
+  --shadow-cultural-community-xl:
+    0 12px 16px -3px rgba(0, 0, 0, 0.07), 0 6px 8px -1px rgba(0, 0, 0, 0.05);
+
+  /* ===== ACCESSIBILITY SHADOWS ===== */
+
+  /* High Contrast Shadows - Enhanced visibility */
+  --shadow-accessibility-high-contrast-xs: 0 1px 3px 0 rgba(0, 0, 0, 0.15);
+  --shadow-accessibility-high-contrast-sm:
+    0 2px 4px 0 rgba(0, 0, 0, 0.15), 0 1px 2px 0 rgba(0, 0, 0, 0.1);
+  --shadow-accessibility-high-contrast-md:
+    0 4px 8px -1px rgba(0, 0, 0, 0.15), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+  --shadow-accessibility-high-contrast-lg:
+    0 8px 16px -2px rgba(0, 0, 0, 0.15), 0 4px 8px -1px rgba(0, 0, 0, 0.1);
+  --shadow-accessibility-high-contrast-xl:
+    0 16px 24px -4px rgba(0, 0, 0, 0.15), 0 8px 12px -2px rgba(0, 0, 0, 0.1);
+
+  /* Large Text Shadows - Improved readability */
+  --shadow-accessibility-large-text-xs: var(--shadow-xs);
+  --shadow-accessibility-large-text-sm: var(--shadow-sm);
+  --shadow-accessibility-large-text-md: var(--shadow-md);
+  --shadow-accessibility-large-text-lg: var(--shadow-lg);
+  --shadow-accessibility-large-text-xl: var(--shadow-xl);
+
+  /* Reduced Motion Shadows - Stable appearance */
+  --shadow-accessibility-reduced-motion-xs: var(--shadow-none);
+  --shadow-accessibility-reduced-motion-sm: var(--shadow-none);
+  --shadow-accessibility-reduced-motion-md: var(--shadow-xs);
+  --shadow-accessibility-reduced-motion-lg: var(--shadow-sm);
+  --shadow-accessibility-reduced-motion-xl: var(--shadow-md);
+
+  /* ===== COLORED SHADOWS ===== */
+
+  /* Primary Colored Shadows */
+  --shadow-primary-xs: 0 1px 2px 0 rgba(59, 130, 246, 0.1);
+  --shadow-primary-sm: 0 1px 3px 0 rgba(59, 130, 246, 0.15), 0 1px 2px 0 rgba(59, 130, 246, 0.1);
+  --shadow-primary-md:
+    0 4px 6px -1px rgba(59, 130, 246, 0.15), 0 2px 4px -1px rgba(59, 130, 246, 0.1);
+  --shadow-primary-lg:
+    0 10px 15px -3px rgba(59, 130, 246, 0.15), 0 4px 6px -2px rgba(59, 130, 246, 0.1);
+  --shadow-primary-xl:
+    0 20px 25px -5px rgba(59, 130, 246, 0.15), 0 10px 10px -5px rgba(59, 130, 246, 0.1);
+
+  /* Success Colored Shadows */
+  --shadow-success-xs: 0 1px 2px 0 rgba(34, 197, 94, 0.1);
+  --shadow-success-sm: 0 1px 3px 0 rgba(34, 197, 94, 0.15), 0 1px 2px 0 rgba(34, 197, 94, 0.1);
+  --shadow-success-md:
+    0 4px 6px -1px rgba(34, 197, 94, 0.15), 0 2px 4px -1px rgba(34, 197, 94, 0.1);
+  --shadow-success-lg:
+    0 10px 15px -3px rgba(34, 197, 94, 0.15), 0 4px 6px -2px rgba(34, 197, 94, 0.1);
+  --shadow-success-xl:
+    0 20px 25px -5px rgba(34, 197, 94, 0.15), 0 10px 10px -5px rgba(34, 197, 94, 0.1);
+
+  /* Warning Colored Shadows */
+  --shadow-warning-xs: 0 1px 2px 0 rgba(245, 158, 11, 0.1);
+  --shadow-warning-sm: 0 1px 3px 0 rgba(245, 158, 11, 0.15), 0 1px 2px 0 rgba(245, 158, 11, 0.1);
+  --shadow-warning-md:
+    0 4px 6px -1px rgba(245, 158, 11, 0.15), 0 2px 4px -1px rgba(245, 158, 11, 0.1);
+  --shadow-warning-lg:
+    0 10px 15px -3px rgba(245, 158, 11, 0.15), 0 4px 6px -2px rgba(245, 158, 11, 0.1);
+  --shadow-warning-xl:
+    0 20px 25px -5px rgba(245, 158, 11, 0.15), 0 10px 10px -5px rgba(245, 158, 11, 0.1);
+
+  /* Error Colored Shadows */
+  --shadow-error-xs: 0 1px 2px 0 rgba(239, 68, 68, 0.1);
+  --shadow-error-sm: 0 1px 3px 0 rgba(239, 68, 68, 0.15), 0 1px 2px 0 rgba(239, 68, 68, 0.1);
+  --shadow-error-md: 0 4px 6px -1px rgba(239, 68, 68, 0.15), 0 2px 4px -1px rgba(239, 68, 68, 0.1);
+  --shadow-error-lg:
+    0 10px 15px -3px rgba(239, 68, 68, 0.15), 0 4px 6px -2px rgba(239, 68, 68, 0.1);
+  --shadow-error-xl:
+    0 20px 25px -5px rgba(239, 68, 68, 0.15), 0 10px 10px -5px rgba(239, 68, 68, 0.1);
+
+  /* ===== INNER SHADOWS ===== */
+
+  /* Inner Shadow Scale */
+  --shadow-inner-xs: inset 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-inner-sm: inset 0 1px 3px 0 rgba(0, 0, 0, 0.1), inset 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-inner-md: inset 0 2px 4px 0 rgba(0, 0, 0, 0.1), inset 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-inner-lg: inset 0 4px 6px 0 rgba(0, 0, 0, 0.1), inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+  --shadow-inner-xl: inset 0 8px 8px 0 rgba(0, 0, 0, 0.1), inset 0 4px 4px 0 rgba(0, 0, 0, 0.06);
+
+  /* ===== RESPONSIVE SHADOWS ===== */
+
+  /* Mobile Shadows */
+  --shadow-mobile-xs: var(--shadow-xs);
+  --shadow-mobile-sm: var(--shadow-sm);
+  --shadow-mobile-md: var(--shadow-md);
+  --shadow-mobile-lg: var(--shadow-lg);
+  --shadow-mobile-xl: var(--shadow-xl);
+
+  /* Tablet Shadows */
+  --shadow-tablet-xs: var(--shadow-sm);
+  --shadow-tablet-sm: var(--shadow-md);
+  --shadow-tablet-md: var(--shadow-lg);
+  --shadow-tablet-lg: var(--shadow-xl);
+  --shadow-tablet-xl: var(--shadow-2xl);
+
+  /* Desktop Shadows */
+  --shadow-desktop-xs: var(--shadow-sm);
+  --shadow-desktop-sm: var(--shadow-md);
+  --shadow-desktop-md: var(--shadow-lg);
+  --shadow-desktop-lg: var(--shadow-xl);
+  --shadow-desktop-xl: var(--shadow-2xl);
+}
+
+/* ===== RESPONSIVE SHADOW ADJUSTMENTS ===== */
+
+@media (min-width: 640px) {
+  :root {
+    /* Tablet shadow adjustments */
+    --shadow-component-md: var(--shadow-tablet-md);
+    --shadow-card-md: var(--shadow-tablet-md);
+    --shadow-button-md: var(--shadow-tablet-md);
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    /* Desktop shadow adjustments */
+    --shadow-component-md: var(--shadow-desktop-md);
+    --shadow-card-md: var(--shadow-desktop-md);
+    --shadow-button-md: var(--shadow-desktop-md);
+  }
+}
+
+/* ===== ACCESSIBILITY SHADOW ADJUSTMENTS ===== */
+
+@media (prefers-contrast: high) {
+  :root {
+    /* High contrast shadow adjustments */
+    --shadow-component-md: var(--shadow-accessibility-high-contrast-md);
+    --shadow-card-md: var(--shadow-accessibility-high-contrast-md);
+    --shadow-button-md: var(--shadow-accessibility-high-contrast-md);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    /* Reduced motion shadow adjustments */
+    --shadow-component-md: var(--shadow-accessibility-reduced-motion-md);
+    --shadow-card-md: var(--shadow-accessibility-reduced-motion-md);
+    --shadow-button-md: var(--shadow-accessibility-reduced-motion-md);
+  }
+}
+
+/* ===== CULTURAL SHADOW ADJUSTMENTS ===== */
+
+[data-cultural-theme='indigenous'] {
+  --shadow-component-md: var(--shadow-cultural-indigenous-md);
+  --shadow-card-md: var(--shadow-cultural-indigenous-md);
+  --shadow-button-md: var(--shadow-cultural-indigenous-md);
+}
+
+[data-cultural-theme='traditional'] {
+  --shadow-component-md: var(--shadow-cultural-traditional-md);
+  --shadow-card-md: var(--shadow-cultural-traditional-md);
+  --shadow-button-md: var(--shadow-cultural-traditional-md);
+}
+
+[data-cultural-theme='ceremonial'] {
+  --shadow-component-md: var(--shadow-cultural-ceremonial-md);
+  --shadow-card-md: var(--shadow-cultural-ceremonial-md);
+  --shadow-button-md: var(--shadow-cultural-ceremonial-md);
+}
+
+[data-cultural-theme='academic'] {
+  --shadow-component-md: var(--shadow-cultural-academic-md);
+  --shadow-card-md: var(--shadow-cultural-academic-md);
+  --shadow-button-md: var(--shadow-cultural-academic-md);
+}
+
+[data-cultural-theme='community'] {
+  --shadow-component-md: var(--shadow-cultural-community-md);
+  --shadow-card-md: var(--shadow-cultural-community-md);
+  --shadow-button-md: var(--shadow-cultural-community-md);
+}
+
+/* ===== DARK MODE SHADOW ADJUSTMENTS ===== */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Dark mode shadow adjustments */
+    --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+    --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  }
+}

@@ -17,7 +17,7 @@ export * from './service';
 export * from './hooks';
 
 // Re-export main utilities
-export { i18nService, loadTranslationFile } from './service';
+export { createI18nService, loadTranslationFile } from './service';
 export { useTranslation, useLanguage, useCulturalTranslation } from './hooks';
 export {
   SUPPORTED_LANGUAGES,
@@ -39,8 +39,11 @@ export type {
 
 // Import directly to avoid circular dependency issues
 import { detectBrowserLanguage as detectLang } from './config';
-import { i18nService } from './service';
+import { createI18nService } from './service';
 import type { SupportedLocale } from './types';
+
+// Create the i18n service instance
+const i18nService = createI18nService();
 
 /**
  * Initialize i18n system

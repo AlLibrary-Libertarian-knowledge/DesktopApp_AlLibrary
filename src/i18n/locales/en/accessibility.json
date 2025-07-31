@@ -1,0 +1,50 @@
+{
+  "screenReader": {
+    "loading": "Loading",
+    "error": "Error occurred",
+    "success": "Success",
+    "warning": "Warning",
+    "info": "Information",
+    "button": "Button",
+    "link": "Link",
+    "image": "Image",
+    "form": "Form",
+    "table": "Table",
+    "list": "List",
+    "navigation": "Navigation",
+    "main": "Main content",
+    "footer": "Footer",
+    "sidebar": "Sidebar"
+  },
+  "aria": {
+    "button": "Button {{action}}",
+    "link": "Link to {{destination}}",
+    "image": "Image {{description}}",
+    "form": "Form {{purpose}}",
+    "table": "Table {{description}}",
+    "list": "List {{items}}",
+    "navigation": "Navigation {{section}}",
+    "main": "Main content",
+    "footer": "Page footer",
+    "sidebar": "Sidebar"
+  },
+  "keyboard": {
+    "enter": "Press Enter to execute",
+    "space": "Press Space to execute",
+    "tab": "Use Tab to navigate",
+    "escape": "Press Escape to cancel",
+    "arrowKeys": "Use arrow keys to navigate",
+    "home": "Press Home for beginning",
+    "end": "Press End for end"
+  },
+  "highContrast": {
+    "enabled": "High contrast enabled",
+    "disabled": "High contrast disabled",
+    "toggle": "Toggle high contrast"
+  },
+  "reducedMotion": {
+    "enabled": "Reduced motion enabled",
+    "disabled": "Reduced motion disabled",
+    "toggle": "Toggle reduced motion"
+  }
+}

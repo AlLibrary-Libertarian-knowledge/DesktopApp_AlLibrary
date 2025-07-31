@@ -1,0 +1,342 @@
+/* ==========================================================================
+   High Contrast Accessibility Theme
+   ========================================================================== */
+
+/* High Contrast Theme - Enhanced visibility for visual impairments */
+
+[data-accessibility-theme='high-contrast'] {
+  /* ===== COLOR OVERRIDES ===== */
+
+  /* Primary Colors - Maximum contrast */
+  --color-primary-50: #0000ff;
+  --color-primary-100: #0000ff;
+  --color-primary-200: #0000ff;
+  --color-primary-300: #0000ff;
+  --color-primary-400: #0000ff;
+  --color-primary-500: #0000ff; /* Pure blue for maximum visibility */
+  --color-primary-600: #0000cc;
+  --color-primary-700: #000099;
+  --color-primary-800: #000066;
+  --color-primary-900: #000033;
+  --color-primary-950: #000000;
+
+  /* Secondary Colors - High contrast alternatives */
+  --color-secondary-50: #00ff00;
+  --color-secondary-100: #00ff00;
+  --color-secondary-200: #00ff00;
+  --color-secondary-300: #00ff00;
+  --color-secondary-400: #00ff00;
+  --color-secondary-500: #00ff00; /* Pure green for maximum visibility */
+  --color-secondary-600: #00cc00;
+  --color-secondary-700: #009900;
+  --color-secondary-800: #006600;
+  --color-secondary-900: #003300;
+  --color-secondary-950: #000000;
+
+  /* Surface Colors - Maximum contrast */
+  --color-background-primary: #ffffff; /* Pure white background */
+  --color-background-secondary: #ffffff;
+  --color-background-tertiary: #ffffff;
+  --color-background-overlay: rgba(0, 0, 0, 0.8); /* High contrast overlay */
+
+  --color-surface-primary: #ffffff;
+  --color-surface-secondary: #ffffff;
+  --color-surface-tertiary: #ffffff;
+  --color-surface-hover: #ffff00; /* Bright yellow for hover */
+  --color-surface-active: #ffff00;
+  --color-surface-disabled: #cccccc; /* Light gray for disabled */
+
+  /* Text Colors - Maximum contrast */
+  --color-text-primary: #000000; /* Pure black text */
+  --color-text-secondary: #000000;
+  --color-text-tertiary: #000000;
+  --color-text-muted: #000000;
+  --color-text-disabled: #666666; /* Medium gray for disabled */
+  --color-text-inverse: #ffffff;
+
+  /* Border Colors - High contrast borders */
+  --color-border-primary: #000000; /* Pure black borders */
+  --color-border-secondary: #000000;
+  --color-border-tertiary: #000000;
+  --color-border-focus: #0000ff; /* Blue focus borders */
+  --color-border-error: #ff0000; /* Red error borders */
+  --color-border-success: #00ff00; /* Green success borders */
+  --color-border-warning: #ffa500; /* Orange warning borders */
+
+  /* ===== TYPOGRAPHY OVERRIDES ===== */
+
+  /* Font Family - High contrast fonts */
+  --font-family-sans: 'Arial', 'Helvetica', sans-serif;
+
+  /* Typography Scale - Larger, bolder text */
+  --font-weight-normal: 600; /* Bolder text for better visibility */
+  --font-weight-medium: 700;
+  --font-weight-semibold: 800;
+  --font-weight-bold: 900;
+
+  /* Typography Scale - Enhanced readability */
+  --font-heading-1: var(--font-size-4xl) / var(--line-height-tight) var(--font-family-sans);
+  --font-heading-2: var(--font-size-3xl) / var(--line-height-tight) var(--font-family-sans);
+  --font-heading-3: var(--font-size-2xl) / var(--line-height-snug) var(--font-family-sans);
+  --font-body-medium: var(--font-size-lg) / var(--line-height-relaxed) var(--font-family-sans);
+
+  /* ===== SPACING OVERRIDES ===== */
+
+  /* Component Spacing - Enhanced spacing for better visibility */
+  --space-component-xs: var(--space-2);
+  --space-component-sm: var(--space-3);
+  --space-component-md: var(--space-6);
+  --space-component-lg: var(--space-8);
+  --space-component-xl: var(--space-12);
+  --space-component-2xl: var(--space-16);
+
+  /* Layout Spacing - Enhanced layout spacing */
+  --space-layout-xs: var(--space-3);
+  --space-layout-sm: var(--space-6);
+  --space-layout-md: var(--space-12);
+  --space-layout-lg: var(--space-16);
+  --space-layout-xl: var(--space-24);
+  --space-layout-2xl: var(--space-32);
+
+  /* ===== SHADOW OVERRIDES ===== */
+
+  /* Component Shadows - High contrast shadows */
+  --shadow-component-xs: 0 1px 3px 0 rgba(0, 0, 0, 0.15);
+  --shadow-component-sm: 0 2px 4px 0 rgba(0, 0, 0, 0.15), 0 1px 2px 0 rgba(0, 0, 0, 0.1);
+  --shadow-component-md: 0 4px 8px -1px rgba(0, 0, 0, 0.15), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+  --shadow-component-lg: 0 8px 16px -2px rgba(0, 0, 0, 0.15), 0 4px 8px -1px rgba(0, 0, 0, 0.1);
+  --shadow-component-xl: 0 16px 24px -4px rgba(0, 0, 0, 0.15), 0 8px 12px -2px rgba(0, 0, 0, 0.1);
+  --shadow-component-2xl: 0 24px 32px -6px rgba(0, 0, 0, 0.15), 0 12px 16px -3px rgba(0, 0, 0, 0.1);
+
+  /* Card Shadows - High contrast elevation */
+  --shadow-card-xs: var(--shadow-component-xs);
+  --shadow-card-sm: var(--shadow-component-sm);
+  --shadow-card-md: var(--shadow-component-md);
+  --shadow-card-lg: var(--shadow-component-lg);
+  --shadow-card-xl: var(--shadow-component-xl);
+  --shadow-card-2xl: var(--shadow-component-2xl);
+
+  /* Button Shadows - High contrast interaction */
+  --shadow-button-xs: var(--shadow-component-xs);
+  --shadow-button-sm: var(--shadow-component-sm);
+  --shadow-button-md: var(--shadow-component-md);
+  --shadow-button-lg: var(--shadow-component-lg);
+  --shadow-button-xl: var(--shadow-component-xl);
+
+  /* ===== BORDER RADIUS OVERRIDES ===== */
+
+  /* Component Border Radius - Enhanced visibility */
+  --radius-component-xs: 0.25rem; /* 4px */
+  --radius-component-sm: 0.5rem; /* 8px */
+  --radius-component-md: 0.75rem; /* 12px */
+  --radius-component-lg: 1rem; /* 16px */
+  --radius-component-xl: 1.5rem; /* 24px */
+  --radius-component-2xl: 2rem; /* 32px */
+
+  /* Button Border Radius - Enhanced interaction */
+  --radius-button-xs: var(--radius-component-xs);
+  --radius-button-sm: var(--radius-component-sm);
+  --radius-button-md: var(--radius-component-md);
+  --radius-button-lg: var(--radius-component-lg);
+  --radius-button-xl: var(--radius-component-xl);
+  --radius-button-2xl: var(--radius-component-2xl);
+  --radius-button-full: var(--radius-full);
+
+  /* Card Border Radius - Enhanced containers */
+  --radius-card-xs: var(--radius-component-xs);
+  --radius-card-sm: var(--radius-component-sm);
+  --radius-card-md: var(--radius-component-md);
+  --radius-card-lg: var(--radius-component-lg);
+  --radius-card-xl: var(--radius-component-xl);
+  --radius-card-2xl: var(--radius-component-2xl);
+
+  /* Input Border Radius - Enhanced forms */
+  --radius-input-xs: var(--radius-component-xs);
+  --radius-input-sm: var(--radius-component-sm);
+  --radius-input-md: var(--radius-component-md);
+  --radius-input-lg: var(--radius-component-lg);
+  --radius-input-xl: var(--radius-component-xl);
+  --radius-input-full: var(--radius-full);
+
+  /* ===== FOCUS OVERRIDES ===== */
+
+  /* Focus Colors - Maximum visibility */
+  --color-focus-primary: #0000ff;
+  --color-focus-secondary: #0000cc;
+  --color-focus-ring: rgba(0, 0, 255, 0.5);
+  --color-focus-outline: #0000ff;
+
+  /* Focus Shadows - High contrast focus indicators */
+  --shadow-focus-xs: 0 0 0 4px rgba(0, 0, 255, 0.3);
+  --shadow-focus-sm: 0 0 0 4px rgba(0, 0, 255, 0.4);
+  --shadow-focus-md: 0 0 0 4px rgba(0, 0, 255, 0.5);
+  --shadow-focus-lg: 0 0 0 6px rgba(0, 0, 255, 0.6);
+  --shadow-focus-xl: 0 0 0 6px rgba(0, 0, 255, 0.7);
+
+  /* ===== INTERACTION OVERRIDES ===== */
+
+  /* Hover States - High contrast feedback */
+  --color-surface-hover: #ffff00;
+  --shadow-hover-xs: var(--shadow-component-sm);
+  --shadow-hover-sm: var(--shadow-component-md);
+  --shadow-hover-md: var(--shadow-component-lg);
+  --shadow-hover-lg: var(--shadow-component-xl);
+  --shadow-hover-xl: var(--shadow-component-2xl);
+
+  /* Active States - High contrast feedback */
+  --color-surface-active: #ffff00;
+  --shadow-active-xs: var(--shadow-component-xs);
+  --shadow-active-sm: var(--shadow-component-sm);
+  --shadow-active-md: var(--shadow-component-md);
+  --shadow-active-lg: var(--shadow-component-lg);
+  --shadow-active-xl: var(--shadow-component-xl);
+
+  /* ===== ACCESSIBILITY SPECIFIC ELEMENTS ===== */
+
+  /* Focus Indicators */
+  --color-focus-indicator: #0000ff;
+  --color-focus-background: #ffff00;
+  --color-focus-border: #0000ff;
+  --color-focus-text: #000000;
+
+  /* Error Indicators */
+  --color-error-indicator: #ff0000;
+  --color-error-background: #ffffff;
+  --color-error-border: #ff0000;
+  --color-error-text: #000000;
+
+  /* Success Indicators */
+  --color-success-indicator: #00ff00;
+  --color-success-background: #ffffff;
+  --color-success-border: #00ff00;
+  --color-success-text: #000000;
+
+  /* Warning Indicators */
+  --color-warning-indicator: #ffa500;
+  --color-warning-background: #ffffff;
+  --color-warning-border: #ffa500;
+  --color-warning-text: #000000;
+
+  /* ===== ENHANCED VISIBILITY ELEMENTS ===== */
+
+  /* Links */
+  --color-link-primary: #0000ff;
+  --color-link-hover: #0000cc;
+  --color-link-active: #000099;
+  --color-link-visited: #800080;
+
+  /* Buttons */
+  --color-button-primary: #0000ff;
+  --color-button-primary-hover: #0000cc;
+  --color-button-primary-active: #000099;
+  --color-button-primary-text: #ffffff;
+
+  --color-button-secondary: #ffffff;
+  --color-button-secondary-hover: #ffff00;
+  --color-button-secondary-active: #ffff00;
+  --color-button-secondary-text: #000000;
+  --color-button-secondary-border: #000000;
+
+  /* Inputs */
+  --color-input-background: #ffffff;
+  --color-input-border: #000000;
+  --color-input-text: #000000;
+  --color-input-placeholder: #666666;
+  --color-input-focus: #0000ff;
+
+  /* ===== RESPONSIVE OVERRIDES ===== */
+
+  /* Mobile Adjustments */
+  @media (max-width: 639px) {
+    --space-component-md: var(--space-4);
+    --space-layout-md: var(--space-8);
+    --font-heading-1: var(--font-size-3xl) / var(--line-height-tight) var(--font-family-sans);
+  }
+
+  /* Tablet Adjustments */
+  @media (min-width: 640px) and (max-width: 1023px) {
+    --space-component-md: var(--space-6);
+    --space-layout-md: var(--space-12);
+    --font-heading-1: var(--font-size-4xl) / var(--line-height-tight) var(--font-family-sans);
+  }
+
+  /* Desktop Adjustments */
+  @media (min-width: 1024px) {
+    --space-component-md: var(--space-8);
+    --space-layout-md: var(--space-16);
+    --font-heading-1: var(--font-size-5xl) / var(--line-height-tight) var(--font-family-sans);
+  }
+}
+
+/* ===== HIGH CONTRAST UTILITY CLASSES ===== */
+
+.high-contrast-text {
+  color: #000000 !important;
+  font-weight: 600 !important;
+}
+
+.high-contrast-background {
+  background-color: #ffffff !important;
+}
+
+.high-contrast-border {
+  border: 2px solid #000000 !important;
+}
+
+.high-contrast-focus:focus {
+  outline: 4px solid #0000ff !important;
+  outline-offset: 2px !important;
+}
+
+.high-contrast-link {
+  color: #0000ff !important;
+  text-decoration: underline !important;
+}
+
+.high-contrast-link:hover {
+  color: #0000cc !important;
+  background-color: #ffff00 !important;
+}
+
+.high-contrast-button {
+  background-color: #0000ff !important;
+  color: #ffffff !important;
+  border: 2px solid #000000 !important;
+  font-weight: 600 !important;
+}
+
+.high-contrast-button:hover {
+  background-color: #0000cc !important;
+  border-color: #0000ff !important;
+}
+
+.high-contrast-input {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 2px solid #000000 !important;
+  font-weight: 600 !important;
+}
+
+.high-contrast-input:focus {
+  border-color: #0000ff !important;
+  outline: 4px solid #0000ff !important;
+  outline-offset: 2px !important;
+}
+
+/* ===== HIGH CONTRAST PRINT STYLES ===== */
+
+@media print {
+  [data-accessibility-theme='high-contrast'] {
+    /* Print high contrast adjustments */
+    --color-background-primary: #ffffff;
+    --color-text-primary: #000000;
+    --color-border-primary: #000000;
+
+    /* Ensure all text is black on white for printing */
+    * {
+      color: #000000 !important;
+      background-color: #ffffff !important;
+      border-color: #000000 !important;
+    }
+  }
+}

@@ -1,0 +1,275 @@
+{
+  "home": {
+    "title": "AlLibrary-man Hayk'ay",
+    "subtitle": "Manan kamachisqa Cultural Heritage Preservation Network",
+    "networkStatus": {
+      "online": "Network Online",
+      "offline": "Network Offline",
+      "connecting": "Tinkisqa",
+      "health": "98% Salud",
+      "peers": "masikuna",
+      "nodes": "nodokuna",
+      "connections": "tinkikuna",
+      "latency": "latencia",
+      "bandwidth": "ancho de banda"
+    },
+    "dataFlow": {
+      "download": "Chaqrusqay",
+      "upload": "Wichay",
+      "incoming": "Yaykusqa",
+      "outgoing": "Lluqsisaq",
+      "totalTransfer": "Total Transferencia",
+      "activeTransfers": "Transferencias Activas"
+    },
+    "activityIndicators": {
+      "downloads": "Chaqrusqakuna",
+      "seeding": "Tarpusqa",
+      "discovering": "Tarikusqa",
+      "active": "llamk'asqa",
+      "idle": "manan llamk'asqa",
+      "paused": "sayasqa"
+    },
+    "tabs": {
+      "overview": "Qhaway",
+      "network": "Network",
+      "downloads": "Chaqrusqakuna",
+      "analytics": "Analytics"
+    },
+    "stats": {
+      "documentsShared": "Documentos Rakiy",
+      "connectedPeers": "Tinkisqa Masikuna",
+      "culturalInstitutions": "Cultural Instituciones",
+      "networkHealth": "Network Salud",
+      "totalStorage": "Total Almacenamiento",
+      "availableStorage": "Disponible Almacenamiento",
+      "uploadSpeed": "Wichay Velocidad",
+      "downloadSpeed": "Chaqrusqay Velocidad",
+      "today": "kunan",
+      "thisWeek": "kay simana",
+      "thisMonth": "kay killa",
+      "online": "online",
+      "offline": "offline",
+      "stable": "allin",
+      "excellent": "sumaq",
+      "good": "allin",
+      "fair": "kikin",
+      "poor": "mana allin",
+      "trendPositive": "wataq",
+      "trendNegative": "uraq",
+      "trendNeutral": "allin"
+    },
+    "networkTopology": {
+      "title": "Network Topología",
+      "subtitle": "Live peer connection visualización",
+      "expandView": "Expandir Vista",
+      "viewDetails": "Ver Detalles",
+      "refreshData": "Refrescar Datos",
+      "exportData": "Exportar Datos",
+      "legend": "Leyenda",
+      "nodeTypes": {
+        "library": "Biblioteca Nodo",
+        "institution": "Institución",
+        "peer": "Masi",
+        "bridge": "Puente Nodo",
+        "relay": "Relay Nodo"
+      }
+    },
+    "networkActivity": {
+      "title": "Network Actividad",
+      "subtitle": "Real-time descargas y network conexiones",
+      "recentDownloads": "Recientes Descargas",
+      "recentDownloadsSubtitle": "Activas descargas y subidas",
+      "networkActivitySubtitle": "Peer conexiones y descubrimientos",
+      "recentUploads": "Recientes Subidas",
+      "networkConnections": "Network Conexiones",
+      "peerDiscovery": "Peer Descubrimiento",
+      "institutionSharing": "Institución Compartiendo",
+      "culturalExchange": "Cultural Intercambio"
+    },
+    "quickActions": {
+      "title": "Rápido Acciones",
+      "shareDocument": "Compartir Documento",
+      "searchNetwork": "Buscar Network",
+      "analytics": "Analytics",
+      "settings": "Configuración",
+      "uploadFile": "Subir Archivo",
+      "createCollection": "Crear Colección",
+      "browseLibrary": "Navegar Biblioteca",
+      "viewHistory": "Ver Historia",
+      "manageConnections": "Gestionar Conexiones",
+      "culturalContext": "Cultural Contexto",
+      "securityAudit": "Seguridad Auditoría",
+      "communityGuidelines": "Comunidad Pautas"
+    },
+    "networkSection": {
+      "title": "Network Topología & Análisis",
+      "subtitle": "Explorar network conexiones y rendimiento",
+      "refresh": "Refrescar",
+      "statistics": "Estadísticas",
+      "configure": "Configurar",
+      "export": "Exportar",
+      "fullscreen": "Pantalla Completa",
+      "filters": "Filtros",
+      "layout": "Diseño",
+      "controls": {
+        "zoomIn": "Zoom In",
+        "zoomOut": "Zoom Out",
+        "resetView": "Resetear Vista",
+        "centerView": "Centrar Vista",
+        "fitToScreen": "Ajustar a Pantalla"
+      },
+      "metrics": {
+        "totalNodes": "Total Nodos",
+        "activeConnections": "Activas Conexiones",
+        "avgLatency": "Promedio Latencia",
+        "networkDensity": "Network Densidad",
+        "clusteringCoeff": "Clustering Coeficiente"
+      }
+    },
+    "downloadsSection": {
+      "title": "Descarga Gestor",
+      "subtitle": "Gestionar tus descargas y subidas",
+      "addDownload": "Añadir Descarga",
+      "queue": "Cola",
+      "preferences": "Preferencias",
+      "pauseAll": "Pausar Todo",
+      "resumeAll": "Reanudar Todo",
+      "clearCompleted": "Limpiar Completados",
+      "bandwidth": "Ancho de Banda",
+      "filters": {
+        "all": "Todo",
+        "downloading": "Descargando",
+        "seeding": "Sembrando",
+        "completed": "Completado",
+        "paused": "Pausado",
+        "failed": "Falló"
+      },
+      "sortBy": {
+        "name": "Nombre",
+        "size": "Tamaño",
+        "progress": "Progreso",
+        "speed": "Velocidad",
+        "eta": "ETA",
+        "priority": "Prioridad"
+      }
+    },
+    "welcomeModal": {
+      "title": "AlLibrary-man Hayk'ay",
+      "description": "AlLibrary es una sofisticada plataforma descentralizada para preservar y compartir documentos de patrimonio cultural. Construido en avanzada tecnología P2P con integración TOR, aseguramos que el conocimiento tradicional se preserve de forma segura.",
+      "features": {
+        "encryption": "Grado militar encriptación con TOR anonimato",
+        "globalNetwork": "Global P2P network con 156+ instituciones",
+        "performance": "Alto rendimiento libp2p con DHT routing",
+        "culturalProtection": "Cultural protección protocolos & permisos",
+        "advancedSearch": "Avanzada búsqueda con cultural contexto filtrado",
+        "realTimeAnalytics": "Real-time network analytics & monitoreo",
+        "decentralized": "Completamente descentralizada arquitectura",
+        "preservation": "Largo plazo digital preservación",
+        "collaboration": "Colaborativo conocimiento compartiendo",
+        "accessibility": "Universal accesibilidad soporte"
+      },
+      "takeTour": "Tomar Tour",
+      "enterLibrary": "Entrar AlLibrary",
+      "learnMore": "Aprender Más",
+      "skipIntro": "Saltar Introducción",
+      "gettingStarted": "Empezando Guía"
+    },
+    "recentActivity": "Reciente Actividad",
+    "culturalHighlights": "Cultural Conocimiento Destacados",
+    "dashboard": {
+      "lastUpdated": "Último actualizado",
+      "autoRefresh": "Auto-refrescar",
+      "dataSource": "Datos fuente",
+      "exportData": "Exportar datos",
+      "shareView": "Compartir vista",
+      "customizeLayout": "Personalizar diseño"
+    },
+    "accessibility": {
+      "networkStatusAria": "Network estado: {{status}}, {{peers}} conectados peers, {{health}} salud",
+      "statCardAria": "{{label}}: {{value}}, {{trend}} tendencia",
+      "activityItemAria": "{{type}} actividad: {{title}}, {{status}}",
+      "downloadProgressAria": "Descarga progreso: {{progress}} por ciento completo",
+      "networkGraphAria": "Network topología visualización mostrando {{nodes}} nodos y {{connections}} conexiones",
+      "skipToContent": "Saltar al contenido principal",
+      "skipToNavigation": "Saltar a navegación"
+    },
+    "errors": {
+      "networkConnectionFailed": "Falló conectar a network",
+      "dataLoadFailed": "Falló cargar dashboard datos",
+      "statUpdateFailed": "Falló actualizar estadísticas",
+      "downloadStartFailed": "Falló empezar descarga",
+      "uploadStartFailed": "Falló empezar subida",
+      "retryAction": "Reintentar",
+      "reportIssue": "Reportar Problema"
+    },
+    "loading": {
+      "dashboard": "Cargando dashboard...",
+      "networkData": "Cargando network datos...",
+      "statistics": "Cargando estadísticas...",
+      "activities": "Cargando actividades...",
+      "connecting": "Conectando a network...",
+      "initializing": "Inicializando..."
+    }
+  },
+  "search": {
+    "title": "Maskay",
+    "subtitle": "Tarikuy documentos y contenido",
+    "searchPlaceholder": "Maskay documentos, colecciones, y cultural contenido...",
+    "advancedFilters": "Avanzados Filtros",
+    "culturalFilters": "Cultural Contexto Filtros",
+    "searchResults": "Búsqueda Resultados",
+    "noResults": "Manan tarikusqa",
+    "searching": "Maskasqa...",
+    "clearSearch": "Limpiar Búsqueda",
+    "showFilters": "Rikuchiy Filtros",
+    "hideFilters": "Pakay Filtros",
+    "sortBy": "Ordenar por",
+    "viewMode": "Vista Modo",
+    "gridView": "Cuadrícula Vista",
+    "listView": "Lista Vista"
+  },
+  "documents": {
+    "title": "Ñoqap Documentos",
+    "subtitle": "Gestionar tu documento colección",
+    "uploadNew": "Subir Nuevo Documento",
+    "organizeLibrary": "Organizar Biblioteca",
+    "culturalContext": "Cultural Contexto",
+    "sensitivityLevel": "Sensibilidad Nivel",
+    "searchPlaceholder": "Maskay tus documentos..."
+  },
+  "collections": {
+    "title": "Colecciones",
+    "subtitle": "Organizadas documento colecciones",
+    "createNew": "Crear Nueva Colección",
+    "manageExisting": "Gestionar Colecciones",
+    "collaborativeCollections": "Colaborativas Colecciones",
+    "culturalCollections": "Cultural Herencia Colecciones"
+  },
+  "network": {
+    "title": "Network",
+    "subtitle": "Conectar con peers",
+    "connectionStatus": "Conexión Estado",
+    "activePeers": "Activos Peers",
+    "networkHealth": "Network Salud",
+    "p2pSearch": "P2P Búsqueda"
+  },
+  "settings": {
+    "title": "Configuración",
+    "subtitle": "Configurar tus preferencias",
+    "general": "General",
+    "privacy": "Privacidad",
+    "security": "Seguridad",
+    "cultural": "Cultural Preferencias",
+    "network": "Network Configuración",
+    "language": "Idioma"
+  },
+  "cultural": {
+    "title": "Cultural Contextos",
+    "subtitle": "Educacional cultural información",
+    "traditionalKnowledge": "Tradicional Conocimiento",
+    "communityGuidelines": "Comunidad Pautas",
+    "educationalResources": "Educacional Recursos",
+    "culturalOrigins": "Cultural Orígenes",
+    "sensitivityLevels": "Sensibilidad Niveles"
+  }
+}

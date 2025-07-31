@@ -1,0 +1,329 @@
+/* ==========================================================================
+   Spacing Design Tokens
+   ========================================================================== */
+
+:root {
+  /* ===== BASE SPACING SCALE ===== */
+
+  /* Zero Spacing */
+  --space-0: 0;
+  --space-px: 1px;
+
+  /* Extra Small Spacing */
+  --space-0-5: 0.125rem; /* 2px */
+  --space-1: 0.25rem; /* 4px */
+  --space-1-5: 0.375rem; /* 6px */
+  --space-2: 0.5rem; /* 8px */
+  --space-2-5: 0.625rem; /* 10px */
+
+  /* Small Spacing */
+  --space-3: 0.75rem; /* 12px */
+  --space-3-5: 0.875rem; /* 14px */
+  --space-4: 1rem; /* 16px */
+  --space-5: 1.25rem; /* 20px */
+  --space-6: 1.5rem; /* 24px */
+
+  /* Medium Spacing */
+  --space-7: 1.75rem; /* 28px */
+  --space-8: 2rem; /* 32px */
+  --space-9: 2.25rem; /* 36px */
+  --space-10: 2.5rem; /* 40px */
+  --space-11: 2.75rem; /* 44px */
+  --space-12: 3rem; /* 48px */
+
+  /* Large Spacing */
+  --space-14: 3.5rem; /* 56px */
+  --space-16: 4rem; /* 64px */
+  --space-20: 5rem; /* 80px */
+  --space-24: 6rem; /* 96px */
+  --space-28: 7rem; /* 112px */
+  --space-32: 8rem; /* 128px */
+
+  /* Extra Large Spacing */
+  --space-36: 9rem; /* 144px */
+  --space-40: 10rem; /* 160px */
+  --space-44: 11rem; /* 176px */
+  --space-48: 12rem; /* 192px */
+  --space-52: 13rem; /* 208px */
+  --space-56: 14rem; /* 224px */
+  --space-60: 15rem; /* 240px */
+  --space-64: 16rem; /* 256px */
+  --space-72: 18rem; /* 288px */
+  --space-80: 20rem; /* 320px */
+  --space-96: 24rem; /* 384px */
+
+  /* ===== SEMANTIC SPACING ===== */
+
+  /* Component Spacing */
+  --space-component-xs: var(--space-1);
+  --space-component-sm: var(--space-2);
+  --space-component-md: var(--space-4);
+  --space-component-lg: var(--space-6);
+  --space-component-xl: var(--space-8);
+  --space-component-2xl: var(--space-12);
+
+  /* Layout Spacing */
+  --space-layout-xs: var(--space-2);
+  --space-layout-sm: var(--space-4);
+  --space-layout-md: var(--space-8);
+  --space-layout-lg: var(--space-12);
+  --space-layout-xl: var(--space-16);
+  --space-layout-2xl: var(--space-24);
+
+  /* Section Spacing */
+  --space-section-xs: var(--space-8);
+  --space-section-sm: var(--space-12);
+  --space-section-md: var(--space-16);
+  --space-section-lg: var(--space-24);
+  --space-section-xl: var(--space-32);
+  --space-section-2xl: var(--space-48);
+
+  /* Page Spacing */
+  --space-page-xs: var(--space-16);
+  --space-page-sm: var(--space-24);
+  --space-page-md: var(--space-32);
+  --space-page-lg: var(--space-48);
+  --space-page-xl: var(--space-64);
+  --space-page-2xl: var(--space-96);
+
+  /* ===== MARGIN TOKENS ===== */
+
+  /* Margin Scale */
+  --margin-0: 0;
+  --margin-1: var(--space-1);
+  --margin-2: var(--space-2);
+  --margin-3: var(--space-3);
+  --margin-4: var(--space-4);
+  --margin-5: var(--space-5);
+  --margin-6: var(--space-6);
+  --margin-8: var(--space-8);
+  --margin-10: var(--space-10);
+  --margin-12: var(--space-12);
+  --margin-16: var(--space-16);
+  --margin-20: var(--space-20);
+  --margin-24: var(--space-24);
+
+  /* Margin Auto */
+  --margin-auto: auto;
+
+  /* ===== PADDING TOKENS ===== */
+
+  /* Padding Scale */
+  --padding-0: 0;
+  --padding-1: var(--space-1);
+  --padding-2: var(--space-2);
+  --padding-3: var(--space-3);
+  --padding-4: var(--space-4);
+  --padding-5: var(--space-5);
+  --padding-6: var(--space-6);
+  --padding-8: var(--space-8);
+  --padding-10: var(--space-10);
+  --padding-12: var(--space-12);
+  --padding-16: var(--space-16);
+  --padding-20: var(--space-20);
+  --padding-24: var(--space-24);
+
+  /* ===== GAP TOKENS ===== */
+
+  /* Gap Scale */
+  --gap-0: 0;
+  --gap-1: var(--space-1);
+  --gap-2: var(--space-2);
+  --gap-3: var(--space-3);
+  --gap-4: var(--space-4);
+  --gap-5: var(--space-5);
+  --gap-6: var(--space-6);
+  --gap-8: var(--space-8);
+  --gap-10: var(--space-10);
+  --gap-12: var(--space-12);
+  --gap-16: var(--space-16);
+  --gap-20: var(--space-20);
+  --gap-24: var(--space-24);
+
+  /* ===== BORDER RADIUS SPACING ===== */
+
+  /* Border Radius Scale */
+  --radius-none: 0;
+  --radius-sm: 0.125rem; /* 2px */
+  --radius-base: 0.25rem; /* 4px */
+  --radius-md: 0.375rem; /* 6px */
+  --radius-lg: 0.5rem; /* 8px */
+  --radius-xl: 0.75rem; /* 12px */
+  --radius-2xl: 1rem; /* 16px */
+  --radius-3xl: 1.5rem; /* 24px */
+  --radius-full: 9999px;
+
+  /* ===== CULTURAL SPACING ===== */
+
+  /* Indigenous Spacing - Respectful proportions */
+  --space-cultural-indigenous-xs: var(--space-1);
+  --space-cultural-indigenous-sm: var(--space-2);
+  --space-cultural-indigenous-md: var(--space-4);
+  --space-cultural-indigenous-lg: var(--space-6);
+  --space-cultural-indigenous-xl: var(--space-8);
+
+  /* Traditional Spacing - Balanced proportions */
+  --space-cultural-traditional-xs: var(--space-1-5);
+  --space-cultural-traditional-sm: var(--space-3);
+  --space-cultural-traditional-md: var(--space-5);
+  --space-cultural-traditional-lg: var(--space-7);
+  --space-cultural-traditional-xl: var(--space-10);
+
+  /* Ceremonial Spacing - Sacred proportions */
+  --space-cultural-ceremonial-xs: var(--space-2);
+  --space-cultural-ceremonial-sm: var(--space-4);
+  --space-cultural-ceremonial-md: var(--space-6);
+  --space-cultural-ceremonial-lg: var(--space-8);
+  --space-cultural-ceremonial-xl: var(--space-12);
+
+  /* Academic Spacing - Scholarly proportions */
+  --space-cultural-academic-xs: var(--space-1);
+  --space-cultural-academic-sm: var(--space-2);
+  --space-cultural-academic-md: var(--space-4);
+  --space-cultural-academic-lg: var(--space-6);
+  --space-cultural-academic-xl: var(--space-8);
+
+  /* Community Spacing - Collaborative proportions */
+  --space-cultural-community-xs: var(--space-2);
+  --space-cultural-community-sm: var(--space-4);
+  --space-cultural-community-md: var(--space-6);
+  --space-cultural-community-lg: var(--space-8);
+  --space-cultural-community-xl: var(--space-12);
+
+  /* ===== ACCESSIBILITY SPACING ===== */
+
+  /* High Contrast Spacing - Enhanced visibility */
+  --space-accessibility-high-contrast-xs: var(--space-2);
+  --space-accessibility-high-contrast-sm: var(--space-4);
+  --space-accessibility-high-contrast-md: var(--space-6);
+  --space-accessibility-high-contrast-lg: var(--space-8);
+  --space-accessibility-high-contrast-xl: var(--space-12);
+
+  /* Large Text Spacing - Improved readability */
+  --space-accessibility-large-text-xs: var(--space-2);
+  --space-accessibility-large-text-sm: var(--space-4);
+  --space-accessibility-large-text-md: var(--space-6);
+  --space-accessibility-large-text-lg: var(--space-8);
+  --space-accessibility-large-text-xl: var(--space-12);
+
+  /* Reduced Motion Spacing - Stable layout */
+  --space-accessibility-reduced-motion-xs: var(--space-1);
+  --space-accessibility-reduced-motion-sm: var(--space-2);
+  --space-accessibility-reduced-motion-md: var(--space-4);
+  --space-accessibility-reduced-motion-lg: var(--space-6);
+  --space-accessibility-reduced-motion-xl: var(--space-8);
+
+  /* ===== RESPONSIVE SPACING ===== */
+
+  /* Mobile Spacing */
+  --space-mobile-xs: var(--space-1);
+  --space-mobile-sm: var(--space-2);
+  --space-mobile-md: var(--space-4);
+  --space-mobile-lg: var(--space-6);
+  --space-mobile-xl: var(--space-8);
+
+  /* Tablet Spacing */
+  --space-tablet-xs: var(--space-2);
+  --space-tablet-sm: var(--space-4);
+  --space-tablet-md: var(--space-6);
+  --space-tablet-lg: var(--space-8);
+  --space-tablet-xl: var(--space-12);
+
+  /* Desktop Spacing */
+  --space-desktop-xs: var(--space-2);
+  --space-desktop-sm: var(--space-4);
+  --space-desktop-md: var(--space-6);
+  --space-desktop-lg: var(--space-8);
+  --space-desktop-xl: var(--space-12);
+
+  /* ===== UTILITY SPACING ===== */
+
+  /* Focus Spacing */
+  --space-focus-ring: 2px;
+  --space-focus-offset: 2px;
+
+  /* Border Spacing */
+  --space-border-thin: 1px;
+  --space-border-thick: 2px;
+  --space-border-heavy: 3px;
+
+  /* Shadow Spacing */
+  --space-shadow-sm: 0 1px 2px 0;
+  --space-shadow-md: 0 4px 6px -1px;
+  --space-shadow-lg: 0 10px 15px -3px;
+  --space-shadow-xl: 0 20px 25px -5px;
+}
+
+/* ===== RESPONSIVE SPACING ADJUSTMENTS ===== */
+
+@media (min-width: 640px) {
+  :root {
+    /* Tablet and up spacing adjustments */
+    --space-component-md: var(--space-5);
+    --space-layout-md: var(--space-10);
+    --space-section-md: var(--space-20);
+    --space-page-md: var(--space-40);
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    /* Desktop and up spacing adjustments */
+    --space-component-md: var(--space-6);
+    --space-layout-md: var(--space-12);
+    --space-section-md: var(--space-24);
+    --space-page-md: var(--space-48);
+  }
+}
+
+/* ===== ACCESSIBILITY SPACING ADJUSTMENTS ===== */
+
+@media (prefers-contrast: high) {
+  :root {
+    /* High contrast spacing adjustments */
+    --space-component-md: var(--space-6);
+    --space-layout-md: var(--space-12);
+    --space-section-md: var(--space-24);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    /* Reduced motion spacing adjustments */
+    --space-component-md: var(--space-4);
+    --space-layout-md: var(--space-8);
+    --space-section-md: var(--space-16);
+  }
+}
+
+/* ===== CULTURAL SPACING ADJUSTMENTS ===== */
+
+[data-cultural-theme='indigenous'] {
+  --space-component-md: var(--space-cultural-indigenous-md);
+  --space-layout-md: var(--space-cultural-indigenous-lg);
+  --space-section-md: var(--space-cultural-indigenous-xl);
+}
+
+[data-cultural-theme='traditional'] {
+  --space-component-md: var(--space-cultural-traditional-md);
+  --space-layout-md: var(--space-cultural-traditional-lg);
+  --space-section-md: var(--space-cultural-traditional-xl);
+}
+
+[data-cultural-theme='ceremonial'] {
+  --space-component-md: var(--space-cultural-ceremonial-md);
+  --space-layout-md: var(--space-cultural-ceremonial-lg);
+  --space-section-md: var(--space-cultural-ceremonial-xl);
+}
+
+[data-cultural-theme='academic'] {
+  --space-component-md: var(--space-cultural-academic-md);
+  --space-layout-md: var(--space-cultural-academic-lg);
+  --space-section-md: var(--space-cultural-academic-xl);
+}
+
+[data-cultural-theme='community'] {
+  --space-component-md: var(--space-cultural-community-md);
+  --space-layout-md: var(--space-cultural-community-lg);
+  --space-section-md: var(--space-cultural-community-xl);
+}

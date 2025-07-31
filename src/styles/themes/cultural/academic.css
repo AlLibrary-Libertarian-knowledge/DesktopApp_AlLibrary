@@ -1,0 +1,369 @@
+/**
+ * Academic Cultural Theme
+ *
+ * Scholarly colors inspired by academic traditions
+ * Educational context only - no access restrictions
+ * Respects academic color symbolism and scholarly patterns
+ */
+
+/* Academic Color Palette */
+[data-cultural-theme='academic'] {
+  /* Primary Colors - Scholarly Blues */
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
+
+  /* Secondary Colors - Academic Burgundy */
+  --color-secondary-50: #fdf2f8;
+  --color-secondary-100: #fce7f3;
+  --color-secondary-200: #fbcfe8;
+  --color-secondary-300: #f9a8d4;
+  --color-secondary-400: #f472b6;
+  --color-secondary-500: #ec4899;
+  --color-secondary-600: #db2777;
+  --color-secondary-700: #be185d;
+  --color-secondary-800: #9d174d;
+  --color-secondary-900: #831843;
+
+  /* Cultural Specific Colors */
+  --color-cultural-traditional: #3b82f6;
+  --color-cultural-sacred: #1e3a8a;
+  --color-cultural-academic: #2563eb;
+  --color-cultural-community: #1d4ed8;
+  --color-cultural-heritage: #1e40af;
+
+  /* Surface Colors - Academic Neutrals */
+  --color-surface-primary: #ffffff;
+  --color-surface-secondary: #f8fafc;
+  --color-surface-tertiary: #f1f5f9;
+  --color-surface-quaternary: #e2e8f0;
+
+  /* Text Colors - Scholarly Contrast */
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #334155;
+  --color-text-tertiary: #64748b;
+  --color-text-inverse: #ffffff;
+
+  /* Border Colors - Academic Accents */
+  --color-border-primary: #cbd5e1;
+  --color-border-secondary: #e2e8f0;
+  --color-border-tertiary: #f1f5f9;
+
+  /* Semantic Colors - Academic Context */
+  --color-success: #059669;
+  --color-warning: #d97706;
+  --color-error: #dc2626;
+  --color-info: #2563eb;
+
+  /* Typography - Academic Serif */
+  --font-family-primary: 'Georgia', 'Times New Roman', serif;
+  --font-family-secondary: 'Palatino', 'Georgia', serif;
+  --font-family-display: 'Times New Roman', 'Georgia', serif;
+  --font-family-mono: 'Courier New', 'Monaco', monospace;
+
+  /* Academic Typography Adjustments */
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+
+  /* Academic Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+
+  /* Academic Shadows - Subtle and Professional */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  /* Academic Border Radius */
+  --radius-sm: 0.125rem;
+  --radius-md: 0.25rem;
+  --radius-lg: 0.375rem;
+  --radius-xl: 0.5rem;
+  --radius-2xl: 0.75rem;
+}
+
+/* Dark Mode - Academic */
+[data-cultural-theme='academic'][data-theme='dark'] {
+  /* Dark Academic Colors */
+  --color-surface-primary: #0f172a;
+  --color-surface-secondary: #1e293b;
+  --color-surface-tertiary: #334155;
+  --color-surface-quaternary: #475569;
+
+  --color-text-primary: #f8fafc;
+  --color-text-secondary: #cbd5e1;
+  --color-text-tertiary: #94a3b8;
+
+  --color-border-primary: #334155;
+  --color-border-secondary: #475569;
+  --color-border-tertiary: #64748b;
+}
+
+/* High Contrast - Academic */
+[data-cultural-theme='academic'][data-accessibility='high-contrast'] {
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+
+  --color-text-primary: #000000;
+  --color-text-inverse: #ffffff;
+
+  --color-border-primary: #000000;
+  --color-border-secondary: #000000;
+}
+
+/* Reduced Motion - Academic */
+[data-cultural-theme='academic'][data-accessibility='reduced-motion'] {
+  --transition-duration-fast: 0ms;
+  --transition-duration-normal: 0ms;
+  --transition-duration-slow: 0ms;
+}
+
+/* Focus Management - Academic */
+[data-cultural-theme='academic'] *:focus {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 1px;
+}
+
+[data-cultural-theme='academic'] *:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 1px;
+}
+
+/* Academic Cultural Indicators */
+[data-cultural-theme='academic'] .cultural-indicator {
+  background-color: var(--color-primary-500);
+  color: var(--color-text-inverse);
+  border: 1px solid var(--color-primary-600);
+  font-family: var(--font-family-primary);
+  font-weight: 600;
+}
+
+[data-cultural-theme='academic'] .cultural-context {
+  background-color: var(--color-surface-secondary);
+  border-left: 3px solid var(--color-primary-500);
+  color: var(--color-text-secondary);
+  font-family: var(--font-family-primary);
+}
+
+/* Academic Button Styles */
+[data-cultural-theme='academic'] .btn-primary {
+  background-color: var(--color-primary-500);
+  color: var(--color-text-inverse);
+  border: 1px solid var(--color-primary-600);
+  font-family: var(--font-family-primary);
+  font-weight: 600;
+  border-radius: var(--radius-md);
+}
+
+[data-cultural-theme='academic'] .btn-primary:hover {
+  background-color: var(--color-primary-600);
+  border-color: var(--color-primary-700);
+}
+
+/* Academic Card Styles */
+[data-cultural-theme='academic'] .card {
+  background-color: var(--color-surface-primary);
+  border: 1px solid var(--color-border-primary);
+  box-shadow: var(--shadow-md);
+  font-family: var(--font-family-primary);
+  border-radius: var(--radius-lg);
+}
+
+/* Academic Form Styles */
+[data-cultural-theme='academic'] .form-input {
+  background-color: var(--color-surface-primary);
+  border: 1px solid var(--color-border-primary);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-primary);
+  border-radius: var(--radius-md);
+}
+
+[data-cultural-theme='academic'] .form-input:focus {
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+/* Academic Navigation */
+[data-cultural-theme='academic'] .nav-item {
+  color: var(--color-text-secondary);
+  font-family: var(--font-family-primary);
+  font-weight: 500;
+}
+
+[data-cultural-theme='academic'] .nav-item:hover {
+  color: var(--color-primary-500);
+}
+
+[data-cultural-theme='academic'] .nav-item.active {
+  color: var(--color-primary-600);
+  border-bottom: 2px solid var(--color-primary-500);
+}
+
+/* Academic Typography Enhancements */
+[data-cultural-theme='academic'] h1,
+[data-cultural-theme='academic'] h2,
+[data-cultural-theme='academic'] h3 {
+  font-family: var(--font-family-display);
+  color: var(--color-text-primary);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+[data-cultural-theme='academic'] h1 {
+  font-size: var(--font-size-3xl);
+  margin-bottom: var(--space-lg);
+}
+
+[data-cultural-theme='academic'] h2 {
+  font-size: var(--font-size-2xl);
+  margin-bottom: var(--space-md);
+}
+
+[data-cultural-theme='academic'] h3 {
+  font-size: var(--font-size-xl);
+  margin-bottom: var(--space-sm);
+}
+
+[data-cultural-theme='academic'] p {
+  font-family: var(--font-family-primary);
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-sm);
+}
+
+/* Academic Code Styles */
+[data-cultural-theme='academic'] code {
+  font-family: var(--font-family-mono);
+  background-color: var(--color-surface-tertiary);
+  color: var(--color-text-primary);
+  padding: 0.125rem 0.25rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+}
+
+[data-cultural-theme='academic'] pre {
+  font-family: var(--font-family-mono);
+  background-color: var(--color-surface-tertiary);
+  color: var(--color-text-primary);
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-primary);
+  overflow-x: auto;
+}
+
+/* Academic List Styles */
+[data-cultural-theme='academic'] ul,
+[data-cultural-theme='academic'] ol {
+  font-family: var(--font-family-primary);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin-bottom: var(--space-sm);
+}
+
+[data-cultural-theme='academic'] li {
+  margin-bottom: 0.25rem;
+}
+
+/* Academic Blockquote Styles */
+[data-cultural-theme='academic'] blockquote {
+  font-family: var(--font-family-primary);
+  font-style: italic;
+  color: var(--color-text-tertiary);
+  border-left: 3px solid var(--color-primary-500);
+  padding-left: var(--space-md);
+  margin: var(--space-md) 0;
+}
+
+/* Academic Table Styles */
+[data-cultural-theme='academic'] table {
+  font-family: var(--font-family-primary);
+  border-collapse: collapse;
+  width: 100%;
+  margin: var(--space-md) 0;
+}
+
+[data-cultural-theme='academic'] th,
+[data-cultural-theme='academic'] td {
+  border: 1px solid var(--color-border-primary);
+  padding: var(--space-sm);
+  text-align: left;
+}
+
+[data-cultural-theme='academic'] th {
+  background-color: var(--color-surface-secondary);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+[data-cultural-theme='academic'] td {
+  color: var(--color-text-secondary);
+}
+
+/* Academic Cultural Education Elements */
+[data-cultural-theme='academic'] .cultural-education {
+  background-color: var(--color-surface-secondary);
+  border: 1px solid var(--color-border-primary);
+  padding: var(--space-md);
+  border-radius: var(--radius-lg);
+  margin: var(--space-md) 0;
+}
+
+[data-cultural-theme='academic'] .cultural-education h3 {
+  color: var(--color-primary-600);
+  font-family: var(--font-family-display);
+  margin-bottom: var(--space-sm);
+  font-size: var(--font-size-lg);
+}
+
+[data-cultural-theme='academic'] .cultural-education p {
+  color: var(--color-text-secondary);
+  font-family: var(--font-family-primary);
+  margin-bottom: var(--space-sm);
+}
+
+/* Academic Citation Styles */
+[data-cultural-theme='academic'] .citation {
+  font-family: var(--font-family-primary);
+  font-size: 0.875rem;
+  color: var(--color-text-tertiary);
+  font-style: italic;
+  margin-top: var(--space-sm);
+}
+
+/* Academic Responsive Design */
+@media (max-width: 768px) {
+  [data-cultural-theme='academic'] {
+    --font-size-base: 0.95rem;
+    --font-size-lg: 1.05rem;
+    --font-size-xl: 1.15rem;
+    --font-size-2xl: 1.35rem;
+    --font-size-3xl: 1.65rem;
+  }
+}
+
+/* Academic Print Styles */
+@media print {
+  [data-cultural-theme='academic'] {
+    --color-surface-primary: #ffffff;
+    --color-surface-secondary: #f8f8f8;
+    --color-text-primary: #000000;
+    --color-text-secondary: #333333;
+    --color-border-primary: #cccccc;
+  }
+}

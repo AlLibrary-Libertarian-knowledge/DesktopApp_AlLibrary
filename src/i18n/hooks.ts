@@ -15,7 +15,10 @@ import type {
   PluralTranslationFunction,
   TranslationExistsFunction,
 } from './types';
-import { i18nService } from './service';
+import { createI18nService } from './service';
+
+// Create the i18n service instance
+const i18nService = createI18nService();
 
 // Global state for language changes - wrapped in createRoot to prevent disposal warnings
 const {

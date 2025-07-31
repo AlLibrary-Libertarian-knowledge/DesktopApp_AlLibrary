@@ -2,6 +2,7 @@ import { Component } from 'solid-js';
 import './Header.css';
 import logoSvg from '/src/assets/logo.svg';
 import { LanguageSwitcher } from '@/components/foundation/LanguageSwitcher';
+import { ThemeSwitcher } from '@/components/foundation/ThemeSwitcher';
 import { useTranslation } from '@/i18n';
 
 interface HeaderProps {
@@ -63,6 +64,13 @@ const Header: Component<HeaderProps> = props => {
           size="sm"
           className="header-language-switcher"
           ariaLabel={t('common.actions.changeLanguage', 'Change language')}
+        />
+
+        <ThemeSwitcher
+          variant="compact"
+          size="sm"
+          className="header-theme-switcher"
+          ariaLabel={t('components.themeSwitcher.buttonLabel', 'Open theme selection menu')}
         />
 
         <button

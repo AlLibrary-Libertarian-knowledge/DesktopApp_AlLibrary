@@ -1,0 +1,44 @@
+{
+  "main": {
+    "home": "Kāinga",
+    "library": "Whare Pukapuka",
+    "documents": "Tuhinga",
+    "collections": "Kohinga",
+    "search": "Rapu",
+    "network": "Ipurangi",
+    "settings": "Tautuhinga",
+    "profile": "Kōtuhi",
+    "cultural": "Ahurea"
+  },
+  "sections": {
+    "personal": "Whaiaro",
+    "community": "Hapori",
+    "network": "Ipurangi",
+    "tools": "Taputapu",
+    "preferences": "Mōhiohio"
+  },
+  "items": {
+    "myDocuments": "Āku Tuhinga",
+    "recentDocuments": "Tuhinga Ināianei",
+    "sharedDocuments": "Tuhinga Kua Tiria",
+    "myCollections": "Āku Kohinga",
+    "browseCategories": "Tirotiro Kāwai",
+    "localSearch": "Rapu Ā-Rohe",
+    "networkSearch": "Rapu Ipurangi",
+    "peers": "Hoa",
+    "communities": "Hapori",
+    "networkHealth": "Hauora Ipurangi",
+    "downloadManager": "Kaiwhakahaere Tikiake",
+    "fileOrganizer": "Kaiwhakarite Kōnae",
+    "culturalSettings": "Tautuhinga Ahurea",
+    "appearance": "Āhua",
+    "privacy": "Tūmataiti",
+    "advanced": "Matatau",
+    "notifications": "Pānui"
+  },
+  "breadcrumbs": {
+    "home": "Kāinga",
+    "back": "Hoki",
+    "separator": "/"
+  }
+}

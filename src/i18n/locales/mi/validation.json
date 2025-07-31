@@ -1,0 +1,8 @@
+{
+  "required": "E hiahiatia ana tēnei wāhi",
+  "email": "Kuhua he īmēra tika",
+  "minLength": "Iti rawa te roa ko {{min}} pū",
+  "maxLength": "Nui rawa te roa ko {{max}} pū",
+  "pattern": "Hanga kāore e tika",
+  "numeric": "Ko ngā tau anake e whakaaetia ana"
+}

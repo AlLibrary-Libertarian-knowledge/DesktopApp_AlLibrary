@@ -1,0 +1,17 @@
+{
+  "sensitivity": {
+    "public": "سياق ثقافي عام",
+    "educational": "محتوى تعليمي",
+    "community": "معرفة المجتمع",
+    "traditional": "المعرفة التقليدية",
+    "guardian": "محتوى محمي من قبل الأوصياء",
+    "sacred": "محتوى مقدس",
+    "ceremonial": "محتوى احتفالي"
+  },
+  "context": {
+    "informationOnly": "معلومات فقط",
+    "educationalPurpose": "لأغراض تعليمية",
+    "noAccessRestrictions": "لا توجد قيود على الوصول",
+    "multiplePerspectives": "الترحيب بوجهات نظر متعددة"
+  }
+}

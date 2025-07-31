@@ -1,0 +1,8 @@
+{
+  "required": "Kay pata necesaria",
+  "email": "Allichay válido email dirección",
+  "minLength": "Mínimo largo {{min}} caracteres",
+  "maxLength": "Máximo largo {{max}} caracteres",
+  "pattern": "Mana allin formato",
+  "numeric": "Solo números permitidos"
+}

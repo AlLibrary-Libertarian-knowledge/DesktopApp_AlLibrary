@@ -1,0 +1,50 @@
+{
+  "screenReader": {
+    "loading": "Chaskisqa",
+    "error": "Pantay",
+    "success": "Allin",
+    "warning": "Mancharisqa",
+    "info": "Willay",
+    "button": "Butun",
+    "link": "Tinkiy",
+    "image": "Rikchay",
+    "form": "Qillqay",
+    "table": "Tablata",
+    "list": "Suyu",
+    "navigation": "Puriy",
+    "main": "Hatun qillqa",
+    "footer": "Qhipa qillqa",
+    "sidebar": "Sayay qillqa"
+  },
+  "aria": {
+    "button": "Butun {{action}}",
+    "link": "Tinkiy {{destination}}",
+    "image": "Rikchay {{description}}",
+    "form": "Qillqay {{purpose}}",
+    "table": "Tablata {{description}}",
+    "list": "Suyu {{items}}",
+    "navigation": "Puriy {{section}}",
+    "main": "Hatun qillqa",
+    "footer": "Qhipa qillqa",
+    "sidebar": "Sayay qillqa"
+  },
+  "keyboard": {
+    "enter": "Enter pampay",
+    "space": "Espacio pampay",
+    "tab": "Tab llamk'achiy",
+    "escape": "Escape pampay",
+    "arrowKeys": "Flecha llamk'achiy",
+    "home": "Inicio pampay",
+    "end": "Tuku pampay"
+  },
+  "highContrast": {
+    "enabled": "Hatun t'inkiy",
+    "disabled": "Manan hatun t'inkiy",
+    "toggle": "T'inkiy t'ikray"
+  },
+  "reducedMotion": {
+    "enabled": "Pisi kuyuy",
+    "disabled": "Manan pisi kuyuy",
+    "toggle": "Kuyuy t'ikray"
+  }
+}

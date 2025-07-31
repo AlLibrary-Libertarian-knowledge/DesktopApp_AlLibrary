@@ -1,0 +1,50 @@
+{
+  "screenReader": {
+    "loading": "Laden",
+    "error": "Fehler aufgetreten",
+    "success": "Erfolg",
+    "warning": "Warnung",
+    "info": "Information",
+    "button": "Schaltfläche",
+    "link": "Link",
+    "image": "Bild",
+    "form": "Formular",
+    "table": "Tabelle",
+    "list": "Liste",
+    "navigation": "Navigation",
+    "main": "Hauptinhalt",
+    "footer": "Fußzeile",
+    "sidebar": "Seitenleiste"
+  },
+  "aria": {
+    "button": "Schaltfläche {{action}}",
+    "link": "Link zu {{destination}}",
+    "image": "Bild {{description}}",
+    "form": "Formular {{purpose}}",
+    "table": "Tabelle {{description}}",
+    "list": "Liste {{items}}",
+    "navigation": "Navigation {{section}}",
+    "main": "Hauptinhalt",
+    "footer": "Seitenfußzeile",
+    "sidebar": "Seitenleiste"
+  },
+  "keyboard": {
+    "enter": "Drücken Sie Enter zum Ausführen",
+    "space": "Drücken Sie Leertaste zum Ausführen",
+    "tab": "Verwenden Sie Tab zur Navigation",
+    "escape": "Drücken Sie Escape zum Abbrechen",
+    "arrowKeys": "Verwenden Sie Pfeiltasten zur Navigation",
+    "home": "Drücken Sie Home für den Anfang",
+    "end": "Drücken Sie End für das Ende"
+  },
+  "highContrast": {
+    "enabled": "Hoher Kontrast aktiviert",
+    "disabled": "Hoher Kontrast deaktiviert",
+    "toggle": "Hohen Kontrast umschalten"
+  },
+  "reducedMotion": {
+    "enabled": "Reduzierte Bewegung aktiviert",
+    "disabled": "Reduzierte Bewegung deaktiviert",
+    "toggle": "Reduzierte Bewegung umschalten"
+  }
+}

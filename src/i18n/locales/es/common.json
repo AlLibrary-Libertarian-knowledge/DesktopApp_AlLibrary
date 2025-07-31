@@ -33,7 +33,8 @@
     "goBack": "Volver",
     "viewDetails": "Ver Detalles",
     "showMore": "Mostrar Más",
-    "showLess": "Mostrar Menos"
+    "showLess": "Mostrar Menos",
+    "changeLanguage": "Cambiar Idioma"
   },
   "status": {
     "loading": "Cargando...",

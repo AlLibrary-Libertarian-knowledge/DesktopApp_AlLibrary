@@ -1,0 +1,50 @@
+{
+  "screenReader": {
+    "loading": "加载中",
+    "error": "发生错误",
+    "success": "成功",
+    "warning": "警告",
+    "info": "信息",
+    "button": "按钮",
+    "link": "链接",
+    "image": "图片",
+    "form": "表单",
+    "table": "表格",
+    "list": "列表",
+    "navigation": "导航",
+    "main": "主要内容",
+    "footer": "页脚",
+    "sidebar": "侧边栏"
+  },
+  "aria": {
+    "button": "按钮 {{action}}",
+    "link": "链接到 {{destination}}",
+    "image": "图片 {{description}}",
+    "form": "表单 {{purpose}}",
+    "table": "表格 {{description}}",
+    "list": "列表 {{items}}",
+    "navigation": "导航 {{section}}",
+    "main": "主要内容",
+    "footer": "页面页脚",
+    "sidebar": "侧边栏"
+  },
+  "keyboard": {
+    "enter": "按回车键执行",
+    "space": "按空格键执行",
+    "tab": "使用Tab键导航",
+    "escape": "按Esc键取消",
+    "arrowKeys": "使用方向键导航",
+    "home": "按Home键到开头",
+    "end": "按End键到结尾"
+  },
+  "highContrast": {
+    "enabled": "高对比度已启用",
+    "disabled": "高对比度已禁用",
+    "toggle": "切换高对比度"
+  },
+  "reducedMotion": {
+    "enabled": "减少动画已启用",
+    "disabled": "减少动画已禁用",
+    "toggle": "切换减少动画"
+  }
+}

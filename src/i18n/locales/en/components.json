@@ -772,5 +772,25 @@
   },
   "breadcrumb": {
     "ariaLabel": "Breadcrumb navigation"
+  },
+  "themeSwitcher": {
+    "buttonText": "Theme",
+    "buttonLabel": "Open theme selection menu",
+    "culturalSection": "Cultural Themes",
+    "accessibilitySection": "Accessibility",
+    "cultural": {
+      "indigenous": "Indigenous",
+      "traditional": "Traditional",
+      "ceremonial": "Ceremonial",
+      "academic": "Academic",
+      "community": "Community"
+    },
+    "accessibility": {
+      "highContrast": "High Contrast",
+      "largeText": "Large Text",
+      "reducedMotion": "Reduced Motion",
+      "focusManagement": "Focus Management"
+    },
+    "resetToDefault": "Reset to Default"
   }
 }

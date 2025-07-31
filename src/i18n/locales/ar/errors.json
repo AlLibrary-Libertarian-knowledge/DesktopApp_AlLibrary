@@ -1,0 +1,8 @@
+{
+  "documentNotFound": "المستند غير موجود",
+  "networkConnectionFailed": "فشل الاتصال بالشبكة",
+  "uploadFailed": "فشل الرفع",
+  "searchFailed": "فشل البحث",
+  "accessDenied": "تم رفض الوصول",
+  "validationFailed": "فشل التحقق"
+}

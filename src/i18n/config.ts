@@ -73,6 +73,40 @@ export const SUPPORTED_LANGUAGES: LanguageInfo[] = [
     flagIcon: '/flags/jp.svg',
     rtl: false,
   },
+  // RTL Language Support
+  {
+    code: 'ar',
+    name: 'Arabic',
+    nativeName: 'العربية',
+    flag: '🇸🇦',
+    flagIcon: '/flags/sa.svg',
+    rtl: true,
+  },
+  // Indigenous Language Support
+  {
+    code: 'qu',
+    name: 'Quechua',
+    nativeName: 'Runa Simi',
+    flag: '🇵🇪',
+    flagIcon: '/flags/pe.svg',
+    rtl: false,
+  },
+  {
+    code: 'mi',
+    name: 'Maori',
+    nativeName: 'Te Reo Māori',
+    flag: '🇳🇿',
+    flagIcon: '/flags/nz.svg',
+    rtl: false,
+  },
+  {
+    code: 'nv',
+    name: 'Navajo',
+    nativeName: 'Diné Bizaad',
+    flag: '🇺🇸',
+    flagIcon: '/flags/us-navajo.svg',
+    rtl: false,
+  },
 ];
 
 // Flag icon mapping for enhanced visual display
@@ -98,8 +132,8 @@ export const FLAG_ICONS: FlagIconMapping = {
   pt: {
     emoji: '🇧🇷',
     unicode: 'U+1F1E7 U+1F1F7',
-    svg: '/flags/br.svg',
-    png: '/flags/br.png',
+    svg: '/flags/pt.svg',
+    png: '/flags/pt.png',
   },
   de: {
     emoji: '🇩🇪',
@@ -124,6 +158,32 @@ export const FLAG_ICONS: FlagIconMapping = {
     unicode: 'U+1F1EF U+1F1F5',
     svg: '/flags/jp.svg',
     png: '/flags/jp.png',
+  },
+  // RTL Language Support
+  ar: {
+    emoji: '🇸🇦',
+    unicode: 'U+1F1F8 U+1F1E6',
+    svg: '/flags/sa.svg',
+    png: '/flags/sa.png',
+  },
+  // Indigenous Language Support
+  qu: {
+    emoji: '🇵🇪',
+    unicode: 'U+1F1F5 U+1F1EA',
+    svg: '/flags/pe.svg',
+    png: '/flags/pe.png',
+  },
+  mi: {
+    emoji: '🇳🇿',
+    unicode: 'U+1F1F3 U+1F1FF',
+    svg: '/flags/nz.svg',
+    png: '/flags/nz.png',
+  },
+  nv: {
+    emoji: '🇺🇸',
+    unicode: 'U+1F1FA U+1F1F8',
+    svg: '/flags/us-navajo.svg',
+    png: '/flags/us-navajo.png',
   },
 };
 
@@ -309,6 +369,64 @@ export const LOCALE_FORMATTING: Record<
   },
   ja: {
     currency: 'JPY',
+    dateFormat: {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    },
+    numberFormat: {
+      notation: 'standard',
+    },
+    relativeTimeFormat: {
+      numeric: 'auto',
+    },
+  },
+  // RTL Language Support
+  ar: {
+    currency: 'SAR',
+    dateFormat: {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    },
+    numberFormat: {
+      notation: 'standard',
+    },
+    relativeTimeFormat: {
+      numeric: 'auto',
+    },
+  },
+  // Indigenous Language Support
+  qu: {
+    currency: 'PEN',
+    dateFormat: {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    },
+    numberFormat: {
+      notation: 'standard',
+    },
+    relativeTimeFormat: {
+      numeric: 'auto',
+    },
+  },
+  mi: {
+    currency: 'NZD',
+    dateFormat: {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    },
+    numberFormat: {
+      notation: 'standard',
+    },
+    relativeTimeFormat: {
+      numeric: 'auto',
+    },
+  },
+  nv: {
+    currency: 'USD',
     dateFormat: {
       year: 'numeric',
       month: 'long',

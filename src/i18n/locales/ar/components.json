@@ -1,0 +1,147 @@
+{
+  "button": {
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "submit": "إرسال",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "create": "إنشاء",
+    "update": "تحديث",
+    "upload": "رفع",
+    "download": "تحميل",
+    "share": "مشاركة",
+    "copy": "نسخ",
+    "move": "نقل",
+    "loading": "جاري التحميل...",
+    "defaultAriaLabel": "زر",
+    "defaultTitle": "انقر لتنفيذ الإجراء",
+    "validationFailed": "فشل التحقق من الأمان - يرجى التحقق من إدخالك",
+    "validationError": "حدث خطأ في التحقق من الأمان",
+    "validationRequired": "يرجى إكمال التحقق من الأمان",
+    "securityValidated": "تم التحقق من الأمان",
+    "securityValidationRequired": "التحقق من الأمان مطلوب",
+    "culturalTheme": "المظهر الثقافي: {{theme}}"
+  },
+  "modal": {
+    "close": "إغلاق",
+    "defaultTitle": "نافذة حوار",
+    "confirm": "تأكيد",
+    "cancel": "إلغاء",
+    "closeModal": "إغلاق النافذة"
+  },
+  "input": {
+    "required": "هذا الحقل مطلوب",
+    "invalid": "إدخال غير صحيح",
+    "placeholder": "أدخل قيمة...",
+    "search": "البحث...",
+    "filter": "تصفية النتائج..."
+  },
+  "card": {
+    "viewDetails": "عرض التفاصيل",
+    "showMore": "عرض المزيد",
+    "showLess": "عرض أقل",
+    "actions": "الإجراءات"
+  },
+  "badge": {
+    "new": "جديد",
+    "updated": "محدث",
+    "featured": "مميز",
+    "trending": "رائج",
+    "popular": "شائع"
+  },
+  "loading": {
+    "general": "جاري التحميل...",
+    "documents": "جاري تحميل المستندات...",
+    "collections": "جاري تحميل المجموعات...",
+    "network": "جاري الاتصال بالشبكة...",
+    "search": "جاري البحث..."
+  },
+  "errorBoundary": {
+    "title": "حدث خطأ ما",
+    "message": "حدث خطأ غير متوقع. يرجى تحديث الصفحة.",
+    "refresh": "تحديث الصفحة",
+    "reportIssue": "الإبلاغ عن مشكلة"
+  },
+  "culturalIndicator": {
+    "informationOnly": "معلومات فقط",
+    "educationalPurpose": "لأغراض تعليمية",
+    "culturalContext": "السياق الثقافي",
+    "learnMore": "اعرف المزيد"
+  },
+  "networkStatus": {
+    "online": "متصل بالإنترنت",
+    "offline": "غير متصل بالإنترنت",
+    "connecting": "جاري الاتصال",
+    "connected": "متصل",
+    "disconnected": "غير متصل",
+    "peers": "الأقران",
+    "networkHealth": "صحة الشبكة",
+    "latency": "الاستجابة",
+    "bandwidth": "عرض النطاق الترددي",
+    "uptime": "وقت التشغيل",
+    "lastSeen": "آخر ظهور",
+    "status": "الحالة"
+  },
+  "statCard": {
+    "ariaLabel": "{{label}}: {{value}}. اتجاه {{trendType}}: {{trendValue}}",
+    "trends": {
+      "positive": "اتجاه إيجابي",
+      "negative": "اتجاه سلبي",
+      "neutral": "اتجاه مستقر"
+    },
+    "types": {
+      "documents": "المستندات",
+      "peers": "الأقران",
+      "institutions": "المؤسسات",
+      "health": "الصحة",
+      "storage": "التخزين",
+      "bandwidth": "عرض النطاق الترددي"
+    },
+    "accessibility": {
+      "trendUp": "اتجاه صاعد",
+      "trendDown": "اتجاه هابط",
+      "trendStable": "اتجاه مستقر"
+    }
+  },
+  "searchBar": {
+    "placeholder": "البحث في المستندات والمجموعات...",
+    "search": "البحث",
+    "clear": "مسح",
+    "filters": "المرشحات",
+    "advanced": "متقدم"
+  },
+  "documentCard": {
+    "viewDocument": "عرض المستند",
+    "downloadDocument": "تحميل المستند",
+    "shareDocument": "مشاركة المستند",
+    "addToFavorites": "إضافة إلى المفضلة",
+    "removeFromFavorites": "إزالة من المفضلة",
+    "culturalContext": "السياق الثقافي",
+    "educationalContent": "محتوى تعليمي"
+  },
+  "collectionCard": {
+    "viewCollection": "عرض المجموعة",
+    "editCollection": "تعديل المجموعة",
+    "shareCollection": "مشاركة المجموعة",
+    "deleteCollection": "حذف المجموعة",
+    "documents": "مستندات",
+    "culturalSignificance": "الأهمية الثقافية"
+  },
+  "languageSwitch": {
+    "selectLanguage": "اختر اللغة",
+    "currentLanguage": "اللغة الحالية",
+    "availableLanguages": "اللغات المتاحة"
+  },
+  "themeToggle": {
+    "light": "فاتح",
+    "dark": "داكن",
+    "auto": "تلقائي",
+    "toggleTheme": "تبديل المظهر"
+  },
+  "accessibility": {
+    "highContrast": "تباين عالي",
+    "largeText": "نص كبير",
+    "reducedMotion": "حركة مقللة",
+    "screenReader": "قارئ الشاشة"
+  }
+}

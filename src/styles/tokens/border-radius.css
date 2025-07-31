@@ -1,0 +1,368 @@
+/* ==========================================================================
+   Border Radius Design Tokens
+   ========================================================================== */
+
+:root {
+  /* ===== BASE BORDER RADIUS SCALE ===== */
+
+  /* No Border Radius */
+  --radius-none: 0;
+
+  /* Extra Small Border Radius */
+  --radius-xs: 0.125rem; /* 2px */
+  --radius-sm: 0.25rem; /* 4px */
+
+  /* Small Border Radius */
+  --radius-base: 0.375rem; /* 6px */
+  --radius-md: 0.5rem; /* 8px */
+
+  /* Medium Border Radius */
+  --radius-lg: 0.75rem; /* 12px */
+  --radius-xl: 1rem; /* 16px */
+
+  /* Large Border Radius */
+  --radius-2xl: 1.5rem; /* 24px */
+  --radius-3xl: 2rem; /* 32px */
+
+  /* Extra Large Border Radius */
+  --radius-4xl: 2.5rem; /* 40px */
+  --radius-5xl: 3rem; /* 48px */
+
+  /* Full Border Radius */
+  --radius-full: 9999px;
+
+  /* ===== SEMANTIC BORDER RADIUS ===== */
+
+  /* Component Border Radius */
+  --radius-component-xs: var(--radius-xs);
+  --radius-component-sm: var(--radius-sm);
+  --radius-component-md: var(--radius-md);
+  --radius-component-lg: var(--radius-lg);
+  --radius-component-xl: var(--radius-xl);
+  --radius-component-2xl: var(--radius-2xl);
+
+  /* Button Border Radius */
+  --radius-button-xs: var(--radius-xs);
+  --radius-button-sm: var(--radius-sm);
+  --radius-button-md: var(--radius-md);
+  --radius-button-lg: var(--radius-lg);
+  --radius-button-xl: var(--radius-xl);
+  --radius-button-2xl: var(--radius-2xl);
+  --radius-button-full: var(--radius-full);
+
+  /* Card Border Radius */
+  --radius-card-xs: var(--radius-xs);
+  --radius-card-sm: var(--radius-sm);
+  --radius-card-md: var(--radius-md);
+  --radius-card-lg: var(--radius-lg);
+  --radius-card-xl: var(--radius-xl);
+  --radius-card-2xl: var(--radius-2xl);
+
+  /* Input Border Radius */
+  --radius-input-xs: var(--radius-xs);
+  --radius-input-sm: var(--radius-sm);
+  --radius-input-md: var(--radius-md);
+  --radius-input-lg: var(--radius-lg);
+  --radius-input-xl: var(--radius-xl);
+  --radius-input-full: var(--radius-full);
+
+  /* Modal Border Radius */
+  --radius-modal-xs: var(--radius-lg);
+  --radius-modal-sm: var(--radius-xl);
+  --radius-modal-md: var(--radius-2xl);
+  --radius-modal-lg: var(--radius-3xl);
+  --radius-modal-xl: var(--radius-4xl);
+
+  /* Dropdown Border Radius */
+  --radius-dropdown-xs: var(--radius-sm);
+  --radius-dropdown-sm: var(--radius-md);
+  --radius-dropdown-md: var(--radius-lg);
+  --radius-dropdown-lg: var(--radius-xl);
+  --radius-dropdown-xl: var(--radius-2xl);
+
+  /* ===== CULTURAL BORDER RADIUS ===== */
+
+  /* Indigenous Border Radius - Natural and organic */
+  --radius-cultural-indigenous-xs: 0.25rem; /* 4px */
+  --radius-cultural-indigenous-sm: 0.5rem; /* 8px */
+  --radius-cultural-indigenous-md: 0.75rem; /* 12px */
+  --radius-cultural-indigenous-lg: 1rem; /* 16px */
+  --radius-cultural-indigenous-xl: 1.5rem; /* 24px */
+  --radius-cultural-indigenous-2xl: 2rem; /* 32px */
+
+  /* Traditional Border Radius - Balanced and harmonious */
+  --radius-cultural-traditional-xs: 0.125rem; /* 2px */
+  --radius-cultural-traditional-sm: 0.375rem; /* 6px */
+  --radius-cultural-traditional-md: 0.625rem; /* 10px */
+  --radius-cultural-traditional-lg: 0.875rem; /* 14px */
+  --radius-cultural-traditional-xl: 1.25rem; /* 20px */
+  --radius-cultural-traditional-2xl: 1.75rem; /* 28px */
+
+  /* Ceremonial Border Radius - Sacred and elevated */
+  --radius-cultural-ceremonial-xs: 0.375rem; /* 6px */
+  --radius-cultural-ceremonial-sm: 0.625rem; /* 10px */
+  --radius-cultural-ceremonial-md: 0.875rem; /* 14px */
+  --radius-cultural-ceremonial-lg: 1.125rem; /* 18px */
+  --radius-cultural-ceremonial-xl: 1.625rem; /* 26px */
+  --radius-cultural-ceremonial-2xl: 2.125rem; /* 34px */
+
+  /* Academic Border Radius - Scholarly and precise */
+  --radius-cultural-academic-xs: 0.125rem; /* 2px */
+  --radius-cultural-academic-sm: 0.25rem; /* 4px */
+  --radius-cultural-academic-md: 0.5rem; /* 8px */
+  --radius-cultural-academic-lg: 0.75rem; /* 12px */
+  --radius-cultural-academic-xl: 1rem; /* 16px */
+  --radius-cultural-academic-2xl: 1.5rem; /* 24px */
+
+  /* Community Border Radius - Collaborative and inclusive */
+  --radius-cultural-community-xs: 0.25rem; /* 4px */
+  --radius-cultural-community-sm: 0.5rem; /* 8px */
+  --radius-cultural-community-md: 0.75rem; /* 12px */
+  --radius-cultural-community-lg: 1rem; /* 16px */
+  --radius-cultural-community-xl: 1.5rem; /* 24px */
+  --radius-cultural-community-2xl: 2rem; /* 32px */
+
+  /* ===== ACCESSIBILITY BORDER RADIUS ===== */
+
+  /* High Contrast Border Radius - Enhanced visibility */
+  --radius-accessibility-high-contrast-xs: 0.25rem; /* 4px */
+  --radius-accessibility-high-contrast-sm: 0.5rem; /* 8px */
+  --radius-accessibility-high-contrast-md: 0.75rem; /* 12px */
+  --radius-accessibility-high-contrast-lg: 1rem; /* 16px */
+  --radius-accessibility-high-contrast-xl: 1.5rem; /* 24px */
+  --radius-accessibility-high-contrast-2xl: 2rem; /* 32px */
+
+  /* Large Text Border Radius - Improved readability */
+  --radius-accessibility-large-text-xs: 0.375rem; /* 6px */
+  --radius-accessibility-large-text-sm: 0.625rem; /* 10px */
+  --radius-accessibility-large-text-md: 0.875rem; /* 14px */
+  --radius-accessibility-large-text-lg: 1.125rem; /* 18px */
+  --radius-accessibility-large-text-xl: 1.625rem; /* 26px */
+  --radius-accessibility-large-text-2xl: 2.125rem; /* 34px */
+
+  /* Reduced Motion Border Radius - Stable appearance */
+  --radius-accessibility-reduced-motion-xs: 0.125rem; /* 2px */
+  --radius-accessibility-reduced-motion-sm: 0.25rem; /* 4px */
+  --radius-accessibility-reduced-motion-md: 0.5rem; /* 8px */
+  --radius-accessibility-reduced-motion-lg: 0.75rem; /* 12px */
+  --radius-accessibility-reduced-motion-xl: 1rem; /* 16px */
+  --radius-accessibility-reduced-motion-2xl: 1.5rem; /* 24px */
+
+  /* ===== RESPONSIVE BORDER RADIUS ===== */
+
+  /* Mobile Border Radius */
+  --radius-mobile-xs: var(--radius-xs);
+  --radius-mobile-sm: var(--radius-sm);
+  --radius-mobile-md: var(--radius-md);
+  --radius-mobile-lg: var(--radius-lg);
+  --radius-mobile-xl: var(--radius-xl);
+  --radius-mobile-2xl: var(--radius-2xl);
+
+  /* Tablet Border Radius */
+  --radius-tablet-xs: var(--radius-sm);
+  --radius-tablet-sm: var(--radius-md);
+  --radius-tablet-md: var(--radius-lg);
+  --radius-tablet-lg: var(--radius-xl);
+  --radius-tablet-xl: var(--radius-2xl);
+  --radius-tablet-2xl: var(--radius-3xl);
+
+  /* Desktop Border Radius */
+  --radius-desktop-xs: var(--radius-sm);
+  --radius-desktop-sm: var(--radius-md);
+  --radius-desktop-md: var(--radius-lg);
+  --radius-desktop-lg: var(--radius-xl);
+  --radius-desktop-xl: var(--radius-2xl);
+  --radius-desktop-2xl: var(--radius-3xl);
+
+  /* ===== UTILITY BORDER RADIUS ===== */
+
+  /* Focus Border Radius */
+  --radius-focus-ring: 0.25rem; /* 4px */
+  --radius-focus-offset: 0.125rem; /* 2px */
+
+  /* Border Radius for Different Shapes */
+  --radius-circle: 50%;
+  --radius-pill: 9999px;
+  --radius-square: 0;
+
+  /* ===== COMPOUND BORDER RADIUS ===== */
+
+  /* Top Border Radius */
+  --radius-t-xs: var(--radius-xs) var(--radius-xs) 0 0;
+  --radius-t-sm: var(--radius-sm) var(--radius-sm) 0 0;
+  --radius-t-md: var(--radius-md) var(--radius-md) 0 0;
+  --radius-t-lg: var(--radius-lg) var(--radius-lg) 0 0;
+  --radius-t-xl: var(--radius-xl) var(--radius-xl) 0 0;
+
+  /* Bottom Border Radius */
+  --radius-b-xs: 0 0 var(--radius-xs) var(--radius-xs);
+  --radius-b-sm: 0 0 var(--radius-sm) var(--radius-sm);
+  --radius-b-md: 0 0 var(--radius-md) var(--radius-md);
+  --radius-b-lg: 0 0 var(--radius-lg) var(--radius-lg);
+  --radius-b-xl: 0 0 var(--radius-xl) var(--radius-xl);
+
+  /* Left Border Radius */
+  --radius-l-xs: var(--radius-xs) 0 0 var(--radius-xs);
+  --radius-l-sm: var(--radius-sm) 0 0 var(--radius-sm);
+  --radius-l-md: var(--radius-md) 0 0 var(--radius-md);
+  --radius-l-lg: var(--radius-lg) 0 0 var(--radius-lg);
+  --radius-l-xl: var(--radius-xl) 0 0 var(--radius-xl);
+
+  /* Right Border Radius */
+  --radius-r-xs: 0 var(--radius-xs) var(--radius-xs) 0;
+  --radius-r-sm: 0 var(--radius-sm) var(--radius-sm) 0;
+  --radius-r-md: 0 var(--radius-md) var(--radius-md) 0;
+  --radius-r-lg: 0 var(--radius-lg) var(--radius-lg) 0;
+  --radius-r-xl: 0 var(--radius-xl) var(--radius-xl) 0;
+
+  /* Top Left Border Radius */
+  --radius-tl-xs: var(--radius-xs) 0 0 0;
+  --radius-tl-sm: var(--radius-sm) 0 0 0;
+  --radius-tl-md: var(--radius-md) 0 0 0;
+  --radius-tl-lg: var(--radius-lg) 0 0 0;
+  --radius-tl-xl: var(--radius-xl) 0 0 0;
+
+  /* Top Right Border Radius */
+  --radius-tr-xs: 0 var(--radius-xs) 0 0;
+  --radius-tr-sm: 0 var(--radius-sm) 0 0;
+  --radius-tr-md: 0 var(--radius-md) 0 0;
+  --radius-tr-lg: 0 var(--radius-lg) 0 0;
+  --radius-tr-xl: 0 var(--radius-xl) 0 0;
+
+  /* Bottom Left Border Radius */
+  --radius-bl-xs: 0 0 0 var(--radius-xs);
+  --radius-bl-sm: 0 0 0 var(--radius-sm);
+  --radius-bl-md: 0 0 0 var(--radius-md);
+  --radius-bl-lg: 0 0 0 var(--radius-lg);
+  --radius-bl-xl: 0 0 0 var(--radius-xl);
+
+  /* Bottom Right Border Radius */
+  --radius-br-xs: 0 0 var(--radius-xs) 0;
+  --radius-br-sm: 0 0 var(--radius-sm) 0;
+  --radius-br-md: 0 0 var(--radius-md) 0;
+  --radius-br-lg: 0 0 var(--radius-lg) 0;
+  --radius-br-xl: 0 0 var(--radius-xl) 0;
+}
+
+/* ===== RESPONSIVE BORDER RADIUS ADJUSTMENTS ===== */
+
+@media (min-width: 640px) {
+  :root {
+    /* Tablet border radius adjustments */
+    --radius-component-md: var(--radius-tablet-md);
+    --radius-button-md: var(--radius-tablet-md);
+    --radius-card-md: var(--radius-tablet-md);
+    --radius-input-md: var(--radius-tablet-md);
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    /* Desktop border radius adjustments */
+    --radius-component-md: var(--radius-desktop-md);
+    --radius-button-md: var(--radius-desktop-md);
+    --radius-card-md: var(--radius-desktop-md);
+    --radius-input-md: var(--radius-desktop-md);
+  }
+}
+
+/* ===== ACCESSIBILITY BORDER RADIUS ADJUSTMENTS ===== */
+
+@media (prefers-contrast: high) {
+  :root {
+    /* High contrast border radius adjustments */
+    --radius-component-md: var(--radius-accessibility-high-contrast-md);
+    --radius-button-md: var(--radius-accessibility-high-contrast-md);
+    --radius-card-md: var(--radius-accessibility-high-contrast-md);
+    --radius-input-md: var(--radius-accessibility-high-contrast-md);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    /* Reduced motion border radius adjustments */
+    --radius-component-md: var(--radius-accessibility-reduced-motion-md);
+    --radius-button-md: var(--radius-accessibility-reduced-motion-md);
+    --radius-card-md: var(--radius-accessibility-reduced-motion-md);
+    --radius-input-md: var(--radius-accessibility-reduced-motion-md);
+  }
+}
+
+/* ===== CULTURAL BORDER RADIUS ADJUSTMENTS ===== */
+
+[data-cultural-theme='indigenous'] {
+  --radius-component-md: var(--radius-cultural-indigenous-md);
+  --radius-button-md: var(--radius-cultural-indigenous-md);
+  --radius-card-md: var(--radius-cultural-indigenous-md);
+  --radius-input-md: var(--radius-cultural-indigenous-md);
+}
+
+[data-cultural-theme='traditional'] {
+  --radius-component-md: var(--radius-cultural-traditional-md);
+  --radius-button-md: var(--radius-cultural-traditional-md);
+  --radius-card-md: var(--radius-cultural-traditional-md);
+  --radius-input-md: var(--radius-cultural-traditional-md);
+}
+
+[data-cultural-theme='ceremonial'] {
+  --radius-component-md: var(--radius-cultural-ceremonial-md);
+  --radius-button-md: var(--radius-cultural-ceremonial-md);
+  --radius-card-md: var(--radius-cultural-ceremonial-md);
+  --radius-input-md: var(--radius-cultural-ceremonial-md);
+}
+
+[data-cultural-theme='academic'] {
+  --radius-component-md: var(--radius-cultural-academic-md);
+  --radius-button-md: var(--radius-cultural-academic-md);
+  --radius-card-md: var(--radius-cultural-academic-md);
+  --radius-input-md: var(--radius-cultural-academic-md);
+}
+
+[data-cultural-theme='community'] {
+  --radius-component-md: var(--radius-cultural-community-md);
+  --radius-button-md: var(--radius-cultural-community-md);
+  --radius-card-md: var(--radius-cultural-community-md);
+  --radius-input-md: var(--radius-cultural-community-md);
+}
+
+/* ===== RTL BORDER RADIUS SUPPORT ===== */
+
+[dir='rtl'] {
+  /* RTL border radius adjustments for directional elements */
+  --radius-tl-xs: 0 var(--radius-xs) 0 0;
+  --radius-tr-xs: var(--radius-xs) 0 0 0;
+  --radius-bl-xs: 0 0 var(--radius-xs) 0;
+  --radius-br-xs: 0 0 0 var(--radius-xs);
+
+  --radius-tl-sm: 0 var(--radius-sm) 0 0;
+  --radius-tr-sm: var(--radius-sm) 0 0 0;
+  --radius-bl-sm: 0 0 var(--radius-sm) 0;
+  --radius-br-sm: 0 0 0 var(--radius-sm);
+
+  --radius-tl-md: 0 var(--radius-md) 0 0;
+  --radius-tr-md: var(--radius-md) 0 0 0;
+  --radius-bl-md: 0 0 var(--radius-md) 0;
+  --radius-br-md: 0 0 0 var(--radius-md);
+
+  --radius-tl-lg: 0 var(--radius-lg) 0 0;
+  --radius-tr-lg: var(--radius-lg) 0 0 0;
+  --radius-bl-lg: 0 0 var(--radius-lg) 0;
+  --radius-br-lg: 0 0 0 var(--radius-lg);
+
+  --radius-tl-xl: 0 var(--radius-xl) 0 0;
+  --radius-tr-xl: var(--radius-xl) 0 0 0;
+  --radius-bl-xl: 0 0 var(--radius-xl) 0;
+  --radius-br-xl: 0 0 0 var(--radius-xl);
+}
+
+/* ===== PRINT BORDER RADIUS ===== */
+
+@media print {
+  :root {
+    /* Print border radius adjustments */
+    --radius-component-md: var(--radius-sm);
+    --radius-button-md: var(--radius-sm);
+    --radius-card-md: var(--radius-sm);
+    --radius-input-md: var(--radius-sm);
+  }
+}

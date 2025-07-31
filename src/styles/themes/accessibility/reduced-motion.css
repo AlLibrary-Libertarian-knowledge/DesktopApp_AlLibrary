@@ -1,0 +1,438 @@
+/**
+ * Reduced Motion Accessibility Theme
+ *
+ * Respects user motion preferences for vestibular disorders
+ * Educational context only - no access restrictions
+ * Provides calm, stable experience without animations
+ */
+
+/* Reduced Motion Color Palette */
+[data-accessibility='reduced-motion'] {
+  /* Stable Colors - No Motion-Induced Changes */
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
+
+  /* Secondary Colors - Stable */
+  --color-secondary-50: #fef2f2;
+  --color-secondary-100: #fee2e2;
+  --color-secondary-200: #fecaca;
+  --color-secondary-300: #fca5a5;
+  --color-secondary-400: #f87171;
+  --color-secondary-500: #ef4444;
+  --color-secondary-600: #dc2626;
+  --color-secondary-700: #b91c1c;
+  --color-secondary-800: #991b1b;
+  --color-secondary-900: #7f1d1d;
+
+  /* Surface Colors - Stable */
+  --color-surface-primary: #ffffff;
+  --color-surface-secondary: #f8fafc;
+  --color-surface-tertiary: #f1f5f9;
+  --color-surface-quaternary: #e2e8f0;
+
+  /* Text Colors - Stable */
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #334155;
+  --color-text-tertiary: #64748b;
+  --color-text-inverse: #ffffff;
+
+  /* Border Colors - Stable */
+  --color-border-primary: #cbd5e1;
+  --color-border-secondary: #e2e8f0;
+  --color-border-tertiary: #f1f5f9;
+
+  /* Semantic Colors - Stable */
+  --color-success: #059669;
+  --color-warning: #d97706;
+  --color-error: #dc2626;
+  --color-info: #2563eb;
+
+  /* Typography - Stable */
+  --font-family-primary: 'Inter', 'Segoe UI', sans-serif;
+  --font-family-secondary: 'Roboto', 'Inter', sans-serif;
+  --font-family-display: 'Poppins', 'Inter', sans-serif;
+  --font-family-mono: 'JetBrains Mono', 'Courier New', monospace;
+
+  /* Typography Sizes - Stable */
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+
+  /* Spacing - Stable */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+
+  /* Shadows - Static */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  /* Border Radius - Stable */
+  --radius-sm: 0.125rem;
+  --radius-md: 0.25rem;
+  --radius-lg: 0.375rem;
+  --radius-xl: 0.5rem;
+  --radius-2xl: 0.75rem;
+
+  /* Motion Durations - Disabled */
+  --transition-duration-fast: 0ms;
+  --transition-duration-normal: 0ms;
+  --transition-duration-slow: 0ms;
+  --animation-duration-fast: 0ms;
+  --animation-duration-normal: 0ms;
+  --animation-duration-slow: 0ms;
+
+  /* Motion Easing - Linear */
+  --transition-easing-linear: linear;
+  --transition-easing-ease: linear;
+  --transition-easing-ease-in: linear;
+  --transition-easing-ease-out: linear;
+  --transition-easing-ease-in-out: linear;
+}
+
+/* Reduced Motion Button Styles */
+[data-accessibility='reduced-motion'] .btn-primary {
+  background-color: var(--color-primary-500);
+  color: var(--color-text-inverse);
+  border: 2px solid var(--color-primary-600);
+  font-family: var(--font-family-primary);
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+  transition: none;
+}
+
+[data-accessibility='reduced-motion'] .btn-primary:hover {
+  background-color: var(--color-primary-600);
+  border-color: var(--color-primary-700);
+  transform: none;
+}
+
+[data-accessibility='reduced-motion'] .btn-primary:focus {
+  outline: 3px solid var(--color-primary-300);
+  outline-offset: 2px;
+}
+
+/* Reduced Motion Form Styles */
+[data-accessibility='reduced-motion'] .form-input {
+  background-color: var(--color-surface-primary);
+  border: 2px solid var(--color-border-primary);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-primary);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm);
+  transition: none;
+}
+
+[data-accessibility='reduced-motion'] .form-input:focus {
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  outline: none;
+  transform: none;
+}
+
+/* Reduced Motion Navigation */
+[data-accessibility='reduced-motion'] .nav-item {
+  color: var(--color-text-secondary);
+  font-family: var(--font-family-primary);
+  font-weight: 500;
+  padding: var(--space-sm) var(--space-md);
+  transition: none;
+}
+
+[data-accessibility='reduced-motion'] .nav-item:hover {
+  color: var(--color-primary-500);
+  background-color: var(--color-surface-secondary);
+  transform: none;
+}
+
+[data-accessibility='reduced-motion'] .nav-item.active {
+  color: var(--color-primary-600);
+  border-bottom: 2px solid var(--color-primary-500);
+  font-weight: 600;
+}
+
+/* Reduced Motion Card Styles */
+[data-accessibility='reduced-motion'] .card {
+  background-color: var(--color-surface-primary);
+  border: 1px solid var(--color-border-primary);
+  box-shadow: var(--shadow-md);
+  font-family: var(--font-family-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  transition: none;
+}
+
+[data-accessibility='reduced-motion'] .card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: none;
+}
+
+/* Reduced Motion Typography */
+[data-accessibility='reduced-motion'] h1,
+[data-accessibility='reduced-motion'] h2,
+[data-accessibility='reduced-motion'] h3 {
+  font-family: var(--font-family-display);
+  color: var(--color-text-primary);
+  font-weight: 700;
+  line-height: 1.2;
+  transition: none;
+}
+
+[data-accessibility='reduced-motion'] p {
+  font-family: var(--font-family-primary);
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+  transition: none;
+}
+
+/* Reduced Motion Link Styles */
+[data-accessibility='reduced-motion'] a {
+  color: var(--color-primary-600);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+  transition: none;
+}
+
+[data-accessibility='reduced-motion'] a:hover {
+  color: var(--color-primary-700);
+  text-decoration-thickness: 2px;
+  transform: none;
+}
+
+[data-accessibility='reduced-motion'] a:focus {
+  outline: 3px solid var(--color-primary-300);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Reduced Motion Interactive Elements */
+[data-accessibility='reduced-motion'] .interactive-element {
+  transition: none;
+  cursor: pointer;
+}
+
+[data-accessibility='reduced-motion'] .interactive-element:hover {
+  transform: none;
+  box-shadow: var(--shadow-md);
+}
+
+[data-accessibility='reduced-motion'] .interactive-element:active {
+  transform: none;
+}
+
+/* Reduced Motion Focus Management */
+[data-accessibility='reduced-motion'] *:focus {
+  outline: 3px solid var(--color-primary-500);
+  outline-offset: 2px;
+  transition: none;
+}
+
+[data-accessibility='reduced-motion'] *:focus-visible {
+  outline: 3px solid var(--color-primary-500);
+  outline-offset: 2px;
+  transition: none;
+}
+
+/* Reduced Motion Loading States */
+[data-accessibility='reduced-motion'] .loading-spinner {
+  border: 3px solid var(--color-border-primary);
+  border-top: 3px solid var(--color-primary-500);
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  animation: none;
+}
+
+/* Reduced Motion Disable All Animations */
+[data-accessibility='reduced-motion'] *,
+[data-accessibility='reduced-motion'] *::before,
+[data-accessibility='reduced-motion'] *::after {
+  animation-duration: 0ms !important;
+  animation-delay: 0ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0ms !important;
+  transition-delay: 0ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Reduced Motion Disable CSS Animations */
+[data-accessibility='reduced-motion'] @keyframes * {
+  from,
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+/* Reduced Motion Disable Transforms */
+[data-accessibility='reduced-motion'] *:hover {
+  transform: none !important;
+}
+
+[data-accessibility='reduced-motion'] *:active {
+  transform: none !important;
+}
+
+[data-accessibility='reduced-motion'] *:focus {
+  transform: none !important;
+}
+
+/* Reduced Motion Disable Scroll Animations */
+[data-accessibility='reduced-motion'] html {
+  scroll-behavior: auto !important;
+}
+
+[data-accessibility='reduced-motion'] * {
+  scroll-behavior: auto !important;
+}
+
+/* Reduced Motion Disable Background Animations */
+[data-accessibility='reduced-motion'] * {
+  background-attachment: scroll !important;
+}
+
+/* Reduced Motion Disable Parallax Effects */
+[data-accessibility='reduced-motion'] * {
+  transform: none !important;
+  will-change: auto !important;
+}
+
+/* Reduced Motion Disable CSS Transitions */
+[data-accessibility='reduced-motion'] * {
+  transition: none !important;
+  transition-property: none !important;
+  transition-duration: 0ms !important;
+  transition-timing-function: linear !important;
+}
+
+/* Reduced Motion Disable CSS Animations */
+[data-accessibility='reduced-motion'] * {
+  animation: none !important;
+  animation-name: none !important;
+  animation-duration: 0ms !important;
+  animation-timing-function: linear !important;
+  animation-delay: 0ms !important;
+  animation-iteration-count: 1 !important;
+  animation-direction: normal !important;
+  animation-fill-mode: none !important;
+  animation-play-state: paused !important;
+}
+
+/* Reduced Motion Disable Hover Effects */
+[data-accessibility='reduced-motion'] *:hover {
+  transform: none !important;
+  scale: none !important;
+  rotate: none !important;
+  translate: none !important;
+}
+
+/* Reduced Motion Disable Focus Effects */
+[data-accessibility='reduced-motion'] *:focus {
+  transform: none !important;
+  scale: none !important;
+  rotate: none !important;
+  translate: none !important;
+}
+
+/* Reduced Motion Disable Active Effects */
+[data-accessibility='reduced-motion'] *:active {
+  transform: none !important;
+  scale: none !important;
+  rotate: none !important;
+  translate: none !important;
+}
+
+/* Reduced Motion Accessibility Indicators */
+[data-accessibility='reduced-motion'] .motion-indicator {
+  background-color: var(--color-primary-100);
+  border: 2px solid var(--color-primary-300);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm);
+  margin: var(--space-sm) 0;
+  font-weight: 600;
+}
+
+[data-accessibility='reduced-motion'] .motion-indicator::before {
+  content: '🚫';
+  margin-right: var(--space-xs);
+  font-size: 1.2em;
+}
+
+/* Reduced Motion Stable States */
+[data-accessibility='reduced-motion'] .stable-state {
+  transition: none;
+  animation: none;
+  transform: none;
+}
+
+/* Reduced Motion Disable JavaScript Animations */
+[data-accessibility='reduced-motion'] .js-animation {
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+}
+
+/* Reduced Motion Disable Third-Party Animations */
+[data-accessibility='reduced-motion'] [class*='animate-'],
+[data-accessibility='reduced-motion'] [class*='transition-'],
+[data-accessibility='reduced-motion'] [class*='motion-'] {
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+}
+
+/* Reduced Motion Responsive Design */
+@media (max-width: 768px) {
+  [data-accessibility='reduced-motion'] {
+    --font-size-base: 0.95rem;
+    --font-size-lg: 1.05rem;
+    --font-size-xl: 1.15rem;
+    --font-size-2xl: 1.35rem;
+    --font-size-3xl: 1.65rem;
+  }
+}
+
+/* Reduced Motion Print Styles */
+@media print {
+  [data-accessibility='reduced-motion'] {
+    --color-surface-primary: #ffffff;
+    --color-surface-secondary: #f8f8f8;
+    --color-text-primary: #000000;
+    --color-text-secondary: #333333;
+  }
+}
+
+/* Reduced Motion Media Query Support */
+@media (prefers-reduced-motion: reduce) {
+  [data-accessibility='reduced-motion'] {
+    /* Inherit all reduced motion styles */
+  }
+}
+
+/* Reduced Motion JavaScript Detection */
+[data-accessibility='reduced-motion'] .motion-detected {
+  display: none !important;
+}
+
+[data-accessibility='reduced-motion'] .no-motion {
+  display: block !important;
+}

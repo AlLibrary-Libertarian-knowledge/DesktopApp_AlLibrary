@@ -1,0 +1,50 @@
+{
+  "screenReader": {
+    "loading": "Yishbįįh",
+    "error": "Doo yishbįįh da",
+    "success": "Yishbįįh",
+    "warning": "Yishbįįh",
+    "info": "Yishbįįh",
+    "button": "Yishbįįh",
+    "link": "Yishbįįh",
+    "image": "Yishbįįh",
+    "form": "Yishbįįh",
+    "table": "Yishbįįh",
+    "list": "Yishbįįh",
+    "navigation": "Yishbįįh",
+    "main": "Yishbįįh",
+    "footer": "Yishbįįh",
+    "sidebar": "Yishbįįh"
+  },
+  "aria": {
+    "button": "Yishbįįh {{action}}",
+    "link": "Yishbįįh {{destination}}",
+    "image": "Yishbįįh {{description}}",
+    "form": "Yishbįįh {{purpose}}",
+    "table": "Yishbįįh {{description}}",
+    "list": "Yishbįįh {{items}}",
+    "navigation": "Yishbįįh {{section}}",
+    "main": "Yishbįįh",
+    "footer": "Yishbįįh",
+    "sidebar": "Yishbįįh"
+  },
+  "keyboard": {
+    "enter": "Yishbįįh Enter",
+    "space": "Yishbįįh Space",
+    "tab": "Yishbįįh Tab",
+    "escape": "Yishbįįh Escape",
+    "arrowKeys": "Yishbįįh",
+    "home": "Yishbįįh Home",
+    "end": "Yishbįįh End"
+  },
+  "highContrast": {
+    "enabled": "Yishbįįh",
+    "disabled": "Doo yishbįįh da",
+    "toggle": "Yishbįįh"
+  },
+  "reducedMotion": {
+    "enabled": "Yishbįįh",
+    "disabled": "Doo yishbįįh da",
+    "toggle": "Yishbįįh"
+  }
+}

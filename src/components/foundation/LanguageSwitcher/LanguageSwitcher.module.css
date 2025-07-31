@@ -394,6 +394,24 @@
   }
 }
 
+/* Reduced motion overrides for essential animations */
+@media (prefers-reduced-motion: reduce) {
+  .loadingSpinner {
+    animation-duration: 1s !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  .menu {
+    animation-duration: 0.15s !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  .compactMenu {
+    animation-duration: 0.1s !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   /* Make header language switcher more compact on mobile */

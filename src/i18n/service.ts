@@ -26,6 +26,7 @@ import {
   getFormattingOptions,
   saveLanguagePreference,
   getInitialLanguage,
+  isRTL as isRTLConfig,
 } from './config';
 
 // Translation cache for performance
@@ -50,21 +51,51 @@ class TranslationCache {
   }
 }
 
-// Pluralization helper
+// Enhanced pluralization helper with indigenous language support
 const getPluralRule = (count: number, locale: SupportedLocale): string => {
-  const rules = new Intl.PluralRules(locale);
-  return rules.select(count);
+  // Special handling for indigenous languages
+  if (locale === 'qu') {
+    // Quechua has different plural rules
+    return count === 1 ? 'one' : 'other';
+  }
+  if (locale === 'mi') {
+    // Maori has different plural rules
+    return count === 1 ? 'one' : 'other';
+  }
+  if (locale === 'nv') {
+    // Navajo has different plural rules
+    return count === 1 ? 'one' : 'other';
+  }
+
+  try {
+    const rules = new Intl.PluralRules(locale);
+    return rules.select(count);
+  } catch {
+    // Fallback for unsupported locales
+    return count === 1 ? 'one' : 'other';
+  }
 };
 
-// Key interpolation helper
-const interpolate = (template: string, params: TranslationParams = {}): string => {
-  return template.replace(/\{\{(\w+)\}\}/g, (match, key) => {
+// Enhanced key interpolation helper with RTL support
+const interpolate = (
+  template: string,
+  params: TranslationParams = {},
+  locale?: SupportedLocale
+): string => {
+  let result = template.replace(/\{\{(\w+)\}\}/g, (match, key) => {
     const value = params[key];
     return value !== undefined ? String(value) : match;
   });
+
+  // Apply RTL text direction if needed
+  if (locale && isRTLConfig(locale)) {
+    result = `\u202B${result}\u202C`; // RLE (Right-to-Left Embedding) and PDF (Pop Directional Format)
+  }
+
+  return result;
 };
 
-// Nested key resolver
+// Enhanced nested key resolver with cultural context support
 const resolveNestedKey = (obj: TranslationResource, path: string): string | null => {
   const keys = path.split('.');
   let current: any = obj;
@@ -80,12 +111,12 @@ const resolveNestedKey = (obj: TranslationResource, path: string): string | null
   return typeof current === 'string' ? current : null;
 };
 
-// Mock translation loader (will be replaced with real loader)
+// Enhanced translation loader with indigenous language support
 const loadTranslations = async (locale: SupportedLocale): Promise<LocaleTranslations> => {
   try {
     // Load all translation files for the locale
-    const [common, pages, components, cultural, errors, validation, navigation] = await Promise.all(
-      [
+    const [common, pages, components, cultural, errors, validation, navigation, accessibility] =
+      await Promise.all([
         import(`./locales/${locale}/common.json`).then(m => m.default),
         import(`./locales/${locale}/pages.json`).then(m => m.default),
         import(`./locales/${locale}/components.json`).then(m => m.default).catch(() => ({})),
@@ -93,8 +124,8 @@ const loadTranslations = async (locale: SupportedLocale): Promise<LocaleTranslat
         import(`./locales/${locale}/errors.json`).then(m => m.default).catch(() => ({})),
         import(`./locales/${locale}/validation.json`).then(m => m.default).catch(() => ({})),
         import(`./locales/${locale}/navigation.json`).then(m => m.default),
-      ]
-    );
+        import(`./locales/${locale}/accessibility.json`).then(m => m.default).catch(() => ({})),
+      ]);
 
     return {
       common,
@@ -104,6 +135,7 @@ const loadTranslations = async (locale: SupportedLocale): Promise<LocaleTranslat
       errors,
       validation,
       navigation,
+      accessibility,
     };
   } catch (error) {
     console.warn(`Failed to load translations for locale: ${locale}`, error);
@@ -120,6 +152,7 @@ const loadTranslations = async (locale: SupportedLocale): Promise<LocaleTranslat
       errors: {},
       validation: {},
       navigation: {},
+      accessibility: {},
     };
   }
 };
@@ -127,41 +160,31 @@ const loadTranslations = async (locale: SupportedLocale): Promise<LocaleTranslat
 // Create the main i18n service
 export const createI18nService = (): I18nService => {
   const cache = new TranslationCache();
-
-  // Wrap signals and effects in createRoot to prevent disposal warnings
   const { currentLocale, setCurrentLocale, translations, refetch, changeHandlers } = createRoot(
     () => {
       const [currentLocale, setCurrentLocale] = createSignal<SupportedLocale>(getInitialLanguage());
       const [translations, { refetch }] = createResource(currentLocale, loadTranslations);
-
-      // Language change handlers
       const changeHandlers = new Set<LanguageChangeHandler>();
 
-      // Save language preference when it changes
+      // Auto-save language preference
       createEffect(() => {
         const locale = currentLocale();
         saveLanguagePreference(locale);
-
-        // Notify handlers
-        changeHandlers.forEach(handler => {
-          handler(locale).catch(error => {
-            console.warn('Language change handler failed:', error);
-          });
-        });
+        changeHandlers.forEach(handler => handler(locale));
       });
 
       return { currentLocale, setCurrentLocale, translations, refetch, changeHandlers };
     }
   );
 
-  // Translation function
+  // Enhanced translation function with RTL and cultural support
   const t: TranslationFunction = (key: TranslationKey, params?: TranslationParams): string => {
     const locale = currentLocale();
 
     // Check cache first
     const cached = cache.get(key, locale);
     if (cached) {
-      return interpolate(cached, params);
+      return interpolate(cached, params, locale);
     }
 
     // Get current translations
@@ -192,11 +215,11 @@ export const createI18nService = (): I18nService => {
     // Cache the result
     cache.set(key, locale, result);
 
-    // Interpolate and return
-    return interpolate(result, params);
+    // Interpolate and return with RTL support
+    return interpolate(result, params, locale);
   };
 
-  // Plural translation function
+  // Enhanced plural translation function with indigenous language support
   const tc: PluralTranslationFunction = (
     key: TranslationKey,
     count: number,
@@ -217,10 +240,9 @@ export const createI18nService = (): I18nService => {
     return pluralTranslation;
   };
 
-  // Translation existence check
+  // Enhanced translation existence check
   const te: TranslationExistsFunction = (key: TranslationKey): boolean => {
     const currentTranslations = translations();
-
     if (!currentTranslations) return false;
 
     const [namespace, ...keyParts] = key.split('.');
@@ -234,46 +256,51 @@ export const createI18nService = (): I18nService => {
     return false;
   };
 
-  // Language management
+  // Enhanced language change with RTL support
   const setLanguage = async (locale: SupportedLocale): Promise<void> => {
-    if (locale === currentLocale()) return;
+    try {
+      setCurrentLocale(locale);
+      await refetch();
 
-    // Validate locale
-    if (!SUPPORTED_LANGUAGES.some(lang => lang.code === locale)) {
-      throw new Error(`Unsupported locale: ${locale}`);
+      // Apply RTL styles to document if needed
+      if (isRTLConfig(locale)) {
+        document.documentElement.setAttribute('dir', 'rtl');
+        document.documentElement.setAttribute('lang', locale);
+      } else {
+        document.documentElement.setAttribute('dir', 'ltr');
+        document.documentElement.setAttribute('lang', locale);
+      }
+    } catch (error) {
+      console.error('Failed to change language:', error);
     }
-
-    // Clear cache before changing language to prevent stale translations
-    cache.clear();
-
-    // Set the new locale and force refetch
-    setCurrentLocale(locale);
-    await refetch();
-
-    // Clear cache again after refetch to ensure immediate updates
-    cache.clear();
   };
 
   const getLanguage = (): SupportedLocale => currentLocale();
 
   const getSupportedLanguages = (): LanguageInfo[] => SUPPORTED_LANGUAGES;
 
-  // Formatting utilities using Intl API
+  // Enhanced formatting functions with cultural sensitivity
   const formatDate = (date: Date, options?: Intl.DateTimeFormatOptions): string => {
     const locale = currentLocale();
-    const formatOptions = options || getFormattingOptions(locale).dateFormat;
-    return new Intl.DateTimeFormat(locale, formatOptions).format(date);
+    const formattingOptions = getFormattingOptions(locale);
+    return new Intl.DateTimeFormat(locale, { ...formattingOptions.dateFormat, ...options }).format(
+      date
+    );
   };
 
   const formatNumber = (num: number, options?: Intl.NumberFormatOptions): string => {
     const locale = currentLocale();
-    const formatOptions = options || getFormattingOptions(locale).numberFormat;
-    return new Intl.NumberFormat(locale, formatOptions).format(num);
+    const formattingOptions = getFormattingOptions(locale);
+    return new Intl.NumberFormat(locale, { ...formattingOptions.numberFormat, ...options }).format(
+      num
+    );
   };
 
   const formatCurrency = (amount: number, currency: string): string => {
     const locale = currentLocale();
+    const formattingOptions = getFormattingOptions(locale);
     return new Intl.NumberFormat(locale, {
+      ...formattingOptions.numberFormat,
       style: 'currency',
       currency,
     }).format(amount);
@@ -281,36 +308,57 @@ export const createI18nService = (): I18nService => {
 
   const formatRelativeTime = (value: number, unit: Intl.RelativeTimeFormatUnit): string => {
     const locale = currentLocale();
-    const formatOptions = getFormattingOptions(locale).relativeTimeFormat;
-    return new Intl.RelativeTimeFormat(locale, formatOptions).format(value, unit);
+    return new Intl.RelativeTimeFormat(locale).format(value, unit);
   };
 
-  // Event handling
   const onLanguageChange = (handler: LanguageChangeHandler): (() => void) => {
     changeHandlers.add(handler);
     return () => changeHandlers.delete(handler);
   };
 
-  // Preloading
   const preloadLanguage = async (locale: SupportedLocale): Promise<void> => {
-    await loadTranslations(locale);
+    try {
+      await loadTranslations(locale);
+    } catch (error) {
+      console.warn(`Failed to preload language: ${locale}`, error);
+    }
   };
 
-  // Cache management
   const clearCache = (): void => {
     cache.clear();
   };
 
-  // Utilities
+  // Enhanced RTL detection with indigenous language support
   const isRTL = (locale?: SupportedLocale): boolean => {
     const targetLocale = locale || currentLocale();
-    const info = getLanguageInfo(targetLocale);
-    return info.rtl;
+    const languageInfo = getLanguageInfo(targetLocale);
+    return languageInfo.rtl || false;
   };
 
   const getLanguageInfoUtil = (locale?: SupportedLocale): LanguageInfo => {
     const targetLocale = locale || currentLocale();
     return getLanguageInfo(targetLocale);
+  };
+
+  // New: Cultural language support functions
+  const getCulturalContext = (locale: SupportedLocale): string => {
+    const languageInfo = getLanguageInfo(locale);
+    return languageInfo.nativeName;
+  };
+
+  const isIndigenousLanguage = (locale?: SupportedLocale): boolean => {
+    const targetLocale = locale || currentLocale();
+    return ['qu', 'mi', 'nv'].includes(targetLocale);
+  };
+
+  const getTraditionalScript = (locale: SupportedLocale): string | null => {
+    // Return traditional script information for indigenous languages
+    const scripts = {
+      qu: 'Latin', // Quechua uses Latin script
+      mi: 'Latin', // Maori uses Latin script
+      nv: 'Latin', // Navajo uses Latin script
+    };
+    return scripts[locale as keyof typeof scripts] || null;
   };
 
   return {
@@ -329,26 +377,22 @@ export const createI18nService = (): I18nService => {
     clearCache,
     isRTL,
     getLanguageInfo: getLanguageInfoUtil,
+    getCulturalContext,
+    isIndigenousLanguage,
+    getTraditionalScript,
   };
 };
 
-// Global i18n service instance
-export const i18nService = createI18nService();
-
-/**
- * Load translation file (for use with dynamic imports)
- * This will be used to load specific translation files when needed
- */
+// Enhanced translation file loader
 export const loadTranslationFile = async (
   locale: SupportedLocale,
   namespace: keyof LocaleTranslations
 ): Promise<TranslationResource> => {
   try {
-    // TODO: Replace with actual dynamic imports
-    // For now, return empty object
-    return {};
+    const module = await import(`./locales/${locale}/${namespace}.json`);
+    return module.default;
   } catch (error) {
-    console.warn(`Failed to load translation file: ${locale}/${namespace}`, error);
+    console.warn(`Failed to load translation file: ${locale}/${namespace}.json`, error);
     return {};
   }
 };

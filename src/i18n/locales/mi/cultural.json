@@ -1,0 +1,17 @@
+{
+  "sensitivity": {
+    "public": "Mō te katoa",
+    "educational": "Mātauranga",
+    "community": "Hapori",
+    "traditional": "Tikanga",
+    "guardian": "Kaitiaki",
+    "sacred": "Tapu",
+    "ceremonial": "Karakia"
+  },
+  "context": {
+    "informationOnly": "Mōhiohio anake",
+    "educationalPurpose": "Mō te ako",
+    "noAccessRestrictions": "Kāore he herenga",
+    "multiplePerspectives": "He whakaaro maha"
+  }
+}

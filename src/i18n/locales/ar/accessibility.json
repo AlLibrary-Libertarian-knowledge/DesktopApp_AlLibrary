@@ -1,0 +1,50 @@
+{
+  "screenReader": {
+    "loading": "جاري التحميل",
+    "error": "حدث خطأ",
+    "success": "تم بنجاح",
+    "warning": "تحذير",
+    "info": "معلومات",
+    "button": "زر",
+    "link": "رابط",
+    "image": "صورة",
+    "form": "نموذج",
+    "table": "جدول",
+    "list": "قائمة",
+    "navigation": "تنقل",
+    "main": "المحتوى الرئيسي",
+    "footer": "التذييل",
+    "sidebar": "الشريط الجانبي"
+  },
+  "aria": {
+    "button": "زر {{action}}",
+    "link": "رابط إلى {{destination}}",
+    "image": "صورة {{description}}",
+    "form": "نموذج {{purpose}}",
+    "table": "جدول {{description}}",
+    "list": "قائمة {{items}}",
+    "navigation": "تنقل {{section}}",
+    "main": "المحتوى الرئيسي",
+    "footer": "تذييل الصفحة",
+    "sidebar": "الشريط الجانبي"
+  },
+  "keyboard": {
+    "enter": "اضغط Enter للتنفيذ",
+    "space": "اضغط Space للتنفيذ",
+    "tab": "استخدم Tab للتنقل",
+    "escape": "اضغط Escape للإلغاء",
+    "arrowKeys": "استخدم مفاتيح الأسهم للتنقل",
+    "home": "اضغط Home للبداية",
+    "end": "اضغط End للنهاية"
+  },
+  "highContrast": {
+    "enabled": "التباين العالي مفعل",
+    "disabled": "التباين العالي معطل",
+    "toggle": "تبديل التباين العالي"
+  },
+  "reducedMotion": {
+    "enabled": "الحركة المقللة مفعلة",
+    "disabled": "الحركة المقللة معطلة",
+    "toggle": "تبديل الحركة المقللة"
+  }
+}

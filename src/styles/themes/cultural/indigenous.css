@@ -1,0 +1,277 @@
+/* ==========================================================================
+   Indigenous Cultural Theme
+   ========================================================================== */
+
+/* Indigenous Theme - Natural, Organic, Respectful */
+
+[data-cultural-theme='indigenous'] {
+  /* ===== COLOR OVERRIDES ===== */
+
+  /* Primary Colors - Natural Earth Tones */
+  --color-primary-50: #f0f9ff;
+  --color-primary-100: #e0f2fe;
+  --color-primary-200: #bae6fd;
+  --color-primary-300: #7dd3fc;
+  --color-primary-400: #38bdf8;
+  --color-primary-500: #0ea5e9; /* Sky Blue - Connection to nature */
+  --color-primary-600: #0284c7;
+  --color-primary-700: #0369a1;
+  --color-primary-800: #075985;
+  --color-primary-900: #0c4a6e;
+  --color-primary-950: #082f49;
+
+  /* Secondary Colors - Earth and Growth */
+  --color-secondary-50: #f0fdf4;
+  --color-secondary-100: #dcfce7;
+  --color-secondary-200: #bbf7d0;
+  --color-secondary-300: #86efac;
+  --color-secondary-400: #4ade80;
+  --color-secondary-500: #22c55e; /* Forest Green - Growth and life */
+  --color-secondary-600: #16a34a;
+  --color-secondary-700: #15803d;
+  --color-secondary-800: #166534;
+  --color-secondary-900: #14532d;
+  --color-secondary-950: #052e16;
+
+  /* Surface Colors - Natural Materials */
+  --color-background-primary: #fefefe; /* Pure white - Clean slate */
+  --color-background-secondary: #f8fafc; /* Light gray - Natural stone */
+  --color-background-tertiary: #f1f5f9; /* Medium gray - Earth tones */
+  --color-background-overlay: rgba(0, 0, 0, 0.4); /* Respectful overlay */
+
+  --color-surface-primary: #ffffff;
+  --color-surface-secondary: #f8fafc;
+  --color-surface-tertiary: #f1f5f9;
+  --color-surface-hover: #e2e8f0; /* Gentle hover */
+  --color-surface-active: #cbd5e1; /* Active state */
+  --color-surface-disabled: #f8fafc;
+
+  /* Text Colors - Natural Contrast */
+  --color-text-primary: #0f172a; /* Deep charcoal - Natural ink */
+  --color-text-secondary: #334155; /* Medium gray - Secondary text */
+  --color-text-tertiary: #64748b; /* Light gray - Tertiary text */
+  --color-text-muted: #94a3b8; /* Muted gray - Disabled text */
+  --color-text-disabled: #cbd5e1; /* Light gray - Disabled */
+  --color-text-inverse: #ffffff;
+
+  /* Border Colors - Natural Boundaries */
+  --color-border-primary: #e2e8f0; /* Light gray - Natural borders */
+  --color-border-secondary: #cbd5e1; /* Medium gray - Secondary borders */
+  --color-border-tertiary: #f1f5f9; /* Very light gray - Subtle borders */
+  --color-border-focus: var(--color-primary-500);
+  --color-border-error: var(--color-error-500);
+  --color-border-success: var(--color-success-500);
+  --color-border-warning: var(--color-warning-500);
+
+  /* ===== TYPOGRAPHY OVERRIDES ===== */
+
+  /* Font Family - Indigenous-friendly fonts */
+  --font-family-sans:
+    'Noto Sans', 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
+    sans-serif;
+
+  /* Typography Scale - Natural proportions */
+  --font-heading-1: var(--font-size-3xl) / var(--line-height-tight) var(--font-family-sans);
+  --font-heading-2: var(--font-size-2xl) / var(--line-height-tight) var(--font-family-sans);
+  --font-heading-3: var(--font-size-xl) / var(--line-height-snug) var(--font-family-sans);
+  --font-body-medium: var(--font-size-base) / var(--line-height-relaxed) var(--font-family-sans);
+
+  /* ===== SPACING OVERRIDES ===== */
+
+  /* Component Spacing - Natural rhythm */
+  --space-component-xs: var(--space-1);
+  --space-component-sm: var(--space-2);
+  --space-component-md: var(--space-4);
+  --space-component-lg: var(--space-6);
+  --space-component-xl: var(--space-8);
+  --space-component-2xl: var(--space-12);
+
+  /* Layout Spacing - Organic flow */
+  --space-layout-xs: var(--space-2);
+  --space-layout-sm: var(--space-4);
+  --space-layout-md: var(--space-8);
+  --space-layout-lg: var(--space-12);
+  --space-layout-xl: var(--space-16);
+  --space-layout-2xl: var(--space-24);
+
+  /* ===== SHADOW OVERRIDES ===== */
+
+  /* Component Shadows - Subtle and respectful */
+  --shadow-component-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  --shadow-component-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  --shadow-component-md: 0 2px 4px -1px rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
+  --shadow-component-lg: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --shadow-component-xl: 0 8px 8px -2px rgba(0, 0, 0, 0.06), 0 4px 4px -1px rgba(0, 0, 0, 0.03);
+  --shadow-component-2xl: 0 12px 12px -3px rgba(0, 0, 0, 0.06), 0 6px 6px -2px rgba(0, 0, 0, 0.03);
+
+  /* Card Shadows - Natural elevation */
+  --shadow-card-xs: var(--shadow-component-xs);
+  --shadow-card-sm: var(--shadow-component-sm);
+  --shadow-card-md: var(--shadow-component-md);
+  --shadow-card-lg: var(--shadow-component-lg);
+  --shadow-card-xl: var(--shadow-component-xl);
+  --shadow-card-2xl: var(--shadow-component-2xl);
+
+  /* Button Shadows - Gentle interaction */
+  --shadow-button-xs: var(--shadow-component-xs);
+  --shadow-button-sm: var(--shadow-component-sm);
+  --shadow-button-md: var(--shadow-component-md);
+  --shadow-button-lg: var(--shadow-component-lg);
+  --shadow-button-xl: var(--shadow-component-xl);
+
+  /* ===== BORDER RADIUS OVERRIDES ===== */
+
+  /* Component Border Radius - Natural curves */
+  --radius-component-xs: 0.25rem; /* 4px */
+  --radius-component-sm: 0.5rem; /* 8px */
+  --radius-component-md: 0.75rem; /* 12px */
+  --radius-component-lg: 1rem; /* 16px */
+  --radius-component-xl: 1.5rem; /* 24px */
+  --radius-component-2xl: 2rem; /* 32px */
+
+  /* Button Border Radius - Organic shapes */
+  --radius-button-xs: var(--radius-component-xs);
+  --radius-button-sm: var(--radius-component-sm);
+  --radius-button-md: var(--radius-component-md);
+  --radius-button-lg: var(--radius-component-lg);
+  --radius-button-xl: var(--radius-component-xl);
+  --radius-button-2xl: var(--radius-component-2xl);
+  --radius-button-full: var(--radius-full);
+
+  /* Card Border Radius - Natural containers */
+  --radius-card-xs: var(--radius-component-xs);
+  --radius-card-sm: var(--radius-component-sm);
+  --radius-card-md: var(--radius-component-md);
+  --radius-card-lg: var(--radius-component-lg);
+  --radius-card-xl: var(--radius-component-xl);
+  --radius-card-2xl: var(--radius-component-2xl);
+
+  /* Input Border Radius - Gentle forms */
+  --radius-input-xs: var(--radius-component-xs);
+  --radius-input-sm: var(--radius-component-sm);
+  --radius-input-md: var(--radius-component-md);
+  --radius-input-lg: var(--radius-component-lg);
+  --radius-input-xl: var(--radius-component-xl);
+  --radius-input-full: var(--radius-full);
+
+  /* ===== FOCUS OVERRIDES ===== */
+
+  /* Focus Colors - Respectful attention */
+  --color-focus-primary: var(--color-primary-500);
+  --color-focus-secondary: var(--color-primary-700);
+  --color-focus-ring: rgba(14, 165, 233, 0.3);
+  --color-focus-outline: var(--color-primary-500);
+
+  /* Focus Shadows - Gentle focus indicators */
+  --shadow-focus-xs: 0 0 0 3px rgba(14, 165, 233, 0.1);
+  --shadow-focus-sm: 0 0 0 3px rgba(14, 165, 233, 0.2);
+  --shadow-focus-md: 0 0 0 3px rgba(14, 165, 233, 0.3);
+  --shadow-focus-lg: 0 0 0 4px rgba(14, 165, 233, 0.4);
+  --shadow-focus-xl: 0 0 0 4px rgba(14, 165, 233, 0.5);
+
+  /* ===== INTERACTION OVERRIDES ===== */
+
+  /* Hover States - Gentle feedback */
+  --color-surface-hover: #e2e8f0;
+  --shadow-hover-xs: var(--shadow-component-sm);
+  --shadow-hover-sm: var(--shadow-component-md);
+  --shadow-hover-md: var(--shadow-component-lg);
+  --shadow-hover-lg: var(--shadow-component-xl);
+  --shadow-hover-xl: var(--shadow-component-2xl);
+
+  /* Active States - Respectful feedback */
+  --color-surface-active: #cbd5e1;
+  --shadow-active-xs: var(--shadow-none);
+  --shadow-active-sm: var(--shadow-component-xs);
+  --shadow-active-md: var(--shadow-component-sm);
+  --shadow-active-lg: var(--shadow-component-md);
+  --shadow-active-xl: var(--shadow-component-lg);
+
+  /* ===== CULTURAL SPECIFIC ELEMENTS ===== */
+
+  /* Cultural Indicators */
+  --color-cultural-indicator: var(--color-primary-500);
+  --color-cultural-background: var(--color-background-secondary);
+  --color-cultural-border: var(--color-border-primary);
+  --color-cultural-text: var(--color-text-primary);
+
+  /* Educational Content */
+  --color-educational-background: var(--color-background-secondary);
+  --color-educational-border: var(--color-border-secondary);
+  --color-educational-text: var(--color-text-secondary);
+
+  /* Community Elements */
+  --color-community-background: var(--color-secondary-50);
+  --color-community-border: var(--color-secondary-200);
+  --color-community-text: var(--color-secondary-700);
+
+  /* ===== ACCESSIBILITY OVERRIDES ===== */
+
+  /* High Contrast Support */
+  @media (prefers-contrast: high) {
+    --color-text-primary: #000000;
+    --color-text-secondary: #000000;
+    --color-border-primary: #000000;
+    --color-focus-ring: rgba(0, 0, 0, 0.5);
+  }
+
+  /* Reduced Motion Support */
+  @media (prefers-reduced-motion: reduce) {
+    --shadow-component-md: var(--shadow-component-xs);
+    --shadow-card-md: var(--shadow-card-xs);
+    --shadow-button-md: var(--shadow-button-xs);
+  }
+
+  /* ===== RESPONSIVE OVERRIDES ===== */
+
+  /* Mobile Adjustments */
+  @media (max-width: 639px) {
+    --space-component-md: var(--space-3);
+    --space-layout-md: var(--space-6);
+    --font-heading-1: var(--font-size-2xl) / var(--line-height-tight) var(--font-family-sans);
+  }
+
+  /* Tablet Adjustments */
+  @media (min-width: 640px) and (max-width: 1023px) {
+    --space-component-md: var(--space-4);
+    --space-layout-md: var(--space-8);
+    --font-heading-1: var(--font-size-3xl) / var(--line-height-tight) var(--font-family-sans);
+  }
+
+  /* Desktop Adjustments */
+  @media (min-width: 1024px) {
+    --space-component-md: var(--space-5);
+    --space-layout-md: var(--space-10);
+    --font-heading-1: var(--font-size-4xl) / var(--line-height-tight) var(--font-family-sans);
+  }
+}
+
+/* ===== DARK MODE SUPPORT ===== */
+
+@media (prefers-color-scheme: dark) {
+  [data-cultural-theme='indigenous'] {
+    /* Dark mode color adjustments */
+    --color-background-primary: #0f172a;
+    --color-background-secondary: #1e293b;
+    --color-background-tertiary: #334155;
+    --color-background-overlay: rgba(0, 0, 0, 0.6);
+
+    --color-surface-primary: #1e293b;
+    --color-surface-secondary: #334155;
+    --color-surface-tertiary: #475569;
+    --color-surface-hover: #475569;
+    --color-surface-active: #64748b;
+    --color-surface-disabled: #334155;
+
+    --color-text-primary: #f1f5f9;
+    --color-text-secondary: #cbd5e1;
+    --color-text-tertiary: #94a3b8;
+    --color-text-muted: #64748b;
+    --color-text-disabled: #475569;
+    --color-text-inverse: #0f172a;
+
+    --color-border-primary: #334155;
+    --color-border-secondary: #475569;
+    --color-border-tertiary: #64748b;
+  }
+}

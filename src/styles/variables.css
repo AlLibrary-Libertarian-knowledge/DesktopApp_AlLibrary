@@ -207,4 +207,28 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+
+  /* Essential animations that should always work */
+  .loading-spinner,
+  .loadingSpinner,
+  .spinner,
+  [class*='spinner'],
+  [class*='loading'] {
+    animation-duration: 1s !important;
+    animation-iteration-count: infinite !important;
+  }
+
+  /* Critical UI feedback animations */
+  .menuSlideIn,
+  .fadeIn,
+  .slideIn {
+    animation-duration: 0.2s !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* Development Override - Remove this in production */
+@media (prefers-reduced-motion: reduce) {
+  /* Uncomment the line below to force animations during development */
+  /* * { animation-duration: unset !important; transition-duration: unset !important; } */
 }
