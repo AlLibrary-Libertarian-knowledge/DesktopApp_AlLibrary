@@ -1,13 +1,13 @@
 /**
  * Theme Switcher Component
  *
- * Allows users to switch between cultural and accessibility themes
+ * Allows users to switch between light/dark mode, cultural and accessibility themes
  * Educational context only - no access restrictions
  * Positioned next to language selector for easy access
  */
 
 import { Component, createSignal, createEffect, createMemo, Show } from 'solid-js';
-import { useTranslation } from '@/i18n';
+import { useTheme } from '@/hooks/ui/useTheme';
 import styles from './ThemeSwitcher.module.css';
 
 export interface ThemeSwitcherProps {
@@ -15,16 +15,14 @@ export interface ThemeSwitcherProps {
   variant?: 'dropdown' | 'compact';
   /** Component size - sm, md, lg */
   size?: 'sm' | 'md' | 'lg';
-  /** Initial cultural theme */
-  initialCulturalTheme?: 'indigenous' | 'traditional' | 'ceremonial' | 'academic' | 'community';
-  /** Initial accessibility theme */
-  initialAccessibilityTheme?:
-    | 'high-contrast'
-    | 'large-text'
-    | 'reduced-motion'
-    | 'focus-management';
+  /** Show light/dark mode toggle */
+  showModeToggle?: boolean;
+  /** Show cultural themes */
+  showCulturalThemes?: boolean;
+  /** Show accessibility themes */
+  showAccessibilityThemes?: boolean;
   /** Callback when theme changes */
-  onThemeChange?: (culturalTheme: string, accessibilityTheme: string) => void;
+  onThemeChange?: (mode: string, culturalTheme: string, accessibilityTheme: string) => void;
   /** Additional CSS classes */
   class?: string;
   /** Aria label for the button */
@@ -32,97 +30,95 @@ export interface ThemeSwitcherProps {
 }
 
 export const ThemeSwitcher: Component<ThemeSwitcherProps> = props => {
-  const { t } = useTranslation('components');
+  const theme = useTheme();
 
   // Destructure props with defaults
   const {
     variant = 'dropdown',
     size = 'md',
-    initialCulturalTheme = 'indigenous',
-    initialAccessibilityTheme = '',
+    showModeToggle = true,
+    showCulturalThemes = true,
+    showAccessibilityThemes = true,
     onThemeChange,
     class: className = '',
     ariaLabel,
   } = props;
 
-  // Theme state
-  const [culturalTheme, setCulturalTheme] = createSignal(initialCulturalTheme);
-  const [accessibilityTheme, setAccessibilityTheme] = createSignal(initialAccessibilityTheme);
+  // Local state
   const [isOpen, setIsOpen] = createSignal(false);
 
   // Available themes
+  const modeThemes = [
+    { value: 'light', label: 'Light Mode', icon: '☀️' },
+    { value: 'dark', label: 'Dark Mode', icon: '🌙' },
+    { value: 'auto', label: 'Auto', icon: '🔄' },
+  ];
+
   const culturalThemes = [
-    { value: 'indigenous', label: t('themeSwitcher.cultural.indigenous'), icon: '🌿' },
-    { value: 'traditional', label: t('themeSwitcher.cultural.traditional'), icon: '🏺' },
-    { value: 'ceremonial', label: t('themeSwitcher.cultural.ceremonial'), icon: '🕯️' },
-    { value: 'academic', label: t('themeSwitcher.cultural.academic'), icon: '📚' },
-    { value: 'community', label: t('themeSwitcher.cultural.community'), icon: '🤝' },
+    { value: 'default', label: 'Default', icon: '🎨' },
+    { value: 'indigenous', label: 'Indigenous', icon: '🌿' },
+    { value: 'traditional', label: 'Traditional', icon: '🏺' },
+    { value: 'ceremonial', label: 'Ceremonial', icon: '🕯️' },
+    { value: 'academic', label: 'Academic', icon: '📚' },
+    { value: 'community', label: 'Community', icon: '🤝' },
   ];
 
   const accessibilityThemes = [
-    { value: 'high-contrast', label: t('themeSwitcher.accessibility.highContrast'), icon: '🔍' },
-    { value: 'large-text', label: t('themeSwitcher.accessibility.largeText'), icon: '🔤' },
-    { value: 'reduced-motion', label: t('themeSwitcher.accessibility.reducedMotion'), icon: '🚫' },
+    { value: 'default', label: 'Default', icon: '♿' },
+    { value: 'high-contrast', label: 'High Contrast', icon: '🔍' },
+    { value: 'large-text', label: 'Large Text', icon: '🔤' },
+    { value: 'reduced-motion', label: 'Reduced Motion', icon: '🚫' },
     {
       value: 'focus-management',
-      label: t('themeSwitcher.accessibility.focusManagement'),
+      label: 'Focus Management',
       icon: '⌨️',
     },
   ];
 
-  // Apply theme to document
-  const applyTheme = (cultural: string, accessibility: string) => {
-    const root = document.documentElement;
-
-    // Remove all existing theme attributes
-    root.removeAttribute('data-cultural-theme');
-    root.removeAttribute('data-accessibility');
-
-    // Apply cultural theme
-    if (cultural) {
-      root.setAttribute('data-cultural-theme', cultural);
-    }
-
-    // Apply accessibility theme
-    if (accessibility) {
-      root.setAttribute('data-accessibility', accessibility);
-    }
-
-    // Store in localStorage
-    localStorage.setItem('alLibrary-cultural-theme', cultural);
-    localStorage.setItem('alLibrary-accessibility-theme', accessibility);
+  // Handle mode change
+  const handleModeChange = (mode: string) => {
+    theme.setMode(mode as 'light' | 'dark' | 'auto');
+    props.onThemeChange?.(
+      mode,
+      theme.currentTheme().culturalTheme,
+      theme.currentTheme().accessibilityTheme
+    );
   };
 
   // Handle cultural theme change
-  const handleCulturalThemeChange = (theme: string) => {
-    setCulturalTheme(theme);
-    applyTheme(theme, accessibilityTheme());
-    props.onThemeChange?.(theme, accessibilityTheme());
+  const handleCulturalThemeChange = (culturalTheme: string) => {
+    theme.setCulturalTheme(
+      culturalTheme as
+        | 'default'
+        | 'indigenous'
+        | 'traditional'
+        | 'ceremonial'
+        | 'academic'
+        | 'community'
+    );
+    props.onThemeChange?.(
+      theme.currentTheme().mode,
+      culturalTheme,
+      theme.currentTheme().accessibilityTheme
+    );
   };
 
   // Handle accessibility theme change
-  const handleAccessibilityThemeChange = (theme: string) => {
-    const newTheme = accessibilityTheme() === theme ? '' : theme;
-    setAccessibilityTheme(newTheme);
-    applyTheme(culturalTheme(), newTheme);
-    props.onThemeChange?.(culturalTheme(), newTheme);
+  const handleAccessibilityThemeChange = (accessibilityTheme: string) => {
+    theme.setAccessibilityTheme(
+      accessibilityTheme as
+        | 'default'
+        | 'high-contrast'
+        | 'large-text'
+        | 'reduced-motion'
+        | 'focus-management'
+    );
+    props.onThemeChange?.(
+      theme.currentTheme().mode,
+      theme.currentTheme().culturalTheme,
+      accessibilityTheme
+    );
   };
-
-  // Initialize theme from localStorage
-  createEffect(() => {
-    const storedCultural =
-      localStorage.getItem('alLibrary-cultural-theme') ||
-      props.initialCulturalTheme ||
-      'indigenous';
-    const storedAccessibility =
-      localStorage.getItem('alLibrary-accessibility-theme') ||
-      props.initialAccessibilityTheme ||
-      '';
-
-    setCulturalTheme(storedCultural);
-    setAccessibilityTheme(storedAccessibility);
-    applyTheme(storedCultural, storedAccessibility);
-  });
 
   // Toggle dropdown
   const toggleDropdown = () => {
@@ -158,9 +154,20 @@ export const ThemeSwitcher: Component<ThemeSwitcherProps> = props => {
   );
 
   // Get current theme info
-  const currentCulturalTheme = createMemo(
-    () => culturalThemes.find(t => t.value === culturalTheme()) || culturalThemes[0]!
-  );
+  const currentMode = createMemo(() => {
+    const mode = theme.currentTheme().mode;
+    return modeThemes.find(t => t.value === mode) || modeThemes[2]!; // Default to auto
+  });
+
+  const currentCulturalTheme = createMemo(() => {
+    const cultural = theme.currentTheme().culturalTheme;
+    return culturalThemes.find(t => t.value === cultural) || culturalThemes[0]!;
+  });
+
+  const currentAccessibilityTheme = createMemo(() => {
+    const accessibility = theme.currentTheme().accessibilityTheme;
+    return accessibilityThemes.find(t => t.value === accessibility) || accessibilityThemes[0]!;
+  });
 
   // Dropdown variant
   const DropdownVariant: Component = () => (
@@ -168,12 +175,12 @@ export const ThemeSwitcher: Component<ThemeSwitcherProps> = props => {
       <button
         class={styles.trigger}
         onClick={toggleDropdown}
-        aria-label={ariaLabel || t('themeSwitcher.buttonLabel')}
+        aria-label={ariaLabel || 'Open theme selection menu'}
         aria-expanded={isOpen()}
         aria-haspopup="listbox"
       >
-        <span class={styles.themeIcon}>{currentCulturalTheme().icon}</span>
-        <span class={styles.themeLabel}>{t('themeSwitcher.buttonText')}</span>
+        <span class={styles.themeIcon}>{currentMode().icon}</span>
+        <span class={styles.themeLabel}>Theme</span>
         <span class={`${styles.dropdownIcon} ${isOpen() ? styles.rotated : ''}`}>▼</span>
       </button>
 
@@ -181,50 +188,80 @@ export const ThemeSwitcher: Component<ThemeSwitcherProps> = props => {
         <div class={styles.backdrop} onClick={() => setIsOpen(false)} />
         <div class={styles.menu} role="listbox" aria-label="Available themes">
           <div class={styles.menuHeader}>
-            <h3 class={styles.menuTitle}>{t('themeSwitcher.buttonText')}</h3>
+            <h3 class={styles.menuTitle}>Theme Settings</h3>
           </div>
           <div class={styles.menuContent}>
-            {/* Cultural Themes Section */}
-            <div class={styles.section}>
-              <h4 class={styles.sectionTitle}>{t('themeSwitcher.culturalSection')}</h4>
-              <div class={styles.themeGrid}>
-                {culturalThemes.map(theme => (
-                  <button
-                    type="button"
-                    class={`${styles.themeOption} ${culturalTheme() === theme.value ? styles.active : ''}`}
-                    onClick={() => handleCulturalThemeChange(theme.value)}
-                    role="option"
-                    aria-label={theme.label}
-                  >
-                    <span class={styles.themeOptionIcon}>{theme.icon}</span>
-                    <span class={styles.themeOptionLabel}>{theme.label}</span>
-                    {culturalTheme() === theme.value && <span class={styles.checkmark}>✓</span>}
-                  </button>
-                ))}
+            {/* Mode Themes Section */}
+            <Show when={showModeToggle}>
+              <div class={styles.section}>
+                <h4 class={styles.sectionTitle}>Display Mode</h4>
+                <div class={styles.themeGrid}>
+                  {modeThemes.map(themeOption => (
+                    <button
+                      type="button"
+                      class={`${styles.themeOption} ${theme.currentTheme().mode === themeOption.value ? styles.active : ''}`}
+                      onClick={() => handleModeChange(themeOption.value)}
+                      role="option"
+                      aria-label={themeOption.label}
+                    >
+                      <span class={styles.themeOptionIcon}>{themeOption.icon}</span>
+                      <span class={styles.themeOptionLabel}>{themeOption.label}</span>
+                      {theme.currentTheme().mode === themeOption.value && (
+                        <span class={styles.checkmark}>✓</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            </Show>
+
+            {/* Cultural Themes Section */}
+            <Show when={showCulturalThemes}>
+              <div class={styles.section}>
+                <h4 class={styles.sectionTitle}>Cultural Themes</h4>
+                <div class={styles.themeGrid}>
+                  {culturalThemes.map(themeOption => (
+                    <button
+                      type="button"
+                      class={`${styles.themeOption} ${theme.currentTheme().culturalTheme === themeOption.value ? styles.active : ''}`}
+                      onClick={() => handleCulturalThemeChange(themeOption.value)}
+                      role="option"
+                      aria-label={themeOption.label}
+                    >
+                      <span class={styles.themeOptionIcon}>{themeOption.icon}</span>
+                      <span class={styles.themeOptionLabel}>{themeOption.label}</span>
+                      {theme.currentTheme().culturalTheme === themeOption.value && (
+                        <span class={styles.checkmark}>✓</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </Show>
 
             {/* Accessibility Themes Section */}
-            <div class={styles.section}>
-              <h4 class={styles.sectionTitle}>{t('themeSwitcher.accessibilitySection')}</h4>
-              <div class={styles.themeGrid}>
-                {accessibilityThemes.map(theme => (
-                  <button
-                    type="button"
-                    class={`${styles.themeOption} ${accessibilityTheme() === theme.value ? styles.active : ''}`}
-                    onClick={() => handleAccessibilityThemeChange(theme.value)}
-                    role="option"
-                    aria-label={theme.label}
-                  >
-                    <span class={styles.themeOptionIcon}>{theme.icon}</span>
-                    <span class={styles.themeOptionLabel}>{theme.label}</span>
-                    {accessibilityTheme() === theme.value && (
-                      <span class={styles.checkmark}>✓</span>
-                    )}
-                  </button>
-                ))}
+            <Show when={showAccessibilityThemes}>
+              <div class={styles.section}>
+                <h4 class={styles.sectionTitle}>Accessibility</h4>
+                <div class={styles.themeGrid}>
+                  {accessibilityThemes.map(themeOption => (
+                    <button
+                      type="button"
+                      class={`${styles.themeOption} ${theme.currentTheme().accessibilityTheme === themeOption.value ? styles.active : ''}`}
+                      onClick={() => handleAccessibilityThemeChange(themeOption.value)}
+                      role="option"
+                      aria-label={themeOption.label}
+                    >
+                      <span class={styles.themeOptionIcon}>{themeOption.icon}</span>
+                      <span class={styles.themeOptionLabel}>{themeOption.label}</span>
+                      {theme.currentTheme().accessibilityTheme === themeOption.value && (
+                        <span class={styles.checkmark}>✓</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            </Show>
 
             {/* Reset Button */}
             <div class={styles.resetSection}>
@@ -232,13 +269,14 @@ export const ThemeSwitcher: Component<ThemeSwitcherProps> = props => {
                 type="button"
                 class={styles.resetButton}
                 onClick={() => {
-                  handleCulturalThemeChange('indigenous');
-                  handleAccessibilityThemeChange('');
+                  theme.setMode('dark');
+                  theme.setCulturalTheme('default');
+                  theme.setAccessibilityTheme('default');
                   setIsOpen(false);
                 }}
                 role="option"
               >
-                {t('themeSwitcher.resetToDefault')}
+                Reset to Default
               </button>
             </div>
           </div>
@@ -253,48 +291,65 @@ export const ThemeSwitcher: Component<ThemeSwitcherProps> = props => {
       <button
         class={styles.compactTrigger}
         onClick={toggleDropdown}
-        aria-label={ariaLabel || `Current theme: ${currentCulturalTheme().label}`}
+        aria-label={ariaLabel || `Current theme: ${currentMode().label}`}
         aria-expanded={isOpen()}
-        title={currentCulturalTheme().label}
+        title={currentMode().label}
       >
-        <span class={styles.themeIcon}>{currentCulturalTheme().icon}</span>
-        <span class={styles.themeCode}>{culturalTheme().toUpperCase()}</span>
+        <span class={styles.themeIcon}>{currentMode().icon}</span>
+        <span class={styles.themeCode}>{theme.currentTheme().mode.toUpperCase()}</span>
       </button>
 
       <Show when={isOpen()}>
         <div class={styles.backdrop} onClick={() => setIsOpen(false)} />
         <div class={styles.compactMenu} role="listbox">
-          {/* Cultural Themes */}
-          {culturalThemes.map(theme => (
+          {/* Mode Themes */}
+          {modeThemes.map(themeOption => (
             <button
               class={[
                 styles.compactOption,
-                culturalTheme() === theme.value ? styles.active : '',
+                theme.currentTheme().mode === themeOption.value ? styles.active : '',
               ].join(' ')}
-              onClick={() => handleCulturalThemeChange(theme.value)}
-              aria-selected={culturalTheme() === theme.value}
+              onClick={() => handleModeChange(themeOption.value)}
+              aria-selected={theme.currentTheme().mode === themeOption.value}
               role="option"
-              title={theme.label}
+              title={themeOption.label}
             >
-              <span class={styles.themeIcon}>{theme.icon}</span>
-              <span class={styles.compactCode}>{theme.value.toUpperCase()}</span>
+              <span class={styles.themeIcon}>{themeOption.icon}</span>
+              <span class={styles.compactCode}>{themeOption.value.toUpperCase()}</span>
+            </button>
+          ))}
+
+          {/* Cultural Themes */}
+          {culturalThemes.map(themeOption => (
+            <button
+              class={[
+                styles.compactOption,
+                theme.currentTheme().culturalTheme === themeOption.value ? styles.active : '',
+              ].join(' ')}
+              onClick={() => handleCulturalThemeChange(themeOption.value)}
+              aria-selected={theme.currentTheme().culturalTheme === themeOption.value}
+              role="option"
+              title={themeOption.label}
+            >
+              <span class={styles.themeIcon}>{themeOption.icon}</span>
+              <span class={styles.compactCode}>{themeOption.value.toUpperCase()}</span>
             </button>
           ))}
 
           {/* Accessibility Themes */}
-          {accessibilityThemes.map(theme => (
+          {accessibilityThemes.map(themeOption => (
             <button
               class={[
                 styles.compactOption,
-                accessibilityTheme() === theme.value ? styles.active : '',
+                theme.currentTheme().accessibilityTheme === themeOption.value ? styles.active : '',
               ].join(' ')}
-              onClick={() => handleAccessibilityThemeChange(theme.value)}
-              aria-selected={accessibilityTheme() === theme.value}
+              onClick={() => handleAccessibilityThemeChange(themeOption.value)}
+              aria-selected={theme.currentTheme().accessibilityTheme === themeOption.value}
               role="option"
-              title={theme.label}
+              title={themeOption.label}
             >
-              <span class={styles.themeIcon}>{theme.icon}</span>
-              <span class={styles.compactCode}>{theme.value.toUpperCase()}</span>
+              <span class={styles.themeIcon}>{themeOption.icon}</span>
+              <span class={styles.compactCode}>{themeOption.value.toUpperCase()}</span>
             </button>
           ))}
         </div>
