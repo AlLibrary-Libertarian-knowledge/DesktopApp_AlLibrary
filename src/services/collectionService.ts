@@ -238,7 +238,10 @@ class CollectionServiceImpl implements CollectionService {
             : {
                 sensitivityLevel: CulturalSensitivityLevel.PUBLIC,
               }) as any,
-        ownerId: ((result as any).owner_id as string) || 'current-user',
+        ownerId:
+          ((result as any).owner_id as string) ||
+          ((result as any).ownerId as string) ||
+          'user1',
         collaborators: [],
         createdAt: new Date(createdAtRaw),
         updatedAt: new Date(updatedAtRaw),
