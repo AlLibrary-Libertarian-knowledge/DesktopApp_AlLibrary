@@ -50,6 +50,12 @@ impl From<AlLibraryError> for tauri::Error {
     }
 }
 
+impl From<String> for AlLibraryError {
+    fn from(message: String) -> Self {
+        Self::Internal { message }
+    }
+}
+
 // Helper functions for creating common errors
 impl AlLibraryError {
     pub fn file_operation(message: impl Into<String>) -> Self {

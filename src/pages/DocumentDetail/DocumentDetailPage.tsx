@@ -73,8 +73,8 @@ import { CulturalContext } from '@/components/cultural/CulturalContext';
 import { DocumentViewer } from '@/components/composite/DocumentViewer';
 
 // Import services
-import { documentService, culturalService } from '@/services/api';
-import type { Document, CulturalContext as CulturalContextType } from '@/types/core';
+import { documentApi, culturalApi } from '@/services/api';
+import type { Document } from '@/types/core';
 
 // Import styles
 import styles from './DocumentDetailPage.module.css';
@@ -100,8 +100,8 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
   const document = createAsync(async () => {
     if (!params.id) return null;
     try {
-      const response = await documentService.getDocument(params.id);
-      return response.success ? response.data : null;
+      const response = await documentApi.getDocument(params.id);
+      return response.success ? response.document : null;
     } catch (error) {
       console.error('Failed to load document:', error);
       return null;
@@ -110,14 +110,11 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
 
   const culturalContext = createAsync(async () => {
     const doc = document();
-    if (!doc?.culturalOrigin) return null;
+    if (!doc) return null;
 
     try {
-      const response = await culturalService.getCulturalContext({
-        documentId: params.id!,
-        culturalOrigin: doc.culturalOrigin,
-        operation: 'view',
-      });
+      // Use the document ID as the context ID for now
+      const response = await culturalApi.getCulturalContext(params.id!);
       return response.success ? response.data : null;
     } catch (error) {
       console.error('Failed to load cultural context:', error);
@@ -127,60 +124,30 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
 
   // Computed values
   const documentTitle = createMemo(() => document()?.title || 'Loading...');
-  const totalPages = createMemo(() => document()?.metadata?.totalPages || 0);
-  const culturalLevel = createMemo(() => document()?.culturalSensitivityLevel || 0);
+  const totalPages = createMemo(() => 1); // Default to 1 page for now
+  const culturalLevel = createMemo(() => document()?.culturalMetadata?.sensitivityLevel || 0);
   const hasEducationalContent = createMemo(
-    () => culturalContext()?.educationalResources?.length > 0
+    () => culturalContext()?.educationalContent?.learningResources?.length > 0
   );
 
   // Effects
   createEffect(() => {
     const doc = document();
     if (doc) {
-      // Update document view count
-      documentService.incrementViewCount(doc.id);
-
-      // Check bookmark status
-      documentService.isBookmarked(doc.id).then(result => {
-        if (result.success) {
-          setIsBookmarked(result.data);
-        }
-      });
+      // Document loaded successfully
+      console.log('Document loaded:', doc.title);
     }
   });
 
   // Event handlers
   const handleBookmark = async () => {
-    const doc = document();
-    if (!doc) return;
-
-    try {
-      const response = isBookmarked()
-        ? await documentService.removeBookmark(doc.id)
-        : await documentService.addBookmark(doc.id);
-
-      if (response.success) {
-        setIsBookmarked(!isBookmarked());
-      }
-    } catch (error) {
-      console.error('Bookmark operation failed:', error);
-    }
+    // TODO: Implement bookmark functionality when service is available
+    console.log('Bookmark functionality not yet implemented');
   };
 
-  const handleShare = async (platform: string) => {
-    const doc = document();
-    if (!doc) return;
-
-    try {
-      await documentService.shareDocument({
-        documentId: doc.id,
-        platform,
-        culturalContext: culturalContext(),
-      });
-      setShowShareModal(false);
-    } catch (error) {
-      console.error('Share operation failed:', error);
-    }
+  const handleShare = async () => {
+    // TODO: Implement share functionality when service is available
+    console.log('Share functionality not yet implemented');
   };
 
   const handleDownload = async () => {
@@ -188,7 +155,14 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
     if (!doc) return;
 
     try {
-      await documentService.downloadDocument(doc.id);
+      const downloadUrl = await documentApi.getDownloadUrl(doc.id);
+      if (downloadUrl) {
+        // Create a temporary link and trigger download
+        const link = window.document.createElement('a');
+        link.href = downloadUrl;
+        link.download = doc.title || 'document';
+        link.click();
+      }
     } catch (error) {
       console.error('Download failed:', error);
     }
@@ -196,19 +170,15 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
 
   const handleZoom = (direction: 'in' | 'out') => {
     const current = zoomLevel();
-    const newZoom = direction === 'in' ? Math.min(current + 25, 300) : Math.max(current - 25, 50);
+    const newZoom = direction === 'in' ? Math.min(current + 25, 500) : Math.max(current - 25, 25);
     setZoomLevel(newZoom);
   };
 
   const handlePageNavigation = (direction: 'prev' | 'next') => {
     const current = currentPage();
     const total = totalPages();
-
-    if (direction === 'prev' && current > 1) {
-      setCurrentPage(current - 1);
-    } else if (direction === 'next' && current < total) {
-      setCurrentPage(current + 1);
-    }
+    const newPage = direction === 'prev' ? Math.max(1, current - 1) : Math.min(total, current + 1);
+    setCurrentPage(newPage);
   };
 
   return (
@@ -539,23 +509,15 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
           size="md"
         >
           <div class={styles.shareOptions}>
-            <Button variant="outline" onClick={() => handleShare('p2p')} class={styles.shareButton}>
+            <Button variant="outline" onClick={() => handleShare()} class={styles.shareButton}>
               <Users size={16} />
               Share via P2P Network
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => handleShare('link')}
-              class={styles.shareButton}
-            >
+            <Button variant="outline" onClick={() => handleShare()} class={styles.shareButton}>
               <Share2 size={16} />
               Copy Share Link
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => handleShare('export')}
-              class={styles.shareButton}
-            >
+            <Button variant="outline" onClick={() => handleShare()} class={styles.shareButton}>
               <Download size={16} />
               Export with Metadata
             </Button>

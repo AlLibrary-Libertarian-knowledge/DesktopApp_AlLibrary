@@ -232,7 +232,7 @@ export const NewArrivalsPage: Component<NewArrivalsPageProps> = props => {
 
   // Handle document selection
   const handleDocumentOpen = (document: Document) => {
-    navigate(`/documents/${document.id}`);
+    navigate(`/document/${document.id}`);
   };
 
   // Handle quick actions

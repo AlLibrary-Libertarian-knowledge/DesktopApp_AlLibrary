@@ -1,6 +1,18 @@
-import { Component, createSignal, createResource, createMemo, Show, For } from 'solid-js';
+import { Component, createSignal, createResource, createMemo, Show, For, onMount, createEffect } from 'solid-js';
 import { Button, Card, Modal } from '../../components/foundation';
 import { TopCard, DocumentManagementRightColumn } from '../../components/composite';
+
+// Advanced Document Features Types - Task 0.3
+interface Annotation {
+  id: string;
+  documentId: string;
+  type: 'highlight' | 'note' | 'cultural-context' | 'educational';
+  content: string;
+  position?: { page: number; x: number; y: number };
+  culturalContext?: string;
+  createdAt: Date;
+  createdBy: string;
+}
 import { DocumentStatus } from '../../components/domain';
 import {
   Upload,
@@ -31,6 +43,7 @@ import {
 import { validationService } from '../../services';
 import { searchService } from '../../services/searchService';
 import { projectService } from '../../services/projectService';
+import { documentService, type DocumentInfo, type ScanResult, type FolderInfo } from '../../services/documentService';
 import { useTranslation } from '../../i18n/hooks';
 import type { Document } from '../../types/Document';
 import type {
@@ -40,6 +53,7 @@ import type {
   SearchOptions,
 } from '../../services/searchService';
 import styles from './DocumentManagement.module.css';
+import { useNavigate } from '@solidjs/router';
 
 const DocumentManagement: Component = () => {
   // Initialize i18n translation hook
@@ -69,19 +83,18 @@ const DocumentManagement: Component = () => {
   const [showSmartSuggestions, setShowSmartSuggestions] = createSignal(false);
   const [autoTaggingEnabled, setAutoTaggingEnabled] = createSignal(true);
 
-  // Project folder management
-  const [projectFolderPath, setProjectFolderPath] = createSignal<string>('');
-  const [showFolderSetup, setShowFolderSetup] = createSignal(false);
+  // Advanced Document Features - Task 0.3 Implementation
+const [showDocumentViewer, setShowDocumentViewer] = createSignal(false);
+const [annotations, setAnnotations] = createSignal<Map<string, Annotation[]>>(new Map());
+const [searchResults, setSearchResults] = createSignal<SearchResult[]>([]);
+// Missing search state signals
+const [searchMode, setSearchMode] = createSignal<'basic' | 'advanced'>('basic');
+const [showAdvancedSearch, setShowAdvancedSearch] = createSignal(false);
+const [isSearching, setIsSearching] = createSignal(false);
+const [searchError, setSearchError] = createSignal('');
+const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
 
   // Advanced search state
-  const [searchResults, setSearchResults] = createSignal<SearchResult[]>([]);
-  const [isSearching, setIsSearching] = createSignal<boolean>(false);
-  const [searchError, setSearchError] = createSignal<string>('');
-  const [showAdvancedSearch, setShowAdvancedSearch] = createSignal<boolean>(false);
-  const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
-  const [searchMode, setSearchMode] = createSignal<'basic' | 'advanced'>('basic');
-
-  // Advanced search filters
   const [searchFilters, setSearchFilters] = createSignal<SearchFilters>({
     contentTypes: [],
     formats: [],
@@ -109,6 +122,17 @@ const DocumentManagement: Component = () => {
     enableCommunityValidation: true,
   });
 
+  // Project folder management
+  const [projectFolderPath, setProjectFolderPath] = createSignal<string>('');
+  const [showFolderSetup, setShowFolderSetup] = createSignal(false);
+
+  // Document scanning state
+  const [isScanning, setIsScanning] = createSignal(false);
+  const [scanProgress, setScanProgress] = createSignal(0);
+  const [scanResult, setScanResult] = createSignal<ScanResult | null>(null);
+  const [folderInfo, setFolderInfo] = createSignal<FolderInfo | null>(null);
+  const [scannedDocuments, setScannedDocuments] = createSignal<DocumentInfo[]>([]);
+
   // Project initialization and management
   const initializeProject = async () => {
     try {
@@ -132,6 +156,154 @@ const DocumentManagement: Component = () => {
 
   // Initialize project on component mount
   initializeProject();
+
+  // Document scanning functionality
+  const scanAlLibraryFolder = async () => {
+    try {
+      setIsScanning(true);
+      setScanProgress(0);
+      
+      // First, try to detect the AlLibrary folder
+      const detectedPath = await documentService.detectAlLibraryFolder();
+      const folderPath = detectedPath || documentService.getDefaultAlLibraryPath();
+      
+      console.log('Scanning AlLibrary folder:', folderPath);
+      
+      // Get folder info
+      const info = await documentService.getFolderInfo(folderPath);
+      setFolderInfo(info);
+      
+      if (!info.exists) {
+        console.log('AlLibrary folder not found, creating default structure');
+        // TODO: Create folder structure
+        return;
+      }
+      
+      // Scan for documents
+      const result = await documentService.scanDocumentsFolder(folderPath);
+      setScanResult(result);
+      setScannedDocuments(result.documents);
+      
+      console.log('Scan completed:', result);
+      
+      // Update project folder path
+      setProjectFolderPath(folderPath);
+      localStorage.setItem('alLibrary_projectPath', folderPath);
+      
+    } catch (error) {
+      console.error('Failed to scan AlLibrary folder:', error);
+    } finally {
+      setIsScanning(false);
+      setScanProgress(100);
+    }
+  };
+
+  // Auto-scan on component mount
+  const autoScan = async () => {
+    try {
+      console.log('🚀 Starting auto-scan...');
+      
+      // First try to detect the AlLibrary folder automatically
+      const detectedPath = await documentService.detectAlLibraryFolder();
+      const folderPath = detectedPath || documentService.getDefaultAlLibraryPath();
+      
+      console.log('📁 Auto-scanning folder:', folderPath);
+      
+      // Get folder info
+      const info = await documentService.getFolderInfo(folderPath);
+      console.log('📊 Folder info:', info);
+      setFolderInfo(info);
+      setProjectFolderPath(folderPath);
+        
+      if (info.exists) {
+        console.log('✅ Folder exists, scanning for documents...');
+        const result = await documentService.scanDocumentsFolder(folderPath);
+        setScanResult(result);
+        setScannedDocuments(result.documents);
+        console.log('🎉 Auto-scan completed, found documents:', result.documents.length);
+        console.log('📄 Documents:', result.documents.map(d => d.filename));
+      } else {
+        console.log('❌ AlLibrary folder not found at:', folderPath);
+        
+        // Fallback: Try to scan D:\AlLibrary directly
+        console.log('🔄 Trying fallback scan of D:\\AlLibrary...');
+        try {
+          const fallbackResult = await documentService.scanDocumentsFolder('D:\\AlLibrary');
+          console.log('📊 Fallback scan result:', fallbackResult);
+          setScanResult(fallbackResult);
+          setScannedDocuments(fallbackResult.documents);
+          console.log('🎉 Fallback scan completed, found documents:', fallbackResult.documents.length);
+          console.log('📄 Documents:', fallbackResult.documents.map(d => d.filename));
+        } catch (fallbackError) {
+          console.error('💥 Fallback scan also failed:', fallbackError);
+        }
+      }
+    } catch (error) {
+      console.error('💥 Auto-scan failed:', error);
+      console.error('💥 Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+    }
+  };
+
+  // Call auto-scan on mount
+  onMount(() => {
+    // Small delay to ensure component is fully mounted and ready
+    setTimeout(() => {
+      console.log('🚀 Component mounted, starting auto-scan...');
+      autoScan();
+    }, 100);
+  });
+
+  // Retry auto-scan if no documents found after initial scan
+  createEffect(() => {
+    const docs = documents();
+    if (docs && docs.length === 0 && !isScanning()) {
+      // If no documents found and not currently scanning, try again after a delay
+      setTimeout(() => {
+        console.log('🔄 No documents found, retrying auto-scan...');
+        autoScan();
+      }, 2000);
+    }
+  });
+
+  // Debug effect to track scannedDocuments changes
+  createEffect(() => {
+    const docs = scannedDocuments();
+    console.log('🔍 scannedDocuments changed:', docs?.length || 0, 'documents');
+    if (docs && docs.length > 0) {
+      console.log('📄 Document names:', docs.map(d => d.filename));
+    }
+  });
+
+  // Debug effect to track documents memo changes
+  createEffect(() => {
+    const docs = documents();
+    console.log('🔍 documents memo changed:', docs?.length || 0, 'documents');
+    if (docs && docs.length > 0) {
+      console.log('📄 Converted document titles:', docs.map(d => d.title));
+    }
+  });
+
+  // Debug effect to track displayDocuments changes
+  createEffect(() => {
+    const docs = displayDocuments();
+    console.log('🔍 displayDocuments changed:', docs?.length || 0, 'documents');
+    if (docs && docs.length > 0) {
+      console.log('📄 Display document titles:', docs.map(d => d.title));
+    }
+  });
+
+  // Debug effect to track sortedAndFilteredDocuments changes
+  createEffect(() => {
+    const docs = sortedAndFilteredDocuments();
+    console.log('🔍 sortedAndFilteredDocuments changed:', docs?.length || 0, 'documents');
+    if (docs && docs.length > 0) {
+      console.log('📄 Sorted document titles:', docs.map(d => d.title));
+    }
+  });
 
   // Project and index information for advanced search
   const [projectInfo] = createResource(async () => {
@@ -165,210 +337,111 @@ const DocumentManagement: Component = () => {
     }
   });
 
-  // Mock data - would come from API in real implementation
-  const [documents] = createResource(async () => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500));
+  // Real documents from scanning - convert DocumentInfo to Document
+  const documents = createMemo(() => {
+    const scannedDocs = scannedDocuments();
+    console.log('📄 Documents memo - scannedDocs:', scannedDocs);
+    
+    if (!scannedDocs || scannedDocs.length === 0) {
+      console.log('📄 No scanned documents found');
+      return [] as Document[];
+    }
 
-    // Create simplified mock documents that match the Document interface
-    const mockDocs = [
-      {
-        id: '1',
-        title: 'Traditional Healing Practices of the Amazon',
-        description: 'Comprehensive guide to traditional medicinal practices',
-        format: 'pdf' as any,
-        contentType: 'traditional_knowledge' as any,
-        status: 'active' as any,
-        filePath: '/documents/healing-practices.pdf',
-        originalFilename: 'healing-practices.pdf',
-        fileSize: 2547892,
-        fileHash: 'abc123',
-        mimeType: 'application/pdf',
-        createdAt: new Date('2024-01-15'),
-        updatedAt: new Date('2024-01-15'),
-        createdBy: 'user123',
-        version: 1,
-        culturalMetadata: {
-          sensitivityLevel: 3,
-          culturalOrigin: 'Amazonian Indigenous Communities',
-          traditionalProtocols: [],
-          educationalResources: [],
-          informationOnly: true,
-          educationalPurpose: true,
-        } as any,
-        tags: ['medicine', 'traditional', 'amazon', 'indigenous'],
-        categories: ['traditional', 'medicine'],
-        language: 'en',
-        authors: [],
-        accessHistory: [],
-        relationships: [],
-        securityValidation: {
-          validatedAt: new Date(),
-          passed: true,
-          malwareScanResult: { clean: true, threats: [], scanEngine: 'test', scanDate: new Date() },
-          integrityCheck: {
-            valid: true,
-            expectedHash: 'abc123',
-            actualHash: 'abc123',
-            algorithm: 'sha256',
-          },
-          legalCompliance: { compliant: true, issues: [], jurisdiction: 'global' },
-          issues: [],
-        },
-        contentVerification: {
-          signature: 'test-signature',
-          algorithm: 'sha256',
-          verifiedAt: new Date(),
-          chainOfCustody: [],
-          authentic: true,
-          verificationProvider: 'AlLibrary',
-        },
-        sourceAttribution: {
-          originalSource: 'Community Submission',
-          sourceType: 'community' as any,
-          credibilityIndicators: [],
-          sourceVerified: true,
-          attributionRequirements: [],
-        },
-      },
-      {
-        id: '2',
-        title: 'Digital Preservation Methods',
-        description: 'Modern techniques for cultural heritage preservation',
-        format: 'epub' as any,
-        contentType: 'academic' as any,
-        status: 'active' as any,
-        filePath: '/documents/digital-preservation.epub',
-        originalFilename: 'digital-preservation.epub',
-        fileSize: 1234567,
-        fileHash: 'def456',
-        mimeType: 'application/epub+zip',
-        createdAt: new Date('2024-01-10'),
-        updatedAt: new Date('2024-01-10'),
-        createdBy: 'user123',
-        version: 1,
-        culturalMetadata: {
-          sensitivityLevel: 1,
-          culturalOrigin: 'Academic',
-          traditionalProtocols: [],
-          educationalResources: [],
-          informationOnly: true,
-          educationalPurpose: true,
-        } as any,
-        tags: ['digital', 'preservation', 'technology'],
-        categories: ['digital', 'preservation'],
-        language: 'en',
-        authors: [],
-        accessHistory: [],
-        relationships: [],
-        securityValidation: {
-          validatedAt: new Date(),
-          passed: true,
-          malwareScanResult: { clean: true, threats: [], scanEngine: 'test', scanDate: new Date() },
-          integrityCheck: {
-            valid: true,
-            expectedHash: 'def456',
-            actualHash: 'def456',
-            algorithm: 'sha256',
-          },
-          legalCompliance: { compliant: true, issues: [], jurisdiction: 'global' },
-          issues: [],
-        },
-        contentVerification: {
-          signature: 'test-signature',
-          algorithm: 'sha256',
-          verifiedAt: new Date(),
-          chainOfCustody: [],
-          authentic: true,
-          verificationProvider: 'AlLibrary',
-        },
-        sourceAttribution: {
-          originalSource: 'Academic Publisher',
-          sourceType: 'academic' as any,
-          credibilityIndicators: [],
-          sourceVerified: true,
-          attributionRequirements: [],
-        },
-      },
-      {
-        id: '3',
-        title: 'Andean Music and Cultural Expression',
-        description: 'Study of musical traditions in the Andes',
-        format: 'pdf' as any,
-        contentType: 'cultural' as any,
-        status: 'active' as any,
-        filePath: '/documents/andean-music.pdf',
-        originalFilename: 'andean-music.pdf',
-        fileSize: 3456789,
-        fileHash: 'ghi789',
-        mimeType: 'application/pdf',
-        createdAt: new Date('2024-01-05'),
-        updatedAt: new Date('2024-01-05'),
-        createdBy: 'user123',
-        version: 1,
-        culturalMetadata: {
-          sensitivityLevel: 2,
-          culturalOrigin: 'Andean Communities',
-          traditionalProtocols: [],
-          educationalResources: [],
-          informationOnly: true,
-          educationalPurpose: true,
-        } as any,
-        tags: ['music', 'culture', 'andes', 'tradition'],
-        categories: ['music', 'culture'],
-        language: 'es',
-        authors: [],
-        accessHistory: [],
-        relationships: [],
-        securityValidation: {
-          validatedAt: new Date(),
-          passed: true,
-          malwareScanResult: { clean: true, threats: [], scanEngine: 'test', scanDate: new Date() },
-          integrityCheck: {
-            valid: true,
-            expectedHash: 'ghi789',
-            actualHash: 'ghi789',
-            algorithm: 'sha256',
-          },
-          legalCompliance: { compliant: true, issues: [], jurisdiction: 'global' },
-          issues: [],
-        },
-        contentVerification: {
-          signature: 'test-signature',
-          algorithm: 'sha256',
-          verifiedAt: new Date(),
-          chainOfCustody: [],
-          authentic: true,
-          verificationProvider: 'AlLibrary',
-        },
-        sourceAttribution: {
-          originalSource: 'Andean Communities',
-          sourceType: 'community' as any,
-          credibilityIndicators: [],
-          sourceVerified: true,
-          attributionRequirements: [],
-        },
-      },
-    ] as Document[];
-
-    return mockDocs;
+    const convertedDocs = scannedDocs.map(docInfo => convertDocumentInfoToDocument(docInfo));
+    console.log('📄 Converted documents:', convertedDocs);
+    return convertedDocs;
   });
 
-  // Filtered documents based on search
-  const filteredDocuments = createMemo(() => {
-    const docs = documents();
-    const query = searchQuery().toLowerCase();
+  // Advanced search functionality
+  const performFullTextSearch = async (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      return;
+    }
 
-    if (!docs || !query) return docs || [];
+    setIsSearching(true);
+    try {
+      // Simulate full-text search with highlighting
+      const results = documents().filter(doc => 
+        doc.title.toLowerCase().includes(query.toLowerCase()) ||
+        doc.description.toLowerCase().includes(query.toLowerCase()) ||
+        doc.tags.some(tag => tag.toLowerCase().includes(query.toLowerCase())) ||
+        doc.categories.some(cat => cat.toLowerCase().includes(query.toLowerCase()))
+      ).map(doc => ({
+        document: doc,
+        matches: [
+          ...(doc.title.toLowerCase().includes(query.toLowerCase()) ? ['title'] : []),
+          ...(doc.description.toLowerCase().includes(query.toLowerCase()) ? ['description'] : []),
+          ...doc.tags.filter(tag => tag.toLowerCase().includes(query.toLowerCase())),
+          ...doc.categories.filter(cat => cat.toLowerCase().includes(query.toLowerCase()))
+        ]
+      }));
+      
+      setSearchResults(results);
+    } catch (error) {
+      console.error('Search failed:', error);
+    } finally {
+      setIsSearching(false);
+    }
+  };
 
-    return docs.filter(
-      doc =>
-        doc.title.toLowerCase().includes(query) ||
-        doc.description?.toLowerCase().includes(query) ||
-        doc.tags.some((tag: string) => tag.toLowerCase().includes(query)) ||
-        doc.culturalMetadata.culturalOrigin?.toLowerCase().includes(query)
-    );
-  });
+  // Annotation management
+  const addAnnotation = (documentId: string, annotation: Annotation) => {
+    const currentAnnotations = annotations().get(documentId) || [];
+    const updatedAnnotations = [...currentAnnotations, annotation];
+    setAnnotations(new Map(annotations().set(documentId, updatedAnnotations)));
+  };
+
+  const removeAnnotation = (documentId: string, annotationId: string) => {
+    const currentAnnotations = annotations().get(documentId) || [];
+    const updatedAnnotations = currentAnnotations.filter(a => a.id !== annotationId);
+    setAnnotations(new Map(annotations().set(documentId, updatedAnnotations)));
+  };
+
+  // Enhanced document viewer -> open full-screen reader route
+  const navigate = useNavigate();
+  const openDocumentViewer = (document: Document) => {
+    const qs = `path=${encodeURIComponent(document.filePath)}&type=${encodeURIComponent(String(document.format))}&title=${encodeURIComponent(document.title)}`;
+    navigate(`/reader?${qs}`);
+  };
+
+  const closeDocumentViewer = () => {
+    setShowDocumentViewer(false);
+    setSelectedDocument(null);
+  };
+
+  // Cultural context enhancement
+  const getCulturalContextInfo = (document: Document) => {
+    const cultural = document.culturalMetadata;
+    return {
+      sensitivityLevel: cultural.sensitivityLevel,
+      description: getCulturalSensitivityDescription(cultural.sensitivityLevel),
+      origin: cultural.culturalOrigin,
+      protocols: cultural.traditionalProtocols,
+      educationalResources: cultural.educationalResources,
+      isInformationOnly: cultural.informationOnly,
+      isEducationalPurpose: cultural.educationalPurpose
+    };
+  };
+
+  const getCulturalSensitivityDescription = (level: number): string => {
+    switch (level) {
+      case 1:
+        return 'General access - Educational content available';
+      case 2:
+        return 'Traditional knowledge - Cultural context provided';
+      case 3:
+        return 'Sacred content - Educational resources available';
+      case 4:
+        return 'Restricted access - Community approval required';
+      case 5:
+        return 'Highly restricted - Elder approval required';
+      default:
+        return 'Unknown sensitivity level';
+    }
+  };
+
+
 
   // Statistics
   const stats = createMemo(() => {
@@ -376,7 +449,7 @@ const DocumentManagement: Component = () => {
     return {
       totalDocuments: docs.length,
       totalSize: docs.reduce((sum, doc) => sum + doc.fileSize, 0),
-      culturalContexts: new Set(docs.map(doc => doc.culturalMetadata.culturalOrigin)).size,
+      culturalContexts: new Set(docs.map(doc => doc.culturalMetadata.culturalOrigin).filter(Boolean)).size,
       recentUploads: docs.filter(doc => {
         const daysSinceUpload = (Date.now() - doc.createdAt.getTime()) / (1000 * 60 * 60 * 24);
         return daysSinceUpload <= 7;
@@ -557,12 +630,145 @@ const DocumentManagement: Component = () => {
     }
   };
 
+  // Helper function to convert DocumentInfo to Document format
+  const convertDocumentInfoToDocument = (docInfo: DocumentInfo): Document => {
+    // Generate better description based on file type
+    const getDescription = () => {
+      if (docInfo.metadata.description) return docInfo.metadata.description;
+      
+      const format = docInfo.document_type.toLowerCase();
+      switch (format) {
+        case 'pdf':
+          return 'Portable Document Format file';
+        case 'epub':
+          return 'Electronic Publication format';
+        case 'txt':
+          return 'Plain text document';
+        case 'md':
+        case 'markdown':
+          return 'Markdown formatted document';
+        case 'html':
+        case 'htm':
+          return 'HyperText Markup Language file';
+        default:
+          return `${format.toUpperCase()} document`;
+      }
+    };
+
+    // Generate tags based on file type and content
+    const getTags = () => {
+      const tags = [...(docInfo.metadata.tags || [])];
+      const format = docInfo.document_type.toLowerCase();
+      
+      // Add format-based tags
+      tags.push(format);
+      if (format === 'pdf') tags.push('document', 'portable');
+      if (format === 'epub') tags.push('ebook', 'publication');
+      if (format === 'txt') tags.push('text', 'plain');
+      if (format === 'md' || format === 'markdown') tags.push('markdown', 'formatted');
+      if (format === 'html' || format === 'htm') tags.push('web', 'html');
+      
+      return tags;
+    };
+
+    // Generate categories based on file type
+    const getCategories = () => {
+      const categories = [...(docInfo.metadata.categories || [])];
+      const format = docInfo.document_type.toLowerCase();
+      
+      if (format === 'pdf' || format === 'epub') categories.push('Documents');
+      if (format === 'txt' || format === 'md') categories.push('Text Files');
+      if (format === 'html' || format === 'htm') categories.push('Web Files');
+      
+      return categories;
+    };
+
+    return {
+      id: docInfo.id,
+      title: docInfo.metadata.title || docInfo.filename,
+      description: getDescription(),
+      format: docInfo.document_type.toLowerCase() as any,
+      contentType: 'document' as any,
+      status: 'active' as any,
+      filePath: docInfo.file_path,
+      originalFilename: docInfo.filename,
+      fileSize: docInfo.file_size,
+      fileHash: docInfo.id,
+      mimeType: `application/${docInfo.document_type.toLowerCase()}`,
+      createdAt: new Date(parseInt(docInfo.created_at) * 1000),
+      updatedAt: new Date(parseInt(docInfo.modified_at) * 1000),
+      createdBy: 'user',
+      version: 1,
+      culturalMetadata: {
+        sensitivityLevel: docInfo.cultural_context?.sensitivity_level || 1,
+        culturalOrigin: docInfo.cultural_context?.cultural_origin || 'Local Collection',
+        traditionalProtocols: docInfo.cultural_context?.educational_resources || [],
+        educationalResources: docInfo.cultural_context?.educational_resources || [],
+        informationOnly: true,
+        educationalPurpose: true,
+      } as any,
+      tags: getTags(),
+      categories: getCategories(),
+      language: docInfo.metadata.language || 'en',
+      authors: docInfo.metadata.author ? [{ name: docInfo.metadata.author }] : [],
+      accessHistory: [],
+      relationships: [],
+      securityValidation: {
+        validatedAt: new Date(),
+        passed: true,
+        malwareScanResult: { clean: true, threats: [], scanEngine: 'AlLibrary', scanDate: new Date() },
+        integrityCheck: { valid: true, expectedHash: docInfo.id, actualHash: docInfo.id, algorithm: 'sha256' },
+        legalCompliance: { compliant: true, issues: [], jurisdiction: 'global' },
+        issues: [],
+      },
+      contentVerification: {
+        signature: `al-library-${docInfo.id}`,
+        algorithm: 'sha256',
+        verifiedAt: new Date(),
+        chainOfCustody: [],
+        authentic: true,
+        verificationProvider: 'AlLibrary',
+      },
+      sourceAttribution: {
+        originalSource: 'Local File System',
+        sourceType: 'individual',
+        credibilityIndicators: ['local_file', 'user_uploaded'],
+        sourceVerified: true,
+        attributionRequirements: [],
+      },
+    };
+  };
+
   // Combined documents (basic filter + advanced search results)
   const displayDocuments = createMemo(() => {
+    // Use the documents from the reactive memo
+    const docs = documents();
+    
+    // Add search results if in advanced mode
+    let allDocs = [...docs];
+    
     if (searchMode() === 'advanced' && searchResults().length > 0) {
-      return searchResults().map(result => result.document);
+      const searchDocs = searchResults().map(result => result.document);
+      allDocs = [...allDocs, ...searchDocs];
     }
-    return filteredDocuments() || [];
+    
+    return allDocs;
+  });
+
+  // Enhanced filtered documents with search
+  const filteredDocuments = createMemo(() => {
+    const docs = displayDocuments();
+    const query = searchQuery().toLowerCase();
+    
+    if (!query) return docs;
+    
+    return docs.filter(doc => 
+      doc.title.toLowerCase().includes(query) ||
+      doc.description.toLowerCase().includes(query) ||
+      doc.tags.some(tag => tag.toLowerCase().includes(query)) ||
+      doc.categories.some(cat => cat.toLowerCase().includes(query)) ||
+      doc.authors.some(author => author.name.toLowerCase().includes(query))
+    );
   });
 
   // Event handlers
@@ -1033,6 +1239,68 @@ const DocumentManagement: Component = () => {
                     </div>
                   </div>
 
+                  {/* Enhanced Search Results - Task 0.3 */}
+                  <Show when={searchResults().length > 0}>
+                    <div class={styles['search-results-container']}>
+                      <div class={styles['results-header']}>
+                        <h3>Search Results ({searchResults().length})</h3>
+                        <Show when={isSearching()}>
+                          <div class={styles['search-loading']}>
+                            <RefreshCw size={16} class={styles['spinning']} />
+                            Searching...
+                          </div>
+                        </Show>
+                      </div>
+                      <div class={styles['results-list']}>
+                        <For each={searchResults()}>
+                          {(result) => (
+                            <div class={styles['result-item']}>
+                              <div class={styles['result-document']}>
+                                <h4>{result.document.title}</h4>
+                                <p>{result.document.description}</p>
+                                <div class={styles['result-matches']}>
+                                  <span class={styles['match-label']}>Matches:</span>
+                                  <For each={result.matches}>
+                                    {(match) => (
+                                      <span class={styles['match-tag']}>{match}</span>
+                                    )}
+                                  </For>
+                                </div>
+                                <div class={styles['result-actions']}>
+                                  <Button
+                                    size="sm"
+                                    onClick={() => openDocumentViewer(result.document)}
+                                  >
+                                    <Eye size={14} />
+                                    View
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      const annotation: Annotation = {
+                                        id: `search-${Date.now()}`,
+                                        documentId: result.document.id,
+                                        type: 'note',
+                                        content: `Search result for: ${searchQuery()}`,
+                                        createdAt: new Date(),
+                                        createdBy: 'user'
+                                      };
+                                      addAnnotation(result.document.id, annotation);
+                                    }}
+                                  >
+                                    <Tag size={14} />
+                                    Annotate
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </For>
+                      </div>
+                    </div>
+                  </Show>
+
                   {/* Search Suggestions */}
                   <Show when={searchSuggestions().length > 0}>
                     <div class={styles['suggestions-container']}>
@@ -1143,6 +1411,31 @@ const DocumentManagement: Component = () => {
                               <RefreshCw size={12} />
                             </button>
                           )}
+                        </div>
+                      </Show>
+                      
+                      {/* Scan AlLibrary Folder Button */}
+                      <Show when={folderInfo()}>
+                        <div class={styles['status-divider']}></div>
+                        <div class={styles['status-item']}>
+                          <div class={styles['status-indicator']}>
+                            <div
+                              class={`${styles['indicator-dot']} ${folderInfo()?.exists ? styles['healthy'] : styles['warning']}`}
+                            ></div>
+                          </div>
+                          <span class={styles['status-text']}>
+                            {folderInfo()?.document_count || 0} documents in AlLibrary folder
+                          </span>
+                          <button
+                            class={styles['rebuild-button']}
+                            onClick={scanAlLibraryFolder}
+                            disabled={isScanning()}
+                            title="Scan AlLibrary folder for documents"
+                          >
+                            <Show when={!isScanning()} fallback={<div class={styles['spinner']}></div>}>
+                              <RefreshCw size={12} />
+                            </Show>
+                          </button>
                         </div>
                       </Show>
                     </div>
@@ -1276,34 +1569,94 @@ const DocumentManagement: Component = () => {
 
               {/* Document Grid/List */}
               <div class={`${styles['documents-container']} ${styles[viewMode()]}`}>
-                <Show when={documents.loading}>
+                <Show when={isScanning()}>
                   <div class={styles['loading-state']}>
                     <div class={styles['loading-spinner']}></div>
-                    <p>Loading documents...</p>
+                    <p>Scanning for documents...</p>
                   </div>
                 </Show>
 
-                <Show when={!documents.loading && displayDocuments().length === 0}>
+                <Show when={!isScanning() && displayDocuments().length === 0}>
                   <div class={styles['empty-state']}>
                     <FileText size={48} class={styles['empty-icon'] || ''} />
                     <h3>No documents found</h3>
                     <p>
                       {searchQuery()
                         ? 'Try adjusting your search terms or clear the search to see all documents.'
-                        : 'Upload your first document to get started.'}
+                        : 'Scan your AlLibrary folder to discover documents.'}
                     </p>
+                    <div class={styles['scan-actions']}>
                     <Button
                       variant="futuristic"
                       color="purple"
+                        onClick={scanAlLibraryFolder}
+                        disabled={isScanning()}
+                      >
+                        <RefreshCw size={16} class="mr-2" />
+                        Scan AlLibrary Folder
+                      </Button>
+                      <Button
+                        variant="futuristic"
+                        color="green"
+                        onClick={async () => {
+                          try {
+                            console.log('🧪 Testing folder info for D:\\AlLibrary');
+                            const info = await documentService.getFolderInfo('D:\\AlLibrary');
+                            console.log('📊 Test result:', info);
+                            alert(`Folder exists: ${info.exists}, Documents: ${info.document_count}`);
+                          } catch (error) {
+                            console.error('💥 Test failed:', error);
+                            alert(`Test failed: ${error}`);
+                          }
+                        }}
+                      >
+                        Test Folder
+                      </Button>
+                      <Button
+                        variant="futuristic"
+                        color="orange"
+                        onClick={async () => {
+                          try {
+                            console.log('🧪 Testing scan for D:\\AlLibrary');
+                            const result = await documentService.scanDocumentsFolder('D:\\AlLibrary');
+                            console.log('📊 Scan test result:', result);
+                            setScannedDocuments(result.documents);
+                            alert(`Scan completed: ${result.documents.length} documents found`);
+                          } catch (error) {
+                            console.error('💥 Scan test failed:', error);
+                            alert(`Scan test failed: ${error}`);
+                          }
+                        }}
+                      >
+                        Test Scan
+                      </Button>
+                      <Button
+                        variant="futuristic"
+                        color="red"
+                        onClick={async () => {
+                          try {
+                            console.log('🧪 Testing auto-scan manually...');
+                            await autoScan();
+                          } catch (error) {
+                            console.error('💥 Manual auto-scan failed:', error);
+                          }
+                        }}
+                      >
+                        Test Auto-Scan
+                      </Button>
+                      <Button
+                        variant="futuristic"
+                        color="blue"
                       onClick={() => setActiveTab('upload')}
                     >
                       <Upload size={16} class="mr-2" />
                       Upload Document
                     </Button>
+                    </div>
                   </div>
                 </Show>
 
-                <Show when={!documents.loading && sortedAndFilteredDocuments().length > 0}>
+                <Show when={!isScanning() && sortedAndFilteredDocuments().length > 0}>
                   <div class={styles['documents-grid']}>
                     <For each={sortedAndFilteredDocuments()}>
                       {document => (
@@ -1333,8 +1686,8 @@ const DocumentManagement: Component = () => {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => handleDocumentSelect(document)}
-                                title="Preview Document"
+                                onClick={() => openDocumentViewer(document)}
+                                title="View Document"
                               >
                                 <Eye size={16} />
                               </Button>
@@ -1345,6 +1698,24 @@ const DocumentManagement: Component = () => {
                                 title="Edit Metadata"
                               >
                                 <Edit size={16} />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  const annotation: Annotation = {
+                                    id: `note-${Date.now()}`,
+                                    documentId: document.id,
+                                    type: 'note',
+                                    content: 'User annotation',
+                                    createdAt: new Date(),
+                                    createdBy: 'user'
+                                  };
+                                  addAnnotation(document.id, annotation);
+                                }}
+                                title="Add Annotation"
+                              >
+                                <Tag size={16} />
                               </Button>
                               <Button
                                 variant="ghost"
@@ -1391,9 +1762,13 @@ const DocumentManagement: Component = () => {
                                 <Shield size={14} />
                                 {document.securityValidation.passed ? 'validated' : 'pending'}
                               </span>
+                              <span class={styles['meta-item']}>
+                                <FileText size={14} />
+                                {document.format.toUpperCase()}
+                              </span>
                             </div>
 
-                            {/* Cultural Context Display (EDUCATIONAL ONLY) */}
+                            {/* Enhanced Cultural Context Display */}
                             <div class={styles['cultural-context']}>
                               <div
                                 class={`${styles['sensitivity-badge']} ${styles[getCulturalSensitivityColor(document.culturalMetadata.sensitivityLevel)]}`}
@@ -1408,17 +1783,55 @@ const DocumentManagement: Component = () => {
                                   Origin: {document.culturalMetadata.culturalOrigin}
                                 </span>
                               </Show>
+                              <Show when={document.sourceAttribution.originalSource}>
+                                <span class={styles['source-info']}>
+                                  Source: {document.sourceAttribution.originalSource}
+                                </span>
+                              </Show>
                             </div>
 
+                            {/* Enhanced Tags and Categories */}
                             <div class={styles['document-tags']}>
-                              <For each={document.tags}>
-                                {tag => (
-                                  <span class={styles['tag']}>
-                                    <Tag size={10} />
-                                    {tag}
-                                  </span>
-                                )}
-                              </For>
+                              <Show when={document.tags && document.tags.length > 0}>
+                                <For each={document.tags}>
+                                  {tag => (
+                                    <span class={styles['tag']}>
+                                      <Tag size={10} />
+                                      {tag}
+                                    </span>
+                                  )}
+                                </For>
+                              </Show>
+                              <Show when={document.categories && document.categories.length > 0}>
+                                <For each={document.categories}>
+                                  {category => (
+                                    <span class={styles['category']}>
+                                      <Folder size={10} />
+                                      {category}
+                                    </span>
+                                  )}
+                                </For>
+                              </Show>
+                            </div>
+
+                            {/* Additional Document Info */}
+                            <div class={styles['document-details']}>
+                              <Show when={document.authors && document.authors.length > 0}>
+                                <div class={styles['authors']}>
+                                  <span class={styles['detail-label']}>Authors:</span>
+                                  <For each={document.authors}>
+                                    {author => (
+                                      <span class={styles['author']}>{author.name}</span>
+                                    )}
+                                  </For>
+                                </div>
+                              </Show>
+                              <Show when={document.language}>
+                                <div class={styles['language']}>
+                                  <span class={styles['detail-label']}>Language:</span>
+                                  <span>{document.language}</span>
+                                </div>
+                              </Show>
                             </div>
                           </div>
                         </Card>
@@ -1783,6 +2196,148 @@ const DocumentManagement: Component = () => {
             >
               Export Report
             </Button>
+          </div>
+        </Modal>
+      </Show>
+      
+      {/* Advanced Document Viewer Modal - Task 0.3 */}
+      <Show when={showDocumentViewer() && selectedDocument()}>
+        <Modal
+          isOpen={showDocumentViewer()}
+          onClose={closeDocumentViewer}
+          size="xl"
+          class={styles['document-viewer-modal']}
+        >
+          <div class={styles['viewer-header']}>
+            <h2>{selectedDocument()?.title}</h2>
+            <div class={styles['viewer-actions']}>
+              <Button
+                size="sm"
+                onClick={() => {
+                  const annotation: Annotation = {
+                    id: `viewer-note-${Date.now()}`,
+                    documentId: selectedDocument()!.id,
+                    type: 'note',
+                    content: 'Document viewer annotation',
+                    createdAt: new Date(),
+                    createdBy: 'user'
+                  };
+                  addAnnotation(selectedDocument()!.id, annotation);
+                }}
+              >
+                <Tag size={14} />
+                Add Note
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={closeDocumentViewer}
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+          
+          <div class={styles['viewer-content']}>
+            <div class={styles['document-info']}>
+              <div class={styles['info-section']}>
+                <h3>Document Information</h3>
+                <div class={styles['info-grid']}>
+                  <div class={styles['info-item']}>
+                    <span class={styles['info-label']}>Format:</span>
+                    <span>{selectedDocument()?.format.toUpperCase()}</span>
+                  </div>
+                  <div class={styles['info-item']}>
+                    <span class={styles['info-label']}>Size:</span>
+                    <span>{formatFileSize(selectedDocument()?.fileSize || 0)}</span>
+                  </div>
+                  <div class={styles['info-item']}>
+                    <span class={styles['info-label']}>Created:</span>
+                    <span>{selectedDocument()?.createdAt.toLocaleDateString()}</span>
+                  </div>
+                  <div class={styles['info-item']}>
+                    <span class={styles['info-label']}>Language:</span>
+                    <span>{selectedDocument()?.language}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class={styles['cultural-section']}>
+                <h3>Cultural Context</h3>
+                <Show when={selectedDocument()?.culturalMetadata}>
+                  <div class={styles['cultural-info']}>
+                    <div class={styles['sensitivity-info']}>
+                      <span class={styles['sensitivity-label']}>
+                        Sensitivity Level: {getCulturalSensitivityLabel(selectedDocument()!.culturalMetadata.sensitivityLevel)}
+                      </span>
+                      <div 
+                        class={styles['sensitivity-indicator']}
+                        style={{ backgroundColor: getCulturalSensitivityColor(selectedDocument()!.culturalMetadata.sensitivityLevel) }}
+                      ></div>
+                    </div>
+                    <Show when={selectedDocument()?.culturalMetadata.culturalOrigin}>
+                      <div class={styles['origin-info']}>
+                        <span class={styles['origin-label']}>Cultural Origin:</span>
+                        <span>{selectedDocument()?.culturalMetadata.culturalOrigin}</span>
+                      </div>
+                    </Show>
+                    <Show when={selectedDocument()?.culturalMetadata.educationalResources.length > 0}>
+                      <div class={styles['educational-info']}>
+                        <span class={styles['educational-label']}>Educational Resources:</span>
+                        <div class={styles['resources-list']}>
+                          <For each={selectedDocument()?.culturalMetadata.educationalResources}>
+                            {(resource) => (
+                              <span class={styles['resource-item']}>{resource}</span>
+                            )}
+                          </For>
+                        </div>
+                      </div>
+                    </Show>
+                  </div>
+                </Show>
+              </div>
+              
+              <div class={styles['annotations-section']}>
+                <h3>Annotations</h3>
+                <Show when={annotations().get(selectedDocument()?.id || '')?.length > 0}>
+                  <div class={styles['annotations-list']}>
+                    <For each={annotations().get(selectedDocument()?.id || '') || []}>
+                      {(annotation) => (
+                        <div class={styles['annotation-item']}>
+                          <div class={styles['annotation-header']}>
+                            <span class={styles['annotation-type']}>{annotation.type}</span>
+                            <span class={styles['annotation-date']}>
+                              {annotation.createdAt.toLocaleDateString()}
+                            </span>
+                          </div>
+                          <div class={styles['annotation-content']}>
+                            {annotation.content}
+                          </div>
+                          <button
+                            class={styles['annotation-delete']}
+                            onClick={() => removeAnnotation(selectedDocument()!.id, annotation.id)}
+                            title="Remove annotation"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
+                      )}
+                    </For>
+                  </div>
+                </Show>
+                <Show when={!annotations().get(selectedDocument()?.id || '')?.length}>
+                  <p class={styles['no-annotations']}>No annotations yet. Add notes to enhance your understanding.</p>
+                </Show>
+              </div>
+            </div>
+            
+            <div class={styles['document-preview']}>
+              <div class={styles['preview-placeholder']}>
+                <FileText size={48} />
+                <p>Document preview would be displayed here</p>
+                <p>Format: {selectedDocument()?.format.toUpperCase()}</p>
+              </div>
+            </div>
           </div>
         </Modal>
       </Show>

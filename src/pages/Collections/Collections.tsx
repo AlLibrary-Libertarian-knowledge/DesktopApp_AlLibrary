@@ -39,14 +39,14 @@ import {
 } from 'lucide-solid';
 import { collectionService } from '../../services/collectionService';
 import { useTranslation } from '../../i18n/hooks';
-import type {
+import {
   Collection,
   CollectionType,
   CollectionVisibility,
-  CreateCollectionRequest,
-  CollectionSearchFilters,
-  CollectionSearchOptions,
-  CollectionAnalytics,
+  type CreateCollectionRequest,
+  type CollectionSearchFilters,
+  type CollectionSearchOptions,
+  type CollectionAnalytics,
 } from '../../types/Collection';
 import type { Document } from '../../types/Document';
 import { CulturalSensitivityLevel } from '../../types/Cultural';
@@ -89,8 +89,8 @@ const Collections: Component = () => {
   const [newCollection, setNewCollection] = createSignal<Partial<CreateCollectionRequest>>({
     name: '',
     description: '',
-    type: 'PERSONAL' as CollectionType,
-    visibility: 'PRIVATE' as CollectionVisibility,
+    type: CollectionType.PERSONAL,
+    visibility: CollectionVisibility.PRIVATE,
     tags: [],
     categories: [],
     culturalMetadata: {
@@ -183,8 +183,8 @@ const Collections: Component = () => {
       setNewCollection({
         name: '',
         description: '',
-        type: 'PERSONAL' as CollectionType,
-        visibility: 'PRIVATE' as CollectionVisibility,
+        type: CollectionType.PERSONAL,
+        visibility: CollectionVisibility.PRIVATE,
         tags: [],
         categories: [],
         culturalMetadata: {

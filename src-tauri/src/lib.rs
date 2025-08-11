@@ -3,7 +3,7 @@ pub mod commands;
 pub mod core;
 pub mod utils;
 
-use crate::commands::{initialize_app, get_app_ready_state, close_splash_screen, get_security_info, refresh_security_info, get_disk_space_info, load_app_settings, save_app_settings, get_search_history, clear_search_history, get_search_index_info};
+use crate::commands::{initialize_app, get_app_ready_state, close_splash_screen, get_security_info, refresh_security_info, get_disk_space_info, load_app_settings, save_app_settings, get_search_history, clear_search_history, get_search_index_info, create_collection, get_collections, get_collection, update_collection, delete_collection, scan_documents_folder, get_folder_info, list_documents_in_folder, get_document_info, open_document, pdf_get_page_count, pdf_render_page_png};
 use crate::utils::{init_logging, LoggingConfig};
 use tracing::info;
 use std::thread;
@@ -22,6 +22,11 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
             info!("AlLibrary setup completed");
+            // Ensure resources directory exists in dev runs
+            if let Ok(exe_dir) = std::env::current_exe().and_then(|p| Ok(p.parent().map(|p| p.to_path_buf()).unwrap_or_default())) {
+                let res_dir = exe_dir.join("resources");
+                let _ = std::fs::create_dir_all(&res_dir);
+            }
             
             // Auto-start the initialization process
             let app_handle = app.handle().clone();
@@ -50,7 +55,19 @@ pub fn run() {
             save_app_settings,
             get_search_history,
             clear_search_history,
-            get_search_index_info
+            get_search_index_info,
+            create_collection,
+            get_collections,
+            get_collection,
+            update_collection,
+            delete_collection,
+            scan_documents_folder,
+            get_folder_info,
+            list_documents_in_folder,
+            get_document_info,
+            open_document,
+            pdf_get_page_count,
+            pdf_render_page_png
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -251,12 +251,48 @@ impl CollectionOperations {
         Ok(collection)
     }
 
-    pub async fn get_by_id(_pool: &SqlitePool, _id: &str) -> Result<Option<Collection>> {
-        Ok(None)
+    pub async fn get_by_id(pool: &SqlitePool, id: &str) -> Result<Option<Collection>> {
+        let row = sqlx::query_as::<_, Collection>(
+            "SELECT id, name, description, created_at, updated_at FROM collections WHERE id = ?"
+        )
+        .bind(id)
+        .fetch_optional(pool)
+        .await?;
+
+        Ok(row)
     }
 
-    pub async fn get_all(_pool: &SqlitePool) -> Result<Vec<Collection>> {
-        Ok(Vec::new())
+    pub async fn get_all(pool: &SqlitePool) -> Result<Vec<Collection>> {
+        let rows = sqlx::query_as::<_, Collection>(
+            "SELECT id, name, description, created_at, updated_at FROM collections ORDER BY updated_at DESC"
+        )
+        .fetch_all(pool)
+        .await?;
+
+        Ok(rows)
+    }
+
+    pub async fn update(pool: &SqlitePool, mut collection: Collection) -> Result<Collection> {
+        collection.updated_at = Utc::now();
+
+        sqlx::query("UPDATE collections SET name = ?, description = ?, updated_at = ? WHERE id = ?")
+            .bind(&collection.name)
+            .bind(&collection.description)
+            .bind(collection.updated_at)
+            .bind(&collection.id)
+            .execute(pool)
+            .await?;
+
+        Ok(collection)
+    }
+
+    pub async fn delete(pool: &SqlitePool, id: &str) -> Result<bool> {
+        let result = sqlx::query("DELETE FROM collections WHERE id = ?")
+            .bind(id)
+            .execute(pool)
+            .await?;
+
+        Ok(result.rows_affected() > 0)
     }
 }
 

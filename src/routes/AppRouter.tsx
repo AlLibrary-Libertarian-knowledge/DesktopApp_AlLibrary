@@ -14,6 +14,7 @@ import { CulturalContexts } from '../pages/CulturalContexts';
 import { TraditionalKnowledge } from '../pages/TraditionalKnowledge';
 import { CommunityGuidelines } from '../pages/CommunityGuidelines';
 import { Preservation } from '../pages/Preservation';
+import { DocumentReader } from '../pages/DocumentReader';
 
 const AppRouter = () => {
   return (
@@ -45,6 +46,9 @@ const AppRouter = () => {
       <Route path="/sharing" component={() => <div>Sharing Status Page</div>} />
       <Route path="/downloads" component={() => <div>Downloads Page</div>} />
       <Route path="/sync" component={() => <div>Synchronization Page</div>} />
+
+      {/* Document Reader */}
+      <Route path="/reader" component={DocumentReader} />
 
       {/* Fallback Route */}
       <Route

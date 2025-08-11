@@ -22,6 +22,9 @@
     "securityValidationRequired": "Validação de segurança necessária",
     "culturalTheme": "Tema cultural: {{theme}}"
   },
+  "themeSwitcher": {
+    "buttonLabel": "Alternar tema"
+  },
   "modal": {
     "close": "Fechar",
     "defaultTitle": "Diálogo Modal",

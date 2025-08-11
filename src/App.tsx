@@ -20,6 +20,8 @@ import { NetworkHealth } from './pages/NetworkHealth';
 import { P2PSearch } from './pages/P2PSearch';
 import { ConnectionManager } from './pages/ConnectionManager';
 import DocumentManagement from './pages/DocumentManagement';
+import { DocumentDetailPage } from './pages/DocumentDetail';
+import { DocumentReader } from './pages/DocumentReader';
 
 // Cultural Heritage Pages
 import { CulturalContexts } from './pages/CulturalContexts';
@@ -132,6 +134,23 @@ const App: Component = () => {
             component={() => (
               <RouteWrapper>
                 <DocumentManagement />
+              </RouteWrapper>
+            )}
+          />
+          <Route
+            path="/document/:id"
+            component={() => (
+              <RouteWrapper>
+                <DocumentDetailPage />
+              </RouteWrapper>
+            )}
+          />
+
+          <Route
+            path="/reader"
+            component={() => (
+              <RouteWrapper>
+                <DocumentReader />
               </RouteWrapper>
             )}
           />

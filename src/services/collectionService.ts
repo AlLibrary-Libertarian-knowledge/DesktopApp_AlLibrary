@@ -22,11 +22,12 @@ import {
 } from '../types/Collection';
 import type { Document } from '../types/Document';
 import type { CulturalMetadata, CulturalInformation } from '../types/Cultural';
+import { CulturalSensitivityLevel } from '../types/Cultural';
 
 /**
  * Collection service interface
  */
-export interface ICollectionService {
+export interface CollectionService {
   // Core CRUD operations
   getCollections(
     filters?: CollectionSearchFilters,
@@ -120,34 +121,8 @@ class CollectionServiceImpl implements CollectionService {
         return cached.data;
       }
 
-      const result = await invoke<Collection[]>('get_collections', {
-        filters: {
-          query: filters.query,
-          type: filters.type,
-          visibility: filters.visibility,
-          culturalOrigin: filters.culturalOrigin,
-          culturalSensitivity: filters.culturalSensitivity,
-          ownerId: filters.ownerId,
-          collaboratorId: filters.collaboratorId,
-          tags: filters.tags,
-          categories: filters.categories,
-          dateRange: filters.dateRange,
-          documentCountRange: filters.documentCountRange,
-          sizeRange: filters.sizeRange,
-          culturalValidationStatus: filters.culturalValidationStatus,
-          p2pEnabled: filters.p2pEnabled,
-        },
-        options: {
-          sortBy: options.sortBy || 'updated',
-          sortOrder: options.sortOrder || 'desc',
-          maxResults: options.maxResults || 50,
-          includeDocuments: options.includeDocuments || false,
-          includeStatistics: options.includeStatistics || true,
-          includeCollaborators: options.includeCollaborators || false,
-          respectCulturalBoundaries: options.respectCulturalBoundaries !== false,
-          showEducationalContext: options.showEducationalContext !== false,
-        },
-      });
+      // For now, just get all collections without filters
+      const result = await invoke<Collection[]>('get_collections');
 
       // Process cultural validation for each collection
       const processedCollections = await Promise.all(
@@ -225,82 +200,154 @@ class CollectionServiceImpl implements CollectionService {
         request.culturalMetadata.sensitivityLevel &&
         request.culturalMetadata.sensitivityLevel > 2
       ) {
-        const culturalValidation = await this.requestCulturalValidation(request.name);
         // Note: Cultural validation provides information only, never blocks creation
+        await this.requestCulturalValidation(request.name);
       }
 
-      const result = await invoke<Collection>('create_collection', {
+      const result = await invoke<{
+        id: string;
+        name: string;
+        description?: string;
+        type_: string;
+        visibility: string;
+        document_count: number;
+        created_at: string;
+        updated_at: string;
+        cultural_metadata?: any;
+        tags: string[];
+        categories: string[];
+      }>('create_collection', {
         name: request.name,
         description: request.description,
-        type: request.type,
+        type_: request.type,
         visibility: request.visibility,
-        documentIds: request.documentIds || [],
-        culturalMetadata: {
-          sensitivityLevel: request.culturalMetadata.sensitivityLevel || 1,
-          culturalOrigin: request.culturalMetadata.culturalOrigin,
-          communityId: request.culturalMetadata.communityId,
-          traditionalProtocols: request.culturalMetadata.traditionalProtocols || [],
-          educationalContext: request.culturalMetadata.educationalContext,
-          culturalContext: request.culturalMetadata.culturalContext,
-          sourceAttribution: request.culturalMetadata.sourceAttribution,
-          culturalGroup: request.culturalMetadata.culturalGroup,
-          relatedConcepts: request.culturalMetadata.relatedConcepts || [],
-          communityNotes: request.culturalMetadata.communityNotes,
-        },
+        document_ids: request.documentIds || [],
+        cultural_metadata: request.culturalMetadata
+          ? {
+              sensitivity_level: request.culturalMetadata.sensitivityLevel,
+              cultural_origin: request.culturalMetadata.culturalOrigin,
+              community_id: request.culturalMetadata.communityId,
+              traditional_protocols: request.culturalMetadata.traditionalProtocols || [],
+              educational_context: request.culturalMetadata.educationalContext,
+              cultural_context: request.culturalMetadata.culturalContext,
+              source_attribution: request.culturalMetadata.sourceAttribution,
+              cultural_group: request.culturalMetadata.culturalGroup,
+              related_concepts: request.culturalMetadata.relatedConcepts || [],
+              community_notes: request.culturalMetadata.communityNotes,
+            }
+          : undefined,
         tags: request.tags || [],
         categories: request.categories || [],
+      });
+
+      // Convert the response to a Collection object
+      const collection: Collection = {
+        id: result.id,
+        name: result.name,
+        description: result.description,
+        type: result.type_ as CollectionType,
+        visibility: result.visibility as CollectionVisibility,
+        documentIds: [],
+        culturalMetadata: request.culturalMetadata || {
+          sensitivityLevel: CulturalSensitivityLevel.PUBLIC,
+          culturalOrigin: '',
+          traditionalProtocols: [],
+          educationalContext: '',
+          culturalContext: '',
+          sourceAttribution: '',
+          culturalGroup: '',
+          relatedConcepts: [],
+          communityNotes: '',
+        },
+        ownerId: 'current-user', // TODO: Get from auth
+        collaborators: [],
+        createdAt: new Date(result.created_at),
+        updatedAt: new Date(result.updated_at),
+        tags: result.tags,
+        categories: result.categories,
+        statistics: {
+          documentCount: result.document_count,
+          totalSize: 0,
+          contributorCount: 0,
+          viewCount: 0,
+          shareCount: 0,
+          culturalDiversity: {
+            origins: [],
+            sensitivityLevels: [],
+            communityCount: 0,
+          },
+          lastActivity: new Date(result.updated_at),
+          growth: {
+            documentsAddedThisWeek: 0,
+            documentsAddedThisMonth: 0,
+            newCollaboratorsThisMonth: 0,
+          },
+        },
         p2pSharing: {
-          enabled: request.p2pSharing?.enabled || false,
-          peerDiscovery: request.p2pSharing?.peerDiscovery || false,
-          allowedNetworks: request.p2pSharing?.allowedNetworks || [],
+          enabled: false,
+          peerDiscovery: false,
+          allowedNetworks: [],
           restrictions: {
-            requireCulturalApproval:
-              request.p2pSharing?.restrictions?.requireCulturalApproval || false,
-            communityMembersOnly: request.p2pSharing?.restrictions?.communityMembersOnly || false,
-            educationalUseOnly: request.p2pSharing?.restrictions?.educationalUseOnly || false,
-            noCommercialUse: request.p2pSharing?.restrictions?.noCommercialUse || true,
+            requireCulturalApproval: false,
+            communityMembersOnly: false,
+            educationalUseOnly: false,
+            noCommercialUse: false,
           },
           encryption: {
-            enabled: request.p2pSharing?.encryption?.enabled || false,
+            enabled: false,
           },
           syncPreferences: {
-            autoSync: request.p2pSharing?.syncPreferences?.autoSync || false,
-            syncFrequency: request.p2pSharing?.syncPreferences?.syncFrequency || 60,
-            conflictResolution: request.p2pSharing?.syncPreferences?.conflictResolution || 'manual',
+            autoSync: false,
+            syncFrequency: 60,
+            conflictResolution: 'manual',
           },
+        },
+        culturalValidation: {
+          required: false,
+          status: 'pending',
+          communityFeedback: [],
+          educationalRequirements: [],
+          culturalProtocols: [],
         },
         organization: {
           defaultSort: {
-            field: request.organization?.defaultSort?.field || 'date',
-            order: request.organization?.defaultSort?.order || 'desc',
+            field: 'title',
+            order: 'asc',
           },
           grouping: {
-            enabled: request.organization?.grouping?.enabled || false,
-            groupBy: request.organization?.grouping?.groupBy || 'cultural_origin',
+            enabled: false,
+            groupBy: 'cultural_origin',
           },
           filtering: {
-            defaultFilters: request.organization?.filtering?.defaultFilters || [],
-            hiddenSensitivityLevels: request.organization?.filtering?.hiddenSensitivityLevels || [],
-            showEducationalOnly: request.organization?.filtering?.showEducationalOnly || false,
+            defaultFilters: [],
+            hiddenSensitivityLevels: [],
+            showEducationalOnly: false,
           },
           display: {
-            viewMode: request.organization?.display?.viewMode || 'grid',
-            thumbnailSize: request.organization?.display?.thumbnailSize || 'medium',
-            showCulturalContext: request.organization?.display?.showCulturalContext !== false,
-            showStatistics: request.organization?.display?.showStatistics !== false,
+            viewMode: 'grid',
+            thumbnailSize: 'medium',
+            showCulturalContext: true,
+            showStatistics: false,
           },
           autoOrganization: {
-            enabled: request.organization?.autoOrganization?.enabled || false,
-            rules: request.organization?.autoOrganization?.rules || [],
+            enabled: false,
+            rules: [],
           },
         },
-        collaborators: request.collaborators || [],
-      });
+        accessHistory: [],
+        relationships: [],
+        syncStatus: {
+          syncing: false,
+          conflicts: [],
+          peerStatus: [],
+          errors: [],
+        },
+      };
 
       // Clear cache
       this.collectionsCache.clear();
 
-      return result;
+      return collection;
     } catch (error) {
       console.error('Failed to create collection:', error);
       throw error; // Re-throw the original error to preserve the error message
@@ -816,6 +863,3 @@ class CollectionServiceImpl implements CollectionService {
 
 // Export singleton instance
 export const collectionService: CollectionService = new CollectionServiceImpl();
-
-// Export the class for testing
-export { CollectionServiceImpl as CollectionService };
