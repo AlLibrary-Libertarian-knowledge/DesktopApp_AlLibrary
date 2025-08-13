@@ -48,6 +48,8 @@ import { NetworkStatus } from '../../components/domain/network/NetworkStatus';
 // Hooks and Services
 import { useNetworkSearch } from '../../hooks/api/useNetworkSearch';
 import { usePeerNetwork } from '../../hooks/network/usePeerNetwork';
+import { torAdapter } from '../../services/network/torAdapter';
+import { p2pNetworkService } from '../../services/network/p2pNetworkService';
 
 // Types
 import type { Document } from '../../types/Document';
@@ -74,6 +76,7 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
   const [anonymousMode, setAnonymousMode] = createSignal(props.anonymousMode || false);
   const [searchScope, setSearchScope] = createSignal<'all' | 'trusted' | 'nearby'>('all');
   const [sortBy, setSortBy] = createSignal<'relevance' | 'date' | 'peers'>('relevance');
+  const [torReady, setTorReady] = createSignal(false);
 
   // Search filters
   const [fileTypes, setFileTypes] = createSignal<string[]>([]);
@@ -91,6 +94,20 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
   } = useNetworkSearch();
 
   const { connectedPeers, networkStatus, connectionQuality, refreshPeers } = usePeerNetwork();
+  const enableTorAndP2P = async () => {
+    try {
+      // Initialize TOR and enable bridges for censorship resistance
+      await torAdapter.start({ bridgeSupport: true });
+      // Initialize P2P node with TOR support
+      await p2pNetworkService.initializeNode({ torSupport: true });
+      await p2pNetworkService.startNode();
+      await p2pNetworkService.enableTorRouting();
+      setTorReady(true);
+    } catch (e) {
+      console.error('Failed to enable TOR/P2P routing:', e);
+      setTorReady(false);
+    }
+  };
 
   // Sample data for demonstration
   const networkActivity = [
@@ -281,6 +298,10 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
                   </p>
                 </div>
                 <div class={styles['header-actions']}>
+                  <Button variant={torReady() ? 'outline' : 'primary'} size="sm" onClick={enableTorAndP2P}>
+                    <Shield size={16} class="mr-2" />
+                    {torReady() ? 'TOR Enabled' : 'Enable TOR Search'}
+                  </Button>
                   <Button variant="ghost" size="sm" onClick={() => setShowFilters(!showFilters())}>
                     <Filter size={16} class="mr-2" />
                     {showFilters() ? 'Hide Filters' : 'Show Filters'}

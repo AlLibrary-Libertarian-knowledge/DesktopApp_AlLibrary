@@ -1,3 +1,7 @@
+// Lightweight facade (Option B frontend adapter)
+// Deprecated legacy Tor service placeholder – retained only to satisfy imports in older code.
+// New code should import from '@/services/network/torAdapter'.
+
 /**
  * TOR Integration Service
  *

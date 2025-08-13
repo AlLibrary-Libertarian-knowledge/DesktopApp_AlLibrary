@@ -5,6 +5,7 @@ pub mod settings;
 pub mod search;
 pub mod collections;
 pub mod documents;
+pub mod tor;
 
 pub use app::{initialize_app, get_app_ready_state, close_splash_screen, InitProgress};
 pub use security::{get_security_info, refresh_security_info, SecurityInfo};
@@ -23,4 +24,17 @@ pub use documents::{
   DocumentInfo,
   ScanResult,
   FolderInfo
+};
+pub use tor::{
+  init_tor_node,
+  start_tor,
+  get_tor_status,
+  enable_tor_bridges,
+  use_tor_socks,
+  create_hidden_service,
+  list_hidden_services,
+  rotate_tor_circuit,
+  stop_tor,
+  TorConfig,
+  TorStatus
 };

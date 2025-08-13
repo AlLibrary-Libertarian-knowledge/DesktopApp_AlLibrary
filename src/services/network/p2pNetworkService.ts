@@ -65,7 +65,7 @@ export interface P2PNetworkService {
   shareWithCommunity(content: Document | Collection, communityId: string): Promise<void>;
 
   // Anti-censorship features
-  enableTorRouting(): Promise<void>;
+   enableTorRouting(): Promise<void>;
   disableTorRouting(): Promise<void>;
   createHiddenService(): Promise<string>; // Returns onion address
 
