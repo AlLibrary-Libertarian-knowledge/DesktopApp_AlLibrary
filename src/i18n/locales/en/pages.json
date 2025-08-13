@@ -271,5 +271,20 @@
     "educationalResources": "Educational Resources",
     "culturalOrigins": "Cultural Origins",
     "sensitivityLevels": "Sensitivity Levels"
+  },
+  "documentDetail": {
+    "toasts": {
+      "commentPosted": "Comment posted",
+      "commentPostFailed": "Failed to post comment",
+      "commentUpdated": "Comment updated",
+      "commentUpdateFailed": "Failed to update comment",
+      "commentDeleted": "Comment deleted",
+      "commentDeleteFailed": "Failed to delete comment",
+      "sharedToPeers": "Shared to selected peers",
+      "shareToPeersFailed": "Failed to share to peers",
+      "shareLinkCopied": "Share link copied to clipboard",
+      "addedToFavorites": "Added to favorites",
+      "removedFromFavorites": "Removed from favorites"
+    }
   }
 }

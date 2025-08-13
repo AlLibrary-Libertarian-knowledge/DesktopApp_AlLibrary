@@ -15,6 +15,9 @@
     "build": "npx tauri build",
     "build:frontend": "vite build",
     "test": "vitest",
+    "test:ci": "vitest --run && vitest --coverage --run",
+    "typecheck:ci": "tsc --noEmit",
+    "verify:cultural": "node ./scripts/verify-cultural-info-only.js",
     "test:ui": "vitest --ui",
     "test:e2e": "npx playwright test",
     "test:e2e:windows": "npx playwright test --config=playwright-windows-only.config.ts",
@@ -41,7 +44,7 @@
     "clean:win": "if exist dist rmdir /s /q dist && if exist build rmdir /s /q build && if exist .vite rmdir /s /q .vite && if exist node_modules\\.cache rmdir /s /q node_modules\\.cache",
     "clean:appdata": "if exist \"%APPDATA%\\desktopapp-allibrary\" rmdir /s /q \"%APPDATA%\\desktopapp-allibrary\" && if exist \"%APPDATA%\\com.desktopapp-allibrary.dev\" rmdir /s /q \"%APPDATA%\\com.desktopapp-allibrary.dev\"",
     "prepare": "husky",
-    "validate": "npm run typecheck && npm run lint && npm run test -- --run && npm run build",
+    "validate": "npm run typecheck:ci && npm run lint && npm run test:ci && npm run build",
     "husky:check": "sh .husky/health-check.sh"
   },
   "dependencies": {
@@ -64,6 +67,7 @@
     "@types/pdfjs-dist": "^2.10.377",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
+    "@vitest/coverage-v8": "^3.2.4",
     "autoprefixer": "^10.4.21",
     "cssnano": "^7.0.7",
     "eslint": "^9.0.0",

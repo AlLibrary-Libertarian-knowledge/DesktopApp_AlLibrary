@@ -41,3 +41,8 @@ export { p2pService } from './p2pService';
 
 // Re-export commonly used service patterns
 export { ValidationService } from './validationService';
+
+// Comments & Sharing Services
+export { commentService } from './comments/commentService';
+export { shareService } from './sharing/shareService';
+export { favoriteService } from './favoriteService';

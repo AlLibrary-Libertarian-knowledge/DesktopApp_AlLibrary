@@ -27,6 +27,28 @@ export default defineConfig({
     setupFiles: ['./src/test-setup.ts'], // Setup file for mocks
     globals: true, // Enable global test functions
     css: true, // Process CSS files
+    // Reduce Tinypool/worker instability on Windows (ERR_IPC_CHANNEL_CLOSED / V8 invalid size)
+    pool: 'forks',
+    maxThreads: 1,
+    minThreads: 1,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json'],
+      reportsDirectory: 'coverage/unit',
+      lines: 0.8,
+      functions: 0.8,
+      branches: 0.8,
+      statements: 0.8,
+      exclude: [
+        '**/tests/**',
+        '**/src-tauri/**',
+        '**/dist/**',
+        '**/*.config.*',
+        '**/scripts/**',
+        '**/playwright*.**',
+        '**/@vite/**',
+      ],
+    },
     // Exclude e2e tests from Vitest (they use Playwright)
     exclude: [
       '**/node_modules/**',

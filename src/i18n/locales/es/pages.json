@@ -256,4 +256,20 @@
     "cultural": "Cultural",
     "advanced": "Avanzado"
   }
+  ,
+  "documentDetail": {
+    "toasts": {
+      "commentPosted": "Comentario publicado",
+      "commentPostFailed": "Error al publicar el comentario",
+      "commentUpdated": "Comentario actualizado",
+      "commentUpdateFailed": "Error al actualizar el comentario",
+      "commentDeleted": "Comentario eliminado",
+      "commentDeleteFailed": "Error al eliminar el comentario",
+      "sharedToPeers": "Compartido con los pares seleccionados",
+      "shareToPeersFailed": "Error al compartir con los pares",
+      "shareLinkCopied": "Enlace de compartición copiado",
+      "addedToFavorites": "Añadido a favoritos",
+      "removedFromFavorites": "Eliminado de favoritos"
+    }
+  }
 }

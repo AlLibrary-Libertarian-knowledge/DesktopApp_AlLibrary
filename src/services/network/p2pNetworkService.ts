@@ -363,7 +363,16 @@ class P2PNetworkServiceImpl implements P2PNetworkService {
    */
   async discoverCommunityNetworks(): Promise<CommunityNetwork[]> {
     try {
-      // Mock community networks for development
+      // Prefer real backend if available
+      const networks = await invoke<CommunityNetwork[]>('discover_community_networks', {
+        nodeId: this.nodeId,
+      });
+      if (Array.isArray(networks)) return networks;
+    } catch (error) {
+      console.warn('discoverCommunityNetworks falling back to mock:', error);
+    }
+    try {
+      // Fallback: mock community networks for development
       const mockNetworks: CommunityNetwork[] = [
         {
           id: 'indigenous-knowledge-1',
@@ -451,7 +460,16 @@ class P2PNetworkServiceImpl implements P2PNetworkService {
    */
   async getNetworkParticipation(): Promise<NetworkParticipation[]> {
     try {
-      // Mock participation data for development
+      // Prefer real backend if available
+      const participation = await invoke<NetworkParticipation[]>('get_network_participation', {
+        nodeId: this.nodeId,
+      });
+      if (Array.isArray(participation)) return participation;
+    } catch (error) {
+      console.warn('getNetworkParticipation falling back to mock:', error);
+    }
+    try {
+      // Fallback: mock participation data for development
       const mockParticipation: NetworkParticipation[] = Array.from(this.communityNetworks).map(
         networkId => ({
           networkId,

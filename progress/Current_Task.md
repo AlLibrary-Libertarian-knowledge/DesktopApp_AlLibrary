@@ -2,6 +2,11 @@
 
 ## Status: TASK 0.3 COMPLETED ✅ - ADVANCED FEATURES IMPLEMENTED
 
+### 2025-08-11 Update – Router & Gaps
+- Router updated to lazy-load all major routes, mapping `/search-network` to `SearchNetworkPage`.
+- Milestones `gaps_phases.md` expanded with Phases 5–8 and Phase 1 status note.
+- All tests passing (284/284). Next: add CI coverage gates and proceed to Phase 2 tasks.
+
 ### Current Focus
 
 Successfully implemented advanced document features as outlined in Task 0.3 from the progress files. The application now includes comprehensive document viewing, annotation support, enhanced search capabilities, and cultural context integration.
@@ -126,3 +131,15 @@ The application now includes:
 ## 🎉 **TASK 0.3 COMPLETED SUCCESSFULLY**
 
 The advanced document features implementation is now complete and ready for testing. All major features from Task 0.3 have been implemented with proper cultural integration and anti-censorship compliance.
+
+---
+
+### 2025-08-13 Update – Tests, CI coverage output, and Phase alignment
+
+- All unit/integration tests passing locally with coverage enabled (315/315).
+- Adjusted `vitest.config.ts` coverage reporters to JSON/Text and output path to `coverage/unit` to fix Windows HTML report path issue.
+- Added service perf guard test for `documentApi.getDocumentStats` and an E2E spec for comments/sharing flows (Playwright).
+- Next per `Milestones/gaps_phases.md`:
+  - Phase 3: add connectivity/replication/distributed search tests and anti-censorship fallback checks.
+  - Phase 4: extend E2E coverage for comment edit flows and share-to-peers confirmation.
+  - Cross-phase: keep progress docs in sync and maintain info-only cultural policy.

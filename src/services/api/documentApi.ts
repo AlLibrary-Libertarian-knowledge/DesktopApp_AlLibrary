@@ -94,6 +94,33 @@ export interface DocumentSearchResult {
  */
 export class DocumentApiService {
   /**
+   * Get document engagement stats
+   */
+  async getDocumentStats(documentId: string): Promise<{ viewCount: number; favoriteCount: number; commentCount: number }> {
+    try {
+      const result = await invoke('get_document_stats', { documentId });
+      return {
+        viewCount: result?.viewCount ?? 0,
+        favoriteCount: result?.favoriteCount ?? 0,
+        commentCount: result?.commentCount ?? 0,
+      };
+    } catch (error) {
+      console.warn('getDocumentStats fallback:', error);
+      return { viewCount: 0, favoriteCount: 0, commentCount: 0 };
+    }
+  }
+
+  /**
+   * Increment view count (fire-and-forget)
+   */
+  async incrementViewCount(documentId: string): Promise<void> {
+    try {
+      await invoke('increment_view_count', { documentId });
+    } catch {
+      // ignore
+    }
+  }
+  /**
    * Upload a document with cultural validation
    */
   async uploadDocument(config: DocumentUploadConfig): Promise<DocumentUploadResult> {

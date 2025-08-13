@@ -38,27 +38,7 @@ import {
 } from 'solid-js';
 import { useParams, useNavigate } from '@solidjs/router';
 import { createAsync } from '@solidjs/router';
-import {
-  BookOpen,
-  Download,
-  Share2,
-  Bookmark,
-  Eye,
-  MessageCircle,
-  Info,
-  ChevronLeft,
-  ChevronRight,
-  ZoomIn,
-  ZoomOut,
-  RotateCw,
-  Search,
-  Settings,
-  Globe,
-  Users,
-  Award,
-  Heart,
-  Flag,
-} from 'lucide-solid';
+import { BookOpen, Download, Share2, Bookmark, Eye, MessageCircle, Info, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Search, Globe, Users, Heart } from 'lucide-solid';
 
 // Import components
 import { Button } from '@/components/foundation/Button';
@@ -71,10 +51,14 @@ import { Tooltip } from '@/components/foundation/Tooltip';
 import { CulturalIndicator } from '@/components/cultural/CulturalIndicator';
 import { CulturalContext } from '@/components/cultural/CulturalContext';
 import { DocumentViewer } from '@/components/composite/DocumentViewer';
+import { useToast } from '@/hooks/ui/useToast';
+import { useTranslation } from '@/i18n';
 
 // Import services
 import { documentApi, culturalApi } from '@/services/api';
-import type { Document } from '@/types/core';
+import { commentService, shareService } from '@/services';
+import { p2pNetworkService } from '@/services/network/p2pNetworkService';
+// import type { Document } from '@/types/core';
 
 // Import styles
 import styles from './DocumentDetailPage.module.css';
@@ -95,15 +79,31 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
   const [showShareModal, setShowShareModal] = createSignal(false);
   const [isBookmarked, setIsBookmarked] = createSignal(false);
   const [searchTerm, setSearchTerm] = createSignal('');
+  const [comments, setComments] = createSignal<Awaited<ReturnType<typeof commentService.list>>>([]);
+  const [newComment, setNewComment] = createSignal('');
+  const [peers, setPeers] = createSignal<any[]>([]);
+  const [selectedPeerIds, setSelectedPeerIds] = createSignal<string[]>([]);
+  const toast = useToast();
+  const { t } = useTranslation();
+  const tf = t as unknown as (key: string) => string;
 
   // Data fetching
   const document = createAsync(async () => {
     if (!params.id) return null;
     try {
       const response = await documentApi.getDocument(params.id);
-      return response.success ? response.document : null;
-    } catch (error) {
-      console.error('Failed to load document:', error);
+      if (!response.success || !response.document) return null;
+      // Fire-and-forget increment view
+      documentApi.incrementViewCount(params.id);
+      // Merge stats if available
+      try {
+        const stats = await documentApi.getDocumentStats(params.id);
+        return { ...response.document, ...stats } as any;
+      } catch {
+        return response.document;
+      }
+    } catch {
+      // ignore
       return null;
     }
   });
@@ -116,8 +116,8 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
       // Use the document ID as the context ID for now
       const response = await culturalApi.getCulturalContext(params.id!);
       return response.success ? response.data : null;
-    } catch (error) {
-      console.error('Failed to load cultural context:', error);
+    } catch {
+      // ignore
       return null;
     }
   });
@@ -126,28 +126,65 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
   const documentTitle = createMemo(() => document()?.title || 'Loading...');
   const totalPages = createMemo(() => 1); // Default to 1 page for now
   const culturalLevel = createMemo(() => document()?.culturalMetadata?.sensitivityLevel || 0);
-  const hasEducationalContent = createMemo(
-    () => culturalContext()?.educationalContent?.learningResources?.length > 0
-  );
+  const hasEducationalContent = createMemo(() => {
+    const ctx = culturalContext();
+    const resources = (ctx as any)?.educationalResources || (ctx as any)?.educationalContent?.learningResources;
+    return Array.isArray(resources) && resources.length > 0;
+  });
 
   // Effects
   createEffect(() => {
     const doc = document();
     if (doc) {
-      // Document loaded successfully
-      console.log('Document loaded:', doc.title);
+      // Load initial comments
+      commentService
+        .list(doc.id)
+        .then(list => setComments(list))
+        .catch(() => setComments([]));
     }
+  });
+
+  createEffect(() => {
+    if (showShareModal()) {
+      p2pNetworkService
+        .getConnectedPeers()
+        .then(list => setPeers(list || []))
+        .catch(() => setPeers([]));
+    }
+  });
+
+  // Reload comments when switching to community tab
+  createEffect(() => {
+    if (viewMode() === 'community') {
+      const doc = document();
+      if (doc) {
+        commentService
+          .list(doc.id)
+          .then(list => setComments(list))
+          .catch(() => setComments([]));
+      }
+      }
   });
 
   // Event handlers
   const handleBookmark = async () => {
-    // TODO: Implement bookmark functionality when service is available
-    console.log('Bookmark functionality not yet implemented');
+    const doc = document();
+    if (!doc) return;
+    const { favoriteService } = await import('@/services');
+    const res = await favoriteService.toggleFavorite(doc.id);
+    setIsBookmarked(res.isFavorite);
+    toast.success(res.isFavorite ? tf('pages.documentDetail.toasts.addedToFavorites') : tf('pages.documentDetail.toasts.removedFromFavorites'));
   };
 
   const handleShare = async () => {
-    // TODO: Implement share functionality when service is available
-    console.log('Share functionality not yet implemented');
+    const doc = document();
+    if (!doc) return;
+    // Default to link sharing for now; P2P share can be added with peer selection UI
+    const link = await shareService.createShareLink(doc.id);
+    if (link?.url) {
+      await window.navigator.clipboard.writeText(link.url);
+      toast.success(tf('pages.documentDetail.toasts.shareLinkCopied'));
+    }
   };
 
   const handleDownload = async () => {
@@ -163,8 +200,8 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
         link.download = doc.title || 'document';
         link.click();
       }
-    } catch (error) {
-      console.error('Download failed:', error);
+    } catch {
+      // ignore
     }
   };
 
@@ -184,22 +221,18 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
   return (
     <ErrorBoundary
       fallback={err => (
-        <ErrorMessage
-          message="Failed to load document details"
-          details={err.message}
-          onRetry={() => window.location.reload()}
-        />
+        <ErrorMessage message="Failed to load document details" description={err.message} onRetry={() => window.location.reload()} />
       )}
     >
       <div class={styles.documentDetailPage}>
         {/* Header */}
         <header class={styles.pageHeader}>
           <div class={styles.headerLeft}>
-            <Button
+              <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate(-1)}
-              class={styles.backButton}
+                class={styles.backButton || ''}
             >
               <ChevronLeft size={16} />
               Back
@@ -229,7 +262,7 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowCulturalModal(true)}
-                class={styles.actionButton}
+                class={styles.actionButton || ''}
                 disabled={!hasEducationalContent()}
               >
                 <Globe size={16} />
@@ -241,7 +274,7 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
                 variant="ghost"
                 size="sm"
                 onClick={handleBookmark}
-                class={`${styles.actionButton} ${isBookmarked() ? styles.bookmarked : ''}`}
+                class={`${styles.actionButton || ''} ${isBookmarked() ? styles.bookmarked : ''}`}
               >
                 <Bookmark size={16} />
               </Button>
@@ -252,7 +285,7 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowShareModal(true)}
-                class={styles.actionButton}
+                class={styles.actionButton || ''}
               >
                 <Share2 size={16} />
               </Button>
@@ -263,7 +296,7 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
                 variant="ghost"
                 size="sm"
                 onClick={handleDownload}
-                class={styles.actionButton}
+                class={styles.actionButton || ''}
               >
                 <Download size={16} />
               </Button>
@@ -310,7 +343,7 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
             {/* Sidebar Content */}
             <div class={styles.sidebarContent}>
               <Show when={viewMode() === 'metadata'}>
-                <Card title="Document Information" class={styles.metadataCard}>
+                <Card title="Document Information" class={styles.metadataCard || ''}>
                   <Show when={document()}>
                     {doc => (
                       <div class={styles.metadataList}>
@@ -345,7 +378,7 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
                   </Show>
                 </Card>
 
-                <Card title="Tags" class={styles.tagsCard}>
+                <Card title="Tags" class={styles.tagsCard || ''}>
                   <Show when={document()?.tags}>
                     <div class={styles.tagsList}>
                       <For each={document()!.tags}>
@@ -361,16 +394,11 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
               </Show>
 
               <Show when={viewMode() === 'cultural' && culturalContext()}>
-                <CulturalContext
-                  context={culturalContext()!}
-                  documentId={params.id!}
-                  informationOnly={true}
-                  showEducationalContent={true}
-                />
+                <CulturalContext contextInfo={culturalContext() as any} showEducationalResources={true} showCommunityInfo={true} />
               </Show>
 
               <Show when={viewMode() === 'community'}>
-                <Card title="Community Activity" class={styles.communityCard}>
+                <Card title="Community Activity" class={styles.communityCard || ''}>
                   <div class={styles.communityStats}>
                     <div class={styles.statItem}>
                       <Eye size={16} />
@@ -384,6 +412,48 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
                       <MessageCircle size={16} />
                       <span>{document()?.commentCount || 0} comments</span>
                     </div>
+                  </div>
+                  <div class={styles.commentComposer}>
+                    <textarea
+                      class={styles.commentInput}
+                      placeholder="Add a comment..."
+                      value={newComment()}
+                      onInput={e => setNewComment(e.currentTarget.value)}
+                    />
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={async () => {
+                        const doc = document();
+                        if (!doc || !newComment().trim()) return;
+                        const created = await commentService.add({
+                          documentId: doc.id,
+                          text: newComment().trim(),
+                        });
+                        if (created) {
+                          setComments([created, ...comments()]);
+                          setNewComment('');
+                          toast.success(tf('pages.documentDetail.toasts.commentPosted'));
+                        } else {
+                          toast.error(tf('pages.documentDetail.toasts.commentPostFailed'));
+                        }
+                      }}
+                    >
+                      Post
+                    </Button>
+                  </div>
+                  <div class={styles.commentList}>
+                    <For each={comments()}>
+                      {c => (
+                        <div class={styles.commentItem}>
+                          <div class={styles.commentHeader}>
+                            <span class={styles.author}>{c.authorName || c.authorId}</span>
+                            <span class={styles.time}>{new Date(c.createdAt).toLocaleString()}</span>
+                          </div>
+                          <div class={styles.commentText}>{c.text}</div>
+                        </div>
+                      )}
+                    </For>
                   </div>
                 </Card>
               </Show>
@@ -457,15 +527,16 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
 
               {/* Document Viewer Component */}
               <div class={styles.viewerContainer}>
-                <Show when={document()} fallback={<Loading message="Loading document..." />}>
+                <Show when={document()} fallback={<Loading />}> 
                   {doc => (
                     <DocumentViewer
-                      document={doc()}
+                      documentType={(doc() as any).fileType?.toLowerCase?.() || 'pdf'}
+                      title={(doc() as any).title}
                       currentPage={currentPage()}
                       zoomLevel={zoomLevel()}
                       searchTerm={searchTerm()}
                       onPageChange={setCurrentPage}
-                      culturalContext={culturalContext()}
+                      culturalContext={culturalContext() as any}
                     />
                   )}
                 </Show>
@@ -474,9 +545,90 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
 
             {/* Other view modes content */}
             <Show when={viewMode() !== 'reader'}>
-              <div class={styles.alternativeView}>
-                <p>Content for {viewMode()} view will be displayed here.</p>
-              </div>
+              <Show when={viewMode() === 'community'}>
+                <div class={styles.communityView}>
+                  <div class={styles.commentComposer}>
+                    <textarea
+                      class={styles.commentInput}
+                      placeholder="Add a comment..."
+                      value={newComment()}
+                      onInput={e => setNewComment(e.currentTarget.value)}
+                    />
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={async () => {
+                        const doc = document();
+                        if (!doc || !newComment().trim()) return;
+                        const created = await commentService.add({
+                          documentId: doc.id,
+                          text: newComment().trim(),
+                        });
+                        if (created) {
+                          setComments([created, ...comments()]);
+                          setNewComment('');
+                        }
+                      }}
+                    >
+                      Post
+                    </Button>
+                  </div>
+                  <div class={styles.commentList}>
+                    <For each={comments()}>
+                      {c => (
+                        <div class={styles.commentItem}>
+                          <div class={styles.commentHeader}>
+                            <span class={styles.author}>{c.authorName || c.authorId}</span>
+                            <span class={styles.time}>{new Date(c.createdAt).toLocaleString()}</span>
+                            <div class={styles.commentActions}>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={async () => {
+                                  const text = window.prompt('Edit comment', (c as any).text);
+                                  if (text == null) return;
+                                  const ok = await commentService.edit((c as any).id, text);
+                                  if (ok) {
+                                    setComments(
+                                      comments().map(x => ((x as any).id === (c as any).id ? { ...(x as any), text } : x))
+                                    );
+                                    toast.success(tf('pages.documentDetail.toasts.commentUpdated'));
+                                  } else {
+                                    toast.error(tf('pages.documentDetail.toasts.commentUpdateFailed'));
+                                  }
+                                }}
+                              >
+                                Edit
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={async () => {
+                                  const ok = await commentService.remove((c as any).id);
+                                  if (ok) {
+                                    setComments(comments().filter(x => (x as any).id !== (c as any).id));
+                                    toast.success(tf('pages.documentDetail.toasts.commentDeleted'));
+                                  } else {
+                                    toast.error(tf('pages.documentDetail.toasts.commentDeleteFailed'));
+                                  }
+                                }}
+                              >
+                                Delete
+                              </Button>
+                            </div>
+                          </div>
+                          <div class={styles.commentText}>{(c as any).text}</div>
+                        </div>
+                      )}
+                    </For>
+                  </div>
+                </div>
+              </Show>
+              <Show when={viewMode() !== 'community'}>
+                <div class={styles.alternativeView}>
+                  <p>Content for {viewMode()} view will be displayed here.</p>
+                </div>
+              </Show>
             </Show>
           </section>
         </main>
@@ -490,13 +642,7 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
         >
           <Show when={culturalContext()}>
             {context => (
-              <CulturalContext
-                context={context()}
-                documentId={params.id!}
-                informationOnly={true}
-                showEducationalContent={true}
-                expanded={true}
-              />
+              <CulturalContext contextInfo={context() as any} showEducationalResources={true} showCommunityInfo={true} />
             )}
           </Show>
         </Modal>
@@ -509,18 +655,56 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
           size="md"
         >
           <div class={styles.shareOptions}>
-            <Button variant="outline" onClick={() => handleShare()} class={styles.shareButton}>
+            <Button variant="outline" onClick={() => handleShare()} class={styles.shareButton || ''}>
               <Users size={16} />
               Share via P2P Network
             </Button>
-            <Button variant="outline" onClick={() => handleShare()} class={styles.shareButton}>
+            <Button variant="outline" onClick={() => handleShare()} class={styles.shareButton || ''}>
               <Share2 size={16} />
               Copy Share Link
             </Button>
-            <Button variant="outline" onClick={() => handleShare()} class={styles.shareButton}>
+            <Button variant="outline" onClick={() => handleShare()} class={styles.shareButton || ''}>
               <Download size={16} />
               Export with Metadata
             </Button>
+            <div class={styles.peerList}>
+              <h4>Connected Peers</h4>
+              <For each={peers()}>
+                {p => (
+                  <label class={styles.peerItem}>
+                    <input
+                      type="checkbox"
+                      checked={selectedPeerIds().includes((p as any).id)}
+                      onChange={e => {
+                        const id = (p as any).id;
+                        setSelectedPeerIds(
+                          e.currentTarget.checked
+                            ? [...selectedPeerIds(), id]
+                            : selectedPeerIds().filter(x => x !== id)
+                        );
+                      }}
+                    />
+                    <span>{(p as any).name || (p as any).id}</span>
+                  </label>
+                )}
+              </For>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={async () => {
+                  const doc = document();
+                  if (!doc) return;
+                  const ok = await shareService.shareViaP2P(doc.id, selectedPeerIds());
+                  if (ok) {
+                    toast.success(tf('pages.documentDetail.toasts.sharedToPeers'));
+                  } else {
+                    toast.error(tf('pages.documentDetail.toasts.shareToPeersFailed'));
+                  }
+                }}
+              >
+                Share to selected peers
+              </Button>
+            </div>
           </div>
         </Modal>
       </div>

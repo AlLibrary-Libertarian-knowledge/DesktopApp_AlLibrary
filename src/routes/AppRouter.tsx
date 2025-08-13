@@ -1,54 +1,148 @@
 import { Router, Route } from '@solidjs/router';
-import { Home } from '../pages/Home';
-import { SearchPage } from '../pages/Search';
-import { Collections } from '../pages/Collections';
-import { Favorites } from '../pages/Favorites';
-import { Recent } from '../pages/Recent';
-import { Trending } from '../pages/Trending';
-import { Browse } from '../pages/Browse';
-import { Peers } from '../pages/Peers';
-import { NetworkHealth } from '../pages/NetworkHealth';
-import { P2PSearch } from '../pages/P2PSearch';
-import { ConnectionManager } from '../pages/ConnectionManager';
-import { CulturalContexts } from '../pages/CulturalContexts';
-import { TraditionalKnowledge } from '../pages/TraditionalKnowledge';
-import { CommunityGuidelines } from '../pages/CommunityGuidelines';
-import { Preservation } from '../pages/Preservation';
-import { DocumentReader } from '../pages/DocumentReader';
+import { Suspense, lazy } from 'solid-js';
+
+const Home = lazy(() => import('../pages/Home'));
+const SearchPage = lazy(() => import('../pages/Search'));
+const SearchNetworkPage = lazy(() => import('../pages/SearchNetwork'));
+const Collections = lazy(() => import('../pages/Collections'));
+const Favorites = lazy(() => import('../pages/Favorites'));
+const Recent = lazy(() => import('../pages/Recent'));
+const Trending = lazy(() => import('../pages/Trending'));
+const Browse = lazy(() => import('../pages/Browse'));
+const NewArrivalsPage = lazy(() => import('../pages/NewArrivals'));
+const Peers = lazy(() => import('../pages/Peers'));
+const NetworkHealth = lazy(() => import('../pages/NetworkHealth'));
+const P2PSearch = lazy(() => import('../pages/P2PSearch'));
+const ConnectionManager = lazy(() => import('../pages/ConnectionManager'));
+const CulturalContexts = lazy(() => import('../pages/CulturalContexts'));
+const TraditionalKnowledge = lazy(() => import('../pages/TraditionalKnowledge'));
+const CommunityGuidelines = lazy(() => import('../pages/CommunityGuidelines'));
+const Preservation = lazy(() => import('../pages/Preservation'));
+const DocumentReader = lazy(() => import('../pages/DocumentReader'));
+
+const RouteLoading = () => (
+  <div class="route-loading">
+    <div class="loading-spinner" aria-label="Loading" />
+  </div>
+);
 
 const AppRouter = () => {
   return (
     <Router>
       {/* Library Routes */}
-      <Route path="/" component={Home} />
-      <Route path="/collections" component={Collections} />
-      <Route path="/favorites" component={Favorites} />
-      <Route path="/recent" component={Recent} />
+      <Route path="/" component={() => (
+        <Suspense fallback={<RouteLoading />}>
+          <Home />
+        </Suspense>
+      )} />
+      <Route path="/collections" component={() => (
+        <Suspense fallback={<RouteLoading />}>
+          <Collections />
+        </Suspense>
+      )} />
+      <Route path="/favorites" component={() => (
+        <Suspense fallback={<RouteLoading />}>
+          <Favorites />
+        </Suspense>
+      )} />
+      <Route path="/recent" component={() => (
+        <Suspense fallback={<RouteLoading />}>
+          <Recent />
+        </Suspense>
+      )} />
 
       {/* Discovery Routes */}
-      <Route path="/search" component={SearchPage} />
-      <Route path="/search-network" component={SearchPage} />
-      <Route path="/browse" component={Browse} />
-      <Route path="/trending" component={Trending} />
-      <Route path="/new-arrivals" component={() => <div>New Arrivals Page</div>} />
+      <Route path="/search" component={() => (
+        <Suspense fallback={<RouteLoading />}>
+          <SearchPage />
+        </Suspense>
+      )} />
+      <Route path="/search-network" component={() => (
+        <Suspense fallback={<RouteLoading />}>
+          <SearchNetworkPage />
+        </Suspense>
+      )} />
+      <Route path="/browse" component={() => (
+        <Suspense fallback={<RouteLoading />}>
+          <Browse />
+        </Suspense>
+      )} />
+      <Route path="/trending" component={() => (
+        <Suspense fallback={<RouteLoading />}>
+          <Trending />
+        </Suspense>
+      )} />
+      <Route path="/new-arrivals" component={() => (
+        <Suspense fallback={<RouteLoading />}>
+          <NewArrivalsPage />
+        </Suspense>
+      )} />
 
       {/* Cultural Heritage Routes */}
-      <Route path="/cultural-contexts" component={CulturalContexts} />
-      <Route path="/traditional-knowledge" component={TraditionalKnowledge} />
-      <Route path="/community-guidelines" component={CommunityGuidelines} />
-      <Route path="/preservation" component={Preservation} />
+      <Route path="/cultural-contexts" component={() => (
+        <Suspense fallback={<RouteLoading />}>
+          <CulturalContexts />
+        </Suspense>
+      )} />
+      <Route path="/traditional-knowledge" component={() => (
+        <Suspense fallback={<RouteLoading />}>
+          <TraditionalKnowledge />
+        </Suspense>
+      )} />
+      <Route path="/community-guidelines" component={() => (
+        <Suspense fallback={<RouteLoading />}>
+          <CommunityGuidelines />
+        </Suspense>
+      )} />
+      <Route path="/preservation" component={() => (
+        <Suspense fallback={<RouteLoading />}>
+          <Preservation />
+        </Suspense>
+      )} />
 
       {/* Network Routes */}
-      <Route path="/peers" component={Peers} />
-      <Route path="/network-health" component={NetworkHealth} />
-      <Route path="/p2p-search" component={P2PSearch} />
-      <Route path="/connection-manager" component={ConnectionManager} />
-      <Route path="/sharing" component={() => <div>Sharing Status Page</div>} />
-      <Route path="/downloads" component={() => <div>Downloads Page</div>} />
-      <Route path="/sync" component={() => <div>Synchronization Page</div>} />
+      <Route path="/peers" component={() => (
+        <Suspense fallback={<RouteLoading />}>
+          <Peers />
+        </Suspense>
+      )} />
+      <Route path="/network-health" component={() => (
+        <Suspense fallback={<RouteLoading />}>
+          <NetworkHealth />
+        </Suspense>
+      )} />
+      <Route path="/p2p-search" component={() => (
+        <Suspense fallback={<RouteLoading />}>
+          <P2PSearch />
+        </Suspense>
+      )} />
+      <Route path="/connection-manager" component={() => (
+        <Suspense fallback={<RouteLoading />}>
+          <ConnectionManager />
+        </Suspense>
+      )} />
+      <Route path="/sharing" component={() => (
+        <Suspense fallback={<RouteLoading />}>
+          <div>Sharing Status Page</div>
+        </Suspense>
+      )} />
+      <Route path="/downloads" component={() => (
+        <Suspense fallback={<RouteLoading />}>
+          <div>Downloads Page</div>
+        </Suspense>
+      )} />
+      <Route path="/sync" component={() => (
+        <Suspense fallback={<RouteLoading />}>
+          <div>Synchronization Page</div>
+        </Suspense>
+      )} />
 
       {/* Document Reader */}
-      <Route path="/reader" component={DocumentReader} />
+      <Route path="/reader" component={() => (
+        <Suspense fallback={<RouteLoading />}>
+          <DocumentReader />
+        </Suspense>
+      )} />
 
       {/* Fallback Route */}
       <Route

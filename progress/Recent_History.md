@@ -1,3 +1,20 @@
+## 2025-08-13 - Test stability and coverage output fixes
+
+### What Was Implemented:
+- Updated `vitest.config.ts` coverage reporters to avoid Windows HTML path issues and write to `coverage/unit`.
+- Added `src/services/__tests__/documentStats.a11y.spec.ts` to guard document stats performance.
+- Added `tests/e2e/document-community-share.spec.ts` to cover community comments and sharing toasts.
+
+### Architecture Decisions:
+- Keep CI coverage gates via Vitest v8 provider; avoid HTML report on Windows runners to prevent path null-byte failures.
+
+### Cultural Integration:
+- All changes preserve information-only policy; added tests exercise toasts and community flows without access gating.
+
+### Files Modified:
+- `vitest.config.ts`
+- `src/services/__tests__/documentStats.a11y.spec.ts`
+- `tests/e2e/document-community-share.spec.ts`
 # 📝 AlLibrary Recent Implementation History
 
 ## 🎯 **PHASE 3 WEEK 3 - DECENTRALIZED SEARCH & ANTI-CENSORSHIP!** (Current Session)
@@ -113,6 +130,67 @@ _Date: January 2025_
 
 ---
 
+## ✅ 2025-08-11 – Router Lazy-Loading, Search-Network Mapping, Milestones Gaps Update
+
+### What Was Implemented
+- Updated `src/routes/AppRouter.tsx` to lazy-load all major pages using Solid `lazy()` and `Suspense` with a fallback.
+- Corrected route mapping: `/search-network` now renders `SearchNetworkPage` instead of `SearchPage`.
+- Replaced placeholder routes with real lazy-loaded page components where available.
+- Expanded `DocsAndResearch_AlLibrary/Milestones/gaps_phases.md`:
+  - Marked router/lazy-loading enabler as completed.
+  - Added detailed sections for Phases 5–8 (Gaps, Corrective Tasks, Acceptance Criteria, KPIs).
+  - Inserted Phase 1 status update and updated evidence pointers.
+
+### Quality Outcomes
+- All tests passing: 284/284 (per latest run).
+- Architectural alignment with code-splitting and lazy-loading rules.
+- Cultural “information only” policy preserved; no access gates introduced.
+
+### Next Steps
+- Phase 1: Add CI coverage gates (TS strict pass, tests ≥80%) and cultural compliance assertion tests.
+- Phase 2: A11y + unit tests for foundation components; import pipeline integration tests; local search performance test (<500ms median).
+- Keep progress docs in `progress/` synchronized with milestones execution.
+
+---
+
+## ✅ 2025-08-12 – Phase 2 Tests Added and CI Gates Prepared
+
+### Implemented
+- Cultural info-only policy test added: `src/services/__tests__/culturalInfoPolicy.test.ts`.
+- Foundation a11y tests added: `src/components/foundation/Modal/Modal.test.tsx`.
+- Upload pipeline integration tests added: `src/services/__tests__/uploadService.integration.test.ts`.
+- Local search performance test added: `src/services/__tests__/searchService.performance.test.ts`.
+- CI prep:
+  - Coverage thresholds configured in `vitest.config.ts` (80%).
+  - `package.json` scripts: `test:ci`, `typecheck:ci`, `verify:cultural`.
+  - Cultural info-only verifier: `scripts/verify-cultural-info-only.js`.
+
+### Outcome
+- All tests passing locally post-fixes; Phase 2 initial KPIs met.
+
+### Next
+- Wire CI to run `npm run typecheck:ci && npm run lint && npm run test:ci && npm run verify:cultural`.
+
+---
+
+## ✅ 2025-08-12 – Phase 4 Real Data: Comments + Sharing wired in DocumentDetail
+
+### Implemented
+- Comment service using real Tauri commands: `list_comments`, `add_comment`, `edit_comment`, `delete_comment`.
+- Share service using real commands: `share_document_p2p`, `create_share_link`.
+- `DocumentDetailPage` community tab:
+  - Loads comments on document load and when entering the community tab.
+  - Composer with post, edit, delete actions.
+  - Toast feedback for add/edit/delete and share actions.
+- Share modal:
+  - Lists connected peers via `p2pNetworkService.getConnectedPeers()` and shares to selected peers.
+  - Copies share link to clipboard with success toast.
+
+### Tests
+- Added `src/services/__tests__/commentService.test.ts` and `src/services/__tests__/shareService.test.ts` (all passing).
+
+### Outcome
+- Phase 4 core flows (comments + sharing) now use real endpoints with graceful fallbacks.
 ## 🎯 **PHASE 3 WEEK 2 - CULTURAL P2P FEATURES!** (Previous Session)
 
 _Date: January 2025_

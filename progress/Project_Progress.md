@@ -300,4 +300,40 @@ AlLibrary demonstrates that anti-censorship technology and cultural respect are 
 ---
 
 _Last Updated: January 2025_
+
+---
+
+## ✅ Update – 2025-08-11 Router & Milestones
+
+### Completed
+- Router lazy-loading for all major routes using `lazy()` + `Suspense`.
+- `/search-network` correctly mapped to `SearchNetworkPage`.
+- `DocsAndResearch_AlLibrary/Milestones/gaps_phases.md` expanded with Phases 5–8 and Phase 1 status.
+- All tests passing (284/284).
+
+### Next
+- Configure CI coverage gates (tests ≥80%, TS strict type-check pass).
+- Begin Phase 2 actions: foundation a11y + tests, import pipeline tests, search perf test (<500ms).
+
+---
+
+## ✅ Update – 2025-08-12 Phase 2 Tests & CI Prep
+
+### Completed
+- Added cultural info-only unit test; Modal a11y tests; upload integration tests; search perf test.
+- Configured coverage thresholds in `vitest.config.ts` and added CI scripts in `package.json`.
+
+### Next
+- Integrate CI pipeline to run: typecheck, lint, tests (with coverage), verify cultural info-only.
 _Next Review: After Foundation Component Enhancement_
+
+## ✅ Update – 2025-08-13 Test Suite Green with Coverage
+
+### Completed
+- All 315/315 unit/integration tests passing on Windows.
+- Coverage output stabilized (JSON/Text) and written to `coverage/unit/`.
+- Added guard test for document stats performance; added E2E spec for comments/sharing flows.
+
+### Next
+- Execute P2P connectivity/replication tests (Phase 3).
+- Expand E2E suite for collaboration flows; add cultural info-only smoke assertions.

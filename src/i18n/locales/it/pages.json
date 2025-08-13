@@ -461,5 +461,20 @@
       "data": "Caricamento dati...",
       "ready": "Pronto!"
     }
+  },
+  "documentDetail": {
+    "toasts": {
+      "commentPosted": "Commento pubblicato",
+      "commentPostFailed": "Impossibile pubblicare il commento",
+      "commentUpdated": "Commento aggiornato",
+      "commentUpdateFailed": "Impossibile aggiornare il commento",
+      "commentDeleted": "Commento eliminato",
+      "commentDeleteFailed": "Impossibile eliminare il commento",
+      "sharedToPeers": "Condiviso con i peer selezionati",
+      "shareToPeersFailed": "Condivisione con i peer non riuscita",
+      "shareLinkCopied": "Link di condivisione copiato",
+      "addedToFavorites": "Aggiunto ai preferiti",
+      "removedFromFavorites": "Rimosso dai preferiti"
+    }
   }
 }
