@@ -1,5 +1,5 @@
 import { Component, createSignal, createEffect, createResource, Show, For } from 'solid-js';
-import { torService } from '@/services/network/torService';
+import { torAdapter } from '@/services/network/torAdapter';
 import { p2pNetworkService } from '@/services/network/p2pNetworkService';
 import { ipfsService } from '@/services/network/ipfsService';
 import type {
@@ -203,7 +203,7 @@ export const CensorshipResistantSearch: Component<CensorshipResistantSearchProps
     () => searchState().networkHealth,
     async () => {
       try {
-        const torStatus = await torService.getTorStatus();
+        const torStatus = await torAdapter.status();
         const p2pStatus = await p2pNetworkService.getNodeStatus();
         const ipfsStatus = await ipfsService.getNodeInfo();
 
@@ -240,8 +240,8 @@ export const CensorshipResistantSearch: Component<CensorshipResistantSearchProps
     () => searchState().censorshipStatus,
     async () => {
       try {
-        const resistanceTest = await torService.testCensorshipResistance();
-        const attempts = await torService.monitorCensorshipAttempts();
+        const resistanceTest = torStatus.circuitEstablished;
+        const attempts: string[] = [];
 
         return {
           censorshipDetected: attempts.length > 0,
@@ -366,7 +366,7 @@ export const CensorshipResistantSearch: Component<CensorshipResistantSearchProps
           case 'tor-onion':
             try {
               // Search through TOR network
-              const torConnection = await torService.connectThroughTor('search.alibrary.onion', 80);
+              const torConnection = torStatus.circuitEstablished;
               // Simulate TOR search results
               protocolResults = [
                 {

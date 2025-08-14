@@ -1,4 +1,4 @@
-import { Component, createSignal, Show, createEffect } from 'solid-js';
+import { Component, createSignal, Show, createEffect, createResource } from 'solid-js';
 import { A, useLocation } from '@solidjs/router';
 import {
   BookOpen,
@@ -29,6 +29,7 @@ import {
   Settings,
 } from 'lucide-solid';
 import './Sidebar.css';
+import { torAdapter } from '@/services/network/torAdapter';
 
 interface NavItem {
   path: string;
@@ -56,6 +57,7 @@ const Sidebar: Component<SidebarProps> = props => {
   const [wasCollapsed, setWasCollapsed] = createSignal(false);
   const [pendingSection, setPendingSection] = createSignal<string | null>(null);
   const location = useLocation();
+  const [torStatus] = createResource(async () => torAdapter.status());
 
   const navigationItems: NavSection[] = [
     {
@@ -259,6 +261,10 @@ const Sidebar: Component<SidebarProps> = props => {
               <div class="signal-dot"></div>
               <div class="signal-dot"></div>
               <div class="signal-dot"></div>
+            </div>
+            <div class="tor-status-pill" title={torStatus()?.circuitEstablished ? 'Onion routing active' : 'Onion routing inactive'}>
+              <span class={`pill-dot ${torStatus()?.circuitEstablished ? 'on' : 'off'}`}></span>
+              <span class="pill-text">{torStatus()?.circuitEstablished ? 'Onion' : 'No Onion'}</span>
             </div>
           </Show>
         </div>

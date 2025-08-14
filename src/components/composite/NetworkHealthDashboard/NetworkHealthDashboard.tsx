@@ -26,7 +26,7 @@ import { Button } from '@/components/foundation/Button';
 import { Badge } from '@/components/foundation/Badge';
 import { Progress } from '@/components/foundation/Progress';
 import { p2pNetworkService } from '@/services/network/p2pNetworkService';
-import { torService } from '@/services/network/torService';
+import { torAdapter } from '@/services/network/torAdapter';
 import type {
   NetworkHealthDashboardProps,
   NetworkHealthMetrics,
@@ -77,7 +77,7 @@ export const NetworkHealthDashboard: Component<NetworkHealthDashboardProps> = pr
       try {
         const rawMetrics = (await p2pNetworkService.getNetworkMetrics()) || {} as any;
         const nodeStatus = (await p2pNetworkService.getNodeStatus()) || ({} as any);
-        const torStatus = (await torService.getTorStatus()) || ({} as any);
+        const torStatus = (await torAdapter.status()) || ({} as any);
 
         const perf = rawMetrics.performance || { averageLatency: 0, totalBandwidth: 0, errorRate: 0 };
         const health = rawMetrics.health || {
@@ -198,15 +198,15 @@ export const NetworkHealthDashboard: Component<NetworkHealthDashboardProps> = pr
     () => config().showAntiCensorshipMetrics,
     async (): Promise<AntiCensorshipStatus> => {
       try {
-        const torStatus = (await torService.getTorStatus()) || ({} as any);
+        const torStatus = (await torAdapter.status()) || ({} as any);
         const rawMetrics = (await p2pNetworkService.getNetworkMetrics()) || ({} as any);
 
         return {
           torIntegration: {
-            active: Boolean(torStatus.connected),
-            hiddenServiceAvailable: (torStatus.hiddenServices?.length ?? 0) > 0,
-            circuitCount: Number(torStatus.circuitCount || 0),
-            anonymityLevel: torStatus.connected ? 'high' : 'low',
+            active: Boolean(torStatus.circuitEstablished),
+            hiddenServiceAvailable: false,
+            circuitCount: torStatus.supportsControl ? 1 : 0,
+            anonymityLevel: torStatus.circuitEstablished ? 'high' : 'low',
           },
 
           censorshipResistance: {

@@ -1,58 +1,23 @@
-import { Component, createResource, createSignal, onCleanup, onMount } from 'solid-js';
+import { Component, createSignal } from 'solid-js';
 import styles from './P2POverview.module.css';
 import { Card } from '@/components/foundation/Card';
-import { Button } from '@/components/foundation/Button';
-import { Shield, Network, Globe, Plug, RefreshCw } from 'lucide-solid';
-import { torAdapter } from '@/services/network/torAdapter';
-import { p2pNetworkService } from '@/services/network/p2pNetworkService';
+import { Shield, Network, Globe } from 'lucide-solid';
+import { useP2POverview } from './hooks/useP2POverview';
+import HeaderActions from './components/HeaderActions';
+import TorLogViewer from './components/TorLogViewer';
 
 export const P2POverview: Component = () => {
-  // Manual refresh signal; increment to refetch resources without reloading page
-  const [refreshTick, setRefreshTick] = createSignal(0);
-
-  const startPrivateNetwork = async () => {
-    await torAdapter.start({ bridgeSupport: true });
-    await p2pNetworkService.initializeNode({ torSupport: true } as any);
-    await p2pNetworkService.startNode();
-    await p2pNetworkService.enableTorRouting();
-    setRefreshTick(t => t + 1);
-  };
-
-  // Lightweight resources (no auto-polling)
-  const [torStatus] = createResource(refreshTick, async () => torAdapter.status());
-  const [nodeStatus] = createResource(refreshTick, async () => p2pNetworkService.getNodeStatus());
-  const [metrics] = createResource(refreshTick, async () => p2pNetworkService.getNetworkMetrics());
-
-  const rotateCircuit = async () => {
-    try {
-      await torAdapter.rotateCircuit();
-      setRefreshTick(t => t + 1);
-    } catch (e) {
-      console.error('Failed to rotate circuit', e);
-    }
-  };
-
-  // Optional: tiny, gentle auto-refresh that does not re-render the whole page
-  const [autoRefresh, setAutoRefresh] = createSignal(false);
-  let intervalId: number | undefined;
-  onMount(() => {
-    // kick first load
-    setRefreshTick(t => t + 1);
-  });
-  onCleanup(() => {
-    if (intervalId) globalThis.clearInterval(intervalId);
-  });
-  const toggleAuto = () => {
-    const next = !autoRefresh();
-    setAutoRefresh(next);
-    if (intervalId) {
-      globalThis.clearInterval(intervalId);
-      intervalId = undefined;
-    }
-    if (next) {
-      intervalId = globalThis.setInterval(() => setRefreshTick(t => t + 1), 5000) as unknown as number;
-    }
-  };
+  const {
+    torStatus,
+    nodeStatus,
+    metrics,
+    refresh,
+    enablePrivateNetworking,
+    rotateCircuit,
+    auto,
+    toggleAuto,
+  } = useP2POverview();
+  const [showLog, setShowLog] = createSignal(false);
 
   return (
     <div class={styles.page}>
@@ -60,13 +25,16 @@ export const P2POverview: Component = () => {
         <div class={styles.title}>Private P2P Network over Tor</div>
         <div class={styles.subtitle}>Anonymous-by-default connections, educational-only cultural context, and censorship resistance.</div>
         <div class={styles.pill}><Network size={12}/> Internet + TOR</div>
-        <div style={{ 'margin-top': '14px', display: 'flex', gap: '10px' }}>
-          <Button variant="primary" onClick={startPrivateNetwork}><Shield size={16} /> Enable Private Networking</Button>
-          <Button variant="outline" disabled={!torStatus()?.supportsControl} onClick={rotateCircuit} title={torStatus()?.supportsControl ? 'Request a new Tor circuit' : 'Unavailable with external Tor SOCKS'}>
-            <RefreshCw size={16} /> Rotate Circuit
-          </Button>
-          <Button variant="ghost" onClick={() => setRefreshTick(t => t + 1)}>Refresh Status</Button>
-          <Button variant={autoRefresh() ? 'secondary' : 'ghost'} onClick={toggleAuto}>{autoRefresh() ? 'Auto: ON' : 'Auto: OFF'}</Button>
+        <div style={{ 'margin-top': '14px' }}>
+          <HeaderActions
+            onEnable={enablePrivateNetworking}
+            onRotate={rotateCircuit}
+            onShowLog={() => setShowLog(true)}
+            onRefresh={refresh}
+            supportsControl={!!torStatus()?.supportsControl}
+            autoEnabled={auto()}
+            onToggleAuto={toggleAuto}
+          />
         </div>
         <div class={styles.metrics}>
           <div class={styles.metricCard}>
@@ -104,7 +72,7 @@ export const P2POverview: Component = () => {
             <text x="615" y="124" text-anchor="middle" font-size="10">Onion Service</text>
           </svg>
           <div class={styles.legend}>
-            <span class={`${styles.chip} ${styles.pulse}`}><Plug size={12}/> All traffic goes through Tor</span>
+            <span class={`${styles.chip} ${styles.pulse}`}>All traffic goes through Tor</span>
             <span class={styles.chip}><Globe size={12}/> No public IP exposure</span>
             <span class={styles.chip}><Shield size={12}/> Info-only cultural context (no gating)</span>
           </div>
@@ -129,6 +97,7 @@ export const P2POverview: Component = () => {
           </ul>
         </Card>
       </div>
+      <TorLogViewer isOpen={showLog()} onClose={() => setShowLog(false)} />
     </div>
   );
 };
