@@ -13,6 +13,7 @@ const NewArrivalsPage = lazy(() => import('../pages/NewArrivals'));
 const Peers = lazy(() => import('../pages/Peers'));
 const NetworkHealth = lazy(() => import('../pages/NetworkHealth'));
 const P2PSearch = lazy(() => import('../pages/P2PSearch'));
+const P2POverview = lazy(() => import('../pages/P2POverview'));
 const ConnectionManager = lazy(() => import('../pages/ConnectionManager'));
 const CulturalContexts = lazy(() => import('../pages/CulturalContexts'));
 const TraditionalKnowledge = lazy(() => import('../pages/TraditionalKnowledge'));
@@ -114,6 +115,11 @@ const AppRouter = () => {
       <Route path="/p2p-search" component={() => (
         <Suspense fallback={<RouteLoading />}>
           <P2PSearch />
+        </Suspense>
+      )} />
+      <Route path="/p2p-overview" component={() => (
+        <Suspense fallback={<RouteLoading />}>
+          <P2POverview />
         </Suspense>
       )} />
       <Route path="/connection-manager" component={() => (

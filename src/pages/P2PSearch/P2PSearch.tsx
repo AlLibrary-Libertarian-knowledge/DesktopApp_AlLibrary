@@ -5,13 +5,17 @@
  * and anti-censorship features.
  */
 
-import { Component, createSignal } from 'solid-js';
+import { Component, createSignal, Show } from 'solid-js';
 import { P2PSearchInterface } from '@/components/domain/network/P2PSearchInterface';
 import type {
   SearchResult,
   SearchOptions,
 } from '@/components/domain/network/P2PSearchInterface/types';
 import styles from './P2PSearch.module.css';
+import { Button } from '@/components/foundation/Button';
+import { Shield } from 'lucide-solid';
+import { torAdapter } from '@/services/network/torAdapter';
+import { p2pNetworkService } from '@/services/network/p2pNetworkService';
 
 /**
  * P2PSearch Page Component
@@ -21,6 +25,20 @@ import styles from './P2PSearch.module.css';
 export const P2PSearch: Component = () => {
   const [lastSearchQuery, setLastSearchQuery] = createSignal<string>('');
   const [searchCount, setSearchCount] = createSignal<number>(0);
+  const [torReady, setTorReady] = createSignal<boolean>(false);
+
+  const enableTor = async () => {
+    try {
+      await torAdapter.start({ bridgeSupport: true });
+      await p2pNetworkService.initializeNode({ torSupport: true });
+      await p2pNetworkService.startNode();
+      await p2pNetworkService.enableTorRouting();
+      setTorReady(true);
+    } catch (e) {
+      console.error('Failed to enable TOR/P2P:', e);
+      setTorReady(false);
+    }
+  };
 
   const handleSearch = (query: string, options: SearchOptions) => {
     setLastSearchQuery(query);
@@ -42,6 +60,16 @@ export const P2PSearch: Component = () => {
           Search across the decentralized P2P network with cultural awareness and anti-censorship
           capabilities. All content is accessible with educational context provided.
         </p>
+
+        <div class={styles.actionRow}>
+          <Button variant={torReady() ? 'outline' : 'primary'} size="sm" onClick={enableTor}>
+            <Shield size={16} class="mr-2" />
+            {torReady() ? 'TOR Enabled' : 'Enable TOR'}
+          </Button>
+          <Show when={torReady()}>
+            <span class={styles.statusChip} aria-live="polite">TOR active (anonymous mode)</span>
+          </Show>
+        </div>
 
         <div class={styles.searchStats}>
           <div class={styles.statItem}>

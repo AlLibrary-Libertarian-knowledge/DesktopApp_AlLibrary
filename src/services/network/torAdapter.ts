@@ -1,18 +1,29 @@
 import { invoke } from '@tauri-apps/api/core';
 
 export interface TorFrontendConfig { bridgeSupport?: boolean; socksAddr?: string }
-export interface TorFrontendStatus { bootstrapped: boolean; circuitEstablished: boolean; bridgesEnabled: boolean; socks?: string }
+export interface TorFrontendStatus { bootstrapped: boolean; circuitEstablished: boolean; bridgesEnabled: boolean; socks?: string; supportsControl?: boolean }
+
+const mapStatus = (raw: any): TorFrontendStatus => ({
+  bootstrapped: !!raw?.bootstrapped,
+  circuitEstablished: !!raw?.circuit_established,
+  bridgesEnabled: !!raw?.bridges_enabled,
+  socks: raw?.socks,
+  supportsControl: !!(raw?.supports_control ?? raw?.supportsControl),
+});
 
 export const torAdapter = {
   start: async (config?: TorFrontendConfig): Promise<TorFrontendStatus> => {
-    const status = await invoke<TorFrontendStatus>('init_tor_node', { config: { bridgeSupport: config?.bridgeSupport, socksAddr: config?.socksAddr } });
+    const raw = await invoke<any>('init_tor_node', { config: { bridge_support: config?.bridgeSupport, socks_addr: config?.socksAddr } });
     await invoke('start_tor');
-    return status;
+    return mapStatus(raw);
   },
-  status: async (): Promise<TorFrontendStatus> => invoke<TorFrontendStatus>('get_tor_status'),
+  status: async (): Promise<TorFrontendStatus> => mapStatus(await invoke<any>('get_tor_status')),
   enableBridges: async (bridges: string[]): Promise<boolean> => invoke<boolean>('enable_tor_bridges', { bridges }),
   useSocks: async (addr: string): Promise<boolean> => invoke<boolean>('use_tor_socks', { addr }),
   createHiddenService: async (localPort: number): Promise<string> => invoke<string>('create_hidden_service', { localPort }),
+  rotateCircuit: async (): Promise<boolean> => invoke<boolean>('rotate_tor_circuit'),
+  getLogTail: async (lines = 200): Promise<string> => invoke<string>('get_tor_log_tail', { lines }),
 };
+
 
 

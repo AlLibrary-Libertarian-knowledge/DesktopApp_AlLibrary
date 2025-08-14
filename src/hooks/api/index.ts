@@ -7,3 +7,4 @@ export type {
 
 export { usePeerNetwork } from './usePeerNetwork';
 export type { PeerInfo, NetworkStats, NetworkSettings } from './usePeerNetwork';
+export { useNetworkOverview } from './useNetworkOverview';

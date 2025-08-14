@@ -406,7 +406,7 @@
     "created": "Criado"
   },
   "searchBar": {
-    "placeholder": "Buscar documentos, coleções e conteúdo cultural...",
+  "placeholder": "Buscar documentos, coleções e conteúdo cultural...",
     "suggestions": "Sugestões",
     "recentSearches": "Buscas Recentes",
     "clearSearch": "Limpar busca",

@@ -19,6 +19,7 @@ import { Peers as PeersPage } from './pages/Peers';
 import { NetworkHealth } from './pages/NetworkHealth';
 import { P2PSearch } from './pages/P2PSearch';
 import { ConnectionManager } from './pages/ConnectionManager';
+import P2POverview from './pages/P2POverview';
 import DocumentManagement from './pages/DocumentManagement';
 import { DocumentDetailPage } from './pages/DocumentDetail';
 import { DocumentReader } from './pages/DocumentReader';
@@ -232,6 +233,15 @@ const App: Component = () => {
             component={() => (
               <RouteWrapper>
                 <NetworkHealth />
+              </RouteWrapper>
+            )}
+          />
+
+          <Route
+            path="/p2p-overview"
+            component={() => (
+              <RouteWrapper>
+                <P2POverview />
               </RouteWrapper>
             )}
           />

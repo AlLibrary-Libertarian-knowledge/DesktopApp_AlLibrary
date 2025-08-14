@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 use crate::core::p2p::tor_manager;
+use std::fs;
+use std::path::PathBuf;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TorConfig {
@@ -13,6 +15,7 @@ pub struct TorStatus {
     pub circuit_established: bool,
     pub bridges_enabled: bool,
     pub socks: Option<String>,
+    pub supports_control: bool,
 }
 
 #[tauri::command]
@@ -27,8 +30,9 @@ pub async fn init_tor_node(config: Option<TorConfig>) -> TorStatus {
             circuit_established: st.circuit_established,
             bridges_enabled: st.bridges_enabled,
             socks: st.socks,
+            supports_control: st.supports_control,
         },
-        Err(_) => TorStatus { bootstrapped: false, circuit_established: false, bridges_enabled: false, socks: None },
+        Err(_) => TorStatus { bootstrapped: false, circuit_established: false, bridges_enabled: false, socks: None, supports_control: false },
     }
 }
 
@@ -46,13 +50,13 @@ pub async fn get_tor_status() -> TorStatus {
         circuit_established: st.circuit_established,
         bridges_enabled: st.bridges_enabled,
         socks: st.socks,
+        supports_control: st.supports_control,
     }
 }
 
 #[tauri::command]
 pub async fn enable_tor_bridges(_bridges: Vec<String>) -> bool {
-    // TODO: write bridges to torrc and reload; placeholder true
-    true
+    tor_manager::enable_bridges(&_bridges)
 }
 
 #[tauri::command]
@@ -71,14 +75,12 @@ pub async fn create_hidden_service(local_port: u16) -> String {
 
 #[tauri::command]
 pub async fn list_hidden_services() -> Vec<String> {
-    // TODO: track created onion addresses; placeholder empty
-    vec![]
+    tor_manager::list_hidden()
 }
 
 #[tauri::command]
 pub async fn rotate_tor_circuit() -> bool {
-    // TODO: send SIGNAL NEWNYM via control port; placeholder true
-    true
+    tor_manager::rotate_circuit()
 }
 
 #[tauri::command]
@@ -86,4 +88,23 @@ pub async fn stop_tor() -> bool {
     tor_manager::stop()
 }
 
+#[tauri::command]
+pub async fn get_tor_log_tail(lines: usize) -> String {
+    // Mirror tor_manager data_dir path logic
+    let mut base = std::env::current_exe()
+        .ok()
+        .and_then(|p| p.parent().map(|p| p.to_path_buf()))
+        .unwrap_or_else(|| std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")));
+    base.push("tor-data");
+    let log_path = base.join("tor.log");
+    if !log_path.exists() {
+        return String::from("Tor log not available. Enable by setting TOR_DEBUG=1 and restarting.");
+    }
+    let Ok(content) = fs::read_to_string(&log_path) else {
+        return String::from("Could not read tor.log");
+    };
+    let mut all: Vec<&str> = content.lines().collect();
+    if all.len() > lines { all = all.split_off(all.len() - lines); }
+    all.join("\n")
+}
 

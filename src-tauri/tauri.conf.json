@@ -49,6 +49,10 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "resources": [
+      "resources/tor/win64",
+      "resources/tor/linux"
+    ],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

@@ -71,53 +71,66 @@ export const NetworkHealthDashboard: Component<NetworkHealthDashboardProps> = pr
   const config = () => ({ ...defaultConfig, ...props.config });
 
   // Network health metrics resource
-  const [networkMetrics] = createResource(
+  const [networkMetrics, { refetch: refetchNetworkMetrics }] = createResource(
     () => props.enableRealTimeUpdates !== false,
     async (): Promise<NetworkHealthMetrics> => {
       try {
-        const networkMetrics = await p2pNetworkService.getNetworkMetrics();
-        const nodeStatus = await p2pNetworkService.getNodeStatus();
-        const torStatus = await torService.getTorStatus();
+        const rawMetrics = (await p2pNetworkService.getNetworkMetrics()) || {} as any;
+        const nodeStatus = (await p2pNetworkService.getNodeStatus()) || ({} as any);
+        const torStatus = (await torService.getTorStatus()) || ({} as any);
+
+        const perf = rawMetrics.performance || { averageLatency: 0, totalBandwidth: 0, errorRate: 0 };
+        const health = rawMetrics.health || {
+          nodeUptime: 0,
+          connectionStability: 0,
+          contentAvailability: 0,
+        };
+        const culturalSharing = rawMetrics.culturalSharing || {
+          culturalContentShared: 0,
+          educationalContextProvided: 0,
+          communityInteractions: 0,
+          alternativeNarrativesSupported: 0,
+        };
 
         return {
           // Connection Health
-          connectedPeers: nodeStatus.connectedPeers,
+          connectedPeers: Number(nodeStatus.connectedPeers || 0),
           maxPeers: 100, // From config
-          connectionQuality: getConnectionQuality(nodeStatus.connectedPeers),
-          averageLatency: networkMetrics.performance.averageLatency,
+          connectionQuality: getConnectionQuality(Number(nodeStatus.connectedPeers || 0)),
+          averageLatency: Number(perf.averageLatency || 0),
           bandwidthUsage: {
-            upload: networkMetrics.performance.totalBandwidth * 0.4, // Estimate upload as 40%
-            download: networkMetrics.performance.totalBandwidth * 0.6, // Estimate download as 60%
-            total: networkMetrics.performance.totalBandwidth,
+            upload: Number(perf.totalBandwidth || 0) * 0.4, // Estimate upload as 40%
+            download: Number(perf.totalBandwidth || 0) * 0.6, // Estimate download as 60%
+            total: Number(perf.totalBandwidth || 0),
           },
 
           // Network Stability
-          uptime: networkMetrics.health.nodeUptime,
-          disconnectionEvents: networkMetrics.performance.errorRate * 100, // Convert error rate to events
-          reconnectionRate: networkMetrics.health.connectionStability,
-          networkStability: networkMetrics.health.connectionStability,
+          uptime: Number(health.nodeUptime || 0),
+          disconnectionEvents: Number(perf.errorRate || 0) * 100, // Convert error rate to events
+          reconnectionRate: Number(health.connectionStability || 0),
+          networkStability: Number(health.connectionStability || 0),
 
           // Content Distribution
-          contentShared: nodeStatus.contentStats?.totalShared || 0,
-          contentReceived: nodeStatus.contentStats?.totalReceived || 0,
-          replicationFactor: networkMetrics.health.contentAvailability,
+          contentShared: Number(nodeStatus.contentStats?.totalShared || 0),
+          contentReceived: Number(nodeStatus.contentStats?.totalReceived || 0),
+          replicationFactor: Number(health.contentAvailability || 0),
           storageUsage: {
-            used: networkMetrics.performance.messagesSent * 1024, // Estimate storage from messages
+            used: Number(perf.messagesSent || 0) * 1024, // Estimate storage from messages
             available: 1000000000, // 1GB available (mock)
-            total: 1000000000 + networkMetrics.performance.messagesSent * 1024,
+            total: 1000000000 + Number(perf.messagesSent || 0) * 1024,
           },
 
           // Cultural Network Health
-          culturalCommunities: nodeStatus.activeCommunityNetworks?.length || 0,
-          culturalContentShared: networkMetrics.culturalSharing.culturalContentShared,
-          educationalResourcesAvailable: networkMetrics.culturalSharing.educationalContextProvided,
-          communityParticipation: networkMetrics.culturalSharing.communityInteractions,
+          culturalCommunities: Number(nodeStatus.activeCommunityNetworks?.length || 0),
+          culturalContentShared: Number(culturalSharing.culturalContentShared || 0),
+          educationalResourcesAvailable: Number(culturalSharing.educationalContextProvided || 0),
+          communityParticipation: Number(culturalSharing.communityInteractions || 0),
 
           // Anti-Censorship Metrics
-          torConnectionActive: torStatus.connected,
-          alternativeRoutesAvailable: networkMetrics.censorshipResistance.alternativeRoutes,
-          censorshipAttempts: networkMetrics.censorshipResistance.censorshipAttempts,
-          informationIntegrityScore: networkMetrics.health.contentAvailability,
+          torConnectionActive: Boolean(torStatus.connected),
+          alternativeRoutesAvailable: Number((rawMetrics.censorshipResistance?.alternativeRoutes) || 0),
+          censorshipAttempts: Number((rawMetrics.censorshipResistance?.censorshipAttempts) || 0),
+          informationIntegrityScore: Number(health.contentAvailability || 0),
         };
       } catch (error) {
         console.error('Failed to fetch network metrics:', error);
@@ -127,7 +140,7 @@ export const NetworkHealthDashboard: Component<NetworkHealthDashboardProps> = pr
   );
 
   // Cultural network status resource
-  const [culturalStatus] = createResource(
+  const [culturalStatus, { refetch: refetchCulturalStatus }] = createResource(
     () => config().showCulturalMetrics,
     async (): Promise<CulturalNetworkStatus> => {
       try {
@@ -181,33 +194,33 @@ export const NetworkHealthDashboard: Component<NetworkHealthDashboardProps> = pr
   );
 
   // Anti-censorship status resource
-  const [antiCensorshipStatus] = createResource(
+  const [antiCensorshipStatus, { refetch: refetchAntiCensorship }] = createResource(
     () => config().showAntiCensorshipMetrics,
     async (): Promise<AntiCensorshipStatus> => {
       try {
-        const torStatus = await torService.getTorStatus();
-        const networkMetrics = await p2pNetworkService.getNetworkMetrics();
+        const torStatus = (await torService.getTorStatus()) || ({} as any);
+        const rawMetrics = (await p2pNetworkService.getNetworkMetrics()) || ({} as any);
 
         return {
           torIntegration: {
-            active: torStatus.connected,
-            hiddenServiceAvailable: torStatus.hiddenServices.length > 0,
-            circuitCount: torStatus.circuitCount || 0,
+            active: Boolean(torStatus.connected),
+            hiddenServiceAvailable: (torStatus.hiddenServices?.length ?? 0) > 0,
+            circuitCount: Number(torStatus.circuitCount || 0),
             anonymityLevel: torStatus.connected ? 'high' : 'low',
           },
 
           censorshipResistance: {
-            alternativeRoutes: networkMetrics.censorshipResistance.alternativeRoutes,
-            contentMirroring: networkMetrics.censorshipResistance.successfulBypasses,
-            distributedBackups: networkMetrics.health.contentAvailability * 10, // Estimate
-            integrityVerification: networkMetrics.health.contentAvailability > 0.8,
+            alternativeRoutes: Number(rawMetrics.censorshipResistance?.alternativeRoutes || 0),
+            contentMirroring: Number(rawMetrics.censorshipResistance?.successfulBypasses || 0),
+            distributedBackups: Number((rawMetrics.health?.contentAvailability || 0) * 10), // Estimate
+            integrityVerification: Number(rawMetrics.health?.contentAvailability || 0) > 0.8,
           },
 
           informationFreedom: {
-            accessibleContent: networkMetrics.culturalSharing.culturalContentShared,
+            accessibleContent: Number(rawMetrics.culturalSharing?.culturalContentShared || 0),
             blockedAttempts: 0, // Always 0 - no blocking
-            educationalContext: networkMetrics.culturalSharing.educationalContextProvided,
-            multiplePerspectives: networkMetrics.culturalSharing.alternativeNarrativesSupported,
+            educationalContext: Number(rawMetrics.culturalSharing?.educationalContextProvided || 0),
+            multiplePerspectives: Number(rawMetrics.culturalSharing?.alternativeNarrativesSupported || 0),
           },
         };
       } catch (error) {
@@ -281,9 +294,9 @@ export const NetworkHealthDashboard: Component<NetworkHealthDashboardProps> = pr
   createEffect(() => {
     if (props.enableRealTimeUpdates !== false) {
       const interval = setInterval(() => {
-        networkMetrics.refetch();
-        if (config().showCulturalMetrics) culturalStatus.refetch();
-        if (config().showAntiCensorshipMetrics) antiCensorshipStatus.refetch();
+        refetchNetworkMetrics();
+        if (config().showCulturalMetrics) refetchCulturalStatus();
+        if (config().showAntiCensorshipMetrics) refetchAntiCensorship();
       }, config().refreshInterval);
 
       setRefreshInterval(interval);
@@ -409,9 +422,9 @@ export const NetworkHealthDashboard: Component<NetworkHealthDashboardProps> = pr
           </Badge>
           <Button
             onClick={() => {
-              networkMetrics.refetch();
-              culturalStatus.refetch();
-              antiCensorshipStatus.refetch();
+              refetchNetworkMetrics();
+              refetchCulturalStatus();
+              refetchAntiCensorship();
             }}
             variant="secondary"
             size="sm"

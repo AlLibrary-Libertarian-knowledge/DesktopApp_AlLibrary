@@ -6,10 +6,12 @@
 /* Base Card */
 .card {
   position: relative;
-  background-color: var(--bg-primary);
-  border-radius: 0.75rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s ease;
+  background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.06);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.04);
+  transition: all 0.25s ease;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -26,10 +28,7 @@
   background-color: transparent;
 }
 
-.card-elevated {
-  border: none;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
+.card-elevated { box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25); }
 
 .card-filled {
   border: none;
@@ -146,10 +145,7 @@
 }
 
 /* Card States */
-.card-hoverable:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-}
+.card-hoverable:hover { transform: translateY(-2px); box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28); }
 
 .card-clickable {
   cursor: pointer;

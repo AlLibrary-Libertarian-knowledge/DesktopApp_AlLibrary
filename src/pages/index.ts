@@ -32,9 +32,16 @@ export { default as PeerNetworkPage } from './Peers/PeerNetworkPage';
 export { NetworkHealth as NetworkHealthPage } from './NetworkHealth';
 export { P2PSearch as P2PSearchPage } from './P2PSearch';
 export { ConnectionManager as ConnectionManagerPage } from './ConnectionManager';
+export { default as P2POverview } from './P2POverview';
 
 // Export page route configurations for router
 export const pageRoutes = [
+  {
+    path: '/p2p-overview',
+    component: 'P2POverview',
+    title: 'P2P Overview - AlLibrary',
+    description: 'Understand how private networking over Tor works in AlLibrary',
+  },
   {
     path: '/',
     component: 'HomePage',

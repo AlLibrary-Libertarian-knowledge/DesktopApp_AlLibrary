@@ -41,7 +41,7 @@ import type {
  */
 export interface P2PNetworkService {
   // Node lifecycle
-  initializeNode(config: NetworkConfig): Promise<P2PNode>;
+  initializeNode(config?: Partial<NetworkConfig>): Promise<P2PNode>;
   startNode(): Promise<void>;
   stopNode(): Promise<void>;
   getNodeStatus(): Promise<NetworkStatus>;
@@ -90,20 +90,49 @@ class P2PNetworkServiceImpl implements P2PNetworkService {
   /**
    * Initialize P2P node with anti-censorship configuration
    */
-  async initializeNode(config: NetworkConfig): Promise<P2PNode> {
+  async initializeNode(config: Partial<NetworkConfig> = {}): Promise<P2PNode> {
     try {
-      const node = await invoke<P2PNode>('init_p2p_node', {
-        config: {
-          ...config,
-          // Enforce anti-censorship settings
-          enableCulturalFiltering: false, // NEVER filter cultural content
-          enableContentBlocking: false, // NEVER block content access
-          educationalMode: true, // Provide educational context only
-          communityInformationOnly: true, // Community provides info, not control
-          resistCensorship: true, // Enable all anti-censorship features
-          preserveAlternatives: true, // Support alternative narratives
-          torSupport: config.torSupport !== false, // Default to TOR support
+      const defaultConfig: NetworkConfig = {
+        name: 'AlLibrary Node',
+        torSupport: config.torSupport !== false,
+        ipfsEnabled: true,
+        maxConnections: 100,
+        ports: { p2p: 4001, http: 8080, tor: 9050 },
+        // Anti-censorship mandatory flags
+        enableCulturalFiltering: false,
+        enableContentBlocking: false,
+        educationalMode: true,
+        communityInformationOnly: true,
+        resistCensorship: true,
+        preserveAlternatives: true,
+        communityNetworks: [],
+        contentSharing: {
+          autoShare: true,
+          shareCulturalContext: true,
+          supportMultiplePerspectives: true,
+          enableEducationalSharing: true,
+          maxContentSize: 1024 * 1024 * 1024, // 1GB
+          allowedContentTypes: ['pdf', 'epub', 'txt', 'json'],
         },
+        security: {
+          encryption: true,
+          encryptionAlgorithm: 'xchacha20poly1305',
+          verifyContent: true,
+          verifyPeers: true,
+          keyRotationInterval: 24,
+        },
+      };
+
+      const mergedConfig: NetworkConfig = {
+        ...defaultConfig,
+        ...config,
+        ports: { ...defaultConfig.ports, ...(config.ports || {}) },
+        contentSharing: { ...defaultConfig.contentSharing, ...(config.contentSharing as any || {}) },
+        security: { ...defaultConfig.security, ...(config.security as any || {}) },
+      } as NetworkConfig;
+
+      const node = await invoke<P2PNode>('init_p2p_node', {
+        config: mergedConfig,
       });
 
       this.nodeId = node.id;

@@ -6,6 +6,7 @@ pub mod search;
 pub mod collections;
 pub mod documents;
 pub mod tor;
+pub mod p2p;
 
 pub use app::{initialize_app, get_app_ready_state, close_splash_screen, InitProgress};
 pub use security::{get_security_info, refresh_security_info, SecurityInfo};
@@ -37,4 +38,20 @@ pub use tor::{
   stop_tor,
   TorConfig,
   TorStatus
+};
+pub use p2p::{
+  init_p2p_node,
+  start_p2p_node,
+  stop_p2p_node,
+  get_p2p_node_status,
+  get_connected_peers,
+  discover_peers,
+  get_network_metrics,
+  enable_tor_routing,
+  disable_tor_routing,
+  search_p2p_network,
+  NetworkConfig as P2PNetworkConfig,
+  P2PNode,
+  NetworkStatus as P2PNetworkStatus,
+  NetworkMetrics as P2PNetworkMetrics
 };

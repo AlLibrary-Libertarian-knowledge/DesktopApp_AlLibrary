@@ -47,9 +47,8 @@ import { NetworkStatus } from '../../components/domain/network/NetworkStatus';
 
 // Hooks and Services
 import { useNetworkSearch } from '../../hooks/api/useNetworkSearch';
-import { usePeerNetwork } from '../../hooks/network/usePeerNetwork';
-import { torAdapter } from '../../services/network/torAdapter';
-import { p2pNetworkService } from '../../services/network/p2pNetworkService';
+import { usePeerNetwork } from '../../hooks/api/usePeerNetwork';
+import { enableTorAndP2P } from '../../services/network/bootstrap';
 
 // Types
 import type { Document } from '../../types/Document';
@@ -93,16 +92,11 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
     clearResults,
   } = useNetworkSearch();
 
-  const { connectedPeers, networkStatus, connectionQuality, refreshPeers } = usePeerNetwork();
-  const enableTorAndP2P = async () => {
+  const { peers, networkStats } = usePeerNetwork();
+  const onEnableTorClick = async () => {
     try {
-      // Initialize TOR and enable bridges for censorship resistance
-      await torAdapter.start({ bridgeSupport: true });
-      // Initialize P2P node with TOR support
-      await p2pNetworkService.initializeNode({ torSupport: true });
-      await p2pNetworkService.startNode();
-      await p2pNetworkService.enableTorRouting();
-      setTorReady(true);
+      const result = await enableTorAndP2P();
+      setTorReady(result.torConnected && result.p2pStarted);
     } catch (e) {
       console.error('Failed to enable TOR/P2P routing:', e);
       setTorReady(false);
@@ -223,11 +217,7 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
         </div>
 
         <div class={styles['network-status-enhanced']}>
-          <NetworkStatus
-            variant="enhanced"
-            connectionCount={connectedPeers()?.length || 0}
-            showHealth={true}
-          />
+            <NetworkStatus variant="default" connectionCount={peers()?.length || 0} showHealth={true} />
         </div>
       </header>
 
@@ -298,7 +288,7 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
                   </p>
                 </div>
                 <div class={styles['header-actions']}>
-                  <Button variant={torReady() ? 'outline' : 'primary'} size="sm" onClick={enableTorAndP2P}>
+                  <Button variant={torReady() ? 'outline' : 'primary'} size="sm" onClick={onEnableTorClick}>
                     <Shield size={16} class="mr-2" />
                     {torReady() ? 'TOR Enabled' : 'Enable TOR Search'}
                   </Button>

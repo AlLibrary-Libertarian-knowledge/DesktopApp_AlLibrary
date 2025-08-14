@@ -1,0 +1,237 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px;
+}
+
+.hero {
+  background: radial-gradient(140% 160% at 0% 0%, rgba(0, 255, 213, 0.12) 0%, rgba(0, 153, 255, 0.06) 40%, rgba(0,0,0,0) 100%);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px;
+  padding: 28px;
+  position: relative;
+  overflow: hidden;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.subtitle {
+  opacity: 0.85;
+  margin-top: 6px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 16px;
+}
+
+/* Top section actions (used by TopCard rightContent) */
+.topActions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.topButtons {
+  display: flex;
+  gap: 10px;
+}
+
+.topBadges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.card {
+  grid-column: span 6;
+  background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+}
+
+.wide {
+  grid-column: span 12;
+}
+
+.cardTitle {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.diagram {
+  width: 100%;
+  height: 260px;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.chip {
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  opacity: 0.95;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+  backdrop-filter: blur(6px);
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.step {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)) padding-box,
+    radial-gradient(120% 120% at 0% 0%, rgba(0, 212, 255, 0.35), rgba(59, 130, 246, 0.15)) border-box;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 13px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.20), inset 0 0 0 1px rgba(255,255,255,0.03);
+}
+
+.cardTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card ul {
+  margin-top: 8px;
+}
+
+.card li {
+  opacity: 0.95;
+}
+
+.pulse {
+  animation: pulse 2.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; transform: scale(0.98); }
+  50% { opacity: 1; transform: scale(1.00); }
+  100% { opacity: 0.6; transform: scale(0.98); }
+}
+
+.svgFlow line {
+  stroke-dasharray: 4 6;
+  animation: dash 3s linear infinite;
+}
+
+@keyframes dash {
+  to { stroke-dashoffset: -1000; }
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+/* New metrics grid using StatCard */
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 14px;
+}
+.metricsGrid > *:nth-child(1),
+.metricsGrid > *:nth-child(2),
+.metricsGrid > *:nth-child(3),
+.metricsGrid > *:nth-child(4) {
+  grid-column: span 3;
+}
+
+.metricCard {
+  grid-column: span 4;
+  background: rgba(0,0,0,0.18);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.metricLabel {
+  opacity: 0.75;
+  font-size: 12px;
+}
+
+.metricValue {
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.pill {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  backdrop-filter: blur(4px);
+}
+
+/* Content grid */
+.contentGrid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.graphCard {
+  grid-column: span 8;
+}
+
+.graphWrapper {
+  height: 420px;
+}
+
+.guarantees {
+  margin-top: 6px;
+  line-height: 1.6;
+}
+
+.dashboardWrapper {
+  margin-top: 10px;
+}
+
+@media (max-width: 1024px) {
+  .card { grid-column: span 12; }
+  .metricCard { grid-column: span 6; }
+  .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .metricsGrid > * { grid-column: span 6; }
+  .graphCard { grid-column: span 12; }
+}
+

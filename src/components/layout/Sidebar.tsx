@@ -97,6 +97,7 @@ const Sidebar: Component<SidebarProps> = props => {
       title: 'P2P Network',
       icon: Globe,
       items: [
+        { path: '/p2p-overview', label: 'P2P Overview', icon: Globe },
         { path: '/peers', label: 'Peer Network', icon: Users, badge: '8' },
         { path: '/network-health', label: 'Network Health', icon: Activity },
         { path: '/p2p-search', label: 'P2P Search', icon: SearchX },

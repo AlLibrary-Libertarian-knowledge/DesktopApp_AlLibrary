@@ -3,7 +3,7 @@ pub mod commands;
 pub mod core;
 pub mod utils;
 
-use crate::commands::{initialize_app, get_app_ready_state, close_splash_screen, get_security_info, refresh_security_info, get_disk_space_info, load_app_settings, save_app_settings, get_search_history, clear_search_history, get_search_index_info, create_collection, get_collections, get_collection, update_collection, delete_collection, scan_documents_folder, get_folder_info, list_documents_in_folder, get_document_info, open_document, pdf_get_page_count, pdf_render_page_png, init_tor_node, start_tor, get_tor_status, enable_tor_bridges, use_tor_socks, create_hidden_service, list_hidden_services, rotate_tor_circuit, stop_tor};
+use crate::commands::{initialize_app, get_app_ready_state, close_splash_screen, get_security_info, refresh_security_info, get_disk_space_info, load_app_settings, save_app_settings, get_search_history, clear_search_history, get_search_index_info, create_collection, get_collections, get_collection, update_collection, delete_collection, scan_documents_folder, get_folder_info, list_documents_in_folder, get_document_info, open_document, pdf_get_page_count, pdf_render_page_png, init_tor_node, start_tor, get_tor_status, enable_tor_bridges, use_tor_socks, create_hidden_service, list_hidden_services, rotate_tor_circuit, stop_tor, init_p2p_node, start_p2p_node, stop_p2p_node, get_p2p_node_status, get_connected_peers, discover_peers, get_network_metrics, enable_tor_routing, disable_tor_routing, search_p2p_network};
 use crate::utils::{init_logging, LoggingConfig};
 use tracing::info;
 use std::thread;
@@ -77,6 +77,16 @@ pub fn run() {
             ,list_hidden_services
             ,rotate_tor_circuit
             ,stop_tor
+            ,init_p2p_node
+            ,start_p2p_node
+            ,stop_p2p_node
+            ,get_p2p_node_status
+            ,get_connected_peers
+            ,discover_peers
+            ,get_network_metrics
+            ,enable_tor_routing
+            ,disable_tor_routing
+            ,search_p2p_network
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
