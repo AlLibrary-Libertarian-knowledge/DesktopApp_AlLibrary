@@ -54,6 +54,7 @@ import type {
 } from '../../services/searchService';
 import styles from './DocumentManagement.module.css';
 import { useNavigate } from '@solidjs/router';
+giimport { useP2PTransfers } from '@/hooks/api/useP2PTransfers';
 
 const DocumentManagement: Component = () => {
   // Initialize i18n translation hook
@@ -82,6 +83,9 @@ const DocumentManagement: Component = () => {
   >('all');
   const [showSmartSuggestions, setShowSmartSuggestions] = createSignal(false);
   const [autoTaggingEnabled, setAutoTaggingEnabled] = createSignal(true);
+
+  // P2P transfers
+  const { enabled, busy, enable, seedFile, error, lastOp } = useP2PTransfers();
 
   // Advanced Document Features - Task 0.3 Implementation
 const [showDocumentViewer, setShowDocumentViewer] = createSignal(false);
@@ -1019,6 +1023,47 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
           <div class={styles['enhanced-toolbar']}>
             {/* Left side - Selection and batch actions */}
             <div class={styles['toolbar-left']}>
+              {/* P2P quick actions */}
+              <div style={{ display: 'flex', 'align-items': 'center', gap: '0.5rem' }}>
+                <Button variant={enabled() ? 'secondary' : 'primary'} size="sm" onClick={enable} disabled={busy()}>
+                  {enabled() ? 'Private Networking Enabled' : 'Enable Private Networking'}
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  disabled={!enabled() || busy() || displayDocuments().length === 0}
+                  onClick={async () => {
+                    // Seed all visible documents (PDF/EPUB preferred)
+                    for (const doc of displayDocuments()) {
+                      if (!doc?.filePath) continue;
+                      await seedFile(doc.filePath);
+                    }
+                  }}
+                >
+                  Seed All Visible
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  disabled={!enabled() || busy() || selectedDocuments().size === 0}
+                  onClick={async () => {
+                    const ids = Array.from(selectedDocuments());
+                    const byId = new Map(displayDocuments().map(d => [d.id, d]));
+                    for (const id of ids) {
+                      const d = byId.get(id);
+                      if (d?.filePath) await seedFile(d.filePath);
+                    }
+                  }}
+                >
+                  Seed Selected
+                </Button>
+                <Show when={error()}>
+                  <span style={{ color: 'var(--color-error)' }}>{error()}</span>
+                </Show>
+                <Show when={lastOp()}>
+                  <span style={{ color: 'var(--color-text-secondary)' }}>Last: {lastOp()}</span>
+                </Show>
+              </div>
               <Show when={showBatchActions()}>
                 <div class={styles['batch-actions']}>
                   <span class={styles['selection-count']}>{selectedDocuments().size} selected</span>

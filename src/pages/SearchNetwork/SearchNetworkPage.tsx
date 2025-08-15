@@ -49,6 +49,7 @@ import { NetworkStatus } from '../../components/domain/network/NetworkStatus';
 import { useNetworkSearch } from '../../hooks/api/useNetworkSearch';
 import { usePeerNetwork } from '../../hooks/api/usePeerNetwork';
 import { enableTorAndP2P } from '../../services/network/bootstrap';
+import { useP2PTransfers } from '@/hooks/api/useP2PTransfers';
 import { torAdapter } from '../../services/network/torAdapter';
 
 // Types
@@ -67,6 +68,8 @@ export interface SearchNetworkPageProps {
 
 export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
   const navigate = useNavigate();
+  const { enabled, busy, enable, downloadByHash, error, lastOp } = useP2PTransfers();
+  const [hash, setHash] = createSignal('');
 
   // State Management
   const [searchQuery, setSearchQuery] = createSignal(props.initialQuery || '');
@@ -324,6 +327,22 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
                     <Shield size={16} class="mr-2" />
                     {torReady() ? 'TOR Enabled' : torEstablishing() ? 'Enabling…' : 'Enable TOR Search'}
                   </Button>
+                  <Button variant={enabled() ? 'outline' : 'primary'} size="sm" onClick={enable} disabled={busy()}>
+                    {enabled() ? 'Private Networking Enabled' : 'Enable Private Networking'}
+                  </Button>
+                  <div class={styles['hash-download']}>
+                    <Input type="text" placeholder="Download by hash" value={hash()} onInput={e => setHash(e.currentTarget.value)} />
+                    <Button variant="outline" size="sm" disabled={!enabled() || busy() || !hash().trim()} onClick={() => downloadByHash(hash().trim(), (window as any).api?.downloadsDir ?? 'downloads')}>
+                      <Download size={14} class="mr-2" />
+                      Download
+                    </Button>
+                  </div>
+                  <Show when={error()}>
+                    <div class={styles['error-text']}>{error()}</div>
+                  </Show>
+                  <Show when={lastOp()}>
+                    <div class={styles['muted-text']}>Last operation: {lastOp()}</div>
+                  </Show>
                   <Button variant="ghost" size="sm" onClick={() => setShowFilters(!showFilters())}>
                     <Filter size={16} class="mr-2" />
                     {showFilters() ? 'Hide Filters' : 'Show Filters'}

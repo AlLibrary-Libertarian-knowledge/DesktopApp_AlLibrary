@@ -62,10 +62,12 @@ import { p2pNetworkService } from '@/services/network/p2pNetworkService';
 
 // Import styles
 import styles from './DocumentDetailPage.module.css';
+import { useP2PTransfers } from '@/hooks/api/useP2PTransfers';
 
 interface DocumentDetailPageProps {}
 
 export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
+  const { enabled, busy, enable, seedFile, downloadByHash, error, lastOp } = useP2PTransfers();
   const params = useParams();
   const navigate = useNavigate();
 
@@ -257,6 +259,15 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
           </div>
 
           <div class={styles.headerActions}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={enable}
+              disabled={busy()}
+              class={styles.actionButton || ''}
+            >
+              {enabled() ? 'Private Networking Enabled' : 'Enable Private Networking'}
+            </Button>
             <Tooltip content="Cultural Information">
               <Button
                 variant="ghost"
@@ -285,6 +296,18 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowShareModal(true)}
+                class={styles.actionButton || ''}
+              >
+                <Share2 size={16} />
+              </Button>
+            </Tooltip>
+
+            <Tooltip content="Seed via P2P">
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={!enabled() || busy()}
+                onClick={() => { const doc = document(); if (doc) seedFile((doc as any).path || (doc as any).filePath); }}
                 class={styles.actionButton || ''}
               >
                 <Share2 size={16} />
@@ -655,6 +678,23 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
           size="md"
         >
           <div class={styles.shareOptions}>
+            <div class={styles.row}>
+              <input type="text" placeholder="Paste hash to download" class={styles.searchInput}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
+                    const input = e.currentTarget as HTMLInputElement;
+                    const h = input.value.trim();
+                    if (h) downloadByHash(h, (window as any).api?.downloadsDir ?? 'downloads');
+                  }
+                }}
+              />
+            </div>
+            <Show when={error()}>
+              <div class={styles.errorText}>{error()}</div>
+            </Show>
+            <Show when={lastOp()}>
+              <div class={styles.mutedText}>Last operation: {lastOp()}</div>
+            </Show>
             <Button variant="outline" onClick={() => handleShare()} class={styles.shareButton || ''}>
               <Users size={16} />
               Share via P2P Network
