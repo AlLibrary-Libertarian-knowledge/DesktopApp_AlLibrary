@@ -40,7 +40,9 @@ mime_guess = "2.0"
 
 # Streaming and async utilities
 async-stream = "0.3"
+async-trait = "0.1"
 futures = "0.3"
+tokio-util = { version = "0.7", features = ["compat"] }
 
 # Security dependencies
 reqwest = { version = "0.12", features = ["json"] }
@@ -55,4 +57,18 @@ dirs = "5.0"
 tauri-plugin-opener = "2.0.0-beta.9"
 pdfium-render = { version = "0.8" }
 png = "0.17"
+
+# Libp2p & transports (to be used for onion-friendly P2P)
+libp2p = { version = "0.53", default-features = false, features = [
+  "tcp", "dns", "identify", "kad", "gossipsub", "yamux", "noise", "tls", "websocket", "macros", "request-response"
+] }
+multiaddr = "0.18"
+async-socks5 = "0.6"
+bincode = "1.3"
+bytes = "1.6"
+libp2p-kad = "0.45"
+libp2p-request-response = "0.26"
+libp2p-dns = "0.41"
+libp2p-tcp = "0.41"
+libp2p-websocket = "0.43"
 

@@ -1,4 +1,4 @@
-import { Component, createResource, onCleanup, onMount } from 'solid-js';
+import { Component, createResource, createSignal, onCleanup, onMount } from 'solid-js';
 import './Header.css';
 import logoSvg from '/src/assets/logo.svg';
 import { LanguageSwitcher } from '@/components/foundation/LanguageSwitcher';
@@ -18,8 +18,22 @@ const Header: Component<HeaderProps> = props => {
   const { t } = useTranslation();
 
   // Lightweight, one-shot resources for header indicators
-  const [torStatus] = createResource(async () => torAdapter.status());
-  const [nodeStatus] = createResource(async () => p2pNetworkService.getNodeStatus());
+  const [tick, setTick] = createSignal(0);
+  const [torStatus, { refetch: refetchTor }] = createResource(tick, async () => torAdapter.status());
+  const [nodeStatus, { refetch: refetchNode }] = createResource(tick, async () => p2pNetworkService.getNodeStatus());
+
+  onMount(() => {
+    setTick(t => t + 1);
+    const id = globalThis.setInterval(() => setTick(t => t + 1), 5000) as unknown as number;
+    onCleanup(() => globalThis.clearInterval(id));
+  });
+
+  // Instant refresh when bootstrap completes
+  onMount(() => {
+    const handler = () => setTick(t => t + 1);
+    window.addEventListener('tor-status-updated', handler as any);
+    onCleanup(() => window.removeEventListener('tor-status-updated', handler as any));
+  });
 
   // Global keyboard shortcut: Ctrl/Cmd + B to toggle sidebar
   onMount(() => {

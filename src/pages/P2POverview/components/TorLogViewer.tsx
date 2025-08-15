@@ -1,4 +1,4 @@
-import { Component, createResource, createSignal, Show } from 'solid-js';
+import { Component, createEffect, createResource, createSignal, onCleanup, onMount } from 'solid-js';
 import { Modal } from '@/components/foundation/Modal';
 import { torAdapter } from '@/services/network/torAdapter';
 
@@ -16,6 +16,28 @@ export const TorLogViewer: Component<TorLogViewerProps> = props => {
       return await torAdapter.getLogTail(count);
     }
   );
+
+  // Auto-refresh tail every 2s only while the modal is open
+  onMount(() => {
+    let id: any;
+    const ensureTimer = () => {
+      if (props.isOpen && !id) {
+        id = globalThis.setInterval(async () => {
+          try { await log.refetch?.(); } catch {}
+        }, 2000);
+      }
+      if (!props.isOpen && id) {
+        globalThis.clearInterval(id);
+        id = undefined;
+      }
+    };
+    // react to open/close changes
+    createEffect(() => {
+      const _ = props.isOpen;
+      ensureTimer();
+    });
+    onCleanup(() => { if (id) globalThis.clearInterval(id); });
+  });
 
   return (
     <Modal isOpen={props.isOpen} onClose={props.onClose} title="Tor Log (tail)">

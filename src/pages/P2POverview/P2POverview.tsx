@@ -5,6 +5,7 @@ import { Shield, Network, Globe } from 'lucide-solid';
 import { useP2POverview } from './hooks/useP2POverview';
 import HeaderActions from './components/HeaderActions';
 import TorLogViewer from './components/TorLogViewer';
+import { TorTerminal } from '@/components/domain/network/TorTerminal';
 
 export const P2POverview: Component = () => {
   const {
@@ -16,8 +17,19 @@ export const P2POverview: Component = () => {
     rotateCircuit,
     auto,
     toggleAuto,
+    // lastRefreshAt, // reserved for future granular refresh visuals
   } = useP2POverview();
   const [showLog, setShowLog] = createSignal(false);
+  // Preserve scroll on manual refresh by avoiding full-page state churn
+  const onRefreshClick = async () => {
+    const y = window.scrollY;
+    const x = window.scrollX;
+    await refresh();
+    // Defer scroll restore 1 frame to wait for DOM diff to settle
+    globalThis.requestAnimationFrame(() => {
+      try { window.scrollTo(x, y); } catch { /* ignore */ }
+    });
+  };
 
   return (
     <div class={styles.page}>
@@ -30,7 +42,7 @@ export const P2POverview: Component = () => {
             onEnable={enablePrivateNetworking}
             onRotate={rotateCircuit}
             onShowLog={() => setShowLog(true)}
-            onRefresh={refresh}
+            onRefresh={onRefreshClick}
             supportsControl={!!torStatus()?.supportsControl}
             autoEnabled={auto()}
             onToggleAuto={toggleAuto}
@@ -95,6 +107,11 @@ export const P2POverview: Component = () => {
             <li>Cultural context is educational only; access is never restricted.</li>
             <li>Multiple perspectives are preserved; no centralized censorship.</li>
           </ul>
+        </Card>
+
+        <Card class={styles.card as string}>
+          <div class={styles.cardTitle}><Network size={16} /> Tor Logs</div>
+          <TorTerminal lines={600} />
         </Card>
       </div>
       <TorLogViewer isOpen={showLog()} onClose={() => setShowLog(false)} />

@@ -3,19 +3,27 @@ import { torAdapter } from '@/services/network/torAdapter';
 import { p2pNetworkService } from '@/services/network/p2pNetworkService';
 
 export const useP2POverview = () => {
-  // Manual refresh tick
-  const [tick, setTick] = createSignal(0);
-
-  // Resources (no implicit polling)
-  const [torStatus, { refetch: refetchTor }] = createResource(tick, async () => torAdapter.status());
-  const [nodeStatus, { refetch: refetchNode }] = createResource(tick, async () => p2pNetworkService.getNodeStatus());
-  const [metrics, { refetch: refetchMetrics }] = createResource(tick, async () => p2pNetworkService.getNetworkMetrics());
+  // Resources (manual refetch only; avoid suspense loops)
+  const [torStatus, { refetch: refetchTor }] = createResource(
+    async () => torAdapter.status(),
+    { initialValue: null as any }
+  );
+  const [nodeStatus, { refetch: refetchNode }] = createResource(
+    async () => p2pNetworkService.getNodeStatus(),
+    { initialValue: null as any }
+  );
+  const [metrics, { refetch: refetchMetrics }] = createResource(
+    async () => p2pNetworkService.getNetworkMetrics(),
+    { initialValue: null as any }
+  );
 
   // Actions
+  const [lastRefreshAt, setLastRefreshAt] = createSignal<number>(0);
   const refresh = async () => {
-    setTick(t => t + 1);
-    // call refetch to ensure immediate update in Solid's scheduler
+    setLastRefreshAt(Date.now());
+    // Manual refetches only; do not change resource source to avoid suspense/route fallback
     await Promise.all([refetchTor(), refetchNode(), refetchMetrics()]);
+    setLastRefreshAt(Date.now());
   };
 
   const enablePrivateNetworking = async () => {
@@ -39,7 +47,8 @@ export const useP2POverview = () => {
   const [auto, setAuto] = createSignal(false);
   let intervalId: number | undefined;
   onMount(() => {
-    refresh();
+    // Initial one-shot fetch only; avoid periodic scrolling side-effects
+    void refresh();
   });
   onCleanup(() => {
     if (intervalId) globalThis.clearInterval(intervalId);
@@ -52,7 +61,12 @@ export const useP2POverview = () => {
       intervalId = undefined;
     }
     if (next) {
-      intervalId = globalThis.setInterval(refresh, 5000) as unknown as number;
+      // Component-friendly refresh: minimal data churn, no global scroll jumps
+      intervalId = globalThis.setInterval(() => {
+        setLastRefreshAt(Date.now());
+        void Promise.all([refetchTor(), refetchNode(), refetchMetrics()]);
+        setLastRefreshAt(Date.now());
+      }, 5000) as unknown as number;
     }
   };
 
@@ -67,6 +81,7 @@ export const useP2POverview = () => {
     rotateCircuit,
     auto,
     toggleAuto,
+    lastRefreshAt,
   };
 };
 

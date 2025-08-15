@@ -18,7 +18,8 @@
    Layout Foundation with Neural Network Background
    ========================================================================== */
 
-.searchNetworkPage {
+.searchNetworkPage,
+.search-network-page {
   min-height: 100vh;
   padding: var(--space-lg);
   background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
@@ -75,7 +76,8 @@
    Enhanced Page Header - Matching HomePage Pattern
    ========================================================================== */
 
-.pageHeader {
+.pageHeader,
+.page-header {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -145,13 +147,15 @@
   border-color: rgba(148, 163, 184, 0.15);
 }
 
-.headerContent {
+.headerContent,
+.header-content {
   text-align: left;
   position: relative;
   z-index: 1;
 }
 
-.pageTitle {
+.pageTitle,
+.page-title {
   font-size: 2.5rem;
   font-weight: 800;
   background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 30%, #cbd5e1 60%, #94a3b8 100%);
@@ -165,7 +169,8 @@
   position: relative;
 }
 
-.pageSubtitle {
+.pageSubtitle,
+.page-subtitle {
   font-size: 1.1rem;
   color: rgba(203, 213, 225, 0.8);
   margin: 0;
@@ -178,7 +183,8 @@
   z-index: 1;
 }
 
-.networkStatusEnhanced {
+.networkStatusEnhanced,
+.network-status-enhanced {
   position: relative;
   z-index: 1;
   display: flex;
@@ -191,6 +197,37 @@
   backdrop-filter: blur(12px);
   min-width: 320px;
   max-width: 400px;
+}
+
+/* Tor circuit banner inside header */
+.tor-banner {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  color: rgba(203, 213, 225, 0.9);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(168, 85, 247, 0.12) 100%);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  padding: 0.5rem 0.75rem;
+  border-radius: 10px;
+  display: inline-block;
+}
+
+/* Compact Tor pill next to network status */
+.tor-pill {
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: linear-gradient(135deg, rgba(15,23,42,0.5) 0%, rgba(30,41,59,0.45) 100%);
+  color: rgba(226, 232, 240, 0.9);
+}
+
+.tor-pill[data-on='1'] {
+  border-color: rgba(34, 197, 94, 0.4);
+  background: linear-gradient(135deg, rgba(16,185,129,0.25) 0%, rgba(34,197,94,0.25) 100%);
+  color: rgba(240, 253, 244, 0.95);
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.15) inset;
 }
 
 .networkStatusMain {

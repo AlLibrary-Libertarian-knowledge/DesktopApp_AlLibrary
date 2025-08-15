@@ -69,6 +69,9 @@ const AppWithLayout: Component<ParentProps> = props => {
   );
 };
 
+// Stable route component to avoid remounts; no Suspense to prevent fallback flicker
+const P2POverviewRoute: Component = () => <P2POverview />;
+
 const App: Component = () => {
   const [isLoading, setIsLoading] = createSignal(true);
   const [initProgress, setInitProgress] = createSignal<InitProgress | null>(null);
@@ -90,6 +93,9 @@ const App: Component = () => {
         if (event.payload.phase === 'complete' || event.payload.progress >= 100) {
           globalThis.setTimeout(() => {
             setIsLoading(false);
+            // Stop listening after initialization completes to prevent unnecessary re-renders
+            try { cleanup?.(); } catch {}
+            cleanup = null;
           }, 1500); // Small delay to show completion
         }
       });
@@ -237,14 +243,7 @@ const App: Component = () => {
             )}
           />
 
-          <Route
-            path="/p2p-overview"
-            component={() => (
-              <RouteWrapper>
-                <P2POverview />
-              </RouteWrapper>
-            )}
-          />
+          <Route path="/p2p-overview" component={P2POverviewRoute} />
 
           <Route
             path="/p2p-search"

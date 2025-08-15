@@ -35,6 +35,7 @@ pub use tor::{
   create_hidden_service,
   list_hidden_services,
   rotate_tor_circuit,
+  get_tor_log_tail,
   stop_tor,
   TorConfig,
   TorStatus
@@ -50,6 +51,10 @@ pub use p2p::{
   enable_tor_routing,
   disable_tor_routing,
   search_p2p_network,
+  start_libp2p_with_socks,
+  connect_bootstrap,
+  publish_content,
+  fetch_content,
   NetworkConfig as P2PNetworkConfig,
   P2PNode,
   NetworkStatus as P2PNetworkStatus,

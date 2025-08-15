@@ -5,6 +5,15 @@
   padding: 24px;
 }
 
+/* Avoid layout thrash on async updates to these regions */
+.diagram,
+.steps,
+.metrics,
+.legend,
+.metricsGrid {
+  contain: content;
+}
+
 .hero {
   background: radial-gradient(140% 160% at 0% 0%, rgba(0, 255, 213, 0.12) 0%, rgba(0, 153, 255, 0.06) 40%, rgba(0,0,0,0) 100%);
   border: 1px solid rgba(255,255,255,0.06);
@@ -225,6 +234,14 @@
 
 .dashboardWrapper {
   margin-top: 10px;
+}
+
+.terminalActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
 }
 
 @media (max-width: 1024px) {

@@ -12,6 +12,7 @@
  */
 
 import { invoke } from '@tauri-apps/api/core';
+import { torAdapter } from './torAdapter';
 import type {
   ContentHash,
   IPFSConfig,
@@ -72,8 +73,18 @@ class IPFSServiceImpl implements IPFSService {
    */
   async initializeNode(config: IPFSConfig): Promise<IPFSNode> {
     try {
+      // Try to pick up Tor SOCKS if circuits are established
+      let socksAddr: string | undefined;
+      try {
+        const tor = await torAdapter.status();
+        if (tor?.circuitEstablished && tor?.socks) {
+          socksAddr = tor.socks;
+        }
+      } catch {}
+
       const nodeConfig = {
         ...config,
+        socksProxy: socksAddr ?? config?.socksProxy,
         // Anti-censorship settings
         enableCulturalFiltering: false, // NEVER filter cultural content
         enableContentBlocking: false, // NEVER block content

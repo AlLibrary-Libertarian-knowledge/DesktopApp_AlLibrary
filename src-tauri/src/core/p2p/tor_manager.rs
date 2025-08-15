@@ -21,6 +21,7 @@ pub struct TorRuntime {
 pub struct StartConfig {
     pub bridge_support: bool,
     pub socks_override: Option<String>,
+    pub bridges: Option<Vec<String>>, // Optional bridges to configure at launch
 }
 
 #[derive(Debug)]
@@ -46,28 +47,37 @@ fn default_tor_path() -> String {
 
 #[cfg(target_os = "windows")]
 fn bundled_tor_candidate() -> PathBuf {
-    let mut base = std::env::current_exe()
+    // 1) Runtime resources next to the exe (packaged builds)
+    let exe_dir = std::env::current_exe()
         .ok()
         .and_then(|p| p.parent().map(|p| p.to_path_buf()))
         .unwrap_or_else(|| std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")));
-    base.push("resources");
-    base.push("tor");
-    base.push("win64");
-    base.push("tor.exe");
-    base
+    let packaged = exe_dir.join("resources").join("tor").join("win64").join("tor.exe");
+    if packaged.exists() { return packaged; }
+
+    // 2) Dev path: <project>/src-tauri/resources/tor/win64/tor.exe
+    if let Some(project_root) = exe_dir.parent().and_then(|p| p.parent()) {
+        let dev = project_root.join("src-tauri").join("resources").join("tor").join("win64").join("tor.exe");
+        if dev.exists() { return dev; }
+    }
+
+    // Fallback non-existing path returned; caller will handle
+    exe_dir.join("resources").join("tor").join("win64").join("tor.exe")
 }
 
 #[cfg(not(target_os = "windows"))]
 fn bundled_tor_candidate() -> PathBuf {
-    let mut base = std::env::current_exe()
+    let exe_dir = std::env::current_exe()
         .ok()
         .and_then(|p| p.parent().map(|p| p.to_path_buf()))
         .unwrap_or_else(|| std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")));
-    base.push("resources");
-    base.push("tor");
-    base.push("linux");
-    base.push("tor");
-    base
+    let packaged = exe_dir.join("resources").join("tor").join("linux").join("tor");
+    if packaged.exists() { return packaged; }
+    if let Some(project_root) = exe_dir.parent().and_then(|p| p.parent()) {
+        let dev = project_root.join("src-tauri").join("resources").join("tor").join("linux").join("tor");
+        if dev.exists() { return dev; }
+    }
+    exe_dir.join("resources").join("tor").join("linux").join("tor")
 }
 
 fn can_connect(addr: &str, port: u16) -> bool {
@@ -133,18 +143,24 @@ pub fn start(config: StartConfig) -> anyhow::Result<Status> {
     let socks_port = pick_free_port();
     let torrc_path = data_dir.join("torrc");
     let mut torrc = String::new();
-    torrc.push_str(&format!("DataDirectory {}\n", data_dir.display()));
+    // Quote file system paths to safely handle spaces
+    torrc.push_str(&format!("DataDirectory \"{}\"\n", data_dir.display()));
     torrc.push_str(&format!("ControlPort {}\n", control_port));
     torrc.push_str("CookieAuthentication 1\n");
     torrc.push_str(&format!("SocksPort {}\n", socks_port));
     if config.bridge_support {
         torrc.push_str("UseBridges 1\n");
+        if let Some(list) = config.bridges.as_ref() {
+            for b in list {
+                if !b.trim().is_empty() {
+                    torrc.push_str(&format!("Bridge {}\n", b.trim()));
+                }
+            }
+        }
     }
-    // Optional logging for diagnostics when TOR_DEBUG=1
-    if std::env::var("TOR_DEBUG").ok().as_deref() == Some("1") {
-        let log_path = data_dir.join("tor.log");
-        torrc.push_str(&format!("Log notice file {}\n", log_path.display()));
-    }
+    // Always enable notice-level logging to tor-data/tor.log for in-app viewer
+    let log_path = data_dir.join("tor.log");
+    torrc.push_str(&format!("Log notice file \"{}\"\n", log_path.display()));
     fs::write(&torrc_path, torrc)?;
 
     let tor_bin = std::env::var("TOR_BIN_PATH").ok().map(PathBuf::from).filter(|p| p.exists())
@@ -152,23 +168,22 @@ pub fn start(config: StartConfig) -> anyhow::Result<Status> {
             let p = bundled_tor_candidate();
             if p.exists() { Some(p) } else { None }
         })
-        .map(|p| p.to_string_lossy().to_string())
-        .unwrap_or_else(|| default_tor_path());
+        .unwrap_or_else(|| PathBuf::from(default_tor_path()));
 
-    let child = Command::new(tor_bin)
+    let child = Command::new(&tor_bin)
         .arg("-f")
         .arg(&torrc_path)
         .stdout(Stdio::null())
         .stderr(Stdio::null())
         .spawn()
-        .ok();
+        .map_err(|e| anyhow::anyhow!("failed to spawn tor at {}: {}", tor_bin.to_string_lossy(), e))?;
 
     *guard = Some(TorRuntime {
         data_dir: data_dir.clone(),
         torrc_path: torrc_path.clone(),
         control_port,
         socks_port,
-        child,
+        child: Some(child),
         hidden_services: Vec::new(),
     });
 
@@ -178,7 +193,14 @@ pub fn start(config: StartConfig) -> anyhow::Result<Status> {
         Err(_) => (false, false),
     };
 
-    Ok(Status { bootstrapped, circuit_established: circuit_ready, bridges_enabled: config.bridge_support, socks: Some(format!("127.0.0.1:{}", socks_port)), supports_control: true })
+    // Determine if bridges are actually enabled via control when possible
+    let bridges_enabled = if bootstrapped {
+        probe_use_bridges(control_port, &data_dir).unwrap_or(config.bridge_support)
+    } else {
+        config.bridge_support
+    };
+
+    Ok(Status { bootstrapped, circuit_established: circuit_ready, bridges_enabled, socks: Some(format!("127.0.0.1:{}", socks_port)), supports_control: true })
 }
 
 pub fn status() -> Status {
@@ -187,7 +209,10 @@ pub fn status() -> Status {
         // Try to get a realistic state when we manage Tor (control_port > 0)
         if rt.control_port > 0 {
             match probe_bootstrap(rt.control_port, &rt.data_dir) {
-                Ok((boot, circ)) => Status { bootstrapped: boot, circuit_established: circ, bridges_enabled: false, socks: Some(format!("127.0.0.1:{}", rt.socks_port)), supports_control: true },
+                Ok((boot, circ)) => {
+                    let bridges = probe_use_bridges(rt.control_port, &rt.data_dir).unwrap_or(false);
+                    Status { bootstrapped: boot, circuit_established: circ, bridges_enabled: bridges, socks: Some(format!("127.0.0.1:{}", rt.socks_port)), supports_control: true }
+                }
                 Err(_) => Status { bootstrapped: false, circuit_established: false, bridges_enabled: false, socks: Some(format!("127.0.0.1:{}", rt.socks_port)), supports_control: true },
             }
         } else {
@@ -358,5 +383,15 @@ fn probe_bootstrap(control_port: u16, data_dir: &Path) -> anyhow::Result<(bool, 
     let boot = progress >= 5; // any non-zero indicates tor started
     let circuit = progress >= 100;
     Ok((boot, circuit))
+}
+
+fn probe_use_bridges(control_port: u16, data_dir: &Path) -> anyhow::Result<bool> {
+    let cookie_hex = read_cookie_hex(data_dir)?;
+    let mut stream = TcpStream::connect(("127.0.0.1", control_port))?;
+    let auth = format!("AUTHENTICATE {}", cookie_hex);
+    let _ = ctl_send_recv(&mut stream, &auth)?;
+    let resp = ctl_send_recv(&mut stream, "GETCONF UseBridges")?;
+    // Response like: 250-UseBridges=1 \n 250 OK
+    Ok(resp.contains("UseBridges=1") || resp.contains("UseBridges=auto") )
 }
 

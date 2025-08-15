@@ -13,6 +13,7 @@
  */
 
 import { invoke } from '@tauri-apps/api/core';
+import { torAdapter } from './torAdapter';
 import type {
   P2PNode,
   Peer,
@@ -131,8 +132,16 @@ class P2PNetworkServiceImpl implements P2PNetworkService {
         security: { ...defaultConfig.security, ...(config.security as any || {}) },
       } as NetworkConfig;
 
+      // If Tor is up, pass socks proxy explicitly to backend
+      let socksProxy: string | undefined = undefined;
+      try {
+        const { torAdapter } = await import('./torAdapter');
+        const tor = await torAdapter.status();
+        if (tor?.circuitEstablished && tor?.socks) socksProxy = tor.socks;
+      } catch { /* best-effort, continue without socks */ }
+
       const node = await invoke<P2PNode>('init_p2p_node', {
-        config: mergedConfig,
+        config: { ...mergedConfig, socks_proxy: socksProxy },
       });
 
       this.nodeId = node.id;
@@ -199,9 +208,41 @@ class P2PNetworkServiceImpl implements P2PNetworkService {
    */
   async getNodeStatus(): Promise<NetworkStatus> {
     try {
-      return await invoke<NetworkStatus>('get_p2p_node_status', {
+      const raw: any = await invoke<any>('get_p2p_node_status', {
         nodeId: this.nodeId,
       });
+      // Adapt backend (snake_case) to frontend types
+      const statusStr: string = raw?.nodeStatus || raw?.status || 'offline';
+      const toEnum = (s: string): any => {
+        const n = (s || '').toLowerCase();
+        if (n === 'online') return 'online';
+        if (n === 'starting') return 'starting';
+        if (n === 'connecting') return 'connecting';
+        if (n === 'error') return 'error';
+        if (n === 'stopping') return 'stopping';
+        return 'offline';
+      };
+      const connectedPeers = Number(raw?.connectedPeers ?? raw?.connected_peers ?? 0);
+      const discoveredPeers = Number(raw?.discoveredPeers ?? raw?.discovered_peers ?? connectedPeers);
+      const networkHealth = Number(raw?.networkHealth ?? raw?.network_health ?? 0);
+      const torStatus = raw?.torStatus || undefined;
+      const ipfsStatus = Boolean(raw?.ipfsStatus ?? raw?.ipfs_status ?? false);
+      const censorshipResistance = raw?.censorshipResistance || undefined;
+      const activeCommunityNetworks = raw?.activeCommunityNetworks || [];
+      const contentStats = raw?.contentStats || { totalShared: 0, totalReceived: 0, culturalContentShared: 0, educationalContentShared: 0, alternativeNarrativesShared: 0, communityContentShared: 0 };
+
+      const result: NetworkStatus = {
+        nodeStatus: toEnum(statusStr),
+        connectedPeers,
+        discoveredPeers,
+        torStatus: torStatus as any,
+        ipfsStatus,
+        networkHealth,
+        censorshipResistance: censorshipResistance as any,
+        activeCommunityNetworks,
+        contentStats: contentStats as any,
+      };
+      return result;
     } catch (error) {
       console.error('Failed to get node status:', error);
       throw new Error('Unable to retrieve network status');
@@ -613,7 +654,22 @@ class P2PNetworkServiceImpl implements P2PNetworkService {
    */
   async enableTorRouting(): Promise<void> {
     try {
-      await invoke('enable_tor_routing', { nodeId: this.nodeId });
+      // If Tor SOCKS is available, inform backend before enabling routing
+      try {
+        const status = await torAdapter.status();
+        if (status?.socks) {
+          await torAdapter.useSocks(status.socks);
+        }
+      } catch {
+        // Intentionally ignore optional SOCKS pre-configuration failures
+      }
+
+      // Provide socks to backend runtime so transports route over Tor
+      try {
+        const { torAdapter } = await import('./torAdapter');
+        const tor = await torAdapter.status();
+        await invoke('enable_tor_routing', { nodeId: this.nodeId, socksProxy: tor?.socks });
+      } catch { await invoke('enable_tor_routing', { nodeId: this.nodeId, socksProxy: null }); }
       this.torEnabled = true;
     } catch (error) {
       console.error('Failed to enable TOR routing:', error);

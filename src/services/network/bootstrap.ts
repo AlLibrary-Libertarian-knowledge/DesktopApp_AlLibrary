@@ -12,6 +12,14 @@ export const enableTorAndP2P = async (): Promise<EnableTorResult> => {
     // Initialize and (idempotently) start TOR using adapter aligned with Tauri commands
     await torAdapter.start({ bridgeSupport: true });
 
+    // If Tor exposes a SOCKS proxy, configure it up-front so transports inherit it
+    try {
+      const t = await torAdapter.status();
+      if (t?.socks) {
+        await torAdapter.useSocks(t.socks);
+      }
+    } catch {}
+
     // Initialize and start P2P with TOR routing
     await p2pNetworkService.initializeNode({ torSupport: true });
     await p2pNetworkService.startNode();
@@ -36,7 +44,13 @@ export const enableTorAndP2P = async (): Promise<EnableTorResult> => {
     })();
 
     const status = await torAdapter.status();
-    return { torConnected: !!status?.circuitEstablished, p2pStarted: started };
+    const result = { torConnected: !!status?.circuitEstablished, p2pStarted: started };
+    try {
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('tor-status-updated'));
+      }
+    } catch {}
+    return result;
   } catch (error) {
     console.error('enableTorAndP2P failed:', error);
     return { torConnected: false, p2pStarted: false };

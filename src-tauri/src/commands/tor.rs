@@ -7,6 +7,7 @@ use std::path::PathBuf;
 pub struct TorConfig {
     pub bridge_support: Option<bool>,
     pub socks_addr: Option<String>,
+    pub bridges: Option<Vec<String>>, // optional bridges to apply at launch
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -22,7 +23,8 @@ pub struct TorStatus {
 pub async fn init_tor_node(config: Option<TorConfig>) -> TorStatus {
     let start_cfg = tor_manager::StartConfig {
         bridge_support: config.as_ref().and_then(|c| c.bridge_support).unwrap_or(true),
-        socks_override: config.and_then(|c| c.socks_addr),
+        socks_override: config.as_ref().and_then(|c| c.socks_addr.clone()),
+        bridges: config.and_then(|c| c.bridges),
     };
     match tor_manager::start(start_cfg) {
         Ok(st) => TorStatus {
@@ -32,7 +34,10 @@ pub async fn init_tor_node(config: Option<TorConfig>) -> TorStatus {
             socks: st.socks,
             supports_control: st.supports_control,
         },
-        Err(_) => TorStatus { bootstrapped: false, circuit_established: false, bridges_enabled: false, socks: None, supports_control: false },
+        Err(e) => {
+            eprintln!("init_tor_node failed: {}", e);
+            TorStatus { bootstrapped: false, circuit_established: false, bridges_enabled: false, socks: None, supports_control: false }
+        },
     }
 }
 
@@ -97,11 +102,14 @@ pub async fn get_tor_log_tail(lines: usize) -> String {
         .unwrap_or_else(|| std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")));
     base.push("tor-data");
     let log_path = base.join("tor.log");
+    // If log file still doesn't exist, try to create empty file to ensure path is valid
     if !log_path.exists() {
-        return String::from("Tor log not available. Enable by setting TOR_DEBUG=1 and restarting.");
+        let _ = std::fs::create_dir_all(log_path.parent().unwrap_or(&base));
+        let _ = std::fs::OpenOptions::new().create(true).append(true).open(&log_path);
     }
-    let Ok(content) = fs::read_to_string(&log_path) else {
-        return String::from("Could not read tor.log");
+    let content = match fs::read_to_string(&log_path) {
+        Ok(c) if !c.is_empty() => c,
+        _ => return String::from("Loading tor log..."),
     };
     let mut all: Vec<&str> = content.lines().collect();
     if all.len() > lines { all = all.split_off(all.len() - lines); }

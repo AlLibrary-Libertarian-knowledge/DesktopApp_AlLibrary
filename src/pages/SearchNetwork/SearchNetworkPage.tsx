@@ -49,6 +49,7 @@ import { NetworkStatus } from '../../components/domain/network/NetworkStatus';
 import { useNetworkSearch } from '../../hooks/api/useNetworkSearch';
 import { usePeerNetwork } from '../../hooks/api/usePeerNetwork';
 import { enableTorAndP2P } from '../../services/network/bootstrap';
+import { torAdapter } from '../../services/network/torAdapter';
 
 // Types
 import type { Document } from '../../types/Document';
@@ -76,6 +77,8 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
   const [searchScope, setSearchScope] = createSignal<'all' | 'trusted' | 'nearby'>('all');
   const [sortBy, setSortBy] = createSignal<'relevance' | 'date' | 'peers'>('relevance');
   const [torReady, setTorReady] = createSignal(false);
+  const [torBootstrapped, setTorBootstrapped] = createSignal(false);
+  const [torEstablishing, setTorEstablishing] = createSignal(false);
 
   // Search filters
   const [fileTypes, setFileTypes] = createSignal<string[]>([]);
@@ -95,13 +98,34 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
   const { peers, networkStats } = usePeerNetwork();
   const onEnableTorClick = async () => {
     try {
+      setTorEstablishing(true);
       const result = await enableTorAndP2P();
       setTorReady(result.torConnected && result.p2pStarted);
     } catch (e) {
       console.error('Failed to enable TOR/P2P routing:', e);
       setTorReady(false);
     }
+    finally {
+      setTorEstablishing(false);
+    }
   };
+
+  // Periodically poll tor status for header pill and circuit banner
+  onMount(() => {
+    let timer: any;
+    const tick = async () => {
+      try {
+        const status = await torAdapter.status();
+        setTorBootstrapped(!!status?.bootstrapped);
+        setTorReady(!!status?.circuitEstablished);
+      } catch {}
+    };
+    tick();
+    timer = globalThis.setInterval(tick, 4000);
+    const handler = () => tick();
+    window.addEventListener('tor-status-updated', handler as any);
+    return () => globalThis.clearInterval(timer);
+  });
 
   // Sample data for demonstration
   const networkActivity = [
@@ -214,10 +238,18 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
           <p class={styles['page-subtitle']}>
             Distributed search across decentralized cultural heritage network
           </p>
+          <Show when={torBootstrapped() && !torReady()}>
+            <div class={styles['tor-banner']}>
+              Building Tor circuit… routing will switch to Onion once ready
+            </div>
+          </Show>
         </div>
 
         <div class={styles['network-status-enhanced']}>
             <NetworkStatus variant="default" connectionCount={peers()?.length || 0} showHealth={true} />
+            <div class={styles['tor-pill']} data-on={torReady() ? '1' : '0'}>
+              {torReady() ? 'Onion' : 'No Onion'}
+            </div>
         </div>
       </header>
 
@@ -288,9 +320,9 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
                   </p>
                 </div>
                 <div class={styles['header-actions']}>
-                  <Button variant={torReady() ? 'outline' : 'primary'} size="sm" onClick={onEnableTorClick}>
+                  <Button variant={torReady() ? 'outline' : 'primary'} size="sm" onClick={onEnableTorClick} disabled={torEstablishing()}>
                     <Shield size={16} class="mr-2" />
-                    {torReady() ? 'TOR Enabled' : 'Enable TOR Search'}
+                    {torReady() ? 'TOR Enabled' : torEstablishing() ? 'Enabling…' : 'Enable TOR Search'}
                   </Button>
                   <Button variant="ghost" size="sm" onClick={() => setShowFilters(!showFilters())}>
                     <Filter size={16} class="mr-2" />
@@ -469,7 +501,7 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
             <Show when={isSearching()}>
               <div class={styles['search-progress']}>
                 <Loading />
-                <p>Searching across {connectedPeers()?.length || 0} connected peers...</p>
+                <p>Searching across {peers()?.length || 0} connected peers...</p>
               </div>
             </Show>
 

@@ -1,6 +1,6 @@
 import { invoke } from '@tauri-apps/api/core';
 
-export interface TorFrontendConfig { bridgeSupport?: boolean; socksAddr?: string }
+export interface TorFrontendConfig { bridgeSupport?: boolean; socksAddr?: string; bridges?: string[] }
 export interface TorFrontendStatus { bootstrapped: boolean; circuitEstablished: boolean; bridgesEnabled: boolean; socks?: string; supportsControl?: boolean }
 
 const mapStatus = (raw: any): TorFrontendStatus => ({
@@ -13,7 +13,7 @@ const mapStatus = (raw: any): TorFrontendStatus => ({
 
 export const torAdapter = {
   start: async (config?: TorFrontendConfig): Promise<TorFrontendStatus> => {
-    const raw = await invoke<any>('init_tor_node', { config: { bridge_support: config?.bridgeSupport, socks_addr: config?.socksAddr } });
+    const raw = await invoke<any>('init_tor_node', { config: { bridge_support: config?.bridgeSupport, socks_addr: config?.socksAddr, bridges: config?.bridges } });
     await invoke('start_tor');
     return mapStatus(raw);
   },
