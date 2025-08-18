@@ -1,20 +1,32 @@
-import { Component } from 'solid-js';
+import { Component, createMemo } from 'solid-js';
 import './Footer.css';
+import { useNetworkStore } from '@/stores/network/networkStore';
 
 const Footer: Component = () => {
+  const store = useNetworkStore();
+  const lastSyncText = createMemo(() => {
+    const ts = store.lastSyncAt();
+    if (!ts) return '—';
+    const sec = Math.max(1, Math.floor((Date.now() - ts) / 1000));
+    const min = Math.floor(sec / 60);
+    if (min <= 0) return 'just now';
+    if (min === 1) return '1 minute ago';
+    return `${min} minutes ago`;
+  });
+
   return (
     <footer class="app-footer">
       <div class="footer-content">
         <div class="footer-left">
           <div class="network-info">
             <span class="network-label">P2P Network:</span>
-            <span class="peer-count">12 peers connected</span>
-            <span class="network-type">Internet + TOR</span>
+            <span class="peer-count">{store.connectedPeers()} peers connected</span>
+            <span class="network-type">{store.labelTorMode()}</span>
           </div>
 
           <div class="sync-info">
             <span class="sync-label">Last sync:</span>
-            <span class="sync-time">2 minutes ago</span>
+            <span class="sync-time">{lastSyncText()}</span>
           </div>
         </div>
 

@@ -288,7 +288,7 @@ pub fn create_hidden_service(local_port: u16) -> anyhow::Result<String> {
     }
     let sid = service_id.ok_or_else(|| anyhow::anyhow!("missing ServiceID in response: {}", resp))?;
     let onion = if sid.ends_with(".onion") { sid } else { format!("{}.onion", sid) };
-    drop(rt);
+    let _ = rt;
     let mut guard = TOR_RUNTIME.lock().unwrap();
     if let Some(rt_mut) = guard.as_mut() {
         rt_mut.hidden_services.push(onion.clone());

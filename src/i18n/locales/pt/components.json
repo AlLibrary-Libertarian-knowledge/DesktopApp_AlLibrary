@@ -1,4 +1,12 @@
 {
+  "searchBar": {
+    "placeholder": "Pesquisar...",
+    "accessibility": {
+      "searching": "Pesquisando",
+      "clearSearch": "Limpar pesquisa",
+      "openFilters": "Abrir filtros"
+    }
+  },
   "button": {
     "save": "Salvar",
     "cancel": "Cancelar",
@@ -297,7 +305,9 @@
       "active": "ativos",
       "queue": "Fila: {{count}}",
       "totalSpeed": "{{speed}} total",
-      "eta": "{{time}} restante"
+      "eta": "{{time}} restante",
+      "downSpeed": "Download",
+      "upSpeed": "Upload"
     },
     "storage": {
       "title": "Armazenamento",
@@ -406,7 +416,7 @@
     "created": "Criado"
   },
   "searchBar": {
-  "placeholder": "Buscar documentos, coleções e conteúdo cultural...",
+    "placeholder": "Buscar documentos, coleções e conteúdo cultural...",
     "suggestions": "Sugestões",
     "recentSearches": "Buscas Recentes",
     "clearSearch": "Limpar busca",
@@ -571,13 +581,7 @@
       "sacredContent": "Conteúdo Sagrado"
     }
   },
-  "searchBar": {
-    "accessibility": {
-      "clearSearch": "Limpar pesquisa",
-      "openFilters": "Abrir filtros",
-      "searching": "Pesquisando..."
-    }
-  },
+  
   "pageHeader": {
     "accessibility": {
       "breadcrumbNavigation": "Navegação por trilha",

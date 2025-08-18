@@ -3,6 +3,9 @@ use std::path::{Path, PathBuf};
 use std::fs;
 use tracing::info;
 use crate::core::document::type_detection::TypeDetection;
+use std::io::{Read, Write};
+use lopdf::Document as LoDocument;
+use zip::ZipArchive;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DocumentInfo {
@@ -183,6 +186,74 @@ pub async fn list_documents_in_folder(folder_path: String) -> Result<Vec<Documen
     }
     
     Ok(documents)
+}
+
+/// Securely import a document (PDF/EPUB) into the library folder
+/// - Validates extension and size
+/// - Strips JavaScript actions from PDFs
+/// - Validates EPUB structure (zip) and rejects scripts in OPF/HTML
+/// - Saves to target_dir with original filename
+#[tauri::command]
+pub async fn import_document(target_dir: String, source_path: String) -> Result<DocumentInfo, String> {
+    let src = PathBuf::from(&source_path);
+    let dst_dir = PathBuf::from(&target_dir);
+    if !dst_dir.exists() { fs::create_dir_all(&dst_dir).map_err(|e| e.to_string())?; }
+    if !src.exists() || !src.is_file() { return Err("Source file not found".into()); }
+
+    let ext = src.extension().and_then(|e| e.to_str()).unwrap_or("").to_lowercase();
+    if ext != "pdf" && ext != "epub" { return Err("Only PDF and EPUB are allowed".into()); }
+
+    // size limit 200MB
+    let meta = fs::metadata(&src).map_err(|e| e.to_string())?;
+    if meta.len() > 200 * 1024 * 1024 { return Err("File too large (>200MB)".into()); }
+
+    let sanitized_path = dst_dir.join(src.file_name().ok_or("Bad filename")?);
+
+    if ext == "pdf" {
+        // Strip JavaScript from PDF
+        let mut doc = LoDocument::load(&src).map_err(|e| format!("PDF parse failed: {}", e))?;
+        // Remove names that often hold JS (OpenAction, AA, Names/JavaScript, etc.)
+        if let Some(cat_id) = doc.trailer.get(b"Root").and_then(|r| r.as_reference()).ok() {
+            if let Ok(mut catalog) = doc.get_object_mut(cat_id) {
+                if let Ok(dict) = catalog.as_dict_mut() {
+                    dict.remove(b"OpenAction");
+                    dict.remove(b"AA");
+                    dict.remove(b"Names");
+                }
+            }
+        }
+        // Also scrub any JavaScript actions in annotations
+        for (_, obj) in doc.objects.iter_mut() {
+            if let Ok(dict) = obj.as_dict_mut() {
+                dict.remove(b"JS");
+                dict.remove(b"JavaScript");
+                dict.remove(b"S"); // remove action type references
+            }
+        }
+        doc.compress();
+        doc.save(&sanitized_path).map_err(|e| format!("Save failed: {}", e))?;
+    } else { // epub
+        // Basic EPUB validation: ensure it's a zip and entries do not include .js
+        let file = fs::File::open(&src).map_err(|e| e.to_string())?;
+        let mut zip = ZipArchive::new(file).map_err(|e| format!("Invalid EPUB (zip): {}", e))?;
+        for i in 0..zip.len() {
+            let mut f = zip.by_index(i).map_err(|e| e.to_string())?;
+            let name = f.name().to_lowercase();
+            if name.ends_with(".js") { return Err("EPUB contains JavaScript; rejected".into()); }
+            // rudimentary scan for <script>
+            if name.ends_with(".html") || name.ends_with(".xhtml") || name.ends_with(".opf") {
+                let mut buf = String::new();
+                let mut reader = std::io::BufReader::new(&mut f);
+                let _ = reader.read_to_string(&mut buf); // ignore non-utf8
+                if buf.contains("<script") { return Err("EPUB contains script tags; rejected".into()); }
+            }
+        }
+        // If passes, copy original file as-is
+        fs::copy(&src, &sanitized_path).map_err(|e| e.to_string())?;
+    }
+
+    // Return DocumentInfo for the imported file
+    create_document_info(&sanitized_path).await
 }
 
 /// Get detailed information about a specific document

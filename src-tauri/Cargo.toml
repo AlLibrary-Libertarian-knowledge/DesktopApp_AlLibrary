@@ -57,6 +57,9 @@ dirs = "5.0"
 tauri-plugin-opener = "2.0.0-beta.9"
 pdfium-render = { version = "0.8" }
 png = "0.17"
+rfd = "0.14"
+zip = "0.6"
+lopdf = "0.32"
 
 # Libp2p & transports (to be used for onion-friendly P2P)
 libp2p = { version = "0.53", default-features = false, features = [

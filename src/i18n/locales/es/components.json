@@ -294,7 +294,9 @@
       "active": "activos",
       "queue": "Cola: {{count}}",
       "totalSpeed": "{{speed}} total",
-      "eta": "{{time}} restante"
+      "eta": "{{time}} restante",
+      "downSpeed": "Descarga",
+      "upSpeed": "Subida"
     },
     "storage": {
       "title": "Almacenamiento",

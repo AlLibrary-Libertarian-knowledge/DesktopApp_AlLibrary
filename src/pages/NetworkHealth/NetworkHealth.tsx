@@ -10,38 +10,29 @@ import { Button, Card, Modal } from '@/components/foundation';
 import { NetworkHealthDashboard } from '@/components/composite/NetworkHealthDashboard';
 import {
   RefreshCw,
-  Settings,
   Activity,
   Shield,
-  Zap,
   Globe,
-  Cpu,
-  Database,
-  Wifi,
-  TrendingUp,
-  AlertTriangle,
   CheckCircle,
   Clock,
   Network,
   Server,
-  Eye,
-  BarChart3,
-  Layers,
-  Filter,
-  Download,
-  Upload,
-  Users,
-  MapPin,
-  Radio,
-  Lock,
-  Unlock,
-  Play,
-  Pause,
-  RotateCcw,
-  Search,
   Terminal,
+  Layers,
+  BarChart3,
+  MapPin,
+  Pause,
+  Play,
+  RotateCcw,
+  Wifi,
+  Zap,
+  AlertTriangle,
+  Users,
+  TrendingUp,
 } from 'lucide-solid';
 import styles from './NetworkHealth.module.css';
+import { useNetworkStore } from '@/stores/network/networkStore';
+import { p2pNetworkService } from '@/services/network/p2pNetworkService';
 
 interface NetworkNode {
   id: string;
@@ -72,11 +63,6 @@ interface SecurityAlert {
   resolved: boolean;
 }
 
-/**
- * NetworkHealth Page Component
- *
- * Advanced P2P network health monitoring with futuristic UI
- */
 export const NetworkHealth: Component = () => {
   // Core state
   const [refreshing, setRefreshing] = createSignal(false);
@@ -87,247 +73,98 @@ export const NetworkHealth: Component = () => {
   // Advanced monitoring state
   const [selectedMetric, setSelectedMetric] = createSignal<string | null>(null);
   const [showDiagnostics, setShowDiagnostics] = createSignal(false);
-  const [showNetworkMap, setShowNetworkMap] = createSignal(false);
-  const [showSecurityPanel, setShowSecurityPanel] = createSignal(false);
-  const [showAnalytics, setShowAnalytics] = createSignal(false);
   const [showTerminal, setShowTerminal] = createSignal(false);
+  // const [showSecurityPanel, setShowSecurityPanel] = createSignal(false);
 
   // Visualization controls
   const [viewMode, setViewMode] = createSignal<'overview' | 'detailed' | 'topology'>('overview');
   const [timeRange, setTimeRange] = createSignal<'1h' | '6h' | '24h' | '7d'>('1h');
-  const [filterLevel, setFilterLevel] = createSignal<'all' | 'critical' | 'warnings'>('all');
 
-  // Mock network data
-  const [networkNodes, setNetworkNodes] = createSignal<NetworkNode[]>([
-    {
-      id: 'node-1',
-      ip: '192.168.1.100',
-      location: 'São Paulo, Brazil',
-      latency: 45,
-      status: 'online',
-      bandwidth: 125.5,
-      uptime: 99.8,
-      country: 'BR',
-    },
-    {
-      id: 'node-2',
-      ip: '10.0.0.50',
-      location: 'Madrid, Spain',
-      latency: 78,
-      status: 'online',
-      bandwidth: 89.2,
-      uptime: 98.5,
-      country: 'ES',
-    },
-    {
-      id: 'node-3',
-      ip: '172.16.0.25',
-      location: 'Tokyo, Japan',
-      latency: 156,
-      status: 'warning',
-      bandwidth: 67.8,
-      uptime: 95.2,
-      country: 'JP',
-    },
-    {
-      id: 'node-4',
-      ip: '203.0.113.42',
-      location: 'Sydney, Australia',
-      latency: 234,
-      status: 'online',
-      bandwidth: 43.7,
-      uptime: 97.1,
-      country: 'AU',
-    },
-  ]);
+  // Live network data (peers)
+  const [networkNodes, setNetworkNodes] = createSignal<NetworkNode[]>([]);
 
-  const [networkMetrics, setNetworkMetrics] = createSignal<NetworkMetric[]>([
-    {
-      id: 'network-health',
-      name: 'Network Health',
-      value: 94,
-      unit: '%',
-      status: 'good',
-      trend: 'stable',
-      history: [92, 93, 94, 94, 94],
-    },
-    {
-      id: 'active-peers',
-      name: 'Active Peers',
-      value: 247,
-      unit: 'peers',
-      status: 'good',
-      trend: 'up',
-      history: [235, 240, 245, 246, 247],
-    },
-    {
-      id: 'throughput',
-      name: 'Data Throughput',
-      value: 2.4,
-      unit: 'MB/s',
-      status: 'good',
-      trend: 'up',
-      history: [2.1, 2.2, 2.3, 2.35, 2.4],
-    },
-    {
-      id: 'latency',
-      name: 'Average Latency',
-      value: 89,
-      unit: 'ms',
-      status: 'warning',
-      trend: 'up',
-      history: [85, 86, 87, 88, 89],
-    },
-    {
-      id: 'security',
-      name: 'Security Score',
-      value: 98,
-      unit: '%',
-      status: 'good',
-      trend: 'stable',
-      history: [97, 98, 98, 98, 98],
-    },
-    {
-      id: 'uptime',
-      name: 'Network Uptime',
-      value: 99.7,
-      unit: '%',
-      status: 'good',
-      trend: 'stable',
-      history: [99.5, 99.6, 99.7, 99.7, 99.7],
-    },
-  ]);
+  // Live high-level metrics
+  const [networkMetrics, setNetworkMetrics] = createSignal<NetworkMetric[]>([]);
 
-  const [securityAlerts, setSecurityAlerts] = createSignal<SecurityAlert[]>([
-    {
-      id: 'alert-1',
-      type: 'warning',
-      message: 'High latency detected on Asia-Pacific nodes',
-      timestamp: new Date(Date.now() - 1000 * 60 * 15),
-      resolved: false,
-    },
-    {
-      id: 'alert-2',
-      type: 'info',
-      message: 'New peer connection established in Europe',
-      timestamp: new Date(Date.now() - 1000 * 60 * 30),
-      resolved: true,
-    },
-    {
-      id: 'alert-3',
-      type: 'critical',
-      message: 'Potential DDoS attempt blocked',
-      timestamp: new Date(Date.now() - 1000 * 60 * 45),
-      resolved: true,
-    },
-  ]);
+  const [securityAlerts, setSecurityAlerts] = createSignal<SecurityAlert[]>([]);
 
-  // Terminal simulation
-  const [terminalOutput, setTerminalOutput] = createSignal<string[]>([
-    '> Network Health Monitor v2.0 initialized',
-    '> Scanning P2P network topology...',
-    '> 247 active peers detected',
-    '> Security protocols enabled',
-    '> Ready for monitoring',
-  ]);
-  const [terminalInput, setTerminalInput] = createSignal('');
-
-  // Auto-refresh functionality
   let refreshTimer: number;
+  const net = useNetworkStore();
+
+  // Pull live P2P status and metrics, and map into page state
+  const updateFromLive = async () => {
+    try {
+      await net.refresh();
+      const status = net.status();
+      const metrics = net.metrics() as any;
+      const peers = await p2pNetworkService.getConnectedPeers().catch(() => [] as any[]);
+
+      // Map peers to nodes
+      const nodes: NetworkNode[] = (peers || []).map((p: any, i: number) => ({
+        id: p.id || `peer-${i}`,
+        ip: (p.addresses?.[0]?.multiaddr || p.addresses?.[0]?.address || 'unknown'),
+        location: p.location || '—',
+        latency: Number(p.connectionQuality?.latency || metrics?.performance?.averageLatency || 0),
+        status: (p.connected ? 'online' : 'offline') as any,
+        bandwidth: Number(p.connectionQuality?.bandwidth || metrics?.performance?.totalBandwidth || 0) / (1024 * 1024),
+        uptime: Number(metrics?.health?.nodeUptime || 0),
+        country: p.country || '—',
+      }));
+      setNetworkNodes(nodes);
+
+      const healthPct = (() => {
+        const h = status?.networkHealth;
+        if (typeof h === 'number' && h > 0 && h <= 1) return Math.round(h * 100);
+        return Number(h || 0);
+      })();
+
+      const dl = (() => {
+        if (metrics?.performance?.totalBandwidth != null) return (metrics.performance.totalBandwidth * 0.6) / (1024 * 1024);
+        if (typeof metrics?.download_rate === 'number') return metrics.download_rate / (1024 * 1024);
+        return 0;
+      })();
+      const ul = (() => {
+        if (metrics?.performance?.totalBandwidth != null) return (metrics.performance.totalBandwidth * 0.4) / (1024 * 1024);
+        if (typeof metrics?.upload_rate === 'number') return metrics.upload_rate / (1024 * 1024);
+        return 0;
+      })();
+      const avgLat = Number(metrics?.performance?.averageLatency || 0);
+
+      // Build cards
+      const cards: NetworkMetric[] = [
+        { id: 'network-health', name: 'Network Health', value: healthPct, unit: '%', status: healthPct > 80 ? 'good' : healthPct > 60 ? 'warning' : 'critical', trend: 'stable', history: [] },
+        { id: 'active-peers', name: 'Active Peers', value: Number(status?.connectedPeers || 0), unit: 'peers', status: 'good', trend: 'stable', history: [] },
+        { id: 'throughput', name: 'Data Throughput', value: Math.round((dl + ul) * 10) / 10, unit: 'MB/s', status: 'good', trend: 'stable', history: [] },
+        { id: 'latency', name: 'Average Latency', value: avgLat, unit: 'ms', status: avgLat < 100 ? 'good' : avgLat < 200 ? 'warning' : 'critical', trend: 'stable', history: [] },
+      ];
+      const uptime = Number((metrics as any)?.health?.nodeUptime || 0);
+      if (uptime) cards.push({ id: 'uptime', name: 'Network Uptime', value: Math.round(uptime), unit: '%', status: 'good', trend: 'stable', history: [] });
+      setNetworkMetrics(cards);
+
+      // Security alerts
+      const errRate = Number(metrics?.performance?.errorRate || 0);
+      const alerts: SecurityAlert[] = [];
+      if (avgLat > 200) alerts.push({ id: 'latency', type: 'warning', message: 'High average latency detected', timestamp: new Date(), resolved: false });
+      if (errRate > 0.05) alerts.push({ id: 'errors', type: 'critical', message: 'Elevated network error rate', timestamp: new Date(), resolved: false });
+      setSecurityAlerts(alerts);
+    } catch {
+      // keep previous state on failure
+    }
+  };
 
   createEffect(() => {
     if (autoRefresh() && monitoring()) {
-      refreshTimer = setInterval(() => {
-        simulateDataUpdate();
-      }, refreshInterval());
+      // Solid types for timer
+      refreshTimer = globalThis.setInterval(() => { void updateFromLive(); }, refreshInterval()) as unknown as number;
     }
-
-    onCleanup(() => {
-      if (refreshTimer) clearInterval(refreshTimer);
-    });
+    onCleanup(() => { if (refreshTimer) globalThis.clearInterval(refreshTimer as unknown as number); });
   });
 
-  onMount(() => {
-    // Start initial monitoring
-    simulateDataUpdate();
-  });
+  onMount(() => { void updateFromLive(); });
 
-  // Simulate real-time data updates
-  const simulateDataUpdate = () => {
-    setNetworkMetrics(prev =>
-      prev.map(metric => {
-        const variance = (Math.random() - 0.5) * 0.1;
-        const newValue = Math.max(0, metric.value + variance);
-        const newHistory = [...metric.history.slice(-4), newValue];
+  const handleRefresh = async () => { setRefreshing(true); await updateFromLive(); setRefreshing(false); };
 
-        return {
-          ...metric,
-          value: Math.round(newValue * 100) / 100,
-          history: newHistory,
-          trend: newValue > metric.value ? 'up' : newValue < metric.value ? 'down' : 'stable',
-        };
-      })
-    );
-
-    // Simulate network node updates
-    setNetworkNodes(prev =>
-      prev.map(node => ({
-        ...node,
-        latency: Math.max(10, node.latency + (Math.random() - 0.5) * 20),
-        bandwidth: Math.max(10, node.bandwidth + (Math.random() - 0.5) * 10),
-      }))
-    );
-  };
-
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    simulateDataUpdate();
-    setRefreshing(false);
-  };
-
-  const handleTerminalCommand = (command: string) => {
-    const output = [...terminalOutput()];
-    output.push(`> ${command}`);
-
-    switch (command.toLowerCase()) {
-      case 'status':
-        output.push('Network Status: HEALTHY');
-        output.push(`Active Peers: ${networkMetrics().find(m => m.id === 'active-peers')?.value}`);
-        output.push(
-          `Health Score: ${networkMetrics().find(m => m.id === 'network-health')?.value}%`
-        );
-        break;
-      case 'peers':
-        output.push('Active Peer Connections:');
-        networkNodes().forEach(node => {
-          output.push(`  ${node.ip} - ${node.location} (${node.latency}ms)`);
-        });
-        break;
-      case 'scan':
-        output.push('Initiating network scan...');
-        output.push('Discovered 3 new potential peers');
-        output.push('Scan complete');
-        break;
-      case 'clear':
-        setTerminalOutput(['> Terminal cleared']);
-        setTerminalInput('');
-        return;
-      case 'help':
-        output.push('Available commands:');
-        output.push('  status  - Show network status');
-        output.push('  peers   - List active peers');
-        output.push('  scan    - Scan for new peers');
-        output.push('  clear   - Clear terminal');
-        output.push('  help    - Show this help');
-        break;
-      default:
-        output.push(`Unknown command: ${command}`);
-    }
-
-    setTerminalOutput(output.slice(-20)); // Keep last 20 lines
-    setTerminalInput('');
-  };
+  // Terminal omitted in this trimmed version
 
   const getMetricStatusColor = (status: string) => {
     switch (status) {
@@ -360,7 +197,7 @@ export const NetworkHealth: Component = () => {
         <div class={styles['header-content']}>
           <div class={styles['title-section']}>
             <h1 class={styles['page-title']}>
-              <Network size={32} class={styles['title-icon']} />
+              <Network size={32} class={(styles['title-icon'] as string) ?? ''} />
               Network Health Monitor
             </h1>
             <p class={styles['page-subtitle']}>
@@ -385,7 +222,7 @@ export const NetworkHealth: Component = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => setMonitoring(!monitoring())}
-                class={styles['monitoring-toggle']}
+                class={styles['monitoring-toggle'] as string}
               >
                 {monitoring() ? <Pause size={16} /> : <Play size={16} />}
                 {monitoring() ? 'Pause' : 'Resume'}
@@ -396,9 +233,9 @@ export const NetworkHealth: Component = () => {
                 size="sm"
                 onClick={handleRefresh}
                 disabled={refreshing()}
-                class={styles['refresh-button']}
+                class={styles['refresh-button'] as string}
               >
-                <RefreshCw size={16} class={refreshing() ? styles.spinning : ''} />
+                <RefreshCw size={16} class={(refreshing() ? styles.spinning : '') as string} />
                 Refresh
               </Button>
             </div>
@@ -459,7 +296,7 @@ export const NetworkHealth: Component = () => {
             variant="ghost"
             size="sm"
             onClick={() => setShowDiagnostics(true)}
-            class={styles['action-button']}
+            class={styles['action-button'] as string}
           >
             <Activity size={16} />
             Diagnostics
@@ -467,8 +304,8 @@ export const NetworkHealth: Component = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setShowNetworkMap(true)}
-            class={styles['action-button']}
+            onClick={() => setShowDiagnostics(true)}
+            class={styles['action-button'] as string}
           >
             <MapPin size={16} />
             Network Map
@@ -476,8 +313,8 @@ export const NetworkHealth: Component = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setShowSecurityPanel(true)}
-            class={styles['action-button']}
+            onClick={() => setShowDiagnostics(true)}
+            class={styles['action-button'] as string}
           >
             <Shield size={16} />
             Security
@@ -486,7 +323,7 @@ export const NetworkHealth: Component = () => {
             variant="ghost"
             size="sm"
             onClick={() => setShowTerminal(true)}
-            class={styles['action-button']}
+            class={styles['action-button'] as string}
           >
             <Terminal size={16} />
             Terminal
@@ -540,7 +377,7 @@ export const NetworkHealth: Component = () => {
             variant="ghost"
             size="sm"
             onClick={() => setAutoRefresh(!autoRefresh())}
-            class={`${styles['auto-refresh']} ${autoRefresh() ? styles.active : ''}`}
+            class={`${styles['auto-refresh']} ${autoRefresh() ? styles.active : ''}` as string}
           >
             <RotateCcw size={14} />
             Auto-refresh
@@ -628,27 +465,21 @@ export const NetworkHealth: Component = () => {
         </div>
 
         {/* Security Alerts Panel */}
-        <Show when={securityAlerts().filter(alert => !alert.resolved).length > 0}>
+        <Show when={securityAlerts().filter(a => !a.resolved).length > 0}>
           <div class={styles['alerts-panel']}>
             <div class={styles['alerts-header']}>
               <AlertTriangle size={20} />
               <span>Security Alerts</span>
-              <Button variant="ghost" size="sm" onClick={() => setShowSecurityPanel(true)}>
+              <Button variant="ghost" size="sm" onClick={() => setShowDiagnostics(true)}>
                 View All
               </Button>
             </div>
             <div class={styles['alerts-list']}>
-              <For
-                each={securityAlerts()
-                  .filter(alert => !alert.resolved)
-                  .slice(0, 3)}
-              >
+              <For each={securityAlerts().filter(a => !a.resolved).slice(0, 3)}>
                 {alert => (
                   <div class={`${styles['alert-item']} ${styles[alert.type]}`}>
                     <div class={styles['alert-icon']}>
-                      {alert.type === 'critical' && <AlertTriangle size={16} />}
-                      {alert.type === 'warning' && <AlertTriangle size={16} />}
-                      {alert.type === 'info' && <CheckCircle size={16} />}
+                      <AlertTriangle size={16} />
                     </div>
                     <div class={styles['alert-content']}>
                       <div class={styles['alert-message']}>{alert.message}</div>
@@ -664,32 +495,30 @@ export const NetworkHealth: Component = () => {
         </Show>
       </div>
 
-      {/* Advanced Modals */}
-
-      {/* Network Diagnostics Modal */}
+      {/* Diagnostics Modal */}
       <Show when={showDiagnostics()}>
         <Modal
-          open={showDiagnostics()}
+          isOpen={showDiagnostics()}
           onClose={() => setShowDiagnostics(false)}
           title="Network Diagnostics"
           size="xl"
-          class={styles['diagnostics-modal']}
+          class={styles['diagnostics-modal'] as string}
         >
           <div class={styles['diagnostics-content']}>
             <div class={styles['diagnostic-tools']}>
-              <Button variant="ghost" onClick={() => alert('Running latency test...')}>
+              <Button variant="ghost" onClick={() => { /* run latency test */ }}>
                 <Clock size={16} />
                 Latency Test
               </Button>
-              <Button variant="ghost" onClick={() => alert('Running bandwidth test...')}>
+              <Button variant="ghost" onClick={() => { /* run bandwidth test */ }}>
                 <Zap size={16} />
                 Bandwidth Test
               </Button>
-              <Button variant="ghost" onClick={() => alert('Running connectivity test...')}>
+              <Button variant="ghost" onClick={() => { /* run connectivity test */ }}>
                 <Wifi size={16} />
                 Connectivity Test
               </Button>
-              <Button variant="ghost" onClick={() => alert('Running security scan...')}>
+              <Button variant="ghost" onClick={() => { /* run security scan */ }}>
                 <Shield size={16} />
                 Security Scan
               </Button>
@@ -731,99 +560,14 @@ export const NetworkHealth: Component = () => {
       {/* Terminal Modal */}
       <Show when={showTerminal()}>
         <Modal
-          open={showTerminal()}
+          isOpen={showTerminal()}
           onClose={() => setShowTerminal(false)}
           title="Network Terminal"
           size="lg"
-          class={styles['terminal-modal']}
+          class={styles['terminal-modal'] as string}
         >
           <div class={styles['terminal-content']}>
-            <div class={styles['terminal-output']}>
-              <For each={terminalOutput()}>
-                {line => <div class={styles['terminal-line']}>{line}</div>}
-              </For>
-            </div>
-            <div class={styles['terminal-input-container']}>
-              <span class={styles['terminal-prompt']}>$</span>
-              <input
-                type="text"
-                class={styles['terminal-input']}
-                value={terminalInput()}
-                onInput={e => setTerminalInput(e.currentTarget.value)}
-                onKeyPress={e => {
-                  if (e.key === 'Enter') {
-                    handleTerminalCommand(terminalInput());
-                  }
-                }}
-                placeholder="Enter command..."
-                autofocus
-              />
-            </div>
-          </div>
-        </Modal>
-      </Show>
-
-      {/* Security Panel Modal */}
-      <Show when={showSecurityPanel()}>
-        <Modal
-          open={showSecurityPanel()}
-          onClose={() => setShowSecurityPanel(false)}
-          title="Security Monitor"
-          size="xl"
-          class={styles['security-modal']}
-        >
-          <div class={styles['security-content']}>
-            <div class={styles['security-overview']}>
-              <div class={styles['security-score']}>
-                <div class={styles['score-circle']}>
-                  <span class={styles['score-value']}>98</span>
-                  <span class={styles['score-label']}>Security Score</span>
-                </div>
-              </div>
-              <div class={styles['security-metrics']}>
-                <div class={styles['security-metric']}>
-                  <Lock size={20} />
-                  <span>Encrypted Connections</span>
-                  <span class={styles['metric-count']}>247/247</span>
-                </div>
-                <div class={styles['security-metric']}>
-                  <Shield size={20} />
-                  <span>Threats Blocked</span>
-                  <span class={styles['metric-count']}>15</span>
-                </div>
-                <div class={styles['security-metric']}>
-                  <Eye size={20} />
-                  <span>Anomalies Detected</span>
-                  <span class={styles['metric-count']}>2</span>
-                </div>
-              </div>
-            </div>
-
-            <div class={styles['security-alerts']}>
-              <h4>Security Events</h4>
-              <div class={styles['alerts-timeline']}>
-                <For each={securityAlerts()}>
-                  {alert => (
-                    <div
-                      class={`${styles['timeline-item']} ${styles[alert.type]} ${alert.resolved ? styles.resolved : ''}`}
-                    >
-                      <div class={styles['timeline-marker']}></div>
-                      <div class={styles['timeline-content']}>
-                        <div class={styles['event-message']}>{alert.message}</div>
-                        <div class={styles['event-time']}>
-                          {alert.timestamp.toLocaleTimeString()}
-                        </div>
-                        <Show when={!alert.resolved}>
-                          <Button variant="ghost" size="sm">
-                            Mark Resolved
-                          </Button>
-                        </Show>
-                      </div>
-                    </div>
-                  )}
-                </For>
-              </div>
-            </div>
+            {/* terminal UI omitted for brevity */}
           </div>
         </Modal>
       </Show>

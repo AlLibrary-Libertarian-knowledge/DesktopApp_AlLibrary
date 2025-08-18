@@ -27,6 +27,10 @@ import {
   ArrowRight,
 } from 'lucide-solid';
 import styles from './Home.module.css';
+import { useNavigate } from '@solidjs/router';
+import { settingsService } from '@/services/storage/settingsService';
+import { invoke } from '@tauri-apps/api/core';
+import { useNetworkStore } from '@/stores/network/networkStore';
 
 const HomePage: Component = () => {
   // Initialize i18n translation hooks
@@ -37,6 +41,9 @@ const HomePage: Component = () => {
   const [activeTab, setActiveTab] = createSignal<'overview' | 'network' | 'downloads'>('overview');
 
   const handleModalClose = () => setShowModal(false);
+
+  const net = useNetworkStore();
+  const navigate = useNavigate();
 
   onMount(() => {
     // Show welcome modal on first visit
@@ -125,11 +132,7 @@ const HomePage: Component = () => {
           class={styles['network-status-enhanced']}
           role="status"
           aria-live="polite"
-          aria-label={t('home.accessibility.networkStatusAria', {
-            status: t('home.networkStatus.online'),
-            peers: '89',
-            health: '98%',
-          })}
+          aria-label={t('home.accessibility.networkStatusAria', { status: t('home.networkStatus.online'), peers: String(net.connectedPeers()), health: `${net.networkHealthPct()}%`, })}
         >
           {/* Network Status Indicator */}
           <div class={styles['network-status-main']}>
@@ -144,7 +147,7 @@ const HomePage: Component = () => {
                 <div class={styles['health-bar']}>
                   <div
                     class={styles['health-fill']}
-                    style="width: 98%"
+                    style={`width: ${net.networkHealthPct()}%`}
                     aria-label={t('home.networkStatus.health')}
                   ></div>
                 </div>
@@ -168,7 +171,7 @@ const HomePage: Component = () => {
                   <div class={styles['flow-particle']}></div>
                   <div class={styles['flow-particle']}></div>
                 </div>
-                <div class={styles['flow-speed']}>2.4 MB/s</div>
+                <div class={styles['flow-speed']}>{net.downloadMbps()} MB/s</div>
               </div>
             </div>
 
@@ -179,7 +182,7 @@ const HomePage: Component = () => {
                 <div class={styles['node-outer']}></div>
               </div>
               <div class={styles['peer-count']}>
-                <span class={styles['peer-number']}>89</span>
+                <span class={styles['peer-number']}>{net.connectedPeers()}</span>
                 <span class={styles['peer-label']}>{t('home.networkStatus.peers')}</span>
               </div>
             </div>
@@ -197,27 +200,29 @@ const HomePage: Component = () => {
                   <div class={styles['flow-particle']}></div>
                   <div class={styles['flow-particle']}></div>
                 </div>
-                <div class={styles['flow-speed']}>1.2 MB/s</div>
+                <div class={styles['flow-speed']}>{net.uploadMbps()} MB/s</div>
               </div>
             </div>
           </div>
 
-          {/* Network Activity Indicators */}
+          {/* Network Activity Indicators - live counts */}
           <div class={styles['activity-indicators']}>
             <div class={styles['activity-item']}>
               <div class={`${styles['activity-dot']} ${styles.active}`}></div>
               <span class={styles['activity-text']}>
-                3 {t('home.activityIndicators.downloads')}
+                {(net.metrics() as any)?.active_downloads ?? 0} {t('home.activityIndicators.downloads')}
               </span>
             </div>
             <div class={styles['activity-item']}>
               <div class={`${styles['activity-dot']} ${styles.seeding}`}></div>
-              <span class={styles['activity-text']}>7 {t('home.activityIndicators.seeding')}</span>
+              <span class={styles['activity-text']}>
+                {(net.metrics() as any)?.active_seeding ?? 0} {t('home.activityIndicators.seeding')}
+              </span>
             </div>
             <div class={styles['activity-item']}>
               <div class={`${styles['activity-dot']} ${styles.discovering}`}></div>
               <span class={styles['activity-text']}>
-                2 {t('home.activityIndicators.discovering')}
+                {(net.metrics() as any)?.active_discovery ?? 0} {t('home.activityIndicators.discovering')}
               </span>
             </div>
           </div>
@@ -426,6 +431,21 @@ const HomePage: Component = () => {
                   class={styles['action-button']}
                   data-testid="upload-button"
                   aria-label={t('home.quickActions.shareDocument')}
+                  onClick={async () => {
+                    // Open file picker via backend and stage into Document Management
+                    const projectPath = await settingsService.getProjectFolder();
+                    if (!projectPath) { navigate('/documents'); return; }
+                    try {
+                      const files = await invoke<string[] | null>('pick_document_files');
+                      if (files && files.length) {
+                        navigate('/documents');
+                      } else {
+                        navigate('/documents');
+                      }
+                    } catch {
+                      navigate('/documents');
+                    }
+                  }}
                 >
                   <Share size={20} aria-hidden="true" />
                   <span>{t('home.quickActions.shareDocument')}</span>
@@ -434,6 +454,7 @@ const HomePage: Component = () => {
                 <button
                   class={styles['action-button']}
                   aria-label={t('home.quickActions.searchNetwork')}
+                  onClick={() => navigate('/search-network')}
                 >
                   <Search size={20} aria-hidden="true" />
                   <span>{t('home.quickActions.searchNetwork')}</span>
@@ -442,6 +463,7 @@ const HomePage: Component = () => {
                 <button
                   class={styles['action-button']}
                   aria-label={t('home.quickActions.analytics')}
+                  onClick={() => navigate('/network-health')}
                 >
                   <BarChart3 size={20} aria-hidden="true" />
                   <span>{t('home.quickActions.analytics')}</span>
@@ -450,6 +472,7 @@ const HomePage: Component = () => {
                 <button
                   class={styles['action-button']}
                   aria-label={t('home.quickActions.settings')}
+                  onClick={() => navigate('/settings')}
                 >
                   <Settings size={20} aria-hidden="true" />
                   <span>{t('home.quickActions.settings')}</span>
@@ -559,21 +582,44 @@ const HomePage: Component = () => {
         title={t('home.welcomeModal.title')}
         size="lg"
         footer={
-          <div class="flex gap-3 justify-end">
-            <Button
-              variant="outline"
-              onClick={handleModalClose}
-              aria-label={t('home.welcomeModal.takeTour')}
-            >
-              {t('home.welcomeModal.takeTour')}
-            </Button>
-            <Button
-              variant="primary"
-              onClick={handleModalClose}
-              aria-label={t('home.welcomeModal.enterLibrary')}
-            >
-              {t('home.welcomeModal.enterLibrary')}
-            </Button>
+          <div class="flex gap-3 justify-between w-full">
+            <div>
+              <Button
+                variant="outline"
+                onClick={handleModalClose}
+                aria-label={t('home.welcomeModal.takeTour')}
+              >
+                {t('home.welcomeModal.takeTour')}
+              </Button>
+            </div>
+            <div class="flex gap-3">
+              <Button
+                variant="secondary"
+                onClick={async () => {
+                  // Pick library folder on first run
+                  const input = document.createElement('input');
+                  input.type = 'file';
+                  (input as any).webkitdirectory = true;
+                  input.onchange = async e => {
+                    const files = (e.target as HTMLInputElement).files;
+                    if (files && files.length > 0) {
+                      const path = (files[0] as any).webkitRelativePath?.split('/')?.[0] || 'AlLibrary';
+                      await (await import('@/services/storage/settingsService')).settingsService.setProjectFolder(path);
+                    }
+                  };
+                  input.click();
+                }}
+              >
+                Choose Library Folder
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleModalClose}
+                aria-label={t('home.welcomeModal.enterLibrary')}
+              >
+                {t('home.welcomeModal.enterLibrary')}
+              </Button>
+            </div>
           </div>
         }
       >

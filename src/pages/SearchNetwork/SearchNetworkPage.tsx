@@ -3,58 +3,34 @@
  * Enhanced to match HomePage and DocumentManagement sophisticated patterns
  */
 
-import { Component, createSignal, createEffect, onMount, Show, For } from 'solid-js';
+import { Component, createSignal, onMount, Show, For } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
-import {
-  Search,
-  Network,
-  Users,
-  Globe,
-  Shield,
-  Filter,
-  Grid,
-  List,
-  Eye,
-  Download,
-  Share2,
-  BookOpen,
-  Wifi,
-  Clock,
-  MapPin,
-  Zap,
-  TrendingUp,
-  ArrowRight,
-  Activity,
-  BarChart3,
-  Settings,
-  RefreshCw,
-} from 'lucide-solid';
+import { Search, Shield, Filter, Download, BookOpen, ArrowRight, Users } from 'lucide-solid';
 
 // Foundation Components
 import { Button } from '../../components/foundation/Button';
-import { Card } from '../../components/foundation/Card';
 import { Input } from '../../components/foundation/Input';
-import { Badge } from '../../components/foundation/Badge';
-import { Loading } from '../../components/foundation/Loading';
+import { TopCard } from '@/components/composite/TopCard';
+import StatCard from '@/components/composite/StatCard/StatCard';
+import LoadingSpinner from '@/components/foundation/LoadingSpinner/LoadingSpinner';
 
 // Composite Components
-import { StatCard, ActivityListCard } from '../../components/composite';
+// Removed mocked stat/activity components; we will show only real metrics
 
 // Domain Components
 import { DocumentCard } from '../../components/domain/document/DocumentCard';
-import { CulturalIndicator } from '../../components/cultural/CulturalIndicator';
 import { NetworkStatus } from '../../components/domain/network/NetworkStatus';
 
 // Hooks and Services
 import { useNetworkSearch } from '../../hooks/api/useNetworkSearch';
-import { usePeerNetwork } from '../../hooks/api/usePeerNetwork';
 import { enableTorAndP2P } from '../../services/network/bootstrap';
+import { p2pNetworkService } from '@/services/network/p2pNetworkService';
 import { useP2PTransfers } from '@/hooks/api/useP2PTransfers';
 import { torAdapter } from '../../services/network/torAdapter';
+import { useNetworkStore } from '@/stores/network/networkStore';
 
 // Types
-import type { Document } from '../../types/Document';
-import type { SearchQuery, SearchResult } from '../../types/Search';
+import type { Document } from '@/types/core';
 
 // Styles
 import styles from './SearchNetworkPage.module.css';
@@ -68,44 +44,41 @@ export interface SearchNetworkPageProps {
 
 export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
   const navigate = useNavigate();
-  const { enabled, busy, enable, downloadByHash, error, lastOp } = useP2PTransfers();
+  const { enabled, busy, enable, downloadByHash } = useP2PTransfers();
   const [hash, setHash] = createSignal('');
 
   // State Management
   const [searchQuery, setSearchQuery] = createSignal(props.initialQuery || '');
-  const [activeTab, setActiveTab] = createSignal<'search' | 'results' | 'network'>('search');
-  const [viewMode, setViewMode] = createSignal<'grid' | 'list'>(props.initialViewMode || 'grid');
+  const [activeTab, setActiveTab] = createSignal<'search' | 'results'>('search');
+  // const [viewMode, setViewMode] = createSignal<'grid' | 'list'>(props.initialViewMode || 'grid');
   const [showFilters, setShowFilters] = createSignal(false);
   const [anonymousMode, setAnonymousMode] = createSignal(props.anonymousMode || false);
   const [searchScope, setSearchScope] = createSignal<'all' | 'trusted' | 'nearby'>('all');
-  const [sortBy, setSortBy] = createSignal<'relevance' | 'date' | 'peers'>('relevance');
+  // const [sortBy, setSortBy] = createSignal<'relevance' | 'date' | 'peers'>('relevance');
   const [torReady, setTorReady] = createSignal(false);
-  const [torBootstrapped, setTorBootstrapped] = createSignal(false);
+  // const [torBootstrapped, setTorBootstrapped] = createSignal(false);
   const [torEstablishing, setTorEstablishing] = createSignal(false);
 
   // Search filters
   const [fileTypes, setFileTypes] = createSignal<string[]>([]);
-  const [culturalLevels, setCulturalLevels] = createSignal<number[]>([]);
+  // const [culturalLevels, setCulturalLevels] = createSignal<number[]>([]);
 
   // Hooks
-  const {
-    searchResults,
-    searchProgress,
-    isSearching,
-    error,
-    searchNetwork,
-    cancelSearch,
-    clearResults,
-  } = useNetworkSearch();
-
-  const { peers, networkStats } = usePeerNetwork();
+  const { results, isSearching, search } = useNetworkSearch();
+  const net = useNetworkStore();
+  let searchInputEl: HTMLInputElement | undefined;
   const onEnableTorClick = async () => {
     try {
       setTorEstablishing(true);
       const result = await enableTorAndP2P();
       setTorReady(result.torConnected && result.p2pStarted);
+      if (result.torConnected && result.p2pStarted) {
+        // Auto seed existing files and start watching for changes
+        void p2pNetworkService.seedLibraryFolder();
+        void p2pNetworkService.watchAndSeedLibrary();
+      }
     } catch (e) {
-      console.error('Failed to enable TOR/P2P routing:', e);
+      void e;
       setTorReady(false);
     }
     finally {
@@ -115,109 +88,47 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
 
   // Periodically poll tor status for header pill and circuit banner
   onMount(() => {
-    let timer: any;
+    let timer = 0 as unknown as number; // initialized for cleanup
     const tick = async () => {
       try {
         const status = await torAdapter.status();
-        setTorBootstrapped(!!status?.bootstrapped);
         setTorReady(!!status?.circuitEstablished);
-      } catch {}
+      } catch (e) { void e; }
     };
     tick();
-    timer = globalThis.setInterval(tick, 4000);
-    const handler = () => tick();
+    timer = globalThis.setInterval(tick, 4000) as unknown as number;
+    const handler = () => { /* event -> refresh */ void tick(); };
     window.addEventListener('tor-status-updated', handler as any);
-    return () => globalThis.clearInterval(timer);
+    // Global shortcut: Ctrl/Cmd+K focuses search
+    const keyHandler = (ev: KeyboardEvent) => {
+      const isMac = navigator.platform.includes('Mac');
+      if ((isMac ? ev.metaKey : ev.ctrlKey) && ev.key.toLowerCase() === 'k') {
+        ev.preventDefault();
+        searchInputEl?.focus();
+      }
+    };
+    window.addEventListener('keydown', keyHandler);
+    return () => {
+      globalThis.clearInterval(timer);
+      window.removeEventListener('tor-status-updated', handler as any);
+      window.removeEventListener('keydown', keyHandler);
+    };
   });
 
-  // Sample data for demonstration
-  const networkActivity = [
-    {
-      type: 'search-active',
-      title: 'Active search across 89 peers',
-      status: 'Searching',
-      metadata: 'Cultural Heritage Documents',
-      resultCount: 247,
-    },
-    {
-      type: 'peer-discovered',
-      title: 'New peer discovered',
-      status: 'Connected',
-      metadata: 'Universidad Nacional Autónoma de México',
-      peerCount: 90,
-    },
-    {
-      type: 'content-found',
-      title: 'Relevant content discovered',
-      status: 'Found',
-      metadata: 'Traditional Music Collection',
-      resultCount: 12,
-    },
-  ];
+  // Removed mocked activity/stats
 
-  const searchStats = [
-    {
-      type: 'peers',
-      icon: <Users size={24} />,
-      number: '89',
-      label: 'Connected Peers',
-      trendType: 'positive',
-      trendIcon: <TrendingUp size={12} />,
-      trendValue: '+5',
-      trendLabel: 'online',
-      graphType: 'peers',
-    },
-    {
-      type: 'documents',
-      icon: <BookOpen size={24} />,
-      number: '12,847',
-      label: 'Network Documents',
-      trendType: 'positive',
-      trendIcon: <TrendingUp size={14} />,
-      trendValue: '+127',
-      trendLabel: 'today',
-      graphType: 'chart',
-    },
-    {
-      type: 'institutions',
-      icon: <Globe size={24} />,
-      number: '156',
-      label: 'Cultural Institutions',
-      trendType: 'neutral',
-      trendIcon: <ArrowRight size={14} />,
-      trendValue: 'stable',
-      graphType: 'map',
-    },
-    {
-      type: 'quality',
-      icon: <Zap size={24} />,
-      number: '94%',
-      label: 'Search Quality',
-      trendType: 'positive',
-      trendIcon: <TrendingUp size={14} />,
-      trendValue: 'excellent',
-      graphType: 'health',
-    },
-  ];
-
-  // Enhanced search interface
+  // Title-only, Tor-gated search interface
   const handleSearch = async () => {
     if (!searchQuery().trim()) return;
+    if (!torReady()) return;
     setActiveTab('results');
-
-    const query: SearchQuery = {
-      text: searchQuery(),
-      fileTypes: fileTypes(),
-      culturalLevels: culturalLevels(),
-      scope: searchScope(),
-      anonymous: anonymousMode(),
-      sortBy: sortBy(),
-    };
-
     try {
-      await searchNetwork(query);
-    } catch (error) {
-      console.error('Network search failed:', error);
+      await search({ query: searchQuery().trim() }, { anonymous: anonymousMode() });
+      // Smooth-scroll to results
+      document.getElementById('resultsTop')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (e) {
+      // surface via store
+      void e;
     }
   };
 
@@ -229,100 +140,44 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
     navigate(`/document/${document.id}`);
   };
 
-  // Add any missing state declarations here
-  const [hasSearched, setHasSearched] = createSignal(false);
+  // Removed unused hasSearched state
 
   return (
     <div class={styles['search-network-page']}>
-      {/* Enhanced Page Header */}
-      <header class={`${styles['page-header']} ${styles.enhanced}`}>
-        <div class={styles['header-content']}>
-          <h1 class={styles['page-title']}>Network Search Hub</h1>
-          <p class={styles['page-subtitle']}>
-            Distributed search across decentralized cultural heritage network
-          </p>
-          <Show when={torBootstrapped() && !torReady()}>
-            <div class={styles['tor-banner']}>
-              Building Tor circuit… routing will switch to Onion once ready
-            </div>
-          </Show>
-        </div>
+      {/* Futuristic header using existing TopCard component */}
+      <TopCard
+        title="Network Search Hub"
+        subtitle="Distributed search across decentralized cultural heritage network"
+        rightContent={
+          <div class={styles['network-status-enhanced']}>
+            <NetworkStatus variant="default" />
+            <div class={styles['tor-pill']} data-on={torReady() ? '1' : '0'}>{torReady() ? 'Onion' : 'No Onion'}</div>
+          </div>
+        }
+      />
 
-        <div class={styles['network-status-enhanced']}>
-            <NetworkStatus variant="default" connectionCount={peers()?.length || 0} showHealth={true} />
-            <div class={styles['tor-pill']} data-on={torReady() ? '1' : '0'}>
-              {torReady() ? 'Onion' : 'No Onion'}
-            </div>
+      {/* Minimal tabs for clarity */}
+      <div class={styles['contentTabs']}>
+        <div class={styles['tabButtons']}>
+          <button class={`${activeTab() === 'search' ? 'active' : ''}`} onClick={() => setActiveTab('search')}>
+            <Search size={16} />&nbsp;Overview
+          </button>
+          <button class={`${activeTab() === 'results' ? 'active' : ''}`} onClick={() => setActiveTab('results')}>
+            <BookOpen size={16} />&nbsp;Search Results
+          </button>
         </div>
-      </header>
-
-      {/* Enhanced Navigation Tabs */}
-      <div
-        class={styles['dashboard-tabs']}
-        data-active={activeTab() === 'search' ? '0' : activeTab() === 'results' ? '1' : '2'}
-      >
-        <button
-          class={`${styles.tab} ${activeTab() === 'search' ? styles.active : ''}`}
-          onClick={() => setActiveTab('search')}
-        >
-          <span class={styles['tab-text']}>
-            <Search size={16} class="mr-2" />
-            Search Interface
-          </span>
-        </button>
-        <button
-          class={`${styles.tab} ${activeTab() === 'results' ? styles.active : ''}`}
-          onClick={() => setActiveTab('results')}
-        >
-          <span class={styles['tab-text']}>
-            <BookOpen size={16} class="mr-2" />
-            Search Results
-          </span>
-        </button>
-        <button
-          class={`${styles.tab} ${activeTab() === 'network' ? styles.active : ''}`}
-          onClick={() => setActiveTab('network')}
-        >
-          <span class={styles['tab-text']}>
-            <Activity size={16} class="mr-2" />
-            Network Activity
-          </span>
-        </button>
       </div>
 
       <div class={styles['dashboard-content']}>
         {/* Search Interface Tab */}
         {activeTab() === 'search' && (
           <>
-            {/* Network Statistics Section */}
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <For each={searchStats}>
-                {stat => (
-                  <StatCard
-                    type={stat.type}
-                    icon={stat.icon}
-                    number={stat.number}
-                    label={stat.label}
-                    trendType={stat.trendType}
-                    trendIcon={stat.trendIcon}
-                    trendValue={stat.trendValue}
-                    trendLabel={stat.trendLabel}
-                    graphType={stat.graphType}
-                  />
-                )}
-              </For>
-            </div>
+            {/* Network Statistics removed (mocked). Live info shown in header. */}
 
             {/* Enhanced Search Interface */}
-            <section class={`${styles['search-section']} ${styles.enhanced}`}>
-              <div class={styles['section-header']}>
-                <div class={styles['header-content']}>
-                  <h2 class={styles['section-title']}>Distributed Search</h2>
-                  <p class={styles['section-subtitle']}>
-                    Search across connected peers and cultural institutions
-                  </p>
-                </div>
-                <div class={styles['header-actions']}>
+            <section class={styles['searchControls']}>
+              <div class={styles['searchBar']}>
+                <div class={styles['searchOptions']}>
                   <Button variant={torReady() ? 'outline' : 'primary'} size="sm" onClick={onEnableTorClick} disabled={torEstablishing()}>
                     <Shield size={16} class="mr-2" />
                     {torReady() ? 'TOR Enabled' : torEstablishing() ? 'Enabling…' : 'Enable TOR Search'}
@@ -330,186 +185,113 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
                   <Button variant={enabled() ? 'outline' : 'primary'} size="sm" onClick={enable} disabled={busy()}>
                     {enabled() ? 'Private Networking Enabled' : 'Enable Private Networking'}
                   </Button>
-                  <div class={styles['hash-download']}>
-                    <Input type="text" placeholder="Download by hash" value={hash()} onInput={e => setHash(e.currentTarget.value)} />
-                    <Button variant="outline" size="sm" disabled={!enabled() || busy() || !hash().trim()} onClick={() => downloadByHash(hash().trim(), (window as any).api?.downloadsDir ?? 'downloads')}>
-                      <Download size={14} class="mr-2" />
-                      Download
-                    </Button>
-                  </div>
-                  <Show when={error()}>
-                    <div class={styles['error-text']}>{error()}</div>
-                  </Show>
-                  <Show when={lastOp()}>
-                    <div class={styles['muted-text']}>Last operation: {lastOp()}</div>
-                  </Show>
-                  <Button variant="ghost" size="sm" onClick={() => setShowFilters(!showFilters())}>
-                    <Filter size={16} class="mr-2" />
-                    {showFilters() ? 'Hide Filters' : 'Show Filters'}
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <Settings size={16} class="mr-2" />
-                    Settings
-                  </Button>
-                </div>
-              </div>
-
-              <Card class={styles['search-container']}>
-                <div class={styles['search-interface']}>
-                  <div class={styles['search-input-wrapper']}>
-                    <div class={styles['search-icon-container']}>
-                      <Search size={20} class={styles['search-icon']} />
-                    </div>
-                    <Input
-                      type="text"
-                      placeholder="Search cultural heritage documents across P2P network..."
-                      value={searchQuery()}
-                      onInput={e => handleSearchInput(e.currentTarget.value)}
-                      class={styles['search-input']}
-                      onKeyPress={e => {
-                        if (e.key === 'Enter') {
-                          handleSearch();
-                        }
-                      }}
-                    />
-                    <div class={styles['search-actions']}>
-                      <Button
-                        variant="primary"
-                        onClick={handleSearch}
-                        disabled={!searchQuery().trim() || isSearching()}
-                      >
-                        {isSearching() ? 'Searching...' : 'Search Network'}
+                  <div class={styles['searchOptionsRight']}>
+                    <div>
+                      <Input type="text" placeholder="Download by hash" value={hash()} onInput={(v) => setHash(v)} />
+                      <Button variant="outline" size="sm" disabled={!enabled() || busy() || !hash().trim()} onClick={() => downloadByHash(hash().trim(), (window as any).api?.downloadsDir ?? 'downloads')}>
+                        <Download size={14} class="mr-2" />
+                        Download
                       </Button>
                     </div>
+                    <Button variant="ghost" size="sm" onClick={() => setShowFilters(!showFilters())}>
+                      <Filter size={16} class="mr-2" />
+                      {showFilters() ? 'Hide Filters' : 'Show Filters'}
+                    </Button>
                   </div>
+                </div>
 
-                  {/* Search Filters */}
-                  <Show when={showFilters()}>
-                    <div class={styles['search-filters']}>
-                      <div class={styles['filter-section']}>
-                        <label class={styles['filter-label']}>Search Scope</label>
-                        <div class={styles['filter-options']}>
-                          <Button
-                            variant={searchScope() === 'all' ? 'primary' : 'outline'}
-                            size="sm"
-                            onClick={() => setSearchScope('all')}
-                          >
-                            All Peers
-                          </Button>
-                          <Button
-                            variant={searchScope() === 'trusted' ? 'primary' : 'outline'}
-                            size="sm"
-                            onClick={() => setSearchScope('trusted')}
-                          >
-                            Trusted Only
-                          </Button>
-                          <Button
-                            variant={searchScope() === 'nearby' ? 'primary' : 'outline'}
-                            size="sm"
-                            onClick={() => setSearchScope('nearby')}
-                          >
-                            Nearby Peers
-                          </Button>
-                        </div>
-                      </div>
+                <div class={styles['searchInputContainer']}>
+                  <Search size={20} />
+                  <Input
+                    type="text"
+                    placeholder="Search cultural heritage documents across P2P network..."
+                    value={searchQuery()}
+                    onInput={handleSearchInput}
+                    onKeyDown={(e: any) => { if (e.key === 'Enter') handleSearch(); }}
+                    ref={(el: HTMLInputElement) => { searchInputEl = el; }}
+                    class={styles['searchInput'] as unknown as string}
+                  />
+                  <div class={styles['searchActions']}>
+                    <Button
+                      variant="primary"
+                      onClick={handleSearch}
+                      disabled={!searchQuery().trim() || isSearching() || !torReady()}
+                    >
+                      {isSearching() ? 'Searching...' : 'Search Network'}
+                    </Button>
+                  </div>
+                </div>
 
-                      <div class={styles['filter-section']}>
-                        <label class={styles['filter-label']}>File Types</label>
-                        <div class={styles['filter-options']}>
-                          <Button
-                            variant={fileTypes().includes('pdf') ? 'primary' : 'outline'}
-                            size="sm"
-                            onClick={() => {
-                              const types = fileTypes();
-                              if (types.includes('pdf')) {
-                                setFileTypes(types.filter(t => t !== 'pdf'));
-                              } else {
-                                setFileTypes([...types, 'pdf']);
-                              }
-                            }}
-                          >
-                            PDF Documents
-                          </Button>
-                          <Button
-                            variant={fileTypes().includes('epub') ? 'primary' : 'outline'}
-                            size="sm"
-                            onClick={() => {
-                              const types = fileTypes();
-                              if (types.includes('epub')) {
-                                setFileTypes(types.filter(t => t !== 'epub'));
-                              } else {
-                                setFileTypes([...types, 'epub']);
-                              }
-                            }}
-                          >
-                            EPUB Books
-                          </Button>
-                        </div>
-                      </div>
-
-                      <div class={styles['filter-section']}>
-                        <label class={styles['filter-label']}>Privacy</label>
-                        <div class={styles['filter-options']}>
-                          <Button
-                            variant={anonymousMode() ? 'primary' : 'outline'}
-                            size="sm"
-                            onClick={() => setAnonymousMode(!anonymousMode())}
-                          >
-                            <Shield size={16} class="mr-2" />
-                            Anonymous Search
-                          </Button>
-                        </div>
+                {/* Filters with smooth expand */}
+                <div class={styles['filtersPanel']} data-open={showFilters() ? '1' : '0'} aria-hidden={!showFilters()} aria-expanded={showFilters()}>
+                  <div class={styles['searchOptions']}>
+                    <div class={styles['searchOptionsLeft']}>
+                      <label>Scope</label>
+                      <div>
+                        <Button variant={searchScope() === 'all' ? 'primary' : 'outline'} size="sm" onClick={() => setSearchScope('all')}>All Peers</Button>
+                        <Button variant={searchScope() === 'trusted' ? 'primary' : 'outline'} size="sm" onClick={() => setSearchScope('trusted')}>Trusted Only</Button>
+                        <Button variant={searchScope() === 'nearby' ? 'primary' : 'outline'} size="sm" onClick={() => setSearchScope('nearby')}>Nearby Peers</Button>
                       </div>
                     </div>
-                  </Show>
-                </div>
-              </Card>
-            </section>
-
-            {/* Network Activity Preview */}
-            <section class={`${styles['activity-section']} ${styles.enhanced}`}>
-              <div class={styles['section-header']}>
-                <div class={styles['header-content']}>
-                  <h2 class={styles['section-title']}>Live Network Activity</h2>
-                  <p class={styles['section-subtitle']}>
-                    Real-time search activity and peer discoveries
-                  </p>
-                </div>
-                <div class={styles['header-actions']}>
-                  <Button variant="ghost" size="sm" onClick={() => setActiveTab('network')}>
-                    <ArrowRight size={16} class="ml-2" />
-                    View All Activity
-                  </Button>
+                    <div class={styles['searchOptionsRight']}>
+                      <label>Types</label>
+                      <div>
+                        <Button variant={fileTypes().includes('pdf') ? 'primary' : 'outline'} size="sm" onClick={() => { const types = fileTypes(); setFileTypes(types.includes('pdf') ? types.filter(t => t !== 'pdf') : [...types, 'pdf']); }}>PDF</Button>
+                        <Button variant={fileTypes().includes('epub') ? 'primary' : 'outline'} size="sm" onClick={() => { const types = fileTypes(); setFileTypes(types.includes('epub') ? types.filter(t => t !== 'epub') : [...types, 'epub']); }}>EPUB</Button>
+                        <Button variant={anonymousMode() ? 'primary' : 'outline'} size="sm" onClick={() => setAnonymousMode(!anonymousMode())}><Shield size={16} />&nbsp;Anonymous</Button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-
-              <div class={styles['activity-grid']}>
-                <ActivityListCard
-                  title="Search Activity"
-                  subtitle="Active searches and discoveries"
-                  icon={<Search size={20} />}
-                  items={networkActivity}
-                  cardType="network"
-                />
-              </div>
             </section>
+
+            {/* Quick metrics ribbon using StatCard */}
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+              <StatCard
+                type="peers"
+                icon={<Users size={20} />}
+                number={`${net.connectedPeers()}`}
+                label="Connected Peers"
+                trendType="neutral"
+                trendIcon={<ArrowRight size={12} />}
+                trendValue="live"
+                graphType="peers"
+              />
+              <StatCard
+                type="documents"
+                icon={<BookOpen size={20} />}
+                number={String(results()?.length || 0)}
+                label="Results"
+                trendType="neutral"
+                trendIcon={<ArrowRight size={12} />}
+                trendValue="now"
+                graphType="chart"
+              />
+              <StatCard
+                type="health"
+                icon={<Shield size={20} />}
+                number={torReady() ? 'Onion' : 'No Onion'}
+                label="Routing"
+                trendType={torReady() ? 'positive' : 'neutral'}
+                trendIcon={<ArrowRight size={12} />}
+                trendValue="status"
+                graphType="health"
+              />
+            </div>
+
+            {/* Removed bulk toolbar for streamlined UI */}
+
+            {/* Network Activity Preview removed until wired with live events */}
           </>
         )}
 
         {/* Search Results Tab */}
         {activeTab() === 'results' && (
-          <section class={styles['results-section']}>
+          <section class={styles['results-section']} id="resultsTop" aria-live="polite">
             <div class={styles['section-header']}>
               <h2>Search Results</h2>
               <div class={styles['result-controls']}>
-                <Button variant="ghost" size="sm">
-                  <Filter size={14} class="mr-2" />
-                  Filter Results
-                </Button>
-                <Button variant="ghost" size="sm">
-                  <Grid size={14} class="mr-2" />
-                  Grid View
-                </Button>
                 <Button variant="outline" size="sm">
                   <Download size={14} class="mr-2" />
                   Download All
@@ -519,27 +301,29 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
 
             <Show when={isSearching()}>
               <div class={styles['search-progress']}>
-                <Loading />
-                <p>Searching across {peers()?.length || 0} connected peers...</p>
+                <LoadingSpinner variant="ring" size="md" message={`Searching across ${net.connectedPeers()} connected peers...`} showMessage />
+              </div>
+              <div class={styles['skeleton-grid']}>
+                <For each={[1,2,3,4,5,6]}>{() => <div class={styles['skeleton-card']} />}</For>
               </div>
             </Show>
 
-            <Show when={searchResults() && searchResults()!.length > 0}>
+            <Show when={results() && results()!.length > 0}>
               <div class={styles['results-grid']}>
-                <For each={searchResults()}>
-                  {result => (
+                <For each={results()}>
+                  {(result: any) => (
                     <DocumentCard
                       document={result.document}
                       onOpen={() => handleDocumentOpen(result.document)}
                       showCulturalContext={true}
-                      variant="network-result"
+                      variant="default"
                     />
                   )}
                 </For>
               </div>
             </Show>
 
-            <Show when={!isSearching() && searchResults()?.length === 0}>
+            <Show when={!isSearching() && results()?.length === 0}>
               <div class={styles['empty-state']}>
                 <Search size={48} />
                 <h3>No results found</h3>
@@ -553,38 +337,7 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
           </section>
         )}
 
-        {/* Network Activity Tab */}
-        {activeTab() === 'network' && (
-          <section class={styles['network-section']}>
-            <div class={styles['section-header']}>
-              <h2>Network Activity & Analytics</h2>
-              <div class={styles['network-controls']}>
-                <Button variant="ghost" size="sm">
-                  <RefreshCw size={14} class="mr-2" />
-                  Refresh
-                </Button>
-                <Button variant="ghost" size="sm">
-                  <BarChart3 size={14} class="mr-2" />
-                  Analytics
-                </Button>
-                <Button variant="outline" size="sm">
-                  <Settings size={14} class="mr-2" />
-                  Configure
-                </Button>
-              </div>
-            </div>
-
-            <div class={styles['network-analytics']}>
-              <ActivityListCard
-                title="Network Discoveries"
-                subtitle="Recent peer connections and content discoveries"
-                icon={<Network size={20} />}
-                items={networkActivity}
-                cardType="network"
-              />
-            </div>
-          </section>
-        )}
+        {/* Network Activity Tab intentionally minimal until live events wiring */}
       </div>
     </div>
   );

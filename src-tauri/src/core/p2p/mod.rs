@@ -12,7 +12,7 @@ use libp2p::{
 use libp2p_request_response as rr;
 use libp2p::Transport;
 use futures::StreamExt;
-use futures::{future::BoxFuture, io::{AsyncRead, AsyncWrite, AsyncReadExt, AsyncWriteExt}};
+use futures::{io::{AsyncRead, AsyncWrite, AsyncReadExt, AsyncWriteExt}};
 use tokio::{sync::{mpsc, oneshot}, task::JoinHandle};
 use std::collections::{HashMap, HashSet};
 use std::io::{Read, Seek, SeekFrom, Write};
@@ -26,8 +26,9 @@ use proxy_socks::SocksProxyTransport;
 pub enum Command {
 	AddBootstrap { addrs: Vec<Multiaddr> },
 	PublishHash { hash: String },
-	UpdateIndex { hash: String, path: String },
+	UpdateIndex { hash: String, path: String, title: String, author: Option<String>, tags: Vec<String> },
 	Fetch { hash: String, out_path: String, reply: oneshot::Sender<Result<String, String>> },
+	Search { query: String, reply: oneshot::Sender<Vec<(String, String)>> },
 }
 
 pub struct RuntimeHandle {
@@ -141,7 +142,9 @@ pub async fn start_runtime(socks: Option<String>) -> Result<RuntimeHandle> {
 	let mut swarm = Swarm::new(transport, behaviour, local_peer_id, SwarmConfig::with_executor(TokioExec));
 
 	// State
-	let mut content_index: HashMap<String, String> = HashMap::new();
+	#[derive(Clone)]
+	struct IndexedContent { path: String, title: String, author: Option<String>, tags: Vec<String> }
+	let mut content_index: HashMap<String, IndexedContent> = HashMap::new();
 	let mut connected: HashSet<PeerId> = HashSet::new();
 	const CHUNK_SIZE: usize = 64 * 1024;
 
@@ -154,6 +157,9 @@ pub async fn start_runtime(socks: Option<String>) -> Result<RuntimeHandle> {
 		reply: oneshot::Sender<Result<String, String>>,
 	}
 	let mut current_fetch: Option<PendingFile> = None;
+	// Distributed search state
+	let mut current_search: Option<(String, std::time::Instant, tokio::sync::oneshot::Sender<Vec<(String, String)>>, Vec<(String, String)>)> = None;
+	let mut ticker = tokio::time::interval(Duration::from_millis(200));
 
 	let (tx, mut rx) = mpsc::channel::<Command>(64);
 	let task = tokio::spawn(async move {
@@ -167,8 +173,8 @@ pub async fn start_runtime(socks: Option<String>) -> Result<RuntimeHandle> {
 						Command::PublishHash { hash } => {
 							let _ = swarm.behaviour_mut().gossipsub.publish(topic.clone(), hash.as_bytes());
 						}
-						Command::UpdateIndex { hash, path } => {
-							content_index.insert(hash, path);
+						Command::UpdateIndex { hash, path, title, author, tags } => {
+							content_index.insert(hash, IndexedContent { path, title, author, tags });
 						}
 						Command::Fetch { hash, out_path, reply } => {
 							// Attempt from all connected peers
@@ -185,6 +191,23 @@ pub async fn start_runtime(socks: Option<String>) -> Result<RuntimeHandle> {
 								let _ = reply.send(Err("failed to open output file".into()));
 							}
 						}
+						Command::Search { query, reply } => {
+							// Broadcast a simple search request via gossipsub
+							let id = uuid::Uuid::new_v4().to_string();
+							let msg = format!("S|{}|{}", id, query);
+							let _ = swarm.behaviour_mut().gossipsub.publish(topic.clone(), msg.into_bytes());
+							// Collect local matches immediately
+							let mut buf: Vec<(String, String)> = Vec::new();
+							for (h, c) in content_index.iter() {
+								let mut name = c.title.clone();
+								if name.is_empty() { name = std::path::Path::new(&c.path).file_name().and_then(|s| s.to_str()).unwrap_or("").to_string(); }
+								let ql = query.to_lowercase();
+								let author_hit = c.author.as_ref().map(|a| a.to_lowercase().contains(&ql)).unwrap_or(false);
+								let tags_hit = c.tags.iter().any(|t| t.to_lowercase().contains(&ql));
+								if name.to_lowercase().contains(&ql) || author_hit || tags_hit { buf.push((h.clone(), name)); }
+							}
+							current_search = Some((id, std::time::Instant::now(), reply, buf));
+						}
 					}
 				}
 				event = swarm.select_next_some() => {
@@ -198,8 +221,8 @@ pub async fn start_runtime(socks: Option<String>) -> Result<RuntimeHandle> {
 										match message {
 											rr::Message::Request { request, channel, .. } => {
 												if let Ok((hash, offset)) = parse_chunk_request(&request) {
-													if let Some(path) = content_index.get(&hash) {
-														if let Ok(mut file) = std::fs::File::open(path) {
+													if let Some(info) = content_index.get(&hash) {
+														if let Ok(mut file) = std::fs::File::open(&info.path) {
 															let _ = file.seek(SeekFrom::Start(offset));
 															let mut buf = vec![0u8; CHUNK_SIZE];
 															let read = file.read(&mut buf).unwrap_or(0);
@@ -225,10 +248,57 @@ pub async fn start_runtime(socks: Option<String>) -> Result<RuntimeHandle> {
 										}
 									}
 								}
-								BehaviourEvent::Gossipsub(_ev) => {}
+								BehaviourEvent::Gossipsub(ev) => {
+									if let gossipsub::Event::Message { message, .. } = ev {
+										if let Ok(txt) = String::from_utf8(message.data.clone()) {
+											// Search request: S|<id>|<query>
+											if let Some(rest) = txt.strip_prefix("S|") {
+												let mut parts = rest.splitn(2, '|');
+												if let (Some(req_id), Some(query)) = (parts.next(), parts.next()) {
+													let ql = query.to_lowercase();
+													for (h, c) in content_index.iter() {
+														let mut name = c.title.clone();
+														if name.is_empty() { name = std::path::Path::new(&c.path).file_name().and_then(|s| s.to_str()).unwrap_or("").to_string(); }
+														let author_hit = c.author.as_ref().map(|a| a.to_lowercase().contains(&ql)).unwrap_or(false);
+														let tags_hit = c.tags.iter().any(|t| t.to_lowercase().contains(&ql));
+														if name.to_lowercase().contains(&ql) || author_hit || tags_hit {
+															let resp = format!("R|{}|{}|{}", req_id, h, name);
+															let _ = swarm.behaviour_mut().gossipsub.publish(topic.clone(), resp.into_bytes());
+														}
+													}
+												}
+											// Search response: R|<id>|<hash>|<name>
+											} else if let Some(rest) = txt.strip_prefix("R|") {
+												let mut parts = rest.splitn(3, '|');
+												if let (Some(res_id), Some(hash), Some(name)) = (parts.next(), parts.next(), parts.next()) {
+													let mut is_match = false;
+													if let Some((ref cur_id, _started, ref _reply, _)) = current_search {
+														if *cur_id == res_id { is_match = true; }
+													}
+													if is_match {
+														if let Some((cur_id2, started2, reply2, mut acc2)) = current_search.take() {
+															acc2.push((hash.to_string(), name.to_string()));
+															current_search = Some((cur_id2, started2, reply2, acc2));
+														}
+													}
+												}
+											}
+										}
+									}
+								}
 							}
 						}
 						_ => {}
+					}
+				}
+				_ = ticker.tick() => {
+					// End search after ~1.2s window
+					if let Some((id, started, reply, results)) = current_search.take() {
+						if started.elapsed() >= Duration::from_millis(1200) {
+							let _ = reply.send(results);
+						} else {
+							current_search = Some((id, started, reply, results));
+						}
 					}
 				}
 			}

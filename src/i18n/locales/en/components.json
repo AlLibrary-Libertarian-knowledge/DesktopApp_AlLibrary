@@ -294,7 +294,9 @@
       "active": "active",
       "queue": "Queue: {{count}}",
       "totalSpeed": "{{speed}} total",
-      "eta": "{{time}} remaining"
+      "eta": "{{time}} remaining",
+      "downSpeed": "Download",
+      "upSpeed": "Upload"
     },
     "storage": {
       "title": "Storage",

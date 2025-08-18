@@ -1,4 +1,6 @@
 import { Component, createSignal, ParentProps, Show, onMount, Suspense } from 'solid-js';
+import { settingsService } from '@/services/storage/settingsService';
+import { FirstRunWizard } from '@/components/composite/FirstRunWizard';
 import { Router, Route } from '@solidjs/router';
 import { listen } from '@tauri-apps/api/event';
 import MainLayout from './components/layout/MainLayout';
@@ -22,6 +24,7 @@ import { ConnectionManager } from './pages/ConnectionManager';
 import P2POverview from './pages/P2POverview';
 import DocumentManagement from './pages/DocumentManagement';
 import { DocumentDetailPage } from './pages/DocumentDetail';
+import { SearchNetworkPage } from './pages/SearchNetwork';
 import { DocumentReader } from './pages/DocumentReader';
 
 // Cultural Heritage Pages
@@ -75,18 +78,27 @@ const P2POverviewRoute: Component = () => <P2POverview />;
 const App: Component = () => {
   const [isLoading, setIsLoading] = createSignal(true);
   const [initProgress, setInitProgress] = createSignal<InitProgress | null>(null);
+  const [needsFirstRun, setNeedsFirstRun] = createSignal(false);
 
   onMount(async () => {
     let cleanup: (() => void) | null = null;
 
     try {
+      // First-run bootstrap: check if library folder is set
+      try {
+        const path = await settingsService.ensureInitialized();
+        const fr = globalThis.localStorage?.getItem('FIRST_RUN_DONE');
+        if (!path || !fr) {
+          setNeedsFirstRun(true);
+        }
+      } catch { /* ignore */ }
+
       // Initialize i18n system
       await initializeI18n();
-      console.log('i18n system initialized successfully');
+      /* initialized */
 
       // Listen for initialization progress from Tauri
       const unlisten = await listen<InitProgress>('init-progress', event => {
-        console.log('Received init progress:', event.payload);
         setInitProgress(event.payload);
 
         // When initialization is complete, hide loading screen
@@ -94,15 +106,15 @@ const App: Component = () => {
           globalThis.setTimeout(() => {
             setIsLoading(false);
             // Stop listening after initialization completes to prevent unnecessary re-renders
-            try { cleanup?.(); } catch {}
+            try { cleanup?.(); } catch { /* ignore */ }
             cleanup = null;
           }, 1500); // Small delay to show completion
         }
       });
 
       cleanup = unlisten;
-    } catch (error) {
-      console.error('Failed to setup initialization listener:', error);
+    } catch {
+      /* listener setup failed, fallback */
       // Fallback: hide loading after a timeout if Tauri isn't available
       globalThis.setTimeout(() => {
         setIsLoading(false);
@@ -126,6 +138,9 @@ const App: Component = () => {
       </Show>
 
       <Show when={!isLoading()}>
+        <Show when={needsFirstRun()}>
+          <FirstRunWizard onComplete={() => setNeedsFirstRun(false)} />
+        </Show>
         <Router root={AppWithLayout}>
           <Route
             path="/"
@@ -202,7 +217,7 @@ const App: Component = () => {
             path="/search-network"
             component={() => (
               <RouteWrapper>
-                <DocumentManagement />
+                <SearchNetworkPage />
               </RouteWrapper>
             )}
           />

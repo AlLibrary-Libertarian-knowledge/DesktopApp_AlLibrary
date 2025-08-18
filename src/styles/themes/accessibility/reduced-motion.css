@@ -275,13 +275,7 @@
 }
 
 /* Reduced Motion Disable CSS Animations */
-[data-accessibility='reduced-motion'] @keyframes * {
-  from,
-  to {
-    transform: none;
-    opacity: 1;
-  }
-}
+/* Remove invalid wildcard keyframes selector to satisfy CSS parsers */
 
 /* Reduced Motion Disable Transforms */
 [data-accessibility='reduced-motion'] *:hover {

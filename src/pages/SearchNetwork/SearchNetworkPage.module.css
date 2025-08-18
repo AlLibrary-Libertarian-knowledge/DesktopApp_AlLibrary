@@ -925,6 +925,70 @@
   background: linear-gradient(90deg, rgba(124, 58, 237, 0.8) 0%, rgba(79, 70, 229, 0.8) 100%);
 }
 
+/* ========================================================================
+   Results Section & Layout not previously styled
+   ======================================================================== */
+.dashboard-content {
+  position: relative;
+  z-index: 1;
+  display: block;
+}
+
+.results-section {
+  margin-top: 1.25rem;
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.45) 0%, rgba(30, 41, 59, 0.35) 100%);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 18px;
+  backdrop-filter: blur(16px);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+.section-header h2 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: rgba(241, 245, 249, 0.95);
+}
+
+.result-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.search-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 0.5rem;
+  color: rgba(203, 213, 225, 0.9);
+}
+
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem 1rem;
+  color: rgba(226, 232, 240, 0.92);
+}
+
 /* ==========================================================================
    Responsive Design - Mobile-First Approach
    ========================================================================== */
@@ -1203,4 +1267,44 @@
     box-shadow: none !important;
     break-inside: avoid;
   }
+}
+
+/* Smooth filter panel expand/collapse */
+.filtersPanel {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: max-height 400ms cubic-bezier(0.4, 0, 0.2, 1), opacity 300ms ease, transform 300ms ease;
+}
+.filtersPanel[data-open='1'] {
+  max-height: 260px;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Skeletons for results */
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+@media (min-width: 768px) {
+  .results-grid, .skeleton-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 1024px) {
+  .results-grid, .skeleton-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+.skeleton-card {
+  height: 180px;
+  border-radius: 14px;
+  background: linear-gradient(90deg, rgba(148,163,184,0.08), rgba(148,163,184,0.14), rgba(148,163,184,0.08));
+  background-size: 300% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border: 1px solid rgba(148,163,184,0.18);
+}
+@keyframes shimmer {
+  0% { background-position: 0% 0; }
+  100% { background-position: 100% 0; }
 }

@@ -41,6 +41,7 @@ import {
   RefreshCw,
 } from 'lucide-solid';
 import { validationService } from '../../services';
+import { invoke } from '@tauri-apps/api/core';
 import { searchService } from '../../services/searchService';
 import { projectService } from '../../services/projectService';
 import { documentService, type DocumentInfo, type ScanResult, type FolderInfo } from '../../services/documentService';
@@ -54,7 +55,7 @@ import type {
 } from '../../services/searchService';
 import styles from './DocumentManagement.module.css';
 import { useNavigate } from '@solidjs/router';
-giimport { useP2PTransfers } from '@/hooks/api/useP2PTransfers';
+import { useP2PTransfers } from '@/hooks/api/useP2PTransfers';
 
 const DocumentManagement: Component = () => {
   // Initialize i18n translation hook
@@ -68,6 +69,20 @@ const DocumentManagement: Component = () => {
   const [showPreview, setShowPreview] = createSignal(false);
   const [uploadProgress, setUploadProgress] = createSignal(0);
   const [isUploading, setIsUploading] = createSignal(false);
+  const [showTreatment, setShowTreatment] = createSignal(false);
+  const [showTreatmentModal, setShowTreatmentModal] = createSignal(false);
+  type TreatmentItem = {
+    tempId: string;
+    filePath: string;
+    filename: string;
+    format: 'pdf' | 'epub' | string;
+    title: string;
+    description: string;
+    tagsText: string;
+    processed?: boolean;
+  };
+  const [treatmentItems, setTreatmentItems] = createSignal<TreatmentItem[]>([]);
+  const [activeTreatmentTab, setActiveTreatmentTab] = createSignal(0);
 
   // Enhanced state for new features
   const [selectedDocuments, setSelectedDocuments] = createSignal<Set<string>>(new Set());
@@ -140,18 +155,13 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
   // Project initialization and management
   const initializeProject = async () => {
     try {
-      // Check if project folder is already set
-      const savedPath = localStorage.getItem('alLibrary_projectPath');
-      if (savedPath) {
-        setProjectFolderPath(savedPath);
-        return;
-      }
+      // Prefer persisted setting
+      const settingsSvc = (await import('@/services/storage/settingsService')).settingsService;
+      const savedPath = await settingsSvc.getProjectFolder();
+      if (savedPath) { setProjectFolderPath(savedPath); return; }
 
-      // Set default path (system root + AlLibrary)
-      const defaultPath = `${navigator.platform.includes('Win') ? 'C:\\' : '/'}AlLibrary`;
-      setProjectFolderPath(defaultPath);
-
-      // Show setup dialog for first-time users
+      // Prompt user to choose via first-run wizard/modal
+      setProjectFolderPath('');
       setShowFolderSetup(true);
     } catch (error) {
       console.error('Failed to initialize project:', error);
@@ -167,32 +177,21 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
       setIsScanning(true);
       setScanProgress(0);
       
-      // First, try to detect the AlLibrary folder
-      const detectedPath = await documentService.detectAlLibraryFolder();
-      const folderPath = detectedPath || documentService.getDefaultAlLibraryPath();
+      const settingsSvc = (await import('@/services/storage/settingsService')).settingsService;
+      const folderPath = (await settingsSvc.getProjectFolder()) || '';
+      if (!folderPath) { setShowFolderSetup(true); return; }
       
       console.log('Scanning AlLibrary folder:', folderPath);
       
-      // Get folder info
       const info = await documentService.getFolderInfo(folderPath);
       setFolderInfo(info);
+      if (!info.exists) { return; }
       
-      if (!info.exists) {
-        console.log('AlLibrary folder not found, creating default structure');
-        // TODO: Create folder structure
-        return;
-      }
-      
-      // Scan for documents
       const result = await documentService.scanDocumentsFolder(folderPath);
       setScanResult(result);
       setScannedDocuments(result.documents);
-      
-      console.log('Scan completed:', result);
-      
-      // Update project folder path
       setProjectFolderPath(folderPath);
-      localStorage.setItem('alLibrary_projectPath', folderPath);
+      await settingsSvc.setProjectFolder(folderPath);
       
     } catch (error) {
       console.error('Failed to scan AlLibrary folder:', error);
@@ -206,49 +205,22 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
   const autoScan = async () => {
     try {
       console.log('🚀 Starting auto-scan...');
-      
-      // First try to detect the AlLibrary folder automatically
-      const detectedPath = await documentService.detectAlLibraryFolder();
-      const folderPath = detectedPath || documentService.getDefaultAlLibraryPath();
+      const settingsSvc = (await import('@/services/storage/settingsService')).settingsService;
+      const folderPath = (await settingsSvc.getProjectFolder()) || '';
+      if (!folderPath) { setShowFolderSetup(true); return; }
       
       console.log('📁 Auto-scanning folder:', folderPath);
-      
-      // Get folder info
       const info = await documentService.getFolderInfo(folderPath);
-      console.log('📊 Folder info:', info);
       setFolderInfo(info);
       setProjectFolderPath(folderPath);
-        
+      
       if (info.exists) {
-        console.log('✅ Folder exists, scanning for documents...');
         const result = await documentService.scanDocumentsFolder(folderPath);
         setScanResult(result);
         setScannedDocuments(result.documents);
-        console.log('🎉 Auto-scan completed, found documents:', result.documents.length);
-        console.log('📄 Documents:', result.documents.map(d => d.filename));
-      } else {
-        console.log('❌ AlLibrary folder not found at:', folderPath);
-        
-        // Fallback: Try to scan D:\AlLibrary directly
-        console.log('🔄 Trying fallback scan of D:\\AlLibrary...');
-        try {
-          const fallbackResult = await documentService.scanDocumentsFolder('D:\\AlLibrary');
-          console.log('📊 Fallback scan result:', fallbackResult);
-          setScanResult(fallbackResult);
-          setScannedDocuments(fallbackResult.documents);
-          console.log('🎉 Fallback scan completed, found documents:', fallbackResult.documents.length);
-          console.log('📄 Documents:', fallbackResult.documents.map(d => d.filename));
-        } catch (fallbackError) {
-          console.error('💥 Fallback scan also failed:', fallbackError);
-        }
       }
     } catch (error) {
       console.error('💥 Auto-scan failed:', error);
-      console.error('💥 Error details:', {
-        message: error.message,
-        stack: error.stack,
-        name: error.name
-      });
     }
   };
 
@@ -579,38 +551,60 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
     }
   };
 
+  // Change library location
+  const changeLibraryLocation = async () => {
+    try {
+      const picked = await invoke<string | null>('pick_library_folder');
+      if (picked) {
+        const settingsSvc = (await import('@/services/storage/settingsService')).settingsService;
+        await settingsSvc.setProjectFolder(picked);
+        setProjectFolderPath(picked);
+        await scanAlLibraryFolder();
+      }
+    } catch (error) {
+      console.error('Failed to change library location:', error);
+    }
+  };
+
   // Folder selection functionality
   const handleFolderSelect = async () => {
     try {
-      // In a real Tauri app, this would use the dialog API
-      // For now, we'll simulate the folder selection
-      const folderPath = await new Promise<string>(resolve => {
-        // Simulate system dialog
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.webkitdirectory = true;
-        input.onchange = e => {
-          const files = (e.target as HTMLInputElement).files;
-          if (files && files.length > 0) {
-            const firstFile = files[0];
-            if (firstFile && firstFile.webkitRelativePath) {
-              const pathParts = firstFile.webkitRelativePath.split('/');
-              const path = pathParts[0] || 'AlLibrary';
-              resolve(path);
-            } else {
-              resolve('AlLibrary');
-            }
-          }
-        };
-        input.click();
+      const settingsSvc = (await import('@/services/storage/settingsService')).settingsService;
+      const projectPath = (await settingsSvc.getProjectFolder()) || '';
+      if (!projectPath) { setShowFolderSetup(true); return; }
+
+      // Pick files (PDF/EPUB)
+      const files: string[] = await invoke('pick_document_files');
+      console.log('[Upload] Selected files:', files);
+      if (!files || files.length === 0) return;
+
+      // Stage files for the Treatment Station (no import yet)
+      const staged = files.map((full) => {
+        const parts = full.split(/[\\/]/);
+        const fname = parts[parts.length - 1] || 'document';
+        const lower = fname.toLowerCase();
+        const suggested: string[] = [];
+        if (lower.endsWith('.pdf')) suggested.push('pdf');
+        if (lower.endsWith('.epub')) suggested.push('epub');
+        if (parts.length > 1) suggested.push((parts[parts.length - 2] || '').toLowerCase());
+        return {
+          tempId: `t-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          filePath: full,
+          filename: fname,
+          format: lower.endsWith('.pdf') ? 'pdf' : (lower.endsWith('.epub') ? 'epub' : ''),
+          title: fname.replace(/\.(pdf|epub)$/i, ''),
+          description: lower.endsWith('.pdf') ? 'Portable Document Format file' : 'Electronic Publication file',
+          tagsText: suggested.filter(Boolean).join(', '),
+          processed: false,
+        } as TreatmentItem;
       });
-
-      // Save the selected folder path
-      setProjectFolderPath(folderPath);
-      localStorage.setItem('alLibrary_projectPath', folderPath);
-      setShowFolderSetup(false);
-
-      console.log('Project folder updated:', folderPath);
+      console.log('[Upload] Staged items for treatment:', staged);
+      setTreatmentItems(staged);
+      setShowTreatment(true);
+      setActiveTreatmentTab(0);
+      setShowTreatmentModal(true);
+      setActiveTab('upload');
+      console.log('[Upload] Treatment modal opened');
     } catch (error) {
       console.error('Failed to select folder:', error);
     }
@@ -619,7 +613,7 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
   // Use default folder path
   const useDefaultPath = () => {
     const defaultPath = projectFolderPath();
-    localStorage.setItem('alLibrary_projectPath', defaultPath);
+    (async ()=>{ try { const s = (await import('@/services/storage/settingsService')).settingsService; await s.setProjectFolder(defaultPath); } catch {} })();
     setShowFolderSetup(false);
     console.log('Using default project folder:', defaultPath);
   };
@@ -1418,7 +1412,7 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
                     <div class={styles['status-bar']}>
                       <button
                         class={styles['status-item-button']}
-                        onClick={handleFolderSelect}
+                        onClick={changeLibraryLocation}
                         title="Click to change project folder"
                       >
                         <div class={styles['status-icon']}>
@@ -1642,55 +1636,6 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
                       </Button>
                       <Button
                         variant="futuristic"
-                        color="green"
-                        onClick={async () => {
-                          try {
-                            console.log('🧪 Testing folder info for D:\\AlLibrary');
-                            const info = await documentService.getFolderInfo('D:\\AlLibrary');
-                            console.log('📊 Test result:', info);
-                            alert(`Folder exists: ${info.exists}, Documents: ${info.document_count}`);
-                          } catch (error) {
-                            console.error('💥 Test failed:', error);
-                            alert(`Test failed: ${error}`);
-                          }
-                        }}
-                      >
-                        Test Folder
-                      </Button>
-                      <Button
-                        variant="futuristic"
-                        color="orange"
-                        onClick={async () => {
-                          try {
-                            console.log('🧪 Testing scan for D:\\AlLibrary');
-                            const result = await documentService.scanDocumentsFolder('D:\\AlLibrary');
-                            console.log('📊 Scan test result:', result);
-                            setScannedDocuments(result.documents);
-                            alert(`Scan completed: ${result.documents.length} documents found`);
-                          } catch (error) {
-                            console.error('💥 Scan test failed:', error);
-                            alert(`Scan test failed: ${error}`);
-                          }
-                        }}
-                      >
-                        Test Scan
-                      </Button>
-                      <Button
-                        variant="futuristic"
-                        color="red"
-                        onClick={async () => {
-                          try {
-                            console.log('🧪 Testing auto-scan manually...');
-                            await autoScan();
-                          } catch (error) {
-                            console.error('💥 Manual auto-scan failed:', error);
-                          }
-                        }}
-                      >
-                        Test Auto-Scan
-                      </Button>
-                      <Button
-                        variant="futuristic"
                         color="blue"
                       onClick={() => setActiveTab('upload')}
                     >
@@ -1887,6 +1832,115 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
               </div>
             </section>
           </Show>
+
+          {/* Upload Tab */}
+          <Show when={activeTab() === 'upload'}>
+            <section class={styles['upload-section']}>
+              <div class={styles['upload-card']}>
+                <div class={styles['upload-zone']} onClick={handleFolderSelect} role="button" tabindex={0}>
+                  <div class={styles['upload-content']}>
+                    <Upload size={40} class={styles['upload-icon']} />
+                    <h3>Upload Documents</h3>
+                    <p>Click to pick PDF/EPUB files to import into your library.</p>
+                    <div class={styles['upload-note']}>
+                      PDFs are sanitized (no JavaScript) and EPUBs are validated during import.
+                    </div>
+                  </div>
+                </div>
+
+                <Show when={isUploading()}>
+                  <div class={styles['upload-progress']}>
+                    <div class={styles['progress-bar']}>
+                      <div class={styles['progress-fill']} style={{ width: `${uploadProgress()}%` }}></div>
+                    </div>
+                    <span style={{ 'text-align': 'right', color: 'rgba(203,213,225,0.9)' }}>{uploadProgress()}%</span>
+                  </div>
+                </Show>
+              </div>
+
+              <div class={styles['upload-button']}>
+                <Button onClick={handleFolderSelect}>
+                  <Upload size={16} class="mr-2" /> Select Files
+                </Button>
+              </div>
+
+              {/* Treatment Station */}
+              <Show when={showTreatmentModal() && treatmentItems().length > 0}>
+                <Modal
+                  isOpen={showTreatmentModal()}
+                  onClose={() => setShowTreatmentModal(false)}
+                  title="Treatment Station"
+                  size="xl"
+                >
+                  <div class={styles['ts-tabs']}>
+                    <div class={styles['ts-tabbar']}>
+                      <For each={treatmentItems()}>
+                        {(it, i) => (
+                          <button
+                            class={`${styles['ts-tab']} ${activeTreatmentTab() === i() ? styles['active'] : ''}`}
+                            onClick={() => setActiveTreatmentTab(i())}
+                          >
+                            {it.filename}
+                          </button>
+                        )}
+                      </For>
+                    </div>
+                    <div class={styles['ts-content']}>
+                      <For each={treatmentItems()}>
+                        {(item, idx) => (
+                          <Show when={activeTreatmentTab() === idx()}>
+                            <div class={styles['treatment-meta']}>
+                              <div class={styles['treatment-row']}>
+                                <label>Title</label>
+                                <input type="text" value={item.title} onInput={e => { const copy=[...treatmentItems()]; copy[idx()].title=e.currentTarget.value; setTreatmentItems(copy); }} />
+                              </div>
+                              <div class={styles['treatment-row']}>
+                                <label>Description</label>
+                                <textarea rows={3} value={item.description} onInput={e => { const copy=[...treatmentItems()]; copy[idx()].description=e.currentTarget.value; setTreatmentItems(copy); }} />
+                              </div>
+                              <div class={styles['treatment-row']}>
+                                <label>Tags</label>
+                                <input type="text" value={item.tagsText} placeholder="comma, separated, tags" onInput={e => { const copy=[...treatmentItems()]; copy[idx()].tagsText=e.currentTarget.value; setTreatmentItems(copy); }} />
+                              </div>
+                              <div class={styles['treatment-hint']}>{item.filename}</div>
+                              <div class={styles['treatment-actions']}>
+                                <Button
+                                  onClick={async () => {
+                                    try {
+                                      // Now perform secure import to target dir using backend (copies and sanitizes)
+                                      const settingsSvc = (await import('@/services/storage/settingsService')).settingsService;
+                                      const projectPath = (await settingsSvc.getProjectFolder()) || '';
+                                      if (!projectPath) { setShowFolderSetup(true); return; }
+                                      const info = await invoke<any>('import_document', { targetDir: projectPath, sourcePath: item.filePath });
+                                      if (enabled() && info?.file_path) { await seedFile(info.file_path); }
+                                      // Robust update: find by tempId to avoid stale index after async
+                                      setTreatmentItems(prev => prev.map(it => it.tempId === item.tempId ? { ...it, processed: true } : it));
+                                    } catch (e) { console.error('Process failed', e); }
+                                  }}
+                                >
+                                  Process This File
+                                </Button>
+                              </div>
+                            </div>
+                          </Show>
+                        )}
+                      </For>
+                    </div>
+                    <div class={styles['treatment-actions']}>
+                      <Button
+                        variant="primary"
+                        onClick={async () => {
+                          try { await scanAlLibraryFolder(); } finally { setShowTreatmentModal(false); setTreatmentItems([]); setActiveTab('library'); }
+                        }}
+                      >
+                        Finish and Update Library
+                      </Button>
+                    </div>
+                  </div>
+                </Modal>
+              </Show>
+            </section>
+          </Show>
         </div>
       </div>
       <div style={{ width: '370px', flexShrink: 0 }}>
@@ -1900,7 +1954,7 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
       {/* Document Preview Modal */}
       <Show when={showPreview() && selectedDocument()}>
         <Modal
-          open={showPreview()}
+          isOpen={showPreview()}
           onClose={() => setShowPreview(false)}
           title={selectedDocument()?.title || 'Document Preview'}
           size="lg"
@@ -1980,7 +2034,7 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
       {/* Project Folder Setup Modal */}
       <Show when={showFolderSetup()}>
         <Modal
-          open={showFolderSetup()}
+          isOpen={showFolderSetup()}
           onClose={() => setShowFolderSetup(false)}
           title="Welcome to AlLibrary"
           size="md"
@@ -2026,7 +2080,7 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
       {/* Metadata Editor Modal */}
       <Show when={showMetadataEditor() && selectedDocument()}>
         <Modal
-          open={showMetadataEditor()}
+          isOpen={showMetadataEditor()}
           onClose={() => setShowMetadataEditor(false)}
           title={`Edit Metadata - ${selectedDocument()?.title}`}
           size="lg"
@@ -2118,7 +2172,7 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
       {/* Document Analytics Modal */}
       <Show when={showDocumentAnalytics() && selectedDocument()}>
         <Modal
-          open={showDocumentAnalytics()}
+          isOpen={showDocumentAnalytics()}
           onClose={() => setShowDocumentAnalytics(false)}
           title={`Document Analytics - ${selectedDocument()?.title}`}
           size="xl"

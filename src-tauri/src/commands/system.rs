@@ -3,6 +3,12 @@ use crate::core::document::get_file_cache;
 use serde::{Deserialize, Serialize};
 use sysinfo::Disks;
 use std::path::Path;
+use std::env;
+use rfd::FileDialog;
+use std::fs;
+use std::path::PathBuf;
+use tokio::time::{sleep, Duration};
+use sysinfo::{System, CpuRefreshKind, MemoryRefreshKind, RefreshKind};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SystemStatus {
@@ -31,6 +37,12 @@ pub struct DiskSpaceInfo {
     pub disk_usage_percentage: f64,
     pub project_path: String,
     pub disk_name: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ResourceUsage {
+    pub cpu_percent: f32,
+    pub memory_percent: f32,
 }
 
 #[tauri::command]
@@ -194,6 +206,36 @@ pub async fn get_disk_space_info(projectPath: String) -> Result<DiskSpaceInfo, S
     })
 }
 
+/// Returns approximate CPU and memory usage percentages.
+#[tauri::command]
+pub async fn get_resource_usage() -> Result<ResourceUsage, String> {
+    // Initialize system with minimal refresh kind first
+    let mut sys = System::new_with_specifics(
+        RefreshKind::new()
+            .with_cpu(CpuRefreshKind::everything())
+            .with_memory(MemoryRefreshKind::everything())
+    );
+
+    // First refresh
+    sys.refresh_cpu_specifics(CpuRefreshKind::new().with_cpu_usage());
+    sys.refresh_memory();
+    // Wait a short time to compute CPU usage delta
+    // Windows Task Manager uses a ~1s sampling window; align closer for comparable numbers
+    sleep(Duration::from_millis(1000)).await;
+    sys.refresh_cpu_specifics(CpuRefreshKind::new().with_cpu_usage());
+    sys.refresh_memory();
+
+    // Global CPU usage across all processors
+    let cpu = sys.global_cpu_info().cpu_usage(); // 0..100
+
+    // Memory percent
+    let total = sys.total_memory() as f32;
+    let used = (sys.used_memory()) as f32;
+    let mem_pct = if total > 0.0 { (used / total) * 100.0 } else { 0.0 };
+
+    Ok(ResourceUsage { cpu_percent: cpu, memory_percent: mem_pct })
+}
+
 fn calculate_directory_size(path: &Path) -> Result<u64, std::io::Error> {
     let mut total_size = 0u64;
     
@@ -247,3 +289,35 @@ fn calculate_directory_size(path: &Path) -> Result<u64, std::io::Error> {
     
     Ok(total_size)
 } 
+
+#[tauri::command]
+pub async fn get_installer_library_dir() -> Option<String> {
+    let base = env::var("PROGRAMDATA").ok()?;
+    let mut p = PathBuf::from(base);
+    p.push("AlLibrary");
+    p.push("installer.txt");
+    let s = fs::read_to_string(&p).ok()?;
+    Some(s.trim().to_string())
+}
+
+#[tauri::command]
+pub async fn pick_library_folder() -> Option<String> {
+    let dir = FileDialog::new()
+        .set_title("Select your AlLibrary folder")
+        .pick_folder();
+    dir.map(|p| p.to_string_lossy().to_string())
+}
+
+#[tauri::command]
+pub async fn pick_document_files() -> Vec<String> {
+    let dialog = match std::env::current_dir() {
+        Ok(dir) => FileDialog::new().set_title("Select documents to import").add_filter("Documents", &["pdf", "epub"]).set_directory(dir),
+        Err(_) => FileDialog::new().set_title("Select documents to import").add_filter("Documents", &["pdf", "epub"]),
+    };
+    let files = dialog.pick_files();
+    files
+        .unwrap_or_default()
+        .into_iter()
+        .map(|p| p.to_string_lossy().to_string())
+        .collect()
+}

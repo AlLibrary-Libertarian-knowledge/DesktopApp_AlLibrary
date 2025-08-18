@@ -1,4 +1,6 @@
-import { Component, createSignal, Show, createEffect, createResource } from 'solid-js';
+import { Component, createSignal, Show, createEffect, createResource, onMount, onCleanup } from 'solid-js';
+import { settingsService } from '@/services/storage/settingsService';
+import { invoke } from '@tauri-apps/api/core';
 import { A, useLocation } from '@solidjs/router';
 import {
   BookOpen,
@@ -181,9 +183,22 @@ const Sidebar: Component<SidebarProps> = props => {
     }
   };
 
-  const storagePercentage = () => 35; // This would come from props/store in real app
-  const storageUsed = () => '3.5GB';
-  const storageTotal = () => '10GB';
+  // Live storage info from Tauri (via settingsService + get_disk_space_info)
+  const [diskInfo, { refetch: refetchDisk }] = createResource(async () => {
+    const projectPath = (await settingsService.getProjectFolder()) || '';
+    if (!projectPath) return null as any;
+    return await invoke<any>('get_disk_space_info', { projectPath });
+  });
+
+  onMount(() => {
+    const handler = () => refetchDisk();
+    window.addEventListener('project-folder-changed' as any, handler);
+    onCleanup(() => { window.removeEventListener('project-folder-changed' as any, handler); });
+  });
+  const storagePercentage = () => Math.round((diskInfo()?.used_disk_space_bytes || 0) * 100 / (diskInfo()?.total_disk_space_bytes || 1));
+  const toGB = (bytes?: number) => `${((bytes || 0) / (1024 ** 3)).toFixed(1)}GB`;
+  const storageUsed = () => toGB(diskInfo()?.used_disk_space_bytes);
+  const storageTotal = () => toGB(diskInfo()?.total_disk_space_bytes);
 
   return (
     <aside class={`app-sidebar ${props.collapsed ? 'collapsed' : ''}`}>
@@ -247,6 +262,11 @@ const Sidebar: Component<SidebarProps> = props => {
             <span class="storage-text">
               {storageUsed()} / {storageTotal()}
             </span>
+            <Show when={diskInfo()}>
+              <div class="storage-path" style="opacity:0.75;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                {diskInfo()?.project_path}
+              </div>
+            </Show>
           </div>
         </Show>
 

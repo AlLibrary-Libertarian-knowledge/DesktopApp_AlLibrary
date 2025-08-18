@@ -1,4 +1,5 @@
 import { invoke } from '@tauri-apps/api/core';
+import { settingsService } from '@/services/storage/settingsService';
 
 export interface DocumentInfo {
   id: string;
@@ -51,11 +52,12 @@ class DocumentService {
   /**
    * Scan a folder for documents and return information about found files
    */
-  async scanDocumentsFolder(folderPath: string): Promise<ScanResult> {
+  async scanDocumentsFolder(folderPath?: string): Promise<ScanResult> {
     try {
-      console.log('🔍 Starting document scan for folder:', folderPath);
+      const base = folderPath || (await settingsService.getProjectFolder()) || '';
+      console.log('🔍 Starting document scan for folder:', base);
       const result = await invoke<ScanResult>('scan_documents_folder', {
-        folderPath,
+        folderPath: base,
       });
       
       console.log('✅ Scan completed successfully:', {
@@ -80,10 +82,11 @@ class DocumentService {
   /**
    * Get information about a specific folder
    */
-  async getFolderInfo(folderPath: string): Promise<FolderInfo> {
+  async getFolderInfo(folderPath?: string): Promise<FolderInfo> {
     try {
+      const base = folderPath || (await settingsService.getProjectFolder()) || '';
       const result = await invoke<FolderInfo>('get_folder_info', {
-        folderPath,
+        folderPath: base,
       });
       
       console.log('Folder info:', result);
@@ -97,10 +100,11 @@ class DocumentService {
   /**
    * Get a list of documents in a folder (non-recursive)
    */
-  async listDocumentsInFolder(folderPath: string): Promise<DocumentInfo[]> {
+  async listDocumentsInFolder(folderPath?: string): Promise<DocumentInfo[]> {
     try {
+      const base = folderPath || (await settingsService.getProjectFolder()) || '';
       const result = await invoke<DocumentInfo[]>('list_documents_in_folder', {
-        folderPath,
+        folderPath: base,
       });
       
       console.log('Documents in folder:', result);

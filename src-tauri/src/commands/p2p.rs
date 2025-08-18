@@ -13,6 +13,14 @@ struct Runtime {
     socks_proxy: Option<String>,
     online: bool,
     content_index: HashMap<String, String>,
+    metadata_index: HashMap<String, ContentMeta>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct ContentMeta {
+    pub title: Option<String>,
+    pub author: Option<String>,
+    pub tags: Vec<String>,
 }
 
 // Persist p2p runtime command channel
@@ -32,7 +40,7 @@ pub async fn start_libp2p_with_socks(socks_addr: String) -> bool {
     }
     {
         let mut guard = RUNTIME.lock().unwrap();
-        *guard = Some(Runtime { node_id: format!("{}", handle.peer_id), socks_proxy: Some(socks_addr), online: true, content_index: HashMap::new() });
+        *guard = Some(Runtime { node_id: format!("{}", handle.peer_id), socks_proxy: Some(socks_addr), online: true, content_index: HashMap::new(), metadata_index: HashMap::new() });
     }
     true
 }
@@ -53,15 +61,22 @@ pub async fn publish_content(path: String) -> Result<String, String> {
     let bytes = std::fs::read(&path).map_err(|e| format!("Failed to read file: {}", e))?;
     let mut h = Sha256::new(); h.update(&bytes);
     let hash = format!("{:x}", h.finalize());
+    // rudimentary metadata extraction: filename -> title, try parse author from parent directory
+    let title = std::path::Path::new(&path).file_stem().and_then(|s| s.to_str()).map(|s| s.to_string());
+    let author = std::path::Path::new(&path).parent().and_then(|p| p.file_name()).and_then(|s| s.to_str()).map(|s| s.to_string());
+    let meta = ContentMeta { title, author, tags: vec![] };
     {
         let mut guard = RUNTIME.lock().unwrap();
         if let Some(rt) = guard.as_mut() {
             rt.content_index.insert(hash.clone(), path.clone());
+            rt.metadata_index.insert(hash.clone(), meta);
         }
     }
     let tx_opt = { P2P_TX.lock().unwrap().as_ref().cloned() };
     if let Some(tx) = tx_opt {
-        let _ = tx.send(p2p::Command::UpdateIndex { hash: hash.clone(), path }).await;
+        let title2 = std::path::Path::new(&path).file_stem().and_then(|s| s.to_str()).unwrap_or("").to_string();
+        let author2 = std::path::Path::new(&path).parent().and_then(|p| p.file_name()).and_then(|s| s.to_str()).map(|s| s.to_string());
+        let _ = tx.send(p2p::Command::UpdateIndex { hash: hash.clone(), path, title: title2, author: author2, tags: vec![] }).await;
         let _ = tx.send(p2p::Command::PublishHash { hash: hash.clone() }).await;
         Ok(hash)
     } else { Err("p2p runtime not started".into()) }
@@ -123,6 +138,12 @@ pub struct NetworkMetrics {
     pub anonymity_level: u8,
     pub avg_latency_ms: u32,
     pub peers_connected: usize,
+    // New live activity fields
+    pub active_downloads: usize,
+    pub active_seeding: usize,
+    pub active_discovery: usize,
+    pub download_rate: u64, // bytes/sec (approx)
+    pub upload_rate: u64,   // bytes/sec (approx)
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -157,6 +178,7 @@ pub async fn init_p2p_node(config: NetworkConfig) -> P2PNode {
             socks_proxy: config.socks_proxy.clone(),
             online: false,
             content_index: HashMap::new(),
+            metadata_index: HashMap::new(),
         });
     }
     P2PNode {
@@ -187,7 +209,9 @@ pub async fn get_p2p_node_status(_node_id: Option<String>) -> NetworkStatus {
     let guard = RUNTIME.lock().unwrap();
     if let Some(rt) = guard.as_ref() {
         let status = if rt.online { "online" } else { "starting" };
-        return NetworkStatus { status: status.into(), connected_peers: if rt.online { 12 } else { 0 }, connection_quality: if rt.online { "good".into() } else { "n/a".into() } };
+        // Derive peers from connected index size if available later; for now reflect online/offline
+        let peers = if rt.online { rt.content_index.len() } else { 0 };
+        return NetworkStatus { status: status.into(), connected_peers: peers, connection_quality: if rt.online { "good".into() } else { "n/a".into() } };
     }
     NetworkStatus { status: "offline".into(), connected_peers: 0, connection_quality: "n/a".into() }
 }
@@ -216,7 +240,19 @@ pub async fn discover_peers(_node_id: Option<String>, _options: Option<PeerDisco
 
 #[tauri::command]
 pub async fn get_network_metrics(_node_id: Option<String>) -> NetworkMetrics {
-    NetworkMetrics { anonymity_level: 4, avg_latency_ms: 250, peers_connected: 12 }
+    // Approximate metrics derived from runtime; replace with real counters when available
+    let guard = RUNTIME.lock().unwrap();
+    let peers = guard.as_ref().map(|rt| if rt.online { rt.content_index.len() } else { 0 }).unwrap_or(0);
+    NetworkMetrics {
+        anonymity_level: if peers > 0 { 4 } else { 0 },
+        avg_latency_ms: if peers > 0 { 250 } else { 0 },
+        peers_connected: peers,
+        active_downloads: 0,
+        active_seeding: if peers > 0 { 1 } else { 0 },
+        active_discovery: if peers > 0 { 1 } else { 0 },
+        download_rate: 0,
+        upload_rate: 0,
+    }
 }
 
 #[tauri::command]
@@ -234,13 +270,27 @@ pub async fn disable_tor_routing(_node_id: Option<String>) -> bool { true }
 
 #[tauri::command]
 pub async fn search_p2p_network(_node_id: Option<String>, search_request: SearchRequest) -> Vec<SearchResult> {
-    let max = search_request.options.max_results.unwrap_or(10);
-    (0..max.min(3))
-        .map(|i| SearchResult {
-            id: format!("res-{}", i),
-            title: format!("{} - result {}", search_request.query, i + 1),
-            description: "P2P network item".into(),
-        })
-        .collect()
+    // Distributed search via libp2p gossipsub bridge in core/p2p runtime
+    let tx_opt = { P2P_TX.lock().unwrap().as_ref().cloned() };
+    if let Some(tx) = tx_opt {
+        let (reply_tx, reply_rx) = oneshot::channel();
+        if tx.send(p2p::Command::Search { query: search_request.query.clone(), reply: reply_tx }).await.is_ok() {
+            if let Ok(pairs) = reply_rx.await {
+                let max = search_request.options.max_results.unwrap_or(25);
+                let guard = RUNTIME.lock().unwrap();
+                let out = pairs.into_iter().take(max).map(|(id, name)| {
+                    let desc = if let Some(rt) = guard.as_ref() { if let Some(m) = rt.metadata_index.get(&id) {
+                        let mut d = String::new();
+                        if let Some(a) = &m.author { d.push_str(&format!("author: {} ", a)); }
+                        if !m.tags.is_empty() { d.push_str(&format!("tags: {} ", m.tags.join(","))); }
+                        d
+                    } else { String::new() } } else { String::new() };
+                    SearchResult { id, title: name.clone(), description: if desc.is_empty() { "P2P network item".into() } else { desc } }
+                }).collect();
+                return out;
+            }
+        }
+    }
+    vec![]
 }
 

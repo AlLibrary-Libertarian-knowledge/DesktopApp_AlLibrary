@@ -240,6 +240,10 @@
   overflow: hidden;
 }
 
+.active {
+  /* Exported empty class used as a state token so selectors like .tab.active work with CSS Modules */
+}
+
 .tab {
   flex: 1;
   padding: 12px 20px;
@@ -1390,6 +1394,75 @@
 .upload-button {
   margin-top: 1.5rem;
 }
+
+.treatment-panel {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  border: 1px solid rgba(168, 85, 247, 0.2);
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(30,41,59,0.9) 0%, rgba(51,65,85,0.85) 100%);
+  backdrop-filter: blur(16px);
+}
+
+.treatment-header h3 {
+  margin: 0 0 0.25rem 0;
+}
+
+.treatment-header p {
+  margin: 0 0 1rem 0;
+  color: rgba(203,213,225,0.8);
+}
+
+.treatment-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1rem;
+}
+
+.treatment-item {
+  border: 1px solid rgba(148,163,184,0.2);
+  border-radius: 12px;
+  padding: 1rem;
+  background: rgba(255,255,255,0.03);
+}
+
+.treatment-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.treatment-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.treatment-row label { color: rgba(203,213,225,0.85); font-size: 0.9rem; }
+.treatment-row input,
+.treatment-row textarea {
+  padding: 0.75rem;
+  background: rgba(15,23,42,0.6);
+  border: 1px solid rgba(168,85,247,0.25);
+  border-radius: 10px;
+  color: rgba(226,232,240,0.95);
+}
+
+.treatment-hint { color: rgba(148,163,184,0.7); font-size: 0.8rem; }
+
+.treatment-actions {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.ts-tabs { display: flex; flex-direction: column; gap: 1rem; }
+.ts-tabbar { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.ts-tab { padding: 0.5rem 0.75rem; border-radius: 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(148,163,184,0.2); color: rgba(226,232,240,0.95); cursor: pointer; }
+.ts-tab:hover { background: rgba(255,255,255,0.1); }
+.ts-tab.active { background: linear-gradient(135deg, rgba(168,85,247,0.35) 0%, rgba(124,58,237,0.25) 100%); border-color: rgba(168,85,247,0.5); }
+.ts-content { border: 1px solid rgba(148,163,184,0.2); border-radius: 12px; padding: 1rem; background: rgba(255,255,255,0.03); }
 
 .upload-progress {
   margin-top: 1.5rem;

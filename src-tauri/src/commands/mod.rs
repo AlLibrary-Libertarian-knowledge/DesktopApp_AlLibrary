@@ -10,7 +10,7 @@ pub mod p2p;
 
 pub use app::{initialize_app, get_app_ready_state, close_splash_screen, InitProgress};
 pub use security::{get_security_info, refresh_security_info, SecurityInfo};
-pub use system::{get_disk_space_info, DiskSpaceInfo};
+pub use system::{get_disk_space_info, get_resource_usage, DiskSpaceInfo, pick_library_folder, pick_document_files};
 pub use settings::{load_app_settings, save_app_settings, AppSettings};
 pub use search::{get_search_history, clear_search_history, get_search_index_info, SearchIndex};
 pub use collections::{create_collection, get_collections, get_collection, update_collection, delete_collection};
@@ -22,6 +22,7 @@ pub use documents::{
   open_document,
   pdf_get_page_count,
   pdf_render_page_png,
+  import_document,
   DocumentInfo,
   ScanResult,
   FolderInfo

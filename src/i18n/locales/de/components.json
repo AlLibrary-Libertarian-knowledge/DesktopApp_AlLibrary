@@ -264,7 +264,9 @@
       "active": "aktiv",
       "queue": "Warteschlange: {{count}}",
       "totalSpeed": "{{speed}} gesamt",
-      "eta": "{{time}} verbleibend"
+      "eta": "{{time}} verbleibend",
+      "downSpeed": "Download",
+      "upSpeed": "Upload"
     },
     "storage": {
       "title": "Speicher",

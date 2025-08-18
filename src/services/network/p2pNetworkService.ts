@@ -13,6 +13,8 @@
  */
 
 import { invoke } from '@tauri-apps/api/core';
+import { readDir, watch } from '@tauri-apps/plugin-fs';
+import { settingsService } from '@/services/storage/settingsService';
 import { torAdapter } from './torAdapter';
 import type {
   P2PNode,
@@ -777,89 +779,63 @@ class P2PNetworkServiceImpl implements P2PNetworkService {
       return results || [];
     } catch (error) {
       console.error('Failed to search P2P network:', error);
-      // Return mock results for development
-      return this.generateMockSearchResults(query, options);
+      // Do not return mocked results; surface empty array to avoid fake data
+      return [];
     }
   }
 
   /**
-   * Generate mock search results for development
+   * Seed all PDF/EPUB files from the selected library folder.
+   * - Reads folder path from settingsService
+   * - Walks files (shallow) and invokes Tauri publish_content for each
    */
-  private generateMockSearchResults(query: string, options: SearchOptions): SearchResult[] {
-    const mockResults: SearchResult[] = [
-      {
-        id: `result-1-${Date.now()}`,
-        title: `Document: ${query} - Educational Resource`,
-        description: 'Educational document with cultural context provided for learning purposes',
-        snippet: `This document contains information about ${query} with educational context...`,
-        type: 'document',
-        relevanceScore: 0.95,
-        culturalLevel: 2,
-        isAnonymous: options.includeAnonymous,
-        lastUpdated: new Date().toISOString(),
-        sourcePeer: {
-          id: 'peer-edu-1',
-          name: 'Educational Content Node',
-        },
-        culturalContext: {
-          description: 'Educational resource with cultural background information',
-          educationalResources: [
-            'Historical context',
-            'Multiple perspectives',
-            'Source attribution',
-          ],
-        },
-      },
-      {
-        id: `result-2-${Date.now()}`,
-        title: `Community Resource: ${query}`,
-        description: 'Community-shared information with diverse perspectives',
-        snippet: `Community discussion and resources about ${query}...`,
-        type: 'community',
-        relevanceScore: 0.87,
-        culturalLevel: 1,
-        isAnonymous: false,
-        lastUpdated: new Date().toISOString(),
-        sourcePeer: {
-          id: 'peer-community-1',
-          name: 'Global Knowledge Community',
-        },
-        culturalContext: {
-          description: 'Multiple community perspectives on this topic',
-          educationalResources: [
-            'Community discussions',
-            'Alternative viewpoints',
-            'Open dialogue',
-          ],
-        },
-      },
-      {
-        id: `result-3-${Date.now()}`,
-        title: `Alternative Perspective: ${query}`,
-        description: 'Alternative narrative and diverse viewpoint',
-        snippet: `Different perspective on ${query} from alternative sources...`,
-        type: 'document',
-        relevanceScore: 0.78,
-        culturalLevel: 3,
-        isAnonymous: options.includeAnonymous,
-        lastUpdated: new Date().toISOString(),
-        sourcePeer: options.includeAnonymous
-          ? { id: 'peer-alt-1' }
-          : { id: 'peer-alt-1', name: 'Alternative Perspective Node' },
-        culturalContext: {
-          description: 'Alternative narrative with cultural significance',
-          educationalResources: [
-            'Historical context',
-            'Cultural significance',
-            'Educational value',
-          ],
-        },
-      },
-    ];
-
-    return mockResults.slice(0, options.maxResults);
+  async seedLibraryFolder(): Promise<{ seeded: number; errors: number }> {
+    try {
+      const folder = await settingsService.getProjectFolder();
+      if (!folder) return { seeded: 0, errors: 0 };
+      const entries = await readDir(folder, { recursive: true });
+      let seeded = 0; let errors = 0;
+      for (const entry of entries) {
+        if (entry.children) continue;
+        const p = entry.path || entry.name;
+        if (!p) continue;
+        const lower = p.toLowerCase();
+        if (lower.endsWith('.pdf') || lower.endsWith('.epub')) {
+          try {
+            await invoke<string>('publish_content', { path: p });
+            seeded += 1;
+          } catch { errors += 1; }
+        }
+      }
+      return { seeded, errors };
+    } catch (_) { return { seeded: 0, errors: 1 }; }
   }
+
+  /**
+   * Watch the library folder and auto-seed new/changed files
+   */
+  async watchAndSeedLibrary(): Promise<void> {
+    const folder = await settingsService.getProjectFolder();
+    if (!folder) return;
+    try {
+      const unwatch = await watch(folder, async (event) => {
+        try {
+          const path = (event as any).path as string | undefined;
+          if (!path) return;
+          const lower = path.toLowerCase();
+          if (lower.endsWith('.pdf') || lower.endsWith('.epub')) {
+            await invoke<string>('publish_content', { path });
+          }
+        } catch { /* ignore */ }
+      }, { recursive: true });
+      // optional: store unwatch somewhere if needed later
+      void unwatch; // avoid linter warning
+    } catch { /* noop */ }
+  }
+
+ 
 }
 
 // Export singleton instance
 export const p2pNetworkService: P2PNetworkService = new P2PNetworkServiceImpl();
+

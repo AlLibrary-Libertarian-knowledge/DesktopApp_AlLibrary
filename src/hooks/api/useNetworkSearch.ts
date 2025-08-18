@@ -5,7 +5,9 @@
  * Enables searching across distributed peer network while maintaining privacy and anonymity.
  */
 
-import { createSignal, createResource, createEffect, onCleanup } from 'solid-js';
+import { createSignal, onCleanup } from 'solid-js';
+import { torAdapter } from '@/services/network/torAdapter';
+import { p2pNetworkService } from '@/services/network/p2pNetworkService';
 import type { Document } from '@/types/core';
 
 export interface NetworkSearchFilters {
@@ -104,82 +106,46 @@ export const useNetworkSearch = (): UseNetworkSearchReturn => {
   const [currentSearchController, setCurrentSearchController] =
     createSignal<AbortController | null>(null);
 
-  // Mock P2P network service (would be replaced with actual Tauri commands)
-  const mockNetworkSearch = async (
+  // Real network search: Tor-gated, title-only
+  const runNetworkSearch = async (
     filters: NetworkSearchFilters,
     options: NetworkSearchOptions = {},
     signal: AbortSignal
   ): Promise<NetworkSearchResult[]> => {
-    // Simulate network discovery
-    setTotalPeers(Math.floor(Math.random() * 50) + 10);
-
-    // Simulate progressive search across peers
-    const results: NetworkSearchResult[] = [];
-    const totalPeersCount = totalPeers();
-
-    for (let i = 0; i < totalPeersCount && !signal.aborted; i++) {
-      setPeersSearched(i + 1);
-      setSearchProgress(Math.round(((i + 1) / totalPeersCount) * 100));
-
-      // Simulate network latency
-      await new Promise(resolve => setTimeout(resolve, 100 + Math.random() * 200));
-
-      // Simulate finding documents (not every peer has results)
-      if (Math.random() > 0.7) {
-        const mockResult: NetworkSearchResult = {
-          document: {
-            id: `network-doc-${i}-${Date.now()}`,
-            title: `${filters.query} - Network Document ${i + 1}`,
-            author: `Peer Author ${i + 1}`,
-            description: `Document found on P2P network matching "${filters.query}"`,
-            filePath: `/network/documents/doc-${i}.pdf`,
-            fileSize: Math.floor(Math.random() * 10000000) + 100000,
-            fileType: 'pdf',
-            uploadDate: new Date(Date.now() - Math.random() * 31536000000),
-            tags: [`network-${i}`, 'p2p', filters.query.toLowerCase()],
-            culturalSensitivityLevel: Math.floor(Math.random() * 3) + 1,
-            isLocal: false,
-            downloadCount: Math.floor(Math.random() * 1000),
-            rating: Math.random() * 5,
-            language: 'en',
-            culturalOrigin: ['Network Community', 'P2P Network'][Math.floor(Math.random() * 2)],
-          },
-          peerId: `peer-${i}-${Math.random().toString(36).substr(2, 9)}`,
-          peerLocation: ['USA', 'Canada', 'Germany', 'Japan', 'Brazil'][
-            Math.floor(Math.random() * 5)
-          ],
-          peerReputation: Math.floor(Math.random() * 100),
-          culturalContext: options.includeCulturalEducation
-            ? {
-                level: Math.floor(Math.random() * 3) + 1,
-                description: `Educational context for ${filters.query} from cultural perspective`,
-                educationalResources: [
-                  `Cultural background of ${filters.query}`,
-                  `Traditional knowledge related to ${filters.query}`,
-                  `Community perspectives on ${filters.query}`,
-                ],
-              }
-            : undefined,
-          relevanceScore: Math.random() * 100,
-          estimatedDownloadTime: Math.floor(Math.random() * 300) + 30,
-        };
-
-        results.push(mockResult);
-
-        // Update cultural resources
-        if (mockResult.culturalContext) {
-          setCulturalResources(prev => [
-            ...prev,
-            ...mockResult.culturalContext!.educationalResources,
-          ]);
-        }
-      }
-
-      // Update results progressively
-      setResults([...results]);
-    }
-
-    return results;
+    const st = await torAdapter.status();
+    if (!st?.circuitEstablished) throw new Error('TOR circuit not established');
+    // Title-only mode; request service to search titles
+    const q = (filters.query || '').trim();
+    if (!q) return [];
+    // Delegate to service (it should aggregate peers via libp2p/Tor)
+    const raw = await p2pNetworkService.searchNetwork(q, { mode: 'title', anonymous: options.anonymous !== false });
+    // Adapt to NetworkSearchResult
+    const mapped: NetworkSearchResult[] = (raw || []).map((r: any) => ({
+      document: {
+        id: r.id,
+        title: r.title,
+        author: r.author || '',
+        description: r.description || '',
+        filePath: r.filePath || '',
+        fileSize: r.fileSize || 0,
+        fileType: r.fileType || 'pdf',
+        uploadDate: r.uploadDate ? new Date(r.uploadDate) : new Date(),
+        tags: r.tags || [],
+        culturalSensitivityLevel: r.culturalLevel || 1,
+        isLocal: false,
+        downloadCount: r.downloadCount || 0,
+        rating: r.rating || 0,
+        language: r.language || 'en',
+        culturalOrigin: r.culturalOrigin || '',
+      } as any,
+      peerId: r.peerId || '',
+      peerLocation: r.peerLocation,
+      peerReputation: r.peerReputation || 0,
+      culturalContext: options.includeCulturalEducation ? r.culturalContext : undefined,
+      relevanceScore: r.relevanceScore || 0,
+      estimatedDownloadTime: r.estimatedDownloadTime,
+    }));
+    return mapped;
   };
 
   // Perform network search
@@ -216,7 +182,9 @@ export const useNetworkSearch = (): UseNetworkSearchReturn => {
         setTimeout(() => reject(new Error('Search timeout')), searchOptions.timeout);
       });
 
-      const searchPromise = mockNetworkSearch(filters, searchOptions, controller.signal);
+      // Limit filters to title-only
+      const titleOnly: NetworkSearchFilters = { ...filters, query: filters.query } as any;
+      const searchPromise = runNetworkSearch(titleOnly, searchOptions, controller.signal);
 
       const results = await Promise.race([searchPromise, timeoutPromise]);
 
