@@ -78,6 +78,10 @@ export function useNetworkStore() {
       if (typeof m?.upload_rate === 'number') return (m.upload_rate / (1024 * 1024)).toFixed(1);
       return '0.0';
     },
+    transfers: () => (metrics() as any)?.transfers ?? [],
+    activeDownloads: () => Number((metrics() as any)?.active_downloads ?? 0),
+    activeSeeding: () => Number((metrics() as any)?.active_seeding ?? 0),
+    activeDiscovery: () => Number((metrics() as any)?.active_discovery ?? 0),
   };
 }
 

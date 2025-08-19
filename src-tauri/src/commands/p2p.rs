@@ -23,6 +23,32 @@ pub struct ContentMeta {
     pub tags: Vec<String>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct TransferItem {
+    pub id: String,
+    pub name: String,
+    pub size: u64,
+    pub downloaded: u64,
+    pub download_speed: u64,
+    pub upload_speed: u64,
+    pub peers: u32,
+    pub seeders: u32,
+    pub eta_secs: u64,
+    pub status: String,
+    pub health: u8,
+    pub ratio: f32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct NetworkMetrics {
+    pub active_downloads: u32,
+    pub active_seeding: u32,
+    pub active_discovery: u32,
+    pub download_rate: u64,
+    pub upload_rate: u64,
+    pub transfers: Vec<TransferItem>,
+}
+
 // Persist p2p runtime command channel
 static P2P_TX: Mutex<Option<tokio::sync::mpsc::Sender<p2p::Command>>> = Mutex::new(None);
 
@@ -133,18 +159,7 @@ pub struct PeerInfo {
     pub connected: bool,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct NetworkMetrics {
-    pub anonymity_level: u8,
-    pub avg_latency_ms: u32,
-    pub peers_connected: usize,
-    // New live activity fields
-    pub active_downloads: usize,
-    pub active_seeding: usize,
-    pub active_discovery: usize,
-    pub download_rate: u64, // bytes/sec (approx)
-    pub upload_rate: u64,   // bytes/sec (approx)
-}
+// NetworkMetrics is defined above (single canonical definition)
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SearchOptions {
@@ -243,16 +258,25 @@ pub async fn get_network_metrics(_node_id: Option<String>) -> NetworkMetrics {
     // Approximate metrics derived from runtime; replace with real counters when available
     let guard = RUNTIME.lock().unwrap();
     let peers = guard.as_ref().map(|rt| if rt.online { rt.content_index.len() } else { 0 }).unwrap_or(0);
-    NetworkMetrics {
-        anonymity_level: if peers > 0 { 4 } else { 0 },
-        avg_latency_ms: if peers > 0 { 250 } else { 0 },
-        peers_connected: peers,
+    let mut metrics = NetworkMetrics {
         active_downloads: 0,
         active_seeding: if peers > 0 { 1 } else { 0 },
         active_discovery: if peers > 0 { 1 } else { 0 },
         download_rate: 0,
         upload_rate: 0,
+        transfers: Vec::new(),
+    };
+    if let Some(rt) = guard.as_ref() {
+        for (hash, path) in rt.content_index.iter() {
+            let name = std::path::Path::new(path).file_name().and_then(|s| s.to_str()).unwrap_or("").to_string();
+            let size = std::fs::metadata(path).map(|m| m.len()).unwrap_or(0);
+            metrics.transfers.push(TransferItem {
+                id: hash.clone(), name, size, downloaded: size, download_speed: 0, upload_speed: 0,
+                peers: 0, seeders: 0, eta_secs: 0, status: "seeding".into(), health: 100, ratio: 1.0,
+            });
+        }
     }
+    metrics
 }
 
 #[tauri::command]

@@ -1209,6 +1209,7 @@ dependencies = [
  "md5",
  "mime_guess",
  "multiaddr",
+ "once_cell",
  "pdfium-render",
  "png",
  "reqwest",
@@ -2601,6 +2602,7 @@ dependencies = [
  "netlink-sys",
  "rtnetlink",
  "system-configuration",
+ "tokio",
  "windows 0.52.0",
 ]
 
@@ -3208,6 +3210,7 @@ dependencies = [
  "libp2p-core",
  "libp2p-identity",
  "socket2",
+ "tokio",
  "tracing",
 ]
 
@@ -3710,8 +3713,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "16c903aa70590cb93691bf97a767c8d1d6122d2cc9070433deb3bbf36ce8bd23"
 dependencies = [
  "bytes",
+ "futures",
  "libc",
  "log",
+ "tokio",
 ]
 
 [[package]]
@@ -5189,6 +5194,7 @@ dependencies = [
  "netlink-sys",
  "nix 0.26.4",
  "thiserror 1.0.69",
+ "tokio",
 ]
 
 [[package]]

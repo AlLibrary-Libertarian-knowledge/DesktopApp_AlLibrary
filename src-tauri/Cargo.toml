@@ -72,6 +72,7 @@ bytes = "1.6"
 libp2p-kad = "0.45"
 libp2p-request-response = "0.26"
 libp2p-dns = "0.41"
-libp2p-tcp = "0.41"
+libp2p-tcp = { version = "0.41", features = ["tokio"] }
 libp2p-websocket = "0.43"
+once_cell = "1.18"
 

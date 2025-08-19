@@ -1,10 +1,12 @@
 use anyhow::Result;
 use libp2p::{
-	core::upgrade,
+	core::{transport::choice::OrTransport, upgrade},
 	gossipsub,
+	kad,
 	identity,
 	noise,
 	swarm::{NetworkBehaviour, Swarm, SwarmEvent, Config as SwarmConfig, Executor},
+	tcp,
 	yamux,
 	PeerId,
 	Multiaddr,
@@ -29,6 +31,7 @@ pub enum Command {
 	UpdateIndex { hash: String, path: String, title: String, author: Option<String>, tags: Vec<String> },
 	Fetch { hash: String, out_path: String, reply: oneshot::Sender<Result<String, String>> },
 	Search { query: String, reply: oneshot::Sender<Vec<(String, String)>> },
+	GetMetrics { reply: oneshot::Sender<Vec<(String, u64, u64, u64, String)>> },
 }
 
 pub struct RuntimeHandle {
@@ -96,6 +99,7 @@ fn parse_chunk_request(buf: &[u8]) -> Result<(String, u64), Box<bincode::ErrorKi
 struct Behaviour {
 	gossipsub: gossipsub::Behaviour,
 	rr: rr::Behaviour<ChunkCodec>,
+	kad: kad::Behaviour<kad::store::MemoryStore>,
 }
 
 pub async fn start_runtime(socks: Option<String>) -> Result<RuntimeHandle> {
@@ -103,10 +107,12 @@ pub async fn start_runtime(socks: Option<String>) -> Result<RuntimeHandle> {
 	let local_key = identity::Keypair::generate_ed25519();
 	let local_peer_id = PeerId::from(local_key.public());
 
-	// Base transport: either SOCKS-dialed TCP or direct TCP
+	// Base transport: dial over Tor (SOCKS) + listen locally so Tor hidden service can forward
 	let socks_addr = socks.ok_or_else(|| anyhow::anyhow!("SOCKS proxy is required for P2P runtime"))?;
-	let proxy = SocksProxyTransport::new(socks_addr);
-	let base = libp2p::websocket::WsConfig::new(proxy);
+	let dial_ws = libp2p::websocket::WsConfig::new(SocksProxyTransport::new(socks_addr));
+	let tcp_transport = tcp::tokio::Transport::new(tcp::Config::new().nodelay(true));
+	let listen_ws = libp2p::websocket::WsConfig::new(tcp_transport);
+	let base = OrTransport::new(dial_ws, listen_ws);
 
 	let transport = base
 		.upgrade(upgrade::Version::V1)
@@ -126,13 +132,20 @@ pub async fn start_runtime(socks: Option<String>) -> Result<RuntimeHandle> {
 		gossipsub_config,
 	).map_err(|e| anyhow::anyhow!(e))?;
 	let topic = gossipsub::IdentTopic::new("allibrary-content");
+	let topic_peers = gossipsub::IdentTopic::new("allibrary-peers");
 	gossipsub.subscribe(&topic)?;
+	gossipsub.subscribe(&topic_peers)?;
 
 	// Request/Response
 	let protocols = std::iter::once(("/allibrary/chunk/1".to_string(), rr::ProtocolSupport::Full));
 	let rr = rr::Behaviour::<ChunkCodec>::new(protocols, Default::default());
 
-	let behaviour = Behaviour { gossipsub, rr };
+	// Kademlia for presence shared via Tor
+	let store = kad::store::MemoryStore::new(local_peer_id);
+	let kad_cfg = kad::Config::default();
+	let kad = kad::Behaviour::with_config(local_peer_id, store, kad_cfg);
+
+	let behaviour = Behaviour { gossipsub, rr, kad };
 	struct TokioExec;
 	impl Executor for TokioExec {
 		fn exec(&self, fut: std::pin::Pin<Box<dyn futures::Future<Output = ()> + Send + 'static>>) {
@@ -141,12 +154,37 @@ pub async fn start_runtime(socks: Option<String>) -> Result<RuntimeHandle> {
 	}
 	let mut swarm = Swarm::new(transport, behaviour, local_peer_id, SwarmConfig::with_executor(TokioExec));
 
+	// Start local listener and create onion service for inbound
+	fn pick_port() -> u16 { std::net::TcpListener::bind(("127.0.0.1", 0)).ok().and_then(|l| l.local_addr().ok().map(|a| a.port())).unwrap_or(0) }
+	let listen_port = pick_port();
+	let _ = Swarm::listen_on(&mut swarm, format!("/ip4/127.0.0.1/tcp/{}/ws", listen_port).parse().unwrap());
+	let onion_addr = crate::core::p2p::tor_manager::create_hidden_service(listen_port).unwrap_or_default();
+
+	// Optional bootstrap onions (comma-separated list of host:port), e.g.,
+	// ALLIB_BOOTSTRAP_ONIONS="abc123.onion:443,def456.onion:443"
+	if let Ok(list) = std::env::var("ALLIB_BOOTSTRAP_ONIONS") {
+		for item in list.split(',').map(|s| s.trim()).filter(|s| !s.is_empty()) {
+			let mut parts = item.split(':');
+			if let (Some(host), Some(port_str)) = (parts.next(), parts.next()) {
+				if let Ok(port) = port_str.parse::<u16>() {
+					let ma: Multiaddr = format!("/dnsaddr/{}/tcp/{}/ws", host, port).parse().unwrap_or_else(|_| "/ip4/127.0.0.1/tcp/9".parse().unwrap());
+					let _ = Swarm::dial(&mut swarm, ma);
+				}
+			}
+		}
+	}
+
 	// State
 	#[derive(Clone)]
 	struct IndexedContent { path: String, title: String, author: Option<String>, tags: Vec<String> }
 	let mut content_index: HashMap<String, IndexedContent> = HashMap::new();
 	let mut connected: HashSet<PeerId> = HashSet::new();
 	const CHUNK_SIZE: usize = 64 * 1024;
+
+	// Simple transfer stats for metrics (download/upload per hash)
+	#[derive(Default, Clone)]
+	struct TransferStats { downloaded: u64, size: u64, last_tick_bytes: u64, last_rate_bps: u64 }
+	let mut transfer_stats: HashMap<String, TransferStats> = HashMap::new();
 
 	struct PendingFile {
 		peer: PeerId,
@@ -160,8 +198,11 @@ pub async fn start_runtime(socks: Option<String>) -> Result<RuntimeHandle> {
 	// Distributed search state
 	let mut current_search: Option<(String, std::time::Instant, tokio::sync::oneshot::Sender<Vec<(String, String)>>, Vec<(String, String)>)> = None;
 	let mut ticker = tokio::time::interval(Duration::from_millis(200));
+	let mut announce_tick = tokio::time::interval(Duration::from_secs(10));
 
 	let (tx, mut rx) = mpsc::channel::<Command>(64);
+	let topic_peers_clone = topic_peers.clone();
+	let peer_announce = if !onion_addr.is_empty() { format!("/dnsaddr/{}/tcp/{}/ws/p2p/{}", onion_addr, listen_port, local_peer_id) } else { String::new() };
 	let task = tokio::spawn(async move {
 		loop {
 			tokio::select! {
@@ -175,6 +216,22 @@ pub async fn start_runtime(socks: Option<String>) -> Result<RuntimeHandle> {
 						}
 						Command::UpdateIndex { hash, path, title, author, tags } => {
 							content_index.insert(hash, IndexedContent { path, title, author, tags });
+						}
+						Command::GetMetrics { reply } => {
+							// Build a simple metrics snapshot per content hash.
+							// Tuple: (hash, downloaded, size, last_rate_bps, status)
+							let mut metrics: Vec<(String, u64, u64, u64, String)> = Vec::new();
+							for (hash, _info) in content_index.iter() {
+								let stat = transfer_stats.get(hash).cloned().unwrap_or_default();
+								metrics.push((
+									hash.clone(),
+									stat.downloaded,
+									stat.size,
+									stat.last_rate_bps,
+									"ok".to_string(),
+								));
+							}
+							let _ = reply.send(metrics);
 						}
 						Command::Fetch { hash, out_path, reply } => {
 							// Attempt from all connected peers
@@ -251,8 +308,11 @@ pub async fn start_runtime(socks: Option<String>) -> Result<RuntimeHandle> {
 								BehaviourEvent::Gossipsub(ev) => {
 									if let gossipsub::Event::Message { message, .. } = ev {
 										if let Ok(txt) = String::from_utf8(message.data.clone()) {
+											// Peer announcement via multiaddr
+											if let Ok(ma) = txt.parse::<Multiaddr>() {
+												let _ = Swarm::dial(&mut swarm, ma);
 											// Search request: S|<id>|<query>
-											if let Some(rest) = txt.strip_prefix("S|") {
+											} else if let Some(rest) = txt.strip_prefix("S|") {
 												let mut parts = rest.splitn(2, '|');
 												if let (Some(req_id), Some(query)) = (parts.next(), parts.next()) {
 													let ql = query.to_lowercase();
@@ -285,6 +345,20 @@ pub async fn start_runtime(socks: Option<String>) -> Result<RuntimeHandle> {
 											}
 										}
 									}
+									BehaviourEvent::Kad(kad_ev) => {
+										match kad_ev {
+											kad::Event::InboundRequest { .. } => {}
+											kad::Event::RoutingUpdated { .. } => {}
+											kad::Event::OutboundQueryProgressed { id: _, result, .. } => {
+												if let kad::QueryResult::GetRecord(Ok(ok)) = result {
+													for rec in ok.records {
+														if let Ok(txt) = String::from_utf8(rec.record.value.clone()) {
+															if let Ok(ma) = txt.parse::<Multiaddr>() { let _ = Swarm::dial(&mut swarm, ma); }
+														}
+													}
+												}
+											}
+										}
 								}
 							}
 						}
@@ -299,6 +373,17 @@ pub async fn start_runtime(socks: Option<String>) -> Result<RuntimeHandle> {
 						} else {
 							current_search = Some((id, started, reply, results));
 						}
+					}
+				}
+				_ = announce_tick.tick() => {
+					if !peer_announce.is_empty() {
+						let _ = swarm.behaviour_mut().gossipsub.publish(topic_peers_clone.clone(), peer_announce.clone().into_bytes());
+						// Publish and query presence via Kademlia
+						use libp2p::kad::record::{Key, Record};
+						let key = Key::new(&"allibrary:presence");
+						let rec = Record { key: key.clone(), value: peer_announce.clone().into_bytes(), publisher: None, expires: None };
+						let _ = swarm.behaviour_mut().kad.put_record(rec, kad::Quorum::One);
+						let _ = swarm.behaviour_mut().kad.get_record(key);
 					}
 				}
 			}

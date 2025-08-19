@@ -210,19 +210,19 @@ const HomePage: Component = () => {
             <div class={styles['activity-item']}>
               <div class={`${styles['activity-dot']} ${styles.active}`}></div>
               <span class={styles['activity-text']}>
-                {(net.metrics() as any)?.active_downloads ?? 0} {t('home.activityIndicators.downloads')}
+                {net.activeDownloads()} {t('home.activityIndicators.downloads')}
               </span>
             </div>
             <div class={styles['activity-item']}>
               <div class={`${styles['activity-dot']} ${styles.seeding}`}></div>
               <span class={styles['activity-text']}>
-                {(net.metrics() as any)?.active_seeding ?? 0} {t('home.activityIndicators.seeding')}
+                {net.activeSeeding()} {t('home.activityIndicators.seeding')}
               </span>
             </div>
             <div class={styles['activity-item']}>
               <div class={`${styles['activity-dot']} ${styles.discovering}`}></div>
               <span class={styles['activity-text']}>
-                {(net.metrics() as any)?.active_discovery ?? 0} {t('home.activityIndicators.discovering')}
+                {net.activeDiscovery()} {t('home.activityIndicators.discovering')}
               </span>
             </div>
           </div>

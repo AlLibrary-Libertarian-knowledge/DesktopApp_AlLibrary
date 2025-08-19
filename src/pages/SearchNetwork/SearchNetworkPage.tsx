@@ -152,7 +152,7 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
           <div class={styles['network-status-enhanced']}>
             <NetworkStatus variant="default" />
             <div class={styles['tor-pill']} data-on={torReady() ? '1' : '0'}>{torReady() ? 'Onion' : 'No Onion'}</div>
-          </div>
+        </div>
         }
       />
 
@@ -193,34 +193,34 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
                         Download
                       </Button>
                     </div>
-                    <Button variant="ghost" size="sm" onClick={() => setShowFilters(!showFilters())}>
-                      <Filter size={16} class="mr-2" />
-                      {showFilters() ? 'Hide Filters' : 'Show Filters'}
-                    </Button>
+                  <Button variant="ghost" size="sm" onClick={() => setShowFilters(!showFilters())}>
+                    <Filter size={16} class="mr-2" />
+                    {showFilters() ? 'Hide Filters' : 'Show Filters'}
+                  </Button>
                   </div>
-                </div>
+              </div>
 
                 <div class={styles['searchInputContainer']}>
                   <Search size={20} />
-                  <Input
-                    type="text"
-                    placeholder="Search cultural heritage documents across P2P network..."
-                    value={searchQuery()}
+                    <Input
+                      type="text"
+                      placeholder="Search cultural heritage documents across P2P network..."
+                      value={searchQuery()}
                     onInput={handleSearchInput}
                     onKeyDown={(e: any) => { if (e.key === 'Enter') handleSearch(); }}
                     ref={(el: HTMLInputElement) => { searchInputEl = el; }}
                     class={styles['searchInput'] as unknown as string}
                   />
                   <div class={styles['searchActions']}>
-                    <Button
-                      variant="primary"
-                      onClick={handleSearch}
+                      <Button
+                        variant="primary"
+                        onClick={handleSearch}
                       disabled={!searchQuery().trim() || isSearching() || !torReady()}
-                    >
-                      {isSearching() ? 'Searching...' : 'Search Network'}
-                    </Button>
+                      >
+                        {isSearching() ? 'Searching...' : 'Search Network'}
+                      </Button>
+                    </div>
                   </div>
-                </div>
 
                 {/* Filters with smooth expand */}
                 <div class={styles['filtersPanel']} data-open={showFilters() ? '1' : '0'} aria-hidden={!showFilters()} aria-expanded={showFilters()}>
@@ -232,7 +232,7 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
                         <Button variant={searchScope() === 'trusted' ? 'primary' : 'outline'} size="sm" onClick={() => setSearchScope('trusted')}>Trusted Only</Button>
                         <Button variant={searchScope() === 'nearby' ? 'primary' : 'outline'} size="sm" onClick={() => setSearchScope('nearby')}>Nearby Peers</Button>
                       </div>
-                    </div>
+                        </div>
                     <div class={styles['searchOptionsRight']}>
                       <label>Types</label>
                       <div>
@@ -241,7 +241,7 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
                         <Button variant={anonymousMode() ? 'primary' : 'outline'} size="sm" onClick={() => setAnonymousMode(!anonymousMode())}><Shield size={16} />&nbsp;Anonymous</Button>
                       </div>
                     </div>
-                  </div>
+                </div>
                 </div>
               </div>
             </section>

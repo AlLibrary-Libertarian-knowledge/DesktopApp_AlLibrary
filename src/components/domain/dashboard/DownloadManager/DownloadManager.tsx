@@ -1,4 +1,4 @@
-import { Component, createSignal, For, Show } from 'solid-js';
+import { Component, createSignal, For, Show, createMemo } from 'solid-js';
 import { createStore } from 'solid-js/store';
 import { useTranslation } from '../../../../i18n/hooks';
 import {
@@ -20,6 +20,7 @@ import {
 } from 'lucide-solid';
 import { Button } from '../../../foundation';
 import styles from './DownloadManager.module.css';
+import { useNetworkStore } from '@/stores/network/networkStore';
 import { Modal } from '../../../foundation';
 
 interface DownloadItem {
@@ -59,84 +60,28 @@ const DownloadManager: Component<DownloadManagerProps> = props => {
   const [newDownloadUrl, setNewDownloadUrl] = createSignal<string>('');
   const [downloadPath, setDownloadPath] = createSignal<string>('');
 
-  // Mock download data
-  const [downloads, setDownloads] = createStore<DownloadItem[]>([
-    {
-      id: '1',
-      name: 'Traditional Healing Practices of the Amazon.pdf',
-      type: 'PDF',
-      size: 15728640, // 15MB
-      downloaded: 10485760, // 10MB
-      uploadSpeed: 0,
-      downloadSpeed: 524288, // 512 KB/s
-      peers: 8,
-      seeders: 3,
-      eta: 10,
-      status: 'downloading',
-      priority: 'high',
-      health: 85,
-      ratio: 0,
-      culturalContext: 'Amazon Indigenous Knowledge',
-      source: 'Instituto Socioambiental',
-      addedDate: new Date('2025-01-09T10:30:00'),
-    },
-    {
-      id: '2',
-      name: 'Digital Archives Collection.zip',
-      type: 'Collection',
-      size: 104857600, // 100MB
-      downloaded: 104857600,
-      uploadSpeed: 1048576, // 1 MB/s
-      downloadSpeed: 0,
-      peers: 12,
-      seeders: 5,
-      eta: 0,
-      status: 'seeding',
+  const net = useNetworkStore();
+  const liveDownloads = createMemo<DownloadItem[]>(() => {
+    const items = (net.transfers() as any[]) || [];
+    return items.map((t: any) => ({
+      id: String(t.id ?? t.hash ?? t.name),
+      name: String(t.name || 'Unknown'),
+      type: (String(t.name || '').toLowerCase().endsWith('.epub') ? 'EPUB' : String(t.name || '').toLowerCase().endsWith('.pdf') ? 'PDF' : 'Collection') as any,
+      size: Number(t.size ?? 0),
+      downloaded: Number(t.downloaded ?? 0),
+      uploadSpeed: Number(t.upload_speed ?? 0),
+      downloadSpeed: Number(t.download_speed ?? 0),
+      peers: Number(t.peers ?? 0),
+      seeders: Number(t.seeders ?? 0),
+      eta: Number(t.eta_secs ?? 0),
+      status: String(t.status ?? 'seeding') as any,
       priority: 'normal',
-      health: 100,
-      ratio: 2.5,
-      source: 'Global Heritage Archive',
-      addedDate: new Date('2025-01-08T15:22:00'),
-    },
-    {
-      id: '3',
-      name: 'Pacific Islander Navigation Methods.epub',
-      type: 'EPUB',
-      size: 5242880, // 5MB
-      downloaded: 0,
-      uploadSpeed: 0,
-      downloadSpeed: 0,
-      peers: 0,
-      seeders: 0,
-      eta: 999999,
-      status: 'paused',
-      priority: 'low',
-      health: 0,
-      ratio: 0,
-      culturalContext: 'Pacific Islander Traditional Knowledge',
-      source: 'Polynesian Cultural Center',
-      addedDate: new Date('2025-01-07T09:15:00'),
-    },
-    {
-      id: '4',
-      name: 'Andean Music Traditions.pdf',
-      type: 'PDF',
-      size: 25165824, // 24MB
-      downloaded: 25165824,
-      uploadSpeed: 0,
-      downloadSpeed: 0,
-      peers: 0,
-      seeders: 2,
-      eta: 0,
-      status: 'completed',
-      priority: 'normal',
-      health: 100,
-      ratio: 1.2,
-      culturalContext: 'Andean Cultural Heritage',
-      source: 'Museo de Arte Precolombino',
-      addedDate: new Date('2025-01-06T14:45:00'),
-    },
-  ]);
+      health: Number(t.health ?? 100),
+      ratio: Number(t.ratio ?? 1),
+      source: 'P2P Network',
+      addedDate: new Date(),
+    }));
+  });
 
   const formatBytes = (bytes: number): string => {
     if (bytes === 0) return '0 B';
@@ -180,7 +125,8 @@ const DownloadManager: Component<DownloadManagerProps> = props => {
   };
 
   const filteredDownloads = () => {
-    let filtered = downloads.filter(item => {
+    const list = liveDownloads();
+    let filtered = list.filter(item => {
       if (filter() === 'all') return true;
       return item.status === filter();
     });
@@ -226,7 +172,7 @@ const DownloadManager: Component<DownloadManagerProps> = props => {
   };
 
   const handleAction = (action: string) => {
-    const selected = downloads.filter(d => selectedItems().includes(d.id));
+    const selected = liveDownloads().filter(d => selectedItems().includes(d.id));
     selected.forEach(item => {
       props.onItemAction?.(action, item);
 
@@ -254,10 +200,10 @@ const DownloadManager: Component<DownloadManagerProps> = props => {
   };
 
   const handleSelectAll = () => {
-    if (selectedItems().length === downloads.length) {
+    if (selectedItems().length === liveDownloads().length) {
       setSelectedItems([]);
     } else {
-      setSelectedItems(downloads.map(d => d.id));
+      setSelectedItems(liveDownloads().map(d => d.id));
     }
   };
 
@@ -517,18 +463,18 @@ const DownloadManager: Component<DownloadManagerProps> = props => {
       {/* Status Bar */}
       <div class={styles['download-status-bar']}>
         <div class={styles['status-group']}>
-          <span>Total: {downloads.length}</span>
-          <span>Active: {downloads.filter(d => d.status === 'downloading').length}</span>
-          <span>Completed: {downloads.filter(d => d.status === 'completed').length}</span>
+          <span>Total: {liveDownloads().length}</span>
+          <span>Active: {liveDownloads().filter(d => d.status === 'downloading').length}</span>
+          <span>Completed: {liveDownloads().filter(d => d.status === 'completed').length}</span>
         </div>
         <div class={styles['status-group']}>
           <span>
             <ArrowDown size={12} />{' '}
-            {formatSpeed(downloads.reduce((sum, d) => sum + d.downloadSpeed, 0))}
+            {formatSpeed(liveDownloads().reduce((sum, d) => sum + d.downloadSpeed, 0))}
           </span>
           <span>
             <ArrowUp size={12} />{' '}
-            {formatSpeed(downloads.reduce((sum, d) => sum + d.uploadSpeed, 0))}
+            {formatSpeed(liveDownloads().reduce((sum, d) => sum + d.uploadSpeed, 0))}
           </span>
         </div>
       </div>

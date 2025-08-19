@@ -720,9 +720,7 @@ class P2PNetworkServiceImpl implements P2PNetworkService {
    */
   async getNetworkMetrics(): Promise<NetworkMetrics> {
     try {
-      return await invoke<NetworkMetrics>('get_network_metrics', {
-        nodeId: this.nodeId,
-      });
+      return await invoke<NetworkMetrics>('get_network_metrics', { nodeId: this.nodeId });
     } catch (error) {
       console.error('Failed to get network metrics:', error);
       throw new Error('Unable to retrieve network metrics');
