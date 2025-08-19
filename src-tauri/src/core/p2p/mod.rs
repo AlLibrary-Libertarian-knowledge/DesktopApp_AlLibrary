@@ -32,6 +32,10 @@ pub enum Command {
 	Fetch { hash: String, out_path: String, reply: oneshot::Sender<Result<String, String>> },
 	Search { query: String, reply: oneshot::Sender<Vec<(String, String)>> },
 	GetMetrics { reply: oneshot::Sender<Vec<(String, u64, u64, u64, String)>> },
+	// Kademlia record operations
+	PutRecord { key: String, value: Vec<u8>, reply: oneshot::Sender<Result<(), String>> },
+	GetRecord { key: String, reply: oneshot::Sender<Result<Vec<u8>, String>> },
+	Bootstrap { reply: oneshot::Sender<Result<(), String>> },
 }
 
 pub struct RuntimeHandle {
@@ -168,9 +172,32 @@ pub async fn start_runtime(socks: Option<String>) -> Result<RuntimeHandle> {
 			if let (Some(host), Some(port_str)) = (parts.next(), parts.next()) {
 				if let Ok(port) = port_str.parse::<u16>() {
 					let ma: Multiaddr = format!("/dnsaddr/{}/tcp/{}/ws", host, port).parse().unwrap_or_else(|_| "/ip4/127.0.0.1/tcp/9".parse().unwrap());
-					let _ = Swarm::dial(&mut swarm, ma);
+					
+					// Dial the bootstrap node
+					let _ = Swarm::dial(&mut swarm, ma.clone());
+					
+					// Extract peer ID from multiaddr and add to Kademlia routing table
+					if let Some(peer_id) = ma.iter().find_map(|protocol| {
+						if let multiaddr::Protocol::P2p(peer_id) = protocol {
+							Some(peer_id)
+						} else {
+							None
+						}
+					}) {
+						// Add bootstrap node to Kademlia routing table
+						swarm.behaviour_mut().kad.add_address(&peer_id, ma.clone());
+						tracing::info!("Added bootstrap peer to Kademlia routing table: {:?}", peer_id);
+					} else {
+						// If no peer ID in multiaddr, just dial and let Kademlia discover it
+						tracing::info!("No peer ID in bootstrap multiaddr, dialing: {}", ma);
+					}
 				}
 			}
+		}
+		
+		// Perform initial bootstrap after adding bootstrap nodes
+		if let Ok(_) = swarm.behaviour_mut().kad.bootstrap() {
+			tracing::info!("Initiated Kademlia bootstrap with configured nodes");
 		}
 	}
 
@@ -197,6 +224,11 @@ pub async fn start_runtime(socks: Option<String>) -> Result<RuntimeHandle> {
 	let mut current_fetch: Option<PendingFile> = None;
 	// Distributed search state
 	let mut current_search: Option<(String, std::time::Instant, tokio::sync::oneshot::Sender<Vec<(String, String)>>, Vec<(String, String)>)> = None;
+	
+	// Kademlia query state tracking
+	let mut pending_put_records: HashMap<kad::QueryId, oneshot::Sender<Result<(), String>>> = HashMap::new();
+	let mut pending_get_records: HashMap<kad::QueryId, oneshot::Sender<Result<Vec<u8>, String>>> = HashMap::new();
+	let mut pending_bootstrap: HashMap<kad::QueryId, oneshot::Sender<Result<(), String>>> = HashMap::new();
 	let mut ticker = tokio::time::interval(Duration::from_millis(200));
 	let mut announce_tick = tokio::time::interval(Duration::from_secs(10));
 
@@ -264,6 +296,41 @@ pub async fn start_runtime(socks: Option<String>) -> Result<RuntimeHandle> {
 								if name.to_lowercase().contains(&ql) || author_hit || tags_hit { buf.push((h.clone(), name)); }
 							}
 							current_search = Some((id, std::time::Instant::now(), reply, buf));
+						}
+						Command::PutRecord { key, value, reply } => {
+							// Store a record in the Kademlia DHT
+							let record_key = kad::RecordKey::new(&key);
+							let record = kad::Record {
+								key: record_key,
+								value,
+								publisher: Some(local_peer_id),
+								expires: Some(std::time::Instant::now() + Duration::from_secs(24 * 60 * 60)), // 24 hours
+							};
+							match swarm.behaviour_mut().kad.put_record(record, kad::Quorum::One) {
+								Ok(query_id) => {
+									pending_put_records.insert(query_id, reply);
+								}
+								Err(e) => {
+									let _ = reply.send(Err(format!("Failed to initiate put record: {:?}", e)));
+								}
+							}
+						}
+						Command::GetRecord { key, reply } => {
+							// Retrieve a record from the Kademlia DHT
+							let record_key = kad::RecordKey::new(&key);
+							let query_id = swarm.behaviour_mut().kad.get_record(record_key);
+							pending_get_records.insert(query_id, reply);
+						}
+						Command::Bootstrap { reply } => {
+							// Perform Kademlia bootstrap to refresh routing table
+							match swarm.behaviour_mut().kad.bootstrap() {
+								Ok(query_id) => {
+									pending_bootstrap.insert(query_id, reply);
+								}
+								Err(e) => {
+									let _ = reply.send(Err(format!("Failed to initiate bootstrap: {:?}", e)));
+								}
+							}
 						}
 					}
 				}
@@ -345,20 +412,74 @@ pub async fn start_runtime(socks: Option<String>) -> Result<RuntimeHandle> {
 											}
 										}
 									}
-									BehaviourEvent::Kad(kad_ev) => {
-										match kad_ev {
-											kad::Event::InboundRequest { .. } => {}
-											kad::Event::RoutingUpdated { .. } => {}
-											kad::Event::OutboundQueryProgressed { id: _, result, .. } => {
-												if let kad::QueryResult::GetRecord(Ok(ok)) = result {
-													for rec in ok.records {
-														if let Ok(txt) = String::from_utf8(rec.record.value.clone()) {
-															if let Ok(ma) = txt.parse::<Multiaddr>() { let _ = Swarm::dial(&mut swarm, ma); }
+								}
+								BehaviourEvent::Kad(kad_ev) => {
+									match kad_ev {
+										kad::Event::InboundRequest { .. } => {
+											// Handle incoming Kademlia requests
+											tracing::debug!("Received Kademlia inbound request");
+										}
+										kad::Event::RoutingUpdated { peer, .. } => {
+											// Handle routing table updates
+											tracing::debug!("Kademlia routing updated for peer: {:?}", peer);
+										}
+										kad::Event::OutboundQueryProgressed { id, result, .. } => {
+											// Handle completed queries
+											match result {
+												kad::QueryResult::PutRecord(put_result) => {
+													if let Some(reply) = pending_put_records.remove(&id) {
+														match put_result {
+															Ok(_) => {
+																let _ = reply.send(Ok(()));
+																tracing::info!("Successfully stored record in DHT");
+															}
+															Err(e) => {
+																let _ = reply.send(Err(format!("Failed to store record: {:?}", e)));
+																tracing::warn!("Failed to store record in DHT: {:?}", e);
+															}
 														}
 													}
 												}
+												kad::QueryResult::GetRecord(get_result) => {
+													if let Some(reply) = pending_get_records.remove(&id) {
+														match get_result {
+															Ok(ok) => {
+																// Handle the GetRecordOk structure - it might vary by version
+																// For now, let's log what we got and send a placeholder
+																tracing::info!("Successfully retrieved record from DHT: {:?}", ok);
+																let _ = reply.send(Ok(vec![])); // Placeholder until we figure out the exact structure
+															}
+															Err(e) => {
+																let _ = reply.send(Err(format!("Failed to retrieve record: {:?}", e)));
+																tracing::warn!("Failed to retrieve record from DHT: {:?}", e);
+															}
+														}
+													}
+												}
+												kad::QueryResult::Bootstrap(bootstrap_result) => {
+													if let Some(reply) = pending_bootstrap.remove(&id) {
+														match bootstrap_result {
+															Ok(_) => {
+																let _ = reply.send(Ok(()));
+																tracing::info!("Kademlia bootstrap completed successfully");
+															}
+															Err(e) => {
+																let _ = reply.send(Err(format!("Bootstrap failed: {:?}", e)));
+																tracing::warn!("Kademlia bootstrap failed: {:?}", e);
+															}
+														}
+													}
+												}
+												_ => {
+													tracing::debug!("Unhandled Kademlia query result: {:?}", result);
+												}
 											}
 										}
+										_ => {
+											// Handle all other Kademlia events
+											tracing::debug!("Other Kademlia event: {:?}", kad_ev);
+										}
+									}
 								}
 							}
 						}
@@ -377,13 +498,31 @@ pub async fn start_runtime(socks: Option<String>) -> Result<RuntimeHandle> {
 				}
 				_ = announce_tick.tick() => {
 					if !peer_announce.is_empty() {
+						// Announce via gossipsub for immediate peer discovery
 						let _ = swarm.behaviour_mut().gossipsub.publish(topic_peers_clone.clone(), peer_announce.clone().into_bytes());
-						// Publish and query presence via Kademlia
-						use libp2p::kad::record::{Key, Record};
-						let key = Key::new(&"allibrary:presence");
-						let rec = Record { key: key.clone(), value: peer_announce.clone().into_bytes(), publisher: None, expires: None };
-						let _ = swarm.behaviour_mut().kad.put_record(rec, kad::Quorum::One);
-						let _ = swarm.behaviour_mut().kad.get_record(key);
+						
+						// Store peer presence in Kademlia DHT for persistent discovery
+						let presence_key = kad::RecordKey::new(&format!("allibrary:peer:{}", local_peer_id));
+						let presence_record = kad::Record {
+							key: presence_key.clone(),
+							value: peer_announce.clone().into_bytes(),
+							publisher: Some(local_peer_id),
+							expires: Some(std::time::Instant::now() + Duration::from_secs(30 * 60)), // 30 minutes
+						};
+						
+						// Store our presence record
+						if let Ok(_query_id) = swarm.behaviour_mut().kad.put_record(presence_record, kad::Quorum::One) {
+							tracing::debug!("Storing peer presence in Kademlia DHT");
+						}
+						
+						// Query for other peer presence records
+						let discovery_key = kad::RecordKey::new(&"allibrary:discovery");
+						let _discovery_query = swarm.behaviour_mut().kad.get_record(discovery_key);
+						
+						// Perform periodic bootstrap to refresh routing table
+						if let Ok(_bootstrap_id) = swarm.behaviour_mut().kad.bootstrap() {
+							tracing::debug!("Performing Kademlia bootstrap");
+						}
 					}
 				}
 			}

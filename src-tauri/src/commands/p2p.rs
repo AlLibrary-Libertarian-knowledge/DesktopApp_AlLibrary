@@ -49,6 +49,18 @@ pub struct NetworkMetrics {
     pub transfers: Vec<TransferItem>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct KademliaRecord {
+    pub key: String,
+    pub value: Vec<u8>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BootstrapResult {
+    pub success: bool,
+    pub message: String,
+}
+
 // Persist p2p runtime command channel
 static P2P_TX: Mutex<Option<tokio::sync::mpsc::Sender<p2p::Command>>> = Mutex::new(None);
 
@@ -316,5 +328,105 @@ pub async fn search_p2p_network(_node_id: Option<String>, search_request: Search
         }
     }
     vec![]
+}
+
+// ============ NEW KADEMLIA RECORD COMMANDS ============
+
+#[tauri::command]
+pub async fn put_kad_record(key: String, value: Vec<u8>) -> Result<String, String> {
+    let tx_opt = { P2P_TX.lock().unwrap().as_ref().cloned() };
+    
+    if let Some(tx) = tx_opt {
+        let (reply_tx, reply_rx) = oneshot::channel();
+        
+        if tx.send(p2p::Command::PutRecord { key: key.clone(), value, reply: reply_tx }).await.is_ok() {
+            match reply_rx.await {
+                Ok(Ok(())) => Ok(format!("Successfully stored record with key: {}", key)),
+                Ok(Err(e)) => Err(format!("Failed to store record: {}", e)),
+                Err(_) => Err("Communication error with P2P runtime".to_string()),
+            }
+        } else {
+            Err("Failed to send command to P2P runtime".to_string())
+        }
+    } else {
+        Err("P2P runtime not initialized".to_string())
+    }
+}
+
+#[tauri::command]
+pub async fn get_kad_record(key: String) -> Result<Vec<u8>, String> {
+    let tx_opt = { P2P_TX.lock().unwrap().as_ref().cloned() };
+    
+    if let Some(tx) = tx_opt {
+        let (reply_tx, reply_rx) = oneshot::channel();
+        
+        if tx.send(p2p::Command::GetRecord { key: key.clone(), reply: reply_tx }).await.is_ok() {
+            match reply_rx.await {
+                Ok(Ok(value)) => Ok(value),
+                Ok(Err(e)) => Err(format!("Failed to retrieve record: {}", e)),
+                Err(_) => Err("Communication error with P2P runtime".to_string()),
+            }
+        } else {
+            Err("Failed to send command to P2P runtime".to_string())
+        }
+    } else {
+        Err("P2P runtime not initialized".to_string())
+    }
+}
+
+#[tauri::command]
+pub async fn bootstrap_kad() -> Result<BootstrapResult, String> {
+    let tx_opt = { P2P_TX.lock().unwrap().as_ref().cloned() };
+    
+    if let Some(tx) = tx_opt {
+        let (reply_tx, reply_rx) = oneshot::channel();
+        
+        if tx.send(p2p::Command::Bootstrap { reply: reply_tx }).await.is_ok() {
+            match reply_rx.await {
+                Ok(Ok(())) => Ok(BootstrapResult {
+                    success: true,
+                    message: "Kademlia bootstrap completed successfully".to_string(),
+                }),
+                Ok(Err(e)) => Ok(BootstrapResult {
+                    success: false,
+                    message: format!("Bootstrap failed: {}", e),
+                }),
+                Err(_) => Err("Communication error with P2P runtime".to_string()),
+            }
+        } else {
+            Err("Failed to send command to P2P runtime".to_string())
+        }
+    } else {
+        Err("P2P runtime not initialized".to_string())
+    }
+}
+
+// Convenience command to store peer discovery information
+#[tauri::command]
+pub async fn announce_peer_presence(multiaddr: String) -> Result<String, String> {
+    let key = format!("allibrary:peer:announcement:{}", chrono::Utc::now().timestamp());
+    let value = multiaddr.into_bytes();
+    
+    put_kad_record(key.clone(), value).await
+        .map(|_| format!("Announced peer presence with key: {}", key))
+}
+
+// Convenience command to discover peers via Kademlia
+#[tauri::command]
+pub async fn discover_kad_peers() -> Result<Vec<String>, String> {
+    // Query for known peer announcement patterns
+    let discovery_key = "allibrary:peer:discovery".to_string();
+    
+    match get_kad_record(discovery_key).await {
+        Ok(data) => {
+            // Try to parse the data as peer addresses
+            if let Ok(peer_list) = String::from_utf8(data) {
+                Ok(peer_list.lines().map(|s| s.to_string()).collect())
+            } else {
+                Ok(vec![])
+            }
+        }
+        Err(_) => Ok(vec![]) // No peers found, not an error
+    }
 }
 
