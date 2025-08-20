@@ -20,6 +20,7 @@ import LoadingSpinner from '@/components/foundation/LoadingSpinner/LoadingSpinne
 // Domain Components
 import { DocumentCard } from '../../components/domain/document/DocumentCard';
 import { NetworkStatus } from '../../components/domain/network/NetworkStatus';
+import { NetworkInfo } from '../../components/domain/search';
 
 // Hooks and Services
 import { useNetworkSearch } from '../../hooks/api/useNetworkSearch';
@@ -245,6 +246,9 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
                 </div>
               </div>
             </section>
+
+            {/* Network Information */}
+            <NetworkInfo />
 
             {/* Quick metrics ribbon using StatCard */}
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">

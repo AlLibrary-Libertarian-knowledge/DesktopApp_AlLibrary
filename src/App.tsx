@@ -41,21 +41,67 @@ interface InitProgress {
 }
 
 // Route loading wrapper component following optimization principles
-const RouteWrapper: Component<{ children: any }> = props => (
-  <Suspense
-    fallback={
-      <div class="route-loading">
-        <div class="loading-container">
-          <div class="loading-spinner"></div>
-          <h3>Loading page...</h3>
-          <p>Please wait while we prepare your content</p>
+const RouteWrapper: Component<{ children: any }> = props => {
+  // Add timeout to prevent infinite loading
+  const [showTimeoutMessage, setShowTimeoutMessage] = createSignal(false);
+  
+  onMount(() => {
+    // Show timeout message after 10 seconds
+    globalThis.setTimeout(() => {
+      setShowTimeoutMessage(true);
+    }, 10000);
+  });
+  
+  return (
+    <Suspense
+      fallback={
+        <div class="route-loading">
+          <div class="loading-container">
+            <div class="loading-spinner"></div>
+            <h3>Loading page...</h3>
+            <p>Please wait while we prepare your content</p>
+            
+            {/* Timeout warning */}
+            <Show when={showTimeoutMessage()}>
+              <div style={{
+                color: '#f59e0b',
+                'font-size': '14px',
+                'margin-top': '10px',
+                'text-align': 'center'
+              }}>
+                ⚠️ Loading is taking longer than expected
+              </div>
+            </Show>
+            
+            {/* Component-level debug button */}
+            <button 
+              onClick={() => {
+                console.warn('Component loading bypass triggered');
+                // Force the component to render by updating a signal
+                // This is a workaround for Suspense getting stuck
+                window.location.reload();
+              }}
+              style={{
+                background: '#ef4444',
+                color: 'white',
+                border: 'none',
+                padding: '8px 16px',
+                'border-radius': '4px',
+                cursor: 'pointer',
+                'font-size': '12px',
+                'margin-top': '20px'
+              }}
+            >
+              🚨 Force Load Page (Debug)
+            </button>
+          </div>
         </div>
-      </div>
-    }
-  >
-    {props.children}
-  </Suspense>
-);
+      }
+    >
+      {props.children}
+    </Suspense>
+   );
+};
 
 // Wrapper component that includes MainLayout
 const AppWithLayout: Component<ParentProps> = props => {
@@ -82,6 +128,7 @@ const App: Component = () => {
 
   onMount(async () => {
     let cleanup: (() => void) | null = null;
+    let fallbackTimer: number | null = null;
 
     try {
       // First-run bootstrap: check if library folder is set
@@ -97,12 +144,60 @@ const App: Component = () => {
       await initializeI18n();
       /* initialized */
 
+      // Start Tauri initialization process
+      try {
+        const { invoke } = await import('@tauri-apps/api/core');
+        await invoke('initialize_app');
+        
+        // Start P2P network after Tauri initialization
+        console.log('Starting P2P network initialization...');
+        
+        // Add timeout to P2P initialization to prevent hanging
+        const p2pPromise = invoke('start_libp2p_with_socks', { socksAddr: '127.0.0.1:9050' });
+        const timeoutPromise = new Promise((_, reject) => 
+          globalThis.setTimeout(() => reject(new Error('P2P initialization timeout')), 10000)
+        );
+        
+        await Promise.race([p2pPromise, timeoutPromise]);
+        console.log('P2P network started successfully');
+        
+        // Bootstrap nodes will be discovered automatically via Kademlia DHT
+        // No need to hardcode addresses - the network discovers peers dynamically
+        console.log('P2P network ready for automatic peer discovery');
+        
+        // Force loading completion after P2P is ready
+        globalThis.setTimeout(() => {
+          console.log('Forcing loading completion after P2P initialization');
+          setIsLoading(false);
+          
+          // Clear the fallback timer since we're completing manually
+          if (fallbackTimer) {
+            globalThis.clearTimeout(fallbackTimer);
+            fallbackTimer = null;
+          }
+          
+          // Clean up the event listener
+          try { cleanup?.(); } catch { /* ignore */ }
+          cleanup = null;
+        }, 2000); // Force completion after 2 seconds
+        
+      } catch (error) {
+        console.warn('Failed to start Tauri/P2P initialization:', error);
+        // Continue with fallback - don't let P2P issues block the app
+      }
+
       // Listen for initialization progress from Tauri
       const unlisten = await listen<InitProgress>('init-progress', event => {
         setInitProgress(event.payload);
+        console.log('Tauri init progress:', event.payload);
 
         // When initialization is complete, hide loading screen
         if (event.payload.phase === 'complete' || event.payload.progress >= 100) {
+          if (fallbackTimer) {
+            globalThis.clearTimeout(fallbackTimer);
+            fallbackTimer = null;
+          }
+          
           globalThis.setTimeout(() => {
             setIsLoading(false);
             // Stop listening after initialization completes to prevent unnecessary re-renders
@@ -113,10 +208,20 @@ const App: Component = () => {
       });
 
       cleanup = unlisten;
-    } catch {
+
+      // Set fallback timer in case Tauri events don't work
+      fallbackTimer = globalThis.setTimeout(() => {
+        console.warn('Tauri initialization timeout, using fallback');
+        setIsLoading(false);
+        cleanup?.();
+        cleanup = null;
+      }, 5000); // Reduced to 5 seconds for faster recovery
+
+    } catch (error) {
+      console.error('App initialization error:', error);
       /* listener setup failed, fallback */
       // Fallback: hide loading after a timeout if Tauri isn't available
-      globalThis.setTimeout(() => {
+      fallbackTimer = globalThis.setTimeout(() => {
         setIsLoading(false);
       }, 4000);
     }
@@ -124,6 +229,7 @@ const App: Component = () => {
     // Return cleanup function
     return () => {
       cleanup?.();
+      if (fallbackTimer) globalThis.clearTimeout(fallbackTimer);
     };
   });
 
@@ -135,6 +241,35 @@ const App: Component = () => {
     <>
       <Show when={isLoading()}>
         <Loading onComplete={handleLoadingComplete} tauriProgress={initProgress()} />
+        {/* Manual fallback for stuck loading */}
+        <div style={{
+          position: 'fixed',
+          bottom: '20px',
+          right: '20px',
+          'z-index': 10000,
+          background: 'rgba(0,0,0,0.8)',
+          padding: '10px',
+          'border-radius': '8px',
+          border: '1px solid #374151'
+        }}>
+          <button 
+            onClick={() => {
+              console.warn('Manual loading completion triggered');
+              setIsLoading(false);
+            }}
+            style={{
+              background: '#ef4444',
+              color: 'white',
+              border: 'none',
+              padding: '8px 16px',
+              'border-radius': '4px',
+              cursor: 'pointer',
+              'font-size': '12px'
+            }}
+          >
+            Skip Loading (Debug)
+          </button>
+        </div>
       </Show>
 
       <Show when={!isLoading()}>

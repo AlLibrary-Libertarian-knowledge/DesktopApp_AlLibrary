@@ -227,21 +227,27 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
   // Call auto-scan on mount
   onMount(() => {
     // Small delay to ensure component is fully mounted and ready
-    setTimeout(() => {
+    globalThis.setTimeout(() => {
       console.log('🚀 Component mounted, starting auto-scan...');
       autoScan();
     }, 100);
   });
 
-  // Retry auto-scan if no documents found after initial scan
+  // Retry auto-scan if no documents found after initial scan (with retry limit)
+  let retryCount = 0;
+  const MAX_RETRIES = 3;
+  
   createEffect(() => {
     const docs = documents();
-    if (docs && docs.length === 0 && !isScanning()) {
+    if (docs && docs.length === 0 && !isScanning() && retryCount < MAX_RETRIES) {
       // If no documents found and not currently scanning, try again after a delay
-      setTimeout(() => {
-        console.log('🔄 No documents found, retrying auto-scan...');
+      retryCount++;
+      globalThis.setTimeout(() => {
+        console.log(`🔄 No documents found, retrying auto-scan... (attempt ${retryCount}/${MAX_RETRIES})`);
         autoScan();
       }, 2000);
+    } else if (retryCount >= MAX_RETRIES) {
+      console.log('🛑 Max retries reached, stopping auto-scan loop');
     }
   });
 

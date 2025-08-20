@@ -430,3 +430,134 @@ pub async fn discover_kad_peers() -> Result<Vec<String>, String> {
     }
 }
 
+// ============ DEBUG COMMANDS ============
+
+#[tauri::command]
+pub async fn test_p2p_connection() -> Result<String, String> {
+    let guard = RUNTIME.lock().unwrap();
+    if let Some(rt) = guard.as_ref() {
+        if rt.online {
+            Ok(format!("P2P node is online with ID: {}", rt.node_id))
+        } else {
+            Err("P2P node is not online".to_string())
+        }
+    } else {
+        Err("P2P runtime not initialized".to_string())
+    }
+}
+
+#[tauri::command]
+pub async fn get_p2p_debug_info() -> Result<serde_json::Value, String> {
+    let guard = RUNTIME.lock().unwrap();
+    if let Some(rt) = guard.as_ref() {
+        Ok(serde_json::json!({
+            "node_id": rt.node_id,
+            "online": rt.online,
+            "socks_proxy": rt.socks_proxy,
+            "content_index_size": rt.content_index.len(),
+            "metadata_index_size": rt.metadata_index.len(),
+            "discovery_mode": "automatic",
+            "bootstrap_nodes": "none_configured_automatic_discovery"
+        }))
+    } else {
+        Err("P2P runtime not initialized".to_string())
+    }
+}
+
+#[tauri::command]
+pub async fn get_peer_discovery_status() -> Result<serde_json::Value, String> {
+    let guard = RUNTIME.lock().unwrap();
+    if let Some(rt) = guard.as_ref() {
+        Ok(serde_json::json!({
+            "status": "automatic_peer_discovery_enabled",
+            "method": "Kademlia DHT + Gossipsub + Direct Connections",
+            "bootstrap_required": false,
+            "custom_bootstrap_nodes": std::env::var("ALLIB_BOOTSTRAP_ONIONS").unwrap_or_else(|_| "none".to_string()),
+            "discovery_interval": "1 second",
+            "network_ready": rt.online
+        }))
+    } else {
+        Err("P2P runtime not initialized".to_string())
+    }
+}
+
+#[tauri::command]
+pub async fn get_my_onion_address() -> Result<String, String> {
+    // Get the onion address from the P2P runtime
+    let tx_opt = { P2P_TX.lock().unwrap().as_ref().cloned() };
+    if let Some(tx) = tx_opt {
+        let (reply_tx, reply_rx) = oneshot::channel();
+        if tx.send(p2p::Command::GetMyOnionAddress { reply: reply_tx }).await.is_ok() {
+            match reply_rx.await {
+                Ok(Ok(addr)) => Ok(addr),
+                Ok(Err(e)) => Err(format!("Failed to get onion address: {}", e)),
+                Err(_) => Err("Communication error with P2P runtime".to_string()),
+            }
+        } else {
+            Err("Failed to send command to P2P runtime".to_string())
+        }
+    } else {
+        Err("P2P runtime not initialized".to_string())
+    }
+}
+
+#[tauri::command]
+pub async fn get_network_peers() -> Result<Vec<String>, String> {
+    // Get all known peers from the network
+    let tx_opt = { P2P_TX.lock().unwrap().as_ref().cloned() };
+    if let Some(tx) = tx_opt {
+        let (reply_tx, reply_rx) = oneshot::channel();
+        if tx.send(p2p::Command::GetNetworkPeers { reply: reply_tx }).await.is_ok() {
+            match reply_rx.await {
+                Ok(Ok(peers)) => Ok(peers),
+                Ok(Err(e)) => Err(format!("Failed to get network peers: {}", e)),
+                Err(_) => Err("Communication error with P2P runtime".to_string()),
+            }
+        } else {
+            Err("Failed to send command to P2P runtime".to_string())
+        }
+    } else {
+        Err("P2P runtime not initialized".to_string())
+    }
+}
+
+#[tauri::command]
+pub async fn add_peer_address(address: String) -> Result<String, String> {
+    // Manually add a peer address to the Kademlia DHT
+    let tx_opt = { P2P_TX.lock().unwrap().as_ref().cloned() };
+    if let Some(tx) = tx_opt {
+        let (reply_tx, reply_rx) = oneshot::channel();
+        if tx.send(p2p::Command::AddPeerAddress { address, reply: reply_tx }).await.is_ok() {
+            match reply_rx.await {
+                Ok(Ok(result)) => Ok(result),
+                Ok(Err(e)) => Err(format!("Failed to add peer address: {}", e)),
+                Err(_) => Err("Communication error with P2P runtime".to_string()),
+            }
+        } else {
+            Err("Failed to send command to P2P runtime".to_string())
+        }
+    } else {
+        Err("P2P runtime not initialized".to_string())
+    }
+}
+
+#[tauri::command]
+pub async fn force_create_onion_service() -> Result<String, String> {
+    // Force creation of Tor hidden service
+    let tx_opt = { P2P_TX.lock().unwrap().as_ref().cloned() };
+    if let Some(tx) = tx_opt {
+        let (reply_tx, reply_rx) = oneshot::channel();
+        if tx.send(p2p::Command::ForceCreateOnionService { reply: reply_tx }).await.is_ok() {
+            match reply_rx.await {
+                Ok(Ok(result)) => Ok(result),
+                Ok(Err(e)) => Err(format!("Failed to create onion service: {}", e)),
+                Err(_) => Err("Communication error with P2P runtime".to_string()),
+            }
+        } else {
+            Err("Failed to send command to P2P runtime".to_string())
+        }
+    } else {
+        Err("P2P runtime not initialized".to_string())
+    }
+}
+

@@ -1,5 +1,6 @@
 import { Component, createSignal, createEffect, Show, For, onMount } from 'solid-js';
 import { Button, Input, Card } from '../../components/foundation';
+import { NetworkInfo } from '../../components/domain/search';
 import {
   Search as SearchIcon,
   Filter,
@@ -503,6 +504,9 @@ const SearchPage: Component = () => {
           </div>
         </Card>
       </Show>
+
+      {/* Network Information */}
+      <NetworkInfo />
 
       {/* Search Results */}
       <div class={styles.searchResults}>

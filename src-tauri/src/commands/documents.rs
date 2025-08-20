@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 use std::fs;
 use tracing::info;
 use crate::core::document::type_detection::TypeDetection;
-use std::io::{Read, Write};
+use std::io::Read;
 use lopdf::Document as LoDocument;
 use zip::ZipArchive;
 
@@ -214,7 +214,7 @@ pub async fn import_document(target_dir: String, source_path: String) -> Result<
         let mut doc = LoDocument::load(&src).map_err(|e| format!("PDF parse failed: {}", e))?;
         // Remove names that often hold JS (OpenAction, AA, Names/JavaScript, etc.)
         if let Some(cat_id) = doc.trailer.get(b"Root").and_then(|r| r.as_reference()).ok() {
-            if let Ok(mut catalog) = doc.get_object_mut(cat_id) {
+            if let Ok(catalog) = doc.get_object_mut(cat_id) {
                 if let Ok(dict) = catalog.as_dict_mut() {
                     dict.remove(b"OpenAction");
                     dict.remove(b"AA");

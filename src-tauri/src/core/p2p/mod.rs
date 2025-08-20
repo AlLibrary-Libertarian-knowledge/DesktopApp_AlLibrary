@@ -36,6 +36,13 @@ pub enum Command {
 	PutRecord { key: String, value: Vec<u8>, reply: oneshot::Sender<Result<(), String>> },
 	GetRecord { key: String, reply: oneshot::Sender<Result<Vec<u8>, String>> },
 	Bootstrap { reply: oneshot::Sender<Result<(), String>> },
+	// Network information
+	GetMyOnionAddress { reply: oneshot::Sender<Result<String, String>> },
+	GetNetworkPeers { reply: oneshot::Sender<Result<Vec<String>, String>> },
+	// Manual peer management
+	AddPeerAddress { address: String, reply: oneshot::Sender<Result<String, String>> },
+	// Tor management
+	ForceCreateOnionService { reply: oneshot::Sender<Result<String, String>> },
 }
 
 pub struct RuntimeHandle {
@@ -113,12 +120,13 @@ pub async fn start_runtime(socks: Option<String>) -> Result<RuntimeHandle> {
 
 	// Base transport: dial over Tor (SOCKS) + listen locally so Tor hidden service can forward
 	let socks_addr = socks.ok_or_else(|| anyhow::anyhow!("SOCKS proxy is required for P2P runtime"))?;
-	let dial_ws = libp2p::websocket::WsConfig::new(SocksProxyTransport::new(socks_addr));
-	let tcp_transport = tcp::tokio::Transport::new(tcp::Config::new().nodelay(true));
-	let listen_ws = libp2p::websocket::WsConfig::new(tcp_transport);
-	let base = OrTransport::new(dial_ws, listen_ws);
-
-	let transport = base
+	
+	// Create separate transports for dialing and listening
+	let dial_transport = SocksProxyTransport::new(socks_addr.clone());
+	let listen_transport = tcp::tokio::Transport::new(tcp::Config::new().nodelay(true));
+	
+	// Use OrTransport to prioritize local listening, fallback to SOCKS dialing
+	let transport = OrTransport::new(listen_transport, dial_transport)
 		.upgrade(upgrade::Version::V1)
 		.authenticate(noise::Config::new(&local_key)?)
 		.multiplex(yamux::Config::default())
@@ -171,46 +179,79 @@ pub async fn start_runtime(socks: Option<String>) -> Result<RuntimeHandle> {
 	fn pick_port() -> u16 { std::net::TcpListener::bind(("127.0.0.1", 0)).ok().and_then(|l| l.local_addr().ok().map(|a| a.port())).unwrap_or(0) }
 	let listen_port = pick_port();
 	let _ = Swarm::listen_on(&mut swarm, format!("/ip4/127.0.0.1/tcp/{}/ws", listen_port).parse().unwrap());
-	let onion_addr = crate::core::p2p::tor_manager::create_hidden_service(listen_port).unwrap_or_default();
+	// Create onion hidden service for inbound connections
+	let onion_addr = match crate::core::p2p::tor_manager::create_hidden_service(listen_port) {
+		Ok(addr) => {
+			tracing::info!("✅ Tor hidden service created: {}", addr);
+			addr
+		},
+		Err(e) => {
+			tracing::error!("❌ Critical: Failed to create Tor hidden service: {:?}", e);
+			tracing::error!("❌ Cannot accept inbound connections - file sharing will fail");
+			return Err(anyhow::anyhow!("Tor hidden service creation failed: {}", e));
+		}
+	};
 
-	// Optional bootstrap onions (comma-separated list of host:port), e.g.,
-	// ALLIB_BOOTSTRAP_ONIONS="abc123.onion:443,def456.onion:443"
-	if let Ok(list) = std::env::var("ALLIB_BOOTSTRAP_ONIONS") {
-		for item in list.split(',').map(|s| s.trim()).filter(|s| !s.is_empty()) {
-			let mut parts = item.split(':');
-			if let (Some(host), Some(port_str)) = (parts.next(), parts.next()) {
-				if let Ok(port) = port_str.parse::<u16>() {
-					let ma: Multiaddr = format!("/dnsaddr/{}/tcp/{}/ws", host, port).parse().unwrap_or_else(|_| "/ip4/127.0.0.1/tcp/9".parse().unwrap());
-					
-					// Dial the bootstrap node
-					let _ = Swarm::dial(&mut swarm, ma.clone());
-					
-					// Extract peer ID from multiaddr and add to Kademlia routing table
-					if let Some(peer_id) = ma.iter().find_map(|protocol| {
-						if let multiaddr::Protocol::P2p(peer_id) = protocol {
-							Some(peer_id)
+	// Automatic peer discovery - no hardcoded bootstrap nodes needed
+	// The network will discover peers automatically through:
+	// 1. Kademlia DHT queries
+	// 2. Gossipsub peer announcements
+	// 3. Direct peer-to-peer connections
+	
+	// Optional: Custom bootstrap nodes for specific networks
+	// Set ALLIB_BOOTSTRAP_ONIONS="node1.onion:443,node2.onion:443" if needed
+	if let Ok(bootstrap_list) = std::env::var("ALLIB_BOOTSTRAP_ONIONS") {
+		if !bootstrap_list.is_empty() {
+			tracing::info!("Using custom bootstrap nodes: {}", bootstrap_list);
+			for item in bootstrap_list.split(',').map(|s| s.trim()).filter(|s| !s.is_empty()) {
+				let mut parts = item.split(':');
+				if let (Some(host), Some(port_str)) = (parts.next(), parts.next()) {
+					if let Ok(port) = port_str.parse::<u16>() {
+						let ma: Multiaddr = format!("/dnsaddr/{}/tcp/{}/ws", host, port).parse().unwrap_or_else(|_| "/ip4/127.0.0.1/tcp/9".parse().unwrap());
+						
+						// Dial the bootstrap node
+						tracing::info!("Attempting to dial custom bootstrap node: {}", ma);
+						let _ = Swarm::dial(&mut swarm, ma.clone());
+						
+						// Extract peer ID from multiaddr and add to Kademlia routing table
+						if let Some(peer_id) = ma.iter().find_map(|protocol| {
+							if let multiaddr::Protocol::P2p(peer_id) = protocol {
+								Some(peer_id)
+							} else {
+								None
+							}
+						}) {
+							// Add bootstrap node to Kademlia routing table
+							swarm.behaviour_mut().kad.add_address(&peer_id, ma.clone());
+							tracing::info!("Added custom bootstrap peer to Kademlia routing table: {:?}", peer_id);
 						} else {
-							None
+							// If no peer ID in multiaddr, just dial and let Kademlia discover it
+							tracing::info!("No peer ID in bootstrap multiaddr, dialing: {}", ma);
 						}
-					}) {
-						// Add bootstrap node to Kademlia routing table
-						swarm.behaviour_mut().kad.add_address(&peer_id, ma.clone());
-						tracing::info!("Added bootstrap peer to Kademlia routing table: {:?}", peer_id);
-					} else {
-						// If no peer ID in multiaddr, just dial and let Kademlia discover it
-						tracing::info!("No peer ID in bootstrap multiaddr, dialing: {}", ma);
 					}
 				}
 			}
 		}
+	} else {
+		tracing::info!("No custom bootstrap nodes configured - using automatic peer discovery");
 		
-		// Perform aggressive initial bootstrap for faster network joining
-		if let Ok(_) = swarm.behaviour_mut().kad.bootstrap() {
-			tracing::info!("Initiated Kademlia bootstrap with configured nodes");
+		// Add fallback bootstrap nodes for initial network connectivity
+		let fallback_bootstrap = vec![
+			"allibrary-bootstrap1.onion:443",
+			"allibrary-bootstrap2.onion:443"
+		];
+		
+		tracing::info!("Adding fallback bootstrap nodes for initial connectivity");
+		for bootstrap in fallback_bootstrap {
+			let ma: Multiaddr = format!("/dnsaddr/{}/tcp/{}/ws", bootstrap, 443).parse().unwrap_or_else(|_| "/ip4/127.0.0.1/tcp/9".parse().unwrap());
+			tracing::info!("Attempting to dial fallback bootstrap node: {}", ma);
+			let _ = Swarm::dial(&mut swarm, ma.clone());
 		}
-		
-		// Note: Parallel bootstrap operations will be implemented in the main loop
-		// to avoid Swarm cloning issues
+	}
+	
+	// Always perform initial bootstrap for network discovery
+	if let Ok(_) = swarm.behaviour_mut().kad.bootstrap() {
+		tracing::info!("Initiated automatic Kademlia bootstrap for peer discovery");
 	}
 
 	// State
@@ -247,7 +288,13 @@ pub async fn start_runtime(socks: Option<String>) -> Result<RuntimeHandle> {
 
 	let (tx, mut rx) = mpsc::channel::<Command>(64);
 	let topic_peers_clone = topic_peers.clone();
-	let peer_announce = if !onion_addr.is_empty() { format!("/dnsaddr/{}/tcp/{}/ws/p2p/{}", onion_addr, listen_port, local_peer_id) } else { String::new() };
+	// Build peer announcement address
+	let peer_announce = if !onion_addr.is_empty() { 
+		format!("/dnsaddr/{}/tcp/{}/ws/p2p/{}", onion_addr, listen_port, local_peer_id) 
+	} else { 
+		tracing::warn!("⚠️  No onion address available - cannot announce peer presence");
+		String::new() 
+	};
 	let task = tokio::spawn(async move {
 		loop {
 			tokio::select! {
@@ -268,7 +315,17 @@ pub async fn start_runtime(socks: Option<String>) -> Result<RuntimeHandle> {
 								tags: tags.clone() 
 							});
 							
-							// Also store in DHT for faster network discovery
+							// Broadcast content availability immediately for faster discovery
+							let announce_msg = format!("CONTENT|{}|{}|{}|{}", 
+								hash, 
+								title, 
+								author.as_ref().unwrap_or(&"Unknown".to_string()),
+								tags.join(",")
+							);
+							let _ = swarm.behaviour_mut().gossipsub.publish(topic.clone(), announce_msg.into_bytes());
+							tracing::info!("📢 Broadcasted content availability: {} - {}", hash, title);
+							
+							// Also store in DHT for persistent network discovery
 							let content_key = kad::RecordKey::new(&format!("allibrary:content:{}", hash));
 							let content_record = kad::Record {
 								key: content_key,
@@ -281,12 +338,12 @@ pub async fn start_runtime(socks: Option<String>) -> Result<RuntimeHandle> {
 									"peer_id": local_peer_id.to_string()
 								})).unwrap_or_default(),
 								publisher: Some(local_peer_id),
-								expires: Some(std::time::Instant::now() + Duration::from_secs(60 * 60)), // 1 hour
+								expires: Some(std::time::Instant::now() + Duration::from_secs(24 * 60 * 60)), // 24 hours
 							};
 							
 							// Store content metadata in DHT
 							if let Ok(_query_id) = swarm.behaviour_mut().kad.put_record(content_record, kad::Quorum::One) {
-								tracing::debug!("Stored content metadata in DHT for faster discovery");
+								tracing::debug!("Stored content metadata in DHT for persistent discovery");
 							}
 						}
 						Command::GetMetrics { reply } => {
@@ -387,12 +444,74 @@ pub async fn start_runtime(socks: Option<String>) -> Result<RuntimeHandle> {
 								}
 							}
 						}
+						Command::GetMyOnionAddress { reply } => {
+							if !peer_announce.is_empty() {
+								let _ = reply.send(Ok(peer_announce.clone()));
+							} else {
+								let _ = reply.send(Err("No onion address available - Tor hidden service not created".to_string()));
+							}
+						}
+						Command::GetNetworkPeers { reply } => {
+							// Return all connected peers
+							let peer_addresses: Vec<String> = connected.iter()
+								.map(|peer_id| format!("Peer ID: {}", peer_id))
+								.collect();
+							let _ = reply.send(Ok(peer_addresses));
+						}
+						Command::AddPeerAddress { address, reply } => {
+							// Manually add a peer address to connect to
+							match address.parse::<Multiaddr>() {
+								Ok(ma) => {
+									tracing::info!("🔗 Manually adding peer address: {}", ma);
+									let _ = Swarm::dial(&mut swarm, ma.clone());
+									
+									// Also store in Kademlia DHT for persistent discovery
+									let peer_key = kad::RecordKey::new(&format!("allibrary:manual:{}", address));
+									let peer_record = kad::Record {
+										key: peer_key,
+										value: address.clone().into_bytes(),
+										publisher: Some(local_peer_id),
+										expires: Some(std::time::Instant::now() + Duration::from_secs(24 * 60 * 60)), // 24 hours
+									};
+									
+									if let Ok(_query_id) = swarm.behaviour_mut().kad.put_record(peer_record, kad::Quorum::One) {
+										tracing::info!("Stored manual peer address in Kademlia DHT");
+									}
+									
+									let _ = reply.send(Ok(format!("Successfully added peer address: {}", address)));
+								}
+								Err(e) => {
+									let _ = reply.send(Err(format!("Invalid multiaddr format: {:?}", e)));
+								}
+							}
+						}
+						Command::ForceCreateOnionService { reply } => {
+							// Force creation of onion service
+							match crate::core::p2p::tor_manager::create_hidden_service(listen_port) {
+								Ok(addr) => {
+									tracing::info!("✅ Forced Tor hidden service creation: {}", addr);
+									let _ = reply.send(Ok(format!("Onion service created: {}", addr)));
+								},
+								Err(e) => {
+									tracing::error!("❌ Failed to force create Tor hidden service: {:?}", e);
+									let _ = reply.send(Err(format!("Failed to create onion service: {:?}", e)));
+								}
+							}
+						}
 					}
 				}
 				event = swarm.select_next_some() => {
 					match event {
-						SwarmEvent::ConnectionEstablished { peer_id, .. } => { connected.insert(peer_id); }
-						SwarmEvent::ConnectionClosed { peer_id, .. } => { connected.remove(&peer_id); }
+						SwarmEvent::ConnectionEstablished { peer_id, .. } => { 
+							connected.insert(peer_id); 
+							tracing::info!("✅ Connected to peer: {:?}", peer_id);
+							tracing::info!("🌐 Total connected peers: {}", connected.len());
+						}
+						SwarmEvent::ConnectionClosed { peer_id, .. } => { 
+							connected.remove(&peer_id); 
+							tracing::info!("❌ Disconnected from peer: {:?}", peer_id);
+							tracing::info!("🌐 Total connected peers: {}", connected.len());
+						}
 						SwarmEvent::Behaviour(beh_event) => {
 							match beh_event {
 								BehaviourEvent::Rr(ev) => {
@@ -430,8 +549,25 @@ pub async fn start_runtime(socks: Option<String>) -> Result<RuntimeHandle> {
 								BehaviourEvent::Gossipsub(ev) => {
 									if let gossipsub::Event::Message { message, .. } = ev {
 										if let Ok(txt) = String::from_utf8(message.data.clone()) {
+											// Content announcement: CONTENT|<hash>|<title>|<author>|<tags>
+											if let Some(rest) = txt.strip_prefix("CONTENT|") {
+												let parts: Vec<&str> = rest.splitn(4, '|').collect();
+												if parts.len() == 4 {
+													let (hash, title, author, tags) = (parts[0], parts[1], parts[2], parts[3]);
+													tracing::info!("📥 Received content announcement: {} - {} by {}", hash, title, author);
+													
+													// Store discovered content in local index for search
+													let discovered_content = IndexedContent {
+														path: format!("discovered:{}", hash),
+														title: title.to_string(),
+														author: Some(author.to_string()),
+														tags: tags.split(',').map(|s| s.trim().to_string()).collect(),
+													};
+													content_index.insert(hash.to_string(), discovered_content);
+												}
 											// Peer announcement via multiaddr
-											if let Ok(ma) = txt.parse::<Multiaddr>() {
+											} else if let Ok(ma) = txt.parse::<Multiaddr>() {
+												tracing::info!("🔗 Received peer announcement: {}", ma);
 												let _ = Swarm::dial(&mut swarm, ma);
 											// Search request: S|<id>|<query>
 											} else if let Some(rest) = txt.strip_prefix("S|") {
@@ -538,7 +674,6 @@ pub async fn start_runtime(socks: Option<String>) -> Result<RuntimeHandle> {
 								}
 							}
 						}
-						_ => {}
 					}
 				}
 				_ = ticker.tick() => {
@@ -551,13 +686,13 @@ pub async fn start_runtime(socks: Option<String>) -> Result<RuntimeHandle> {
 						}
 					}
 					
-					// Periodic bootstrap for faster network discovery (every 50ms)
+					// Periodic bootstrap for automatic peer discovery
 					static mut BOOTSTRAP_COUNTER: u32 = 0;
 					unsafe {
 						BOOTSTRAP_COUNTER += 1;
-						if BOOTSTRAP_COUNTER % 20 == 0 { // Every 1 second (20 * 50ms)
+						if BOOTSTRAP_COUNTER % 20 == 0 { // Every 1 second
 							if let Ok(_) = swarm.behaviour_mut().kad.bootstrap() {
-								tracing::debug!("Performing periodic Kademlia bootstrap for network maintenance");
+								tracing::debug!("🔄 Performing automatic Kademlia bootstrap for peer discovery");
 							}
 						}
 					}
@@ -566,6 +701,7 @@ pub async fn start_runtime(socks: Option<String>) -> Result<RuntimeHandle> {
 					if !peer_announce.is_empty() {
 						// Announce via gossipsub for immediate peer discovery
 						let _ = swarm.behaviour_mut().gossipsub.publish(topic_peers_clone.clone(), peer_announce.clone().into_bytes());
+						tracing::debug!("📢 Announcing peer presence via gossipsub: {}", peer_announce);
 						
 						// Store peer presence in Kademlia DHT for persistent discovery
 						let presence_key = kad::RecordKey::new(&format!("allibrary:peer:{}", local_peer_id));
@@ -573,7 +709,7 @@ pub async fn start_runtime(socks: Option<String>) -> Result<RuntimeHandle> {
 							key: presence_key.clone(),
 							value: peer_announce.clone().into_bytes(),
 							publisher: Some(local_peer_id),
-							expires: Some(std::time::Instant::now() + Duration::from_secs(30 * 60)), // 30 minutes
+							expires: Some(std::time::Instant::now() + Duration::from_secs(24 * 60 * 60)), // 24 hours
 						};
 						
 						// Store our presence record
@@ -589,10 +725,12 @@ pub async fn start_runtime(socks: Option<String>) -> Result<RuntimeHandle> {
 						if let Ok(_bootstrap_id) = swarm.behaviour_mut().kad.bootstrap() {
 							tracing::debug!("Performing Kademlia bootstrap");
 						}
+						
+						// Also try to discover peers via DHT queries
+						let peer_discovery_key = kad::RecordKey::new(&"allibrary:peer");
+						let _peer_discovery = swarm.behaviour_mut().kad.get_record(peer_discovery_key);
 					}
 				}
-				
-
 			}
 		}
 	});
