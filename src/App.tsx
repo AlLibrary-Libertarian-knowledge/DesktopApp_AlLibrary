@@ -148,42 +148,29 @@ const App: Component = () => {
       try {
         const { invoke } = await import('@tauri-apps/api/core');
         await invoke('initialize_app');
-        
-        // Start P2P network after Tauri initialization
-        console.log('Starting P2P network initialization...');
-        
-        // Add timeout to P2P initialization to prevent hanging
-        const p2pPromise = invoke('start_libp2p_with_socks', { socksAddr: '127.0.0.1:9050' });
-        const timeoutPromise = new Promise((_, reject) => 
-          globalThis.setTimeout(() => reject(new Error('P2P initialization timeout')), 10000)
-        );
-        
-        await Promise.race([p2pPromise, timeoutPromise]);
-        console.log('P2P network started successfully');
-        
-        // Bootstrap nodes will be discovered automatically via Kademlia DHT
-        // No need to hardcode addresses - the network discovers peers dynamically
-        console.log('P2P network ready for automatic peer discovery');
-        
-        // Force loading completion after P2P is ready
+
+        // M5: Optional Tor for onion share / tracker (POC-style). Legacy libp2p is not started at boot.
+        try {
+          await invoke('init_tor_node', { config: { bridge_support: true } });
+        } catch (torErr) {
+          console.warn('Tor init skipped or failed (onion share can start Tor later):', torErr);
+        }
+
         globalThis.setTimeout(() => {
-          console.log('Forcing loading completion after P2P initialization');
           setIsLoading(false);
-          
-          // Clear the fallback timer since we're completing manually
           if (fallbackTimer) {
             globalThis.clearTimeout(fallbackTimer);
             fallbackTimer = null;
           }
-          
-          // Clean up the event listener
-          try { cleanup?.(); } catch { /* ignore */ }
+          try {
+            cleanup?.();
+          } catch {
+            /* ignore */
+          }
           cleanup = null;
-        }, 2000); // Force completion after 2 seconds
-        
+        }, 600);
       } catch (error) {
-        console.warn('Failed to start Tauri/P2P initialization:', error);
-        // Continue with fallback - don't let P2P issues block the app
+        console.warn('Failed during Tauri initialization:', error);
       }
 
       // Listen for initialization progress from Tauri

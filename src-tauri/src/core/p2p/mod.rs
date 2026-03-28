@@ -1,3 +1,4 @@
+//! Legacy libp2p stack (Kademlia / gossipsub). Not started at app boot since M5; use `onion_share` + tracker for transfers.
 use anyhow::Result;
 use libp2p::{
 	core::{transport::choice::OrTransport, upgrade},
@@ -674,6 +675,7 @@ pub async fn start_runtime(socks: Option<String>) -> Result<RuntimeHandle> {
 								}
 							}
 						}
+						_ => {}
 					}
 				}
 				_ = ticker.tick() => {

@@ -5,19 +5,7 @@
  * Follows decentralized principles with TOR integration and content integrity validation.
  */
 
-// Conditional Tauri import for development compatibility
-let invoke: any;
-try {
-  // @ts-ignore - Tauri may not be available in development
-  const { invoke: tauriInvoke } = require('@tauri-apps/api/tauri');
-  invoke = tauriInvoke;
-} catch (error) {
-  // Fallback for development without Tauri
-  invoke = async (command: string, args?: any) => {
-    console.warn(`Tauri command '${command}' called in development mode:`, args);
-    return { success: true, data: null };
-  };
-}
+import { invoke } from '@tauri-apps/api/core';
 
 /**
  * Peer information interface

@@ -1,5 +1,7 @@
-import { Component, createSignal, onMount } from 'solid-js';
+import { Component, createSignal, onCleanup, onMount } from 'solid-js';
 import { invoke } from '@tauri-apps/api/core';
+import { listen, type UnlistenFn } from '@tauri-apps/api/event';
+import * as onionShare from '@/services/network/onionShareService';
 import styles from './NetworkInfo.module.css';
 
 interface NetworkInfoProps {
@@ -14,8 +16,30 @@ export const NetworkInfo: Component<NetworkInfoProps> = (props) => {
   const [connectedPeers, setConnectedPeers] = createSignal<string[]>([]);
   const [isExpanded, setIsExpanded] = createSignal(false);
 
+  const [m5TrackerUrl, setM5TrackerUrl] = createSignal('');
+  const [m5SharePublicly, setM5SharePublicly] = createSignal(true);
+  const [m5Onion, setM5Onion] = createSignal('');
+  const [m5Running, setM5Running] = createSignal(false);
+  const [m5LocalShares, setM5LocalShares] = createSignal<onionShare.LocalShareEntry[]>([]);
+  const [m5LobbySummary, setM5LobbySummary] = createSignal('');
+  const [m5FetchLink, setM5FetchLink] = createSignal('');
+  const [m5FetchOutDir, setM5FetchOutDir] = createSignal('');
+
   onMount(async () => {
     await loadNetworkInfo();
+    await loadM5State();
+    let unlistenLobby: UnlistenFn | undefined;
+    try {
+      unlistenLobby = await listen<onionShare.NetworkLobby>('onion-share-lobby', e => {
+        const L = e.payload;
+        setM5LobbySummary(`${L.online_nodes} online, ${L.files.length} file group(s)`);
+      });
+    } catch {
+      /* non-Tauri / no events */
+    }
+    onCleanup(() => {
+      unlistenLobby?.();
+    });
   });
 
   const loadNetworkInfo = async () => {
@@ -76,8 +100,48 @@ export const NetworkInfo: Component<NetworkInfoProps> = (props) => {
 
   const refreshNetworkInfo = async () => {
     await loadNetworkInfo();
+    await loadM5State();
     setMessage('🔄 Network information refreshed');
     setTimeout(() => setMessage(''), 2000);
+  };
+
+  const loadM5State = async () => {
+    try {
+      const cfg = await onionShare.trackerGetConfig();
+      setM5TrackerUrl(cfg.trackerUrl ?? '');
+      setM5SharePublicly(cfg.sharePublicly !== false);
+      const st = await onionShare.onionShareStatus();
+      setM5Running(st.running);
+      setM5Onion(st.onion ?? '');
+      if (st.running) {
+        const list = await onionShare.onionShareListLocal();
+        setM5LocalShares(list);
+      } else {
+        setM5LocalShares([]);
+      }
+      const lobby = await onionShare.trackerGetCachedLobby();
+      setM5LobbySummary(`${lobby.online_nodes} online, ${lobby.files.length} file group(s)`);
+    } catch (e) {
+      console.warn('M5 onion share state:', e);
+    }
+  };
+
+  const saveTrackerConfig = async () => {
+    try {
+      setIsLoading(true);
+      const cfg = await onionShare.trackerGetConfig();
+      await onionShare.trackerSetConfig({
+        trackerUrl: m5TrackerUrl(),
+        nodeId: cfg.nodeId,
+        sharePublicly: m5SharePublicly(),
+      });
+      setMessage('✅ Tracker settings saved');
+      setTimeout(() => setMessage(''), 2500);
+    } catch (e) {
+      setMessage(`❌ ${e}`);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -149,6 +213,204 @@ export const NetworkInfo: Component<NetworkInfoProps> = (props) => {
             ) : (
               <p class={styles.noPeers}>No peers connected yet</p>
             )}
+          </div>
+
+          <div class={styles.section}>
+            <h4>Onion share (M5 / POC-compatible)</h4>
+            <p class={styles.helpText}>
+              Local Axum chunk server + tracker lobby. Uses Tor from the app; start host before copying links.
+            </p>
+            <div class={styles.inputContainer}>
+              <input
+                type="text"
+                placeholder="Tracker URL (http://....onion or http://host:8080)"
+                value={m5TrackerUrl()}
+                onInput={e => setM5TrackerUrl(e.currentTarget.value)}
+                class={styles.addressInput}
+              />
+              <label class={styles.helpText}>
+                <input
+                  type="checkbox"
+                  checked={m5SharePublicly()}
+                  onChange={e => setM5SharePublicly(e.currentTarget.checked)}
+                />{' '}
+                Share file list to lobby
+              </label>
+            </div>
+            <div class={styles.actions}>
+              <button type="button" class={styles.addButton} onClick={saveTrackerConfig} disabled={isLoading()}>
+                Save tracker
+              </button>
+              <button
+                type="button"
+                class={styles.refreshButton}
+                onClick={async () => {
+                  try {
+                    setIsLoading(true);
+                    await onionShare.trackerRefreshLobby();
+                    await loadM5State();
+                    setMessage('✅ Lobby refreshed');
+                  } catch (e) {
+                    setMessage(`❌ ${e}`);
+                  } finally {
+                    setIsLoading(false);
+                  }
+                }}
+                disabled={isLoading()}
+              >
+                Refresh lobby
+              </button>
+              <button
+                type="button"
+                class={styles.addButton}
+                onClick={async () => {
+                  try {
+                    setIsLoading(true);
+                    await onionShare.trackerStartWsLoop();
+                    setMessage('✅ Tracker WS loop started');
+                  } catch (e) {
+                    setMessage(`❌ ${e}`);
+                  } finally {
+                    setIsLoading(false);
+                  }
+                }}
+                disabled={isLoading()}
+              >
+                Start tracker WS
+              </button>
+              <button
+                type="button"
+                class={styles.refreshButton}
+                onClick={async () => {
+                  try {
+                    await onionShare.trackerStopWsLoop();
+                    setMessage('Tracker WS stopped');
+                  } catch (e) {
+                    setMessage(`❌ ${e}`);
+                  }
+                }}
+                disabled={isLoading()}
+              >
+                Stop tracker WS
+              </button>
+            </div>
+            <p class={styles.helpText}>Lobby: {m5LobbySummary()}</p>
+            <p class={styles.helpText}>
+              Host: {m5Running() ? `${m5Onion()} (running)` : 'stopped'}
+            </p>
+            <div class={styles.actions}>
+              <button
+                type="button"
+                class={styles.forceOnionButton}
+                onClick={async () => {
+                  try {
+                    setIsLoading(true);
+                    const r = await onionShare.onionShareStart();
+                    setM5Onion(r.onion);
+                    setM5Running(true);
+                    setMessage('✅ Onion share host started');
+                    await loadM5State();
+                  } catch (e) {
+                    setMessage(`❌ ${e}`);
+                  } finally {
+                    setIsLoading(false);
+                  }
+                }}
+                disabled={isLoading()}
+              >
+                Start share host
+              </button>
+              <button
+                type="button"
+                class={styles.refreshButton}
+                onClick={async () => {
+                  try {
+                    setIsLoading(true);
+                    await onionShare.onionShareStop();
+                    setM5Running(false);
+                    setM5Onion('');
+                    setM5LocalShares([]);
+                    setMessage('Share host stopped');
+                  } catch (e) {
+                    setMessage(`❌ ${e}`);
+                  } finally {
+                    setIsLoading(false);
+                  }
+                }}
+                disabled={isLoading()}
+              >
+                Stop share host
+              </button>
+              <button
+                type="button"
+                class={styles.addButton}
+                onClick={async () => {
+                  try {
+                    setIsLoading(true);
+                    const paths = await invoke<string[]>('pick_document_files');
+                    const p = paths?.[0];
+                    if (!p) {
+                      setMessage('No file selected');
+                      return;
+                    }
+                    const r = await onionShare.onionShareAddFile(p);
+                    setMessage(`✅ Sharing: ${r.link}`);
+                    await loadM5State();
+                  } catch (e) {
+                    setMessage(`❌ ${e}`);
+                  } finally {
+                    setIsLoading(false);
+                  }
+                }}
+                disabled={isLoading() || !m5Running()}
+              >
+                Add file…
+              </button>
+            </div>
+            <ul class={styles.peerList}>
+              {m5LocalShares().map(s => (
+                <li class={styles.peerItem}>
+                  {s.name} —{' '}
+                  <button type="button" class={styles.copyButton} onClick={() => copyToClipboard(s.link)}>
+                    copy link
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <div class={styles.inputContainer}>
+              <input
+                type="text"
+                placeholder="opoc:// or opocswarm:// link"
+                value={m5FetchLink()}
+                onInput={e => setM5FetchLink(e.currentTarget.value)}
+                class={styles.addressInput}
+              />
+              <input
+                type="text"
+                placeholder="Output directory"
+                value={m5FetchOutDir()}
+                onInput={e => setM5FetchOutDir(e.currentTarget.value)}
+                class={styles.addressInput}
+              />
+              <button
+                type="button"
+                class={styles.addButton}
+                onClick={async () => {
+                  try {
+                    setIsLoading(true);
+                    const out = await onionShare.onionShareFetch(m5FetchLink(), m5FetchOutDir());
+                    setMessage(`✅ Saved: ${out}`);
+                  } catch (e) {
+                    setMessage(`❌ ${e}`);
+                  } finally {
+                    setIsLoading(false);
+                  }
+                }}
+                disabled={isLoading() || !m5FetchLink() || !m5FetchOutDir()}
+              >
+                Download
+              </button>
+            </div>
           </div>
 
           {/* Action Buttons */}

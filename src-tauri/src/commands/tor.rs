@@ -5,7 +5,9 @@ use std::path::PathBuf;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TorConfig {
+    #[serde(alias = "bridgeSupport")]
     pub bridge_support: Option<bool>,
+    #[serde(alias = "socksAddr")]
     pub socks_addr: Option<String>,
     pub bridges: Option<Vec<String>>, // optional bridges to apply at launch
 }
