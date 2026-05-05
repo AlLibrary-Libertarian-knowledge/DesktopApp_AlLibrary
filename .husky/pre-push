@@ -1,17 +1,44 @@
 #!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
 
-echo "🧪 Running pre-push validations..."
+# -----------------------------
+# AlLibrary Pre-push router — OS-specific tiered checks
+# -----------------------------
 
-echo "🔧 Running unit and integration tests..."
-yarn test --run
-if [ $? -ne 0 ]; then
-  echo "❌ Unit/integration tests failed!"
-  exit 1
-fi
+detect_os() {
+  case "$(uname -s 2>/dev/null || echo Unknown)" in
+    Linux*) echo "linux" ;;
+    Darwin*) echo "macos" ;;
+    MINGW*|MSYS*|CYGWIN*) echo "windows" ;;
+    *) echo "unknown" ;;
+  esac
+}
 
-echo "🎭 E2E tests temporarily disabled during WebKit stabilization"
-echo "📋 Chromium tests are passing (10/10) - WebKit needs fixes"
-echo "ℹ️  Run 'yarn test:e2e' manually to test full cross-platform suite"
+OS=$(detect_os)
 
-echo "✅ Unit tests passed! Ready to push." 
+case "$OS" in
+  linux|macos)
+    if [ -f ".husky/pre-push.linux.sh" ]; then
+      exec sh ".husky/pre-push.linux.sh"
+    else
+      echo "Error: .husky/pre-push.linux.sh not found" >&2
+      exit 1
+    fi
+    ;;
+  windows)
+    if [ -f ".husky/pre-push.windows.sh" ]; then
+      exec sh ".husky/pre-push.windows.sh"
+    else
+      echo "Error: .husky/pre-push.windows.sh not found" >&2
+      exit 1
+    fi
+    ;;
+  *)
+    echo "Warning: Unknown OS. Falling back to Linux script." >&2
+    if [ -f ".husky/pre-push.linux.sh" ]; then
+      exec sh ".husky/pre-push.linux.sh"
+    else
+      echo "Error: No compatible pre-push script found" >&2
+      exit 1
+    fi
+    ;;
+esac

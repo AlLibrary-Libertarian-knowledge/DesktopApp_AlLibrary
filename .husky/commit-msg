@@ -1,33 +1,48 @@
-echo "🔍 Validating commit message..."
+#!/usr/bin/env sh
 
-# Read the commit message
-commit_msg=$(cat "$1")
+# -----------------------------
+# AlLibrary — branch name + Conventional Commits
+# -----------------------------
 
-# Define the conventional commit pattern
-pattern="^(feat|fix|docs|style|refactor|test|chore|perf|ci|build|revert)(\(.+\))?: .{1,50}"
+set -e
 
-if ! echo "$commit_msg" | grep -qE "$pattern"; then
-    echo "❌ Invalid commit message format!"
-    echo ""
-    echo "Please use conventional commits format:"
-    echo "  feat(scope): add new feature"
-    echo "  fix(scope): fix bug"
-    echo "  docs: update documentation"
-    echo "  style: formatting changes"
-    echo "  refactor: code refactoring"
-    echo "  test: add or update tests"
-    echo "  chore: maintenance tasks"
-    echo "  perf: performance improvements"
-    echo "  ci: CI/CD changes"
-    echo "  build: build system changes"
-    echo "  revert: revert previous commit"
-    echo ""
-    echo "Examples:"
-    echo "  feat(auth): add user authentication"
-    echo "  fix(ui): resolve button alignment issue"
-    echo "  docs: update installation instructions"
-    echo ""
-    exit 1
+if [ -t 1 ] && command -v tput >/dev/null 2>&1; then
+  ncolors=$(tput colors 2>/dev/null || echo 0)
+  if [ -n "$ncolors" ] && [ "$ncolors" -ge 8 ]; then
+    RED="$(tput setaf 1)"; GREEN="$(tput setaf 2)"; YELLOW="$(tput setaf 3)"; BLUE="$(tput setaf 4)"; CYAN="$(tput setaf 6)"; BOLD="$(tput bold)"; RESET="$(tput sgr0)"
+  else
+    RED=""; GREEN=""; YELLOW=""; BLUE=""; CYAN=""; BOLD=""; RESET=""
+  fi
+else
+  RED=""; GREEN=""; YELLOW=""; BLUE=""; CYAN=""; BOLD=""; RESET=""
 fi
 
-echo "✅ Commit message format is valid!" 
+MSG_FILE=$1
+MSG=$(cat "$MSG_FILE")
+
+echo "${BOLD}${CYAN}┌ Commit & branch validation ┐${RESET}"
+
+BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
+BRANCH_PATTERN='^(main|master|develop|dev|release-[0-9]+\.[0-9]+\.[0-9]+|t[0-9]+\.[0-9]+|M[0-9]+(-[a-zA-Z0-9-]+)?|(hotfix|feat|fix|test|refactor|style|docs|build|perf|ci|chore|revert)-[a-z0-9-]+)$'
+if [ -n "$BRANCH" ] && ! printf "%s" "$BRANCH" | grep -Eq "$BRANCH_PATTERN" ; then
+  echo "${RED}❌ Invalid branch name: ${BOLD}$BRANCH${RESET}"
+  echo "${YELLOW}Expected:${RESET} ${BOLD}<type>-<name>${RESET}, ${BOLD}t<n>.<n>${RESET}, ${BOLD}M<n>${RESET}, or release/develop/main."
+  exit 1
+fi
+
+PATTERN='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-z0-9._/-]+\))?: .{1,}'
+if ! printf "%s" "$MSG" | grep -E -q "$PATTERN" ; then
+  echo "${RED}❌ Invalid commit message format${RESET}"
+  echo "${YELLOW}Expected:${RESET} ${BOLD}type(scope?): subject${RESET}"
+  exit 1
+fi
+
+SUBJECT=$(printf "%s" "$MSG" | head -n1 | sed 's/^[^:]*: *//')
+SUBJECT_LENGTH=${#SUBJECT}
+if [ "$SUBJECT_LENGTH" -lt 10 ]; then
+  echo "${YELLOW}⚠️ Subject short (${SUBJECT_LENGTH} chars). Prefer at least 10 characters.${RESET}"
+elif [ "$SUBJECT_LENGTH" -gt 72 ]; then
+  echo "${YELLOW}⚠️ Subject long (${SUBJECT_LENGTH} chars). Prefer ≤72.${RESET}"
+fi
+
+echo "${GREEN}✅ Commit message OK${RESET} · ${BLUE}${BRANCH}${RESET}"

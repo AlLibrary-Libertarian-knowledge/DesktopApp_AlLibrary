@@ -1,24 +1,52 @@
 #!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
 
-echo "🔀 Post-merge hook running..."
+# -----------------------------
+# AlLibrary — post-merge advisory (pnpm, Tauri, Playwright)
+# -----------------------------
 
-# Check if package.json or package-lock.json changed in the merge
-changed_files=$(git diff-tree -r --name-only --no-commit-id ORIG_HEAD HEAD)
-
-if echo "$changed_files" | grep -q "package.*\.json"; then
-    echo "📦 Dependencies changed during merge, updating..."
-    npm ci
-    
-    # Run security audit after dependency updates
-    echo "🔒 Running security audit after dependency update..."
-    npm audit --audit-level=moderate
+if [ -t 1 ] && command -v tput >/dev/null 2>&1; then
+  ncolors=$(tput colors 2>/dev/null || echo 0)
+  if [ -n "$ncolors" ] && [ "$ncolors" -ge 8 ]; then
+    RED="$(tput setaf 1)"; GREEN="$(tput setaf 2)"; YELLOW="$(tput setaf 3)"; BLUE="$(tput setaf 4)"; CYAN="$(tput setaf 6)"; BOLD="$(tput bold)"; RESET="$(tput sgr0)"
+  else
+    RED=""; GREEN=""; YELLOW=""; BLUE=""; CYAN=""; BOLD=""; RESET=""
+  fi
+else
+  RED=""; GREEN=""; YELLOW=""; BLUE=""; CYAN=""; BOLD=""; RESET=""
 fi
 
-# Check if there are any merge conflicts in important files
-if echo "$changed_files" | grep -q "\.ts$\|\.js$\|\.json$"; then
-    echo "🔧 Source files changed, running type check..."
-    npm run typecheck
+echo "${BOLD}${CYAN}┌ Post-merge notes ┐${RESET}"
+
+CHANGED_FILES=$(git diff --name-only HEAD@{1}..HEAD 2>/dev/null || echo "")
+if [ -z "$CHANGED_FILES" ]; then
+  echo "${GREEN}✅ No file list from merge${RESET}"
+  exit 0
 fi
 
-echo "✅ Post-merge setup completed!" 
+echo "${BLUE}• Changed paths:${RESET} $(echo "$CHANGED_FILES" | wc -l | tr -d ' ') files"
+
+if echo "$CHANGED_FILES" | grep -Eq '^pnpm-lock\.yaml|package\.json'; then
+  echo "${YELLOW}📦 Dependencies:${RESET} run ${BOLD}pnpm install${RESET}"
+fi
+
+if echo "$CHANGED_FILES" | grep -Eq '^src-tauri/'; then
+  echo "${YELLOW}🦀 Rust / Tauri:${RESET} ${BOLD}cd src-tauri && cargo build${RESET}"
+fi
+
+if echo "$CHANGED_FILES" | grep -Eq '^playwright\.config\.|^playwright-windows-only\.config\.'; then
+  echo "${YELLOW}🎭 Playwright:${RESET} ${BOLD}pnpm exec playwright install${RESET}"
+fi
+
+if echo "$CHANGED_FILES" | grep -Eq '^\.husky/'; then
+  echo "${YELLOW}🐕 Hooks:${RESET} active on next commit / push after ${BOLD}pnpm install${RESET}"
+fi
+
+if echo "$CHANGED_FILES" | grep -Eq '^(vite\.config\.|vitest\.config\.|tsconfig|eslint\.config\.)'; then
+  echo "${BLUE}⚙️ Tooling changed:${RESET} consider ${BOLD}pnpm run quality:ci${RESET}"
+fi
+
+if echo "$CHANGED_FILES" | grep -Eq '^src/'; then
+  echo "${BLUE}• Frontend:${RESET} ${BOLD}pnpm run test:ci${RESET} if needed"
+fi
+
+echo "${GREEN}✅ Post-merge notes done${RESET}"

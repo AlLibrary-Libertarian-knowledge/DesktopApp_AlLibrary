@@ -2,6 +2,7 @@
   "name": "desktopapp-allibrary",
   "version": "0.1.0",
   "description": "AlLibrary - Decentralized Knowledge Sharing Platform",
+  "packageManager": "pnpm@9.15.9",
   "type": "module",
   "author": "AlLibrary Community",
   "license": "MIT",
@@ -15,7 +16,9 @@
     "build": "npx tauri build",
     "build:frontend": "vite build",
     "test": "vitest",
-    "test:ci": "vitest --run && vitest --coverage --run",
+    "test:ci": "vitest run",
+    "quality": "pnpm run lint && pnpm run typecheck && pnpm run test",
+    "quality:ci": "pnpm run lint && pnpm run typecheck:ci && vitest run",
     "typecheck:ci": "tsc --noEmit",
     "verify:cultural": "node ./scripts/verify-cultural-info-only.js",
     "test:ui": "vitest --ui",
@@ -44,7 +47,8 @@
     "clean:win": "if exist dist rmdir /s /q dist && if exist build rmdir /s /q build && if exist .vite rmdir /s /q .vite && if exist node_modules\\.cache rmdir /s /q node_modules\\.cache",
     "clean:appdata": "if exist \"%APPDATA%\\desktopapp-allibrary\" rmdir /s /q \"%APPDATA%\\desktopapp-allibrary\" && if exist \"%APPDATA%\\com.desktopapp-allibrary.dev\" rmdir /s /q \"%APPDATA%\\com.desktopapp-allibrary.dev\"",
     "prepare": "husky",
-    "validate": "npm run typecheck:ci && npm run lint && npm run test:ci && npm run build",
+    "validate": "pnpm run typecheck:ci && pnpm run lint && pnpm run test:ci && pnpm run build:frontend",
+    "husky:analyze:changes": "node scripts/hooks/changed-files.cjs --detailed",
     "husky:check": "sh .husky/health-check.sh"
   },
   "dependencies": {
@@ -76,19 +80,18 @@
     "husky": "^9.1.7",
     "jsdom": "^26.1.0",
     "lint-staged": "^16.1.0",
-    "postcss": "^8.5.4",
+    "postcss": "^8.5.10",
     "prettier": "^3.0.0",
     "terser": "^5.42.0",
     "typescript": "~5.6.2",
-    "vite": "^6.0.3",
+    "vite": "^6.4.2",
     "vite-plugin-solid": "^2.11.0",
     "vitest": "^3.2.3"
   },
   "lint-staged": {
     "*.{js,ts,tsx}": [
       "eslint --fix",
-      "prettier --write",
-      "vitest related --run"
+      "prettier --write"
     ],
     "*.{css,scss,less}": [
       "prettier --write"
@@ -98,7 +101,15 @@
     ],
     "package.json": [
       "prettier --write",
-      "npm audit --audit-level=moderate"
+      "pnpm audit --audit-level=moderate"
     ]
+  },
+  "pnpm": {
+    "overrides": {
+      "lodash": ">=4.18.0",
+      "@xmldom/xmldom": ">=0.8.13",
+      "postcss": ">=8.5.10",
+      "vite": ">=6.4.2"
+    }
   }
 }

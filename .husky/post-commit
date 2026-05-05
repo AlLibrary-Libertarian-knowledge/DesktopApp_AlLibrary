@@ -1,3 +1,4 @@
+#!/usr/bin/env sh
 echo "📝 Post-commit hook running..."
 
 # Determine commit type from commit message

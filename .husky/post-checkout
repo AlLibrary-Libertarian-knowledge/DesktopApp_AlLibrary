@@ -1,29 +1,23 @@
 #!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
 
-echo "🔄 Post-checkout hook running..."
+# -----------------------------
+# AlLibrary — post-checkout: refresh deps hint + clear Vite cache on branch switch
+# -----------------------------
 
-# Check if dependencies need to be updated
-if [ -f "package-lock.json" ] && [ "package-lock.json" -nt "node_modules/.package-lock.json" ]; then
-    echo "📦 Package-lock.json has changed, updating dependencies..."
-    npm ci
+PRE_HEAD=$1
+NEW_HEAD=$2
+FLAG=$3
+
+if [ "$FLAG" = "1" ]; then
+  echo "🔄 Branch/checkout updated — clearing frontend caches..."
+  rm -rf dist build .vite 2>/dev/null || true
+
+  if git diff --name-only "$PRE_HEAD" "$NEW_HEAD" 2>/dev/null | grep -qE '(pnpm-lock\.yaml|package\.json)'; then
+    echo "📦 Lockfile or package.json changed — installing dependencies..."
+    if command -v pnpm >/dev/null 2>&1; then
+      pnpm install
+    else
+      npm install
+    fi
+  fi
 fi
-
-# Check for new dependencies in package.json
-if [ "package.json" -nt "node_modules/.package.json" ]; then
-    echo "📦 Package.json has changed, installing dependencies..."
-    npm install
-    touch node_modules/.package.json
-fi
-
-# Clear any cached build artifacts if switching between significantly different branches
-prev_commit=$1
-new_commit=$2
-branch_switch=$3
-
-if [ "$branch_switch" = "1" ]; then
-    echo "🧹 Branch switch detected, clearing build cache..."
-    rm -rf dist/ build/ .vite/ 2>/dev/null || true
-fi
-
-echo "✅ Post-checkout setup completed!" 

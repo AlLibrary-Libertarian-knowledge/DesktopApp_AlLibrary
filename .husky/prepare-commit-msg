@@ -1,3 +1,4 @@
+#!/usr/bin/env sh
 # Auto-suggest commit message based on branch/changes
 COMMIT_EDITMSG=$1
 COMMIT_SOURCE=$2
@@ -41,6 +42,7 @@ if [ "$COMMIT_SOURCE" = "" ] || [ "$COMMIT_SOURCE" = "template" ]; then
     echo "#   feat: add user authentication system" >> "$COMMIT_EDITMSG"
     echo "#   fix: resolve memory leak in network graph" >> "$COMMIT_EDITMSG"
     echo "#   feat(ALB-123): implement cultural context search" >> "$COMMIT_EDITMSG"
+    echo "#   (use pnpm for scripts: pnpm run lint · pnpm run test)" >> "$COMMIT_EDITMSG"
     
   fi
 fi 
