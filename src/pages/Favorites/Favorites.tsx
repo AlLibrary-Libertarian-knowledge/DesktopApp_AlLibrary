@@ -1,4 +1,4 @@
-import { Component, createSignal, createEffect, For, Show } from 'solid-js';
+import { type Component, createSignal, createEffect, For, Show } from 'solid-js';
 import { Card } from '../../components/foundation/Card';
 import { Button } from '../../components/foundation/Button';
 import { Input } from '../../components/foundation/Input';
@@ -6,7 +6,7 @@ import { Star, Heart, BookOpen, Filter, Search, Grid, List } from 'lucide-solid'
 import type { Document } from '../../types/Document';
 import { CulturalSensitivityLevel } from '../../types/Cultural';
 import styles from './Favorites.module.css';
-import { CustomDropdown, DropdownOption } from './CustomDropdown';
+import { CustomDropdown, type DropdownOption } from './CustomDropdown';
 import { Globe, Users, Lock, Book } from 'lucide-solid';
 
 interface FavoriteItem {
@@ -149,7 +149,7 @@ const FavoritesPage: Component = () => {
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
+    return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   };
 
   const formatDate = (date: Date): string => {

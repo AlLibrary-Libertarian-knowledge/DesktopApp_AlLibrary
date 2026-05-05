@@ -298,31 +298,31 @@
 
 /* ===== CULTURAL SPACING ADJUSTMENTS ===== */
 
-[data-cultural-theme='indigenous'] {
+[data-cultural-theme="indigenous"] {
   --space-component-md: var(--space-cultural-indigenous-md);
   --space-layout-md: var(--space-cultural-indigenous-lg);
   --space-section-md: var(--space-cultural-indigenous-xl);
 }
 
-[data-cultural-theme='traditional'] {
+[data-cultural-theme="traditional"] {
   --space-component-md: var(--space-cultural-traditional-md);
   --space-layout-md: var(--space-cultural-traditional-lg);
   --space-section-md: var(--space-cultural-traditional-xl);
 }
 
-[data-cultural-theme='ceremonial'] {
+[data-cultural-theme="ceremonial"] {
   --space-component-md: var(--space-cultural-ceremonial-md);
   --space-layout-md: var(--space-cultural-ceremonial-lg);
   --space-section-md: var(--space-cultural-ceremonial-xl);
 }
 
-[data-cultural-theme='academic'] {
+[data-cultural-theme="academic"] {
   --space-component-md: var(--space-cultural-academic-md);
   --space-layout-md: var(--space-cultural-academic-lg);
   --space-section-md: var(--space-cultural-academic-xl);
 }
 
-[data-cultural-theme='community'] {
+[data-cultural-theme="community"] {
   --space-component-md: var(--space-cultural-community-md);
   --space-layout-md: var(--space-cultural-community-lg);
   --space-section-md: var(--space-cultural-community-xl);

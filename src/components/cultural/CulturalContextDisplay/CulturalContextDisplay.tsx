@@ -1,4 +1,4 @@
-import { Component, createSignal, Show, For } from 'solid-js';
+import { type Component, createSignal, Show, For } from 'solid-js';
 import { Globe, Info, Users, BookOpen, X, ChevronDown, ChevronUp, Star } from 'lucide-solid';
 import { Card } from '../../foundation/Card';
 import { Button } from '../../foundation/Button';

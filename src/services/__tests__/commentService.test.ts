@@ -5,10 +5,22 @@ vi.mock('@tauri-apps/api/core', () => ({
     switch (cmd) {
       case 'list_comments':
         return [
-          { id: 'c1', documentId: args?.documentId, authorId: 'u1', text: 'hello', createdAt: '2025-01-01T00:00:00Z' },
+          {
+            id: 'c1',
+            documentId: args?.documentId,
+            authorId: 'u1',
+            text: 'hello',
+            createdAt: '2025-01-01T00:00:00Z',
+          },
         ];
       case 'add_comment':
-        return { id: 'c2', documentId: args?.input?.documentId, authorId: 'u1', text: args?.input?.text, createdAt: new Date().toISOString() };
+        return {
+          id: 'c2',
+          documentId: args?.input?.documentId,
+          authorId: 'u1',
+          text: args?.input?.text,
+          createdAt: new Date().toISOString(),
+        };
       case 'edit_comment':
         return true;
       case 'delete_comment':
@@ -57,5 +69,3 @@ describe('commentService', () => {
     expect(list).toEqual([]);
   });
 });
-
-

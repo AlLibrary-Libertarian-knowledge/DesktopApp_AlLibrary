@@ -1,4 +1,4 @@
-import { Component, createResource, createSignal, onMount } from 'solid-js';
+import { type Component, createResource, createSignal, onMount } from 'solid-js';
 import { Download, HardDrive, Shield, Globe, Cpu } from 'lucide-solid';
 import { useTranslation } from '../../../../i18n/hooks';
 import styles from './StatusBar.module.css';

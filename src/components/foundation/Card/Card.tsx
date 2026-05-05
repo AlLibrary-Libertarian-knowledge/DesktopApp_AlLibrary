@@ -1,4 +1,4 @@
-import { Component, ParentProps, JSX, Show, createSignal } from 'solid-js';
+import { type Component, type ParentProps, type JSX, Show, createSignal } from 'solid-js';
 import { CULTURAL_SENSITIVITY_LEVELS, CULTURAL_LABELS } from '../../../constants/cultural';
 import styles from './Card.module.css';
 

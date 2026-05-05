@@ -3,7 +3,7 @@
  * Red/Pink Cyberpunk Theme - Conservation Focus
  */
 
-import { Component, createSignal, For } from 'solid-js';
+import { type Component, createSignal, For } from 'solid-js';
 import {
   Archive,
   Shield,

@@ -5,7 +5,7 @@
  * INFORMATION ONLY - NO ACCESS CONTROL - Educational context provided.
  */
 
-import { Component, createSignal, For, Show } from 'solid-js';
+import { type Component, createSignal, For, Show } from 'solid-js';
 import styles from './TraditionalClassificationView.module.css';
 
 export interface TraditionalClassification {

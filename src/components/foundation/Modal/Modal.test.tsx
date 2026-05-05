@@ -5,12 +5,7 @@ import { Modal } from './Modal';
 const Wrapper = (props: any) => {
   const [open, setOpen] = createSignal(true);
   return (
-    <Modal
-      isOpen={open()}
-      onClose={() => setOpen(false)}
-      title="Test Modal"
-      data-testid="modal"
-    >
+    <Modal isOpen={open()} onClose={() => setOpen(false)} title="Test Modal" data-testid="modal">
       <div>content</div>
     </Modal>
   );
@@ -42,5 +37,3 @@ describe('Modal (a11y basics)', () => {
     expect(dlg).not.toBeInTheDocument();
   });
 });
-
-

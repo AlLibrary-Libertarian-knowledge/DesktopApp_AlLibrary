@@ -5,7 +5,7 @@
  * Follows WCAG 2.1 AA standards with proper ARIA attributes.
  */
 
-import { Component, createUniqueId } from 'solid-js';
+import { type Component, createUniqueId } from 'solid-js';
 import styles from './Switch.module.css';
 
 export interface SwitchProps {

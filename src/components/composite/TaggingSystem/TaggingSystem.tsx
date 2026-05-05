@@ -1,4 +1,4 @@
-import { Component, createSignal, createEffect, Show, For } from 'solid-js';
+import { type Component, createSignal, createEffect, Show, For } from 'solid-js';
 import { Button, Input, Card } from '../../foundation';
 import { X, Search, Hash, TrendingUp, Users, Star, Globe, Info } from 'lucide-solid';
 import type { CulturalSensitivityLevel } from '../../../types/Cultural';

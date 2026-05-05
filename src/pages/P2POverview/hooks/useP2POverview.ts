@@ -4,10 +4,9 @@ import { p2pNetworkService } from '@/services/network/p2pNetworkService';
 
 export const useP2POverview = () => {
   // Resources (manual refetch only; avoid suspense loops)
-  const [torStatus, { refetch: refetchTor }] = createResource(
-    async () => torAdapter.status(),
-    { initialValue: null as any }
-  );
+  const [torStatus, { refetch: refetchTor }] = createResource(async () => torAdapter.status(), {
+    initialValue: null as any,
+  });
   const [nodeStatus, { refetch: refetchNode }] = createResource(
     async () => p2pNetworkService.getNodeStatus(),
     { initialValue: null as any }
@@ -84,7 +83,3 @@ export const useP2POverview = () => {
     lastRefreshAt,
   };
 };
-
-
-
-

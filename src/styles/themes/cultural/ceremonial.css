@@ -7,7 +7,7 @@
  */
 
 /* Ceremonial Color Palette */
-[data-cultural-theme='ceremonial'] {
+[data-cultural-theme="ceremonial"] {
   /* Primary Colors - Deep Sacred Purples */
   --color-primary-50: #faf5ff;
   --color-primary-100: #f3e8ff;
@@ -63,9 +63,9 @@
   --color-info: #2563eb;
 
   /* Typography - Ceremonial Serif */
-  --font-family-primary: 'Baskerville', 'Times New Roman', serif;
-  --font-family-secondary: 'Garamond', 'Baskerville', serif;
-  --font-family-display: 'Cinzel', 'Baskerville', serif;
+  --font-family-primary: "Baskerville", "Times New Roman", serif;
+  --font-family-secondary: "Garamond", "Baskerville", serif;
+  --font-family-display: "Cinzel", "Baskerville", serif;
 
   /* Ceremonial Typography Adjustments */
   --font-size-base: 1.15rem;
@@ -97,7 +97,7 @@
 }
 
 /* Dark Mode - Ceremonial */
-[data-cultural-theme='ceremonial'][data-theme='dark'] {
+[data-cultural-theme="ceremonial"][data-theme="dark"] {
   /* Dark Ceremonial Colors */
   --color-surface-primary: #1a1a2e;
   --color-surface-secondary: #16213e;
@@ -114,7 +114,7 @@
 }
 
 /* High Contrast - Ceremonial */
-[data-cultural-theme='ceremonial'][data-accessibility='high-contrast'] {
+[data-cultural-theme="ceremonial"][data-accessibility="high-contrast"] {
   --color-primary-500: #7c3aed;
   --color-primary-600: #6b21a8;
   --color-primary-700: #581c87;
@@ -127,32 +127,32 @@
 }
 
 /* Reduced Motion - Ceremonial */
-[data-cultural-theme='ceremonial'][data-accessibility='reduced-motion'] {
+[data-cultural-theme="ceremonial"][data-accessibility="reduced-motion"] {
   --transition-duration-fast: 0ms;
   --transition-duration-normal: 0ms;
   --transition-duration-slow: 0ms;
 }
 
 /* Focus Management - Ceremonial */
-[data-cultural-theme='ceremonial'] *:focus {
+[data-cultural-theme="ceremonial"] *:focus {
   outline: 3px solid var(--color-primary-500);
   outline-offset: 2px;
 }
 
-[data-cultural-theme='ceremonial'] *:focus-visible {
+[data-cultural-theme="ceremonial"] *:focus-visible {
   outline: 3px solid var(--color-primary-500);
   outline-offset: 2px;
 }
 
 /* Ceremonial Cultural Indicators */
-[data-cultural-theme='ceremonial'] .cultural-indicator {
+[data-cultural-theme="ceremonial"] .cultural-indicator {
   background: linear-gradient(135deg, var(--color-cultural-sacred), var(--color-cultural-heritage));
   color: var(--color-text-inverse);
   border: 3px solid var(--color-cultural-traditional);
   box-shadow: var(--shadow-lg);
 }
 
-[data-cultural-theme='ceremonial'] .cultural-context {
+[data-cultural-theme="ceremonial"] .cultural-context {
   background: linear-gradient(135deg, var(--color-surface-primary), var(--color-surface-secondary));
   border-left: 5px solid var(--color-cultural-sacred);
   color: var(--color-text-secondary);
@@ -160,7 +160,7 @@
 }
 
 /* Ceremonial Button Styles */
-[data-cultural-theme='ceremonial'] .btn-primary {
+[data-cultural-theme="ceremonial"] .btn-primary {
   background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600));
   color: var(--color-text-inverse);
   border: 2px solid var(--color-primary-700);
@@ -169,14 +169,14 @@
   box-shadow: var(--shadow-md);
 }
 
-[data-cultural-theme='ceremonial'] .btn-primary:hover {
+[data-cultural-theme="ceremonial"] .btn-primary:hover {
   background: linear-gradient(135deg, var(--color-primary-600), var(--color-primary-700));
   border-color: var(--color-primary-800);
   box-shadow: var(--shadow-lg);
 }
 
 /* Ceremonial Card Styles */
-[data-cultural-theme='ceremonial'] .card {
+[data-cultural-theme="ceremonial"] .card {
   background: linear-gradient(135deg, var(--color-surface-primary), var(--color-surface-secondary));
   border: 2px solid var(--color-border-primary);
   box-shadow: var(--shadow-lg);
@@ -184,54 +184,54 @@
 }
 
 /* Ceremonial Form Styles */
-[data-cultural-theme='ceremonial'] .form-input {
+[data-cultural-theme="ceremonial"] .form-input {
   background-color: var(--color-surface-secondary);
   border: 2px solid var(--color-border-primary);
   color: var(--color-text-primary);
   font-family: var(--font-family-primary);
 }
 
-[data-cultural-theme='ceremonial'] .form-input:focus {
+[data-cultural-theme="ceremonial"] .form-input:focus {
   border-color: var(--color-primary-500);
   box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
 }
 
 /* Ceremonial Navigation */
-[data-cultural-theme='ceremonial'] .nav-item {
+[data-cultural-theme="ceremonial"] .nav-item {
   color: var(--color-text-secondary);
   font-family: var(--font-family-display);
   font-weight: 500;
 }
 
-[data-cultural-theme='ceremonial'] .nav-item:hover {
+[data-cultural-theme="ceremonial"] .nav-item:hover {
   color: var(--color-primary-500);
   text-shadow: 0 0 8px rgba(124, 58, 237, 0.3);
 }
 
-[data-cultural-theme='ceremonial'] .nav-item.active {
+[data-cultural-theme="ceremonial"] .nav-item.active {
   color: var(--color-primary-600);
   border-bottom: 3px solid var(--color-primary-500);
   text-shadow: 0 0 12px rgba(124, 58, 237, 0.5);
 }
 
 /* Ceremonial Typography Enhancements */
-[data-cultural-theme='ceremonial'] h1,
-[data-cultural-theme='ceremonial'] h2,
-[data-cultural-theme='ceremonial'] h3 {
+[data-cultural-theme="ceremonial"] h1,
+[data-cultural-theme="ceremonial"] h2,
+[data-cultural-theme="ceremonial"] h3 {
   font-family: var(--font-family-display);
   color: var(--color-text-primary);
   font-weight: 700;
   text-shadow: 0 2px 4px rgba(124, 58, 237, 0.1);
 }
 
-[data-cultural-theme='ceremonial'] p {
+[data-cultural-theme="ceremonial"] p {
   font-family: var(--font-family-primary);
   line-height: 1.8;
   color: var(--color-text-secondary);
 }
 
 /* Ceremonial Cultural Education Elements */
-[data-cultural-theme='ceremonial'] .cultural-education {
+[data-cultural-theme="ceremonial"] .cultural-education {
   background: linear-gradient(135deg, var(--color-surface-primary), var(--color-surface-secondary));
   border: 2px solid var(--color-border-primary);
   padding: var(--space-md);
@@ -239,27 +239,27 @@
   box-shadow: var(--shadow-md);
 }
 
-[data-cultural-theme='ceremonial'] .cultural-education h3 {
+[data-cultural-theme="ceremonial"] .cultural-education h3 {
   color: var(--color-cultural-sacred);
   font-family: var(--font-family-display);
   margin-bottom: var(--space-sm);
   text-shadow: 0 1px 2px rgba(124, 58, 237, 0.2);
 }
 
-[data-cultural-theme='ceremonial'] .cultural-education p {
+[data-cultural-theme="ceremonial"] .cultural-education p {
   color: var(--color-text-secondary);
   font-family: var(--font-family-primary);
 }
 
 /* Ceremonial Decorative Elements */
-[data-cultural-theme='ceremonial'] .ceremonial-decoration {
+[data-cultural-theme="ceremonial"] .ceremonial-decoration {
   background: linear-gradient(45deg, var(--color-primary-400), var(--color-secondary-400));
   height: 2px;
   border-radius: var(--radius-sm);
   margin: var(--space-sm) 0;
 }
 
-[data-cultural-theme='ceremonial'] .ceremonial-pattern {
+[data-cultural-theme="ceremonial"] .ceremonial-pattern {
   background-image:
     radial-gradient(circle at 25% 25%, var(--color-primary-200) 2px, transparent 2px),
     radial-gradient(circle at 75% 75%, var(--color-secondary-200) 2px, transparent 2px);
@@ -269,7 +269,7 @@
 
 /* Ceremonial Responsive Design */
 @media (max-width: 768px) {
-  [data-cultural-theme='ceremonial'] {
+  [data-cultural-theme="ceremonial"] {
     --font-size-base: 1.05rem;
     --font-size-lg: 1.2rem;
     --font-size-xl: 1.4rem;
@@ -280,7 +280,7 @@
 
 /* Ceremonial Print Styles */
 @media print {
-  [data-cultural-theme='ceremonial'] {
+  [data-cultural-theme="ceremonial"] {
     --color-surface-primary: #ffffff;
     --color-surface-secondary: #f8f8f8;
     --color-text-primary: #000000;

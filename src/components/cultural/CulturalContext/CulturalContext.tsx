@@ -5,7 +5,7 @@
  * INFORMATION ONLY - NO ACCESS CONTROL - Educational enhancement.
  */
 
-import { Component, Show, For } from 'solid-js';
+import { type Component, Show, For } from 'solid-js';
 import styles from './CulturalContext.module.css';
 
 export interface CulturalContextInfo {

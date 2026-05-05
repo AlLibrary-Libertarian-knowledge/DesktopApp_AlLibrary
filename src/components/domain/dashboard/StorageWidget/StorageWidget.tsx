@@ -1,4 +1,4 @@
-import { Component, createResource, Show } from 'solid-js';
+import { type Component, createResource, Show } from 'solid-js';
 import styles from './StorageWidget.module.css';
 import { settingsService } from '@/services/storage/settingsService';
 import { invoke } from '@tauri-apps/api/core';

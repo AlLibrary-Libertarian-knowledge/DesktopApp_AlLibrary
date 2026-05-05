@@ -97,5 +97,3 @@ describe('Cultural info-only policy', () => {
     expect(result).toBe(true);
   });
 });
-
-

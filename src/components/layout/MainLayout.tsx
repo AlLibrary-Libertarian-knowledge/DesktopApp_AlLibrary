@@ -1,4 +1,4 @@
-import { Component, ParentProps, onMount } from 'solid-js';
+import { type Component, type ParentProps, onMount } from 'solid-js';
 import Header from './Header';
 import Sidebar from './Sidebar';
 import Footer from './Footer';

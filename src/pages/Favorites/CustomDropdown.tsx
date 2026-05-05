@@ -1,4 +1,4 @@
-import { createSignal, createEffect, onCleanup, JSX, For, Show } from 'solid-js';
+import { createSignal, createEffect, onCleanup, type JSX, For, Show } from 'solid-js';
 import { Dynamic } from 'solid-js/web';
 import { Star, BookOpen, Heart, Filter, Globe, Users, Lock, Book } from 'lucide-solid';
 import styles from './CustomDropdown.module.css';

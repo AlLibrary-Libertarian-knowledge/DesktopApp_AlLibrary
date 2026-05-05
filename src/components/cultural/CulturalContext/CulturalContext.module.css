@@ -394,27 +394,27 @@
 }
 
 /* Cultural Theme Enhancements */
-.culturalContext[data-cultural-theme='indigenous'] {
+.culturalContext[data-cultural-theme="indigenous"] {
   background: var(--color-cultural-indigenous-bg, var(--color-bg-primary));
   color: var(--color-cultural-indigenous-text, var(--color-text-primary));
 }
 
-.culturalContext[data-cultural-theme='traditional'] {
+.culturalContext[data-cultural-theme="traditional"] {
   background: var(--color-cultural-traditional-bg, var(--color-bg-primary));
   color: var(--color-cultural-traditional-text, var(--color-text-primary));
 }
 
-.culturalContext[data-cultural-theme='ceremonial'] {
+.culturalContext[data-cultural-theme="ceremonial"] {
   background: var(--color-cultural-ceremonial-bg, var(--color-bg-primary));
   color: var(--color-cultural-ceremonial-text, var(--color-text-primary));
 }
 
-.culturalContext[data-cultural-theme='academic'] {
+.culturalContext[data-cultural-theme="academic"] {
   background: var(--color-cultural-academic-bg, var(--color-bg-primary));
   color: var(--color-cultural-academic-text, var(--color-text-primary));
 }
 
-.culturalContext[data-cultural-theme='community'] {
+.culturalContext[data-cultural-theme="community"] {
   background: var(--color-cultural-community-bg, var(--color-bg-primary));
   color: var(--color-cultural-community-text, var(--color-text-primary));
 }

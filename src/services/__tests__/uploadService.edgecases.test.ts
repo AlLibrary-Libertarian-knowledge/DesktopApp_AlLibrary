@@ -5,12 +5,16 @@ describe('uploadService edge cases', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     // Avoid real file reading/arrayBuffer allocations
-    vi.spyOn(UploadService.prototype as any, 'readFileContent').mockResolvedValue(new ArrayBuffer(8));
+    vi.spyOn(UploadService.prototype as any, 'readFileContent').mockResolvedValue(
+      new ArrayBuffer(8)
+    );
     // Avoid hashing heavy buffers
     vi.spyOn(UploadService.prototype as any, 'calculateFileHash').mockResolvedValue('hash');
   });
 
-  const makeFakeFile = (overrides: Partial<File> & { name: string; type: string; size?: number }): File => {
+  const makeFakeFile = (
+    overrides: Partial<File> & { name: string; type: string; size?: number }
+  ): File => {
     const fileLike: any = {
       name: overrides.name,
       type: overrides.type,

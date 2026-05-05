@@ -97,11 +97,7 @@ export class CategoryApiService {
    * Get complete category tree with cultural context
    */
   async getCategoryTree(
-    options: {
-      includeMetadata?: boolean;
-      includeCulturalContext?: boolean;
-      maxDepth?: number;
-    } = {}
+    options: { includeMetadata?: boolean; includeCulturalContext?: boolean; maxDepth?: number } = {}
   ): Promise<ApiResponse<CategoryTree>> {
     return apiClient.get<CategoryTree>('category_tree', {
       includeMetadata: options.includeMetadata ?? true,

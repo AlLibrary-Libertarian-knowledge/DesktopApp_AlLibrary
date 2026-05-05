@@ -1,4 +1,4 @@
-import { Component, createMemo } from 'solid-js';
+import { type Component, createMemo } from 'solid-js';
 import './Footer.css';
 import { useNetworkStore } from '@/stores/network/networkStore';
 

@@ -35,7 +35,7 @@
 
 /* Animated Circuit Grid Background */
 .connectionManagerPage::before {
-  content: '';
+  content: "";
   position: fixed;
   top: 0;
   left: 0;
@@ -61,7 +61,7 @@
 
 /* Connection Particles Background */
 .connectionManagerPage::after {
-  content: '';
+  content: "";
   position: fixed;
   top: 0;
   left: 0;
@@ -144,7 +144,7 @@
 }
 
 .pageHeader::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -252,7 +252,7 @@
 }
 
 .infoCard::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -312,7 +312,7 @@
 }
 
 .infoList li::before {
-  content: '▶';
+  content: "▶";
   color: var(--connection-primary);
   font-weight: 700;
   position: absolute;

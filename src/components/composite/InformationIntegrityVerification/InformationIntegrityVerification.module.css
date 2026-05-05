@@ -1,9 +1,9 @@
 /**
  * Information Integrity Verification Component Styles
- * 
+ *
  * Comprehensive styling for content authenticity verification interface
  * with cultural themes, accessibility support, and educational transparency.
- * 
+ *
  * ANTI-CENSORSHIP DESIGN: Visual clarity for verification results without
  * restricting access. Educational emphasis over control mechanisms.
  */
@@ -640,7 +640,7 @@
    ============================================================================ */
 
 /* Indigenous Theme */
-.verificationContainer[data-cultural-theme='indigenous'] {
+.verificationContainer[data-cultural-theme="indigenous"] {
   --color-primary-600: #059669;
   --color-primary-500: #10b981;
   --color-primary-50: #ecfdf5;
@@ -648,12 +648,12 @@
   --color-primary-300: #6ee7b7;
 }
 
-.verificationContainer[data-cultural-theme='indigenous'] .headerIcon {
+.verificationContainer[data-cultural-theme="indigenous"] .headerIcon {
   color: #059669;
 }
 
 /* Traditional Theme */
-.verificationContainer[data-cultural-theme='traditional'] {
+.verificationContainer[data-cultural-theme="traditional"] {
   --color-primary-600: #7c3aed;
   --color-primary-500: #8b5cf6;
   --color-primary-50: #f5f3ff;
@@ -661,12 +661,12 @@
   --color-primary-300: #a78bfa;
 }
 
-.verificationContainer[data-cultural-theme='traditional'] .headerIcon {
+.verificationContainer[data-cultural-theme="traditional"] .headerIcon {
   color: #7c3aed;
 }
 
 /* Ceremonial Theme */
-.verificationContainer[data-cultural-theme='ceremonial'] {
+.verificationContainer[data-cultural-theme="ceremonial"] {
   --color-primary-600: #dc2626;
   --color-primary-500: #ef4444;
   --color-primary-50: #fef2f2;
@@ -674,16 +674,16 @@
   --color-primary-300: #fca5a5;
 }
 
-.verificationContainer[data-cultural-theme='ceremonial'] .headerIcon {
+.verificationContainer[data-cultural-theme="ceremonial"] .headerIcon {
   color: #dc2626;
 }
 
-.verificationContainer[data-cultural-theme='ceremonial'] .summaryScore .scoreValue {
+.verificationContainer[data-cultural-theme="ceremonial"] .summaryScore .scoreValue {
   color: #dc2626;
 }
 
 /* Community Theme */
-.verificationContainer[data-cultural-theme='community'] {
+.verificationContainer[data-cultural-theme="community"] {
   --color-primary-600: #0369a1;
   --color-primary-500: #0284c7;
   --color-primary-50: #f0f9ff;
@@ -691,7 +691,7 @@
   --color-primary-300: #7dd3fc;
 }
 
-.verificationContainer[data-cultural-theme='community'] .headerIcon {
+.verificationContainer[data-cultural-theme="community"] .headerIcon {
   color: #0369a1;
 }
 

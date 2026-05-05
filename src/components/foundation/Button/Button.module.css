@@ -317,7 +317,7 @@
 }
 
 .btn-futuristic::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -330,7 +330,7 @@
 }
 
 .btn-futuristic::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -424,30 +424,30 @@
 }
 
 /* Primary Color Combinations */
-.btn-primary[class*='btn-color-'] {
+.btn-primary[class*="btn-color-"] {
   background-color: inherit;
   border-color: inherit;
 }
 
-.btn-primary[class*='btn-color-']:hover:not(.btn-disabled) {
+.btn-primary[class*="btn-color-"]:hover:not(.btn-disabled) {
   background-color: inherit;
   border-color: inherit;
   filter: brightness(1.1);
 }
 
-.btn-primary[class*='btn-color-']:active:not(.btn-disabled) {
+.btn-primary[class*="btn-color-"]:active:not(.btn-disabled) {
   background-color: inherit;
   border-color: inherit;
   filter: brightness(0.9);
 }
 
 /* Outline Color Combinations */
-.btn-outline[class*='btn-color-'] {
+.btn-outline[class*="btn-color-"] {
   background-color: transparent;
   color: inherit;
 }
 
-.btn-outline[class*='btn-color-']:hover:not(.btn-disabled) {
+.btn-outline[class*="btn-color-"]:hover:not(.btn-disabled) {
   background-color: inherit;
   color: #ffffff;
 }

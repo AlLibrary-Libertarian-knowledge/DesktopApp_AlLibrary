@@ -17,9 +17,9 @@ yarn tauri:build   # Build complete Tauri application with installers
 ## Quality Assurance
 
 ```bash
-yarn lint          # Run ESLint on TypeScript files
-yarn lint:fix      # Run ESLint with auto-fix
-yarn format        # Format code with Prettier
+pnpm run lint      # Run Biome check (format + lint) on src and tests
+pnpm run lint:fix  # Run Biome check with --write
+pnpm run format    # Run Biome format --write
 yarn typecheck     # Run TypeScript type checking
 yarn test          # Run unit tests with Vitest
 ```

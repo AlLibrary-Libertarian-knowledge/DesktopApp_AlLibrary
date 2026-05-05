@@ -5,7 +5,7 @@
  * Provides consistent structure with header, sidebar, main content area.
  */
 
-import { Component, JSX, Show } from 'solid-js';
+import { type Component, type JSX, Show } from 'solid-js';
 import styles from './MainLayout.module.css';
 
 export interface MainLayoutProps {

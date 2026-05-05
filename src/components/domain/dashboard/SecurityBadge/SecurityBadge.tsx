@@ -1,4 +1,4 @@
-import { Component, createSignal, onMount, onCleanup, Show } from 'solid-js';
+import { type Component, createSignal, onMount, onCleanup, Show } from 'solid-js';
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import { Shield, RefreshCw, AlertTriangle, Globe, Zap } from 'lucide-solid';

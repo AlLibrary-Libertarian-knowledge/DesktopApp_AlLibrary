@@ -1,4 +1,4 @@
-import { Component, createSignal } from 'solid-js';
+import { type Component, createSignal } from 'solid-js';
 import { Calendar, Clock, Filter } from 'lucide-solid';
 import { Button } from '../../../foundation/Button';
 import { Select } from '../../../foundation/Select';

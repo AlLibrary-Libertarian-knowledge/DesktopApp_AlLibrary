@@ -1,4 +1,4 @@
-import { Component, createSignal, createEffect, Show, For } from 'solid-js';
+import { type Component, createSignal, createEffect, Show, For } from 'solid-js';
 import { Search, X, Filter } from 'lucide-solid';
 import { useTranslation } from '../../../i18n/hooks';
 import { CULTURAL_SENSITIVITY_LEVELS, CULTURAL_LABELS } from '../../../constants/cultural';

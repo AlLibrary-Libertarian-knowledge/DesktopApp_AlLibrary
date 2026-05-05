@@ -1,4 +1,4 @@
-import { JSX, For } from 'solid-js';
+import { type JSX, For } from 'solid-js';
 import { Download, Upload, CheckCircle } from 'lucide-solid';
 import { useTranslation } from '../../../i18n/hooks';
 import styles from './ActivityListCard.module.css';

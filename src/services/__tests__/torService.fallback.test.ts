@@ -4,7 +4,10 @@ vi.mock('@tauri-apps/api/core', () => ({
   invoke: vi.fn(async (cmd: string, args?: any) => {
     switch (cmd) {
       case 'init_tor_node':
-        return { id: 'tor1', config: { enableCulturalFiltering: false, enableContentBlocking: false } };
+        return {
+          id: 'tor1',
+          config: { enableCulturalFiltering: false, enableContentBlocking: false },
+        };
       case 'start_tor':
         return true;
       case 'get_tor_status':
@@ -40,6 +43,3 @@ describe('TOR fallback and censorship resistance', () => {
     expect(ok).toBe(true);
   });
 });
-
-
-

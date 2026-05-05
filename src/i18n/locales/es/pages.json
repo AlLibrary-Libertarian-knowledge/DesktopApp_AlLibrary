@@ -255,8 +255,7 @@
     "privacy": "Privacidad",
     "cultural": "Cultural",
     "advanced": "Avanzado"
-  }
-  ,
+  },
   "documentDetail": {
     "toasts": {
       "commentPosted": "Comentario publicado",

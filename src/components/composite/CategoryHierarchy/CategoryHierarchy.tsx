@@ -5,7 +5,7 @@
  * Supports collapsible nodes and cultural sensitivity indicators.
  */
 
-import { Component, createSignal, For, Show, JSX } from 'solid-js';
+import { type Component, createSignal, For, Show, type JSX } from 'solid-js';
 import styles from './CategoryHierarchy.module.css';
 
 export interface CategoryNode {

@@ -7,33 +7,33 @@
 
   /* Primary Font Stack */
   --font-family-sans:
-    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu',
-    'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
+    "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
 
   /* Monospace Font Stack */
   --font-family-mono:
-    'JetBrains Mono', 'Fira Code', 'Monaco', 'Cascadia Code', 'Consolas', 'Liberation Mono',
-    'Courier New', monospace;
+    "JetBrains Mono", "Fira Code", "Monaco", "Cascadia Code", "Consolas", "Liberation Mono",
+    "Courier New", monospace;
 
   /* Serif Font Stack */
-  --font-family-serif: 'Georgia', 'Times New Roman', 'Times', serif;
+  --font-family-serif: "Georgia", "Times New Roman", "Times", serif;
 
   /* ===== CULTURAL FONT FAMILIES ===== */
 
   /* Indigenous Fonts */
-  --font-family-indigenous: 'Noto Sans', 'Source Sans Pro', var(--font-family-sans);
+  --font-family-indigenous: "Noto Sans", "Source Sans Pro", var(--font-family-sans);
 
   /* Traditional Fonts */
-  --font-family-traditional: 'Noto Serif', 'Merriweather', var(--font-family-serif);
+  --font-family-traditional: "Noto Serif", "Merriweather", var(--font-family-serif);
 
   /* Ceremonial Fonts */
-  --font-family-ceremonial: 'Playfair Display', 'Crimson Text', var(--font-family-serif);
+  --font-family-ceremonial: "Playfair Display", "Crimson Text", var(--font-family-serif);
 
   /* Academic Fonts */
-  --font-family-academic: 'Source Sans Pro', 'Open Sans', var(--font-family-sans);
+  --font-family-academic: "Source Sans Pro", "Open Sans", var(--font-family-sans);
 
   /* Community Fonts */
-  --font-family-community: 'Roboto', 'Lato', var(--font-family-sans);
+  --font-family-community: "Roboto", "Lato", var(--font-family-sans);
 
   /* ===== FONT SIZES ===== */
 
@@ -115,67 +115,69 @@
   /* ===== CULTURAL TYPOGRAPHY ===== */
 
   /* Indigenous Typography */
-  --font-indigenous-heading: var(--font-size-2xl) / var(--line-height-tight)
-    var(--font-family-indigenous);
-  --font-indigenous-body: var(--font-size-base) / var(--line-height-relaxed)
-    var(--font-family-indigenous);
-  --font-indigenous-display: var(--font-size-4xl) / var(--line-height-tight)
-    var(--font-family-indigenous);
+  --font-indigenous-heading:
+    var(--font-size-2xl) / var(--line-height-tight) var(--font-family-indigenous);
+  --font-indigenous-body:
+    var(--font-size-base) / var(--line-height-relaxed) var(--font-family-indigenous);
+  --font-indigenous-display:
+    var(--font-size-4xl) / var(--line-height-tight) var(--font-family-indigenous);
 
   /* Traditional Typography */
-  --font-traditional-heading: var(--font-size-2xl) / var(--line-height-tight)
-    var(--font-family-traditional);
-  --font-traditional-body: var(--font-size-base) / var(--line-height-relaxed)
-    var(--font-family-traditional);
-  --font-traditional-display: var(--font-size-4xl) / var(--line-height-tight)
-    var(--font-family-traditional);
+  --font-traditional-heading:
+    var(--font-size-2xl) / var(--line-height-tight) var(--font-family-traditional);
+  --font-traditional-body:
+    var(--font-size-base) / var(--line-height-relaxed) var(--font-family-traditional);
+  --font-traditional-display:
+    var(--font-size-4xl) / var(--line-height-tight) var(--font-family-traditional);
 
   /* Ceremonial Typography */
-  --font-ceremonial-heading: var(--font-size-2xl) / var(--line-height-tight)
-    var(--font-family-ceremonial);
-  --font-ceremonial-body: var(--font-size-base) / var(--line-height-relaxed)
-    var(--font-family-ceremonial);
-  --font-ceremonial-display: var(--font-size-4xl) / var(--line-height-tight)
-    var(--font-family-ceremonial);
+  --font-ceremonial-heading:
+    var(--font-size-2xl) / var(--line-height-tight) var(--font-family-ceremonial);
+  --font-ceremonial-body:
+    var(--font-size-base) / var(--line-height-relaxed) var(--font-family-ceremonial);
+  --font-ceremonial-display:
+    var(--font-size-4xl) / var(--line-height-tight) var(--font-family-ceremonial);
 
   /* Academic Typography */
-  --font-academic-heading: var(--font-size-2xl) / var(--line-height-tight)
-    var(--font-family-academic);
-  --font-academic-body: var(--font-size-base) / var(--line-height-relaxed)
-    var(--font-family-academic);
-  --font-academic-display: var(--font-size-4xl) / var(--line-height-tight)
-    var(--font-family-academic);
+  --font-academic-heading:
+    var(--font-size-2xl) / var(--line-height-tight) var(--font-family-academic);
+  --font-academic-body:
+    var(--font-size-base) / var(--line-height-relaxed) var(--font-family-academic);
+  --font-academic-display:
+    var(--font-size-4xl) / var(--line-height-tight) var(--font-family-academic);
 
   /* Community Typography */
-  --font-community-heading: var(--font-size-2xl) / var(--line-height-tight)
-    var(--font-family-community);
-  --font-community-body: var(--font-size-base) / var(--line-height-relaxed)
-    var(--font-family-community);
-  --font-community-display: var(--font-size-4xl) / var(--line-height-tight)
-    var(--font-family-community);
+  --font-community-heading:
+    var(--font-size-2xl) / var(--line-height-tight) var(--font-family-community);
+  --font-community-body:
+    var(--font-size-base) / var(--line-height-relaxed) var(--font-family-community);
+  --font-community-display:
+    var(--font-size-4xl) / var(--line-height-tight) var(--font-family-community);
 
   /* ===== ACCESSIBILITY TYPOGRAPHY ===== */
 
   /* High Contrast Typography */
-  --font-high-contrast-heading: var(--font-size-2xl) / var(--line-height-tight)
-    var(--font-family-sans);
-  --font-high-contrast-body: var(--font-size-base) / var(--line-height-relaxed)
-    var(--font-family-sans);
-  --font-high-contrast-display: var(--font-size-4xl) / var(--line-height-tight)
-    var(--font-family-sans);
+  --font-high-contrast-heading:
+    var(--font-size-2xl) / var(--line-height-tight) var(--font-family-sans);
+  --font-high-contrast-body:
+    var(--font-size-base) / var(--line-height-relaxed) var(--font-family-sans);
+  --font-high-contrast-display:
+    var(--font-size-4xl) / var(--line-height-tight) var(--font-family-sans);
 
   /* Large Text Typography */
-  --font-large-text-heading: var(--font-size-3xl) / var(--line-height-tight) var(--font-family-sans);
+  --font-large-text-heading:
+    var(--font-size-3xl) / var(--line-height-tight) var(--font-family-sans);
   --font-large-text-body: var(--font-size-lg) / var(--line-height-relaxed) var(--font-family-sans);
-  --font-large-text-display: var(--font-size-5xl) / var(--line-height-tight) var(--font-family-sans);
+  --font-large-text-display:
+    var(--font-size-5xl) / var(--line-height-tight) var(--font-family-sans);
 
   /* Reduced Motion Typography */
-  --font-reduced-motion-heading: var(--font-size-2xl) / var(--line-height-tight)
-    var(--font-family-sans);
-  --font-reduced-motion-body: var(--font-size-base) / var(--line-height-normal)
-    var(--font-family-sans);
-  --font-reduced-motion-display: var(--font-size-4xl) / var(--line-height-tight)
-    var(--font-family-sans);
+  --font-reduced-motion-heading:
+    var(--font-size-2xl) / var(--line-height-tight) var(--font-family-sans);
+  --font-reduced-motion-body:
+    var(--font-size-base) / var(--line-height-normal) var(--font-family-sans);
+  --font-reduced-motion-display:
+    var(--font-size-4xl) / var(--line-height-tight) var(--font-family-sans);
 
   /* ===== RESPONSIVE TYPOGRAPHY ===== */
 
@@ -293,35 +295,35 @@
 
 /* ===== CULTURAL TYPOGRAPHY ADJUSTMENTS ===== */
 
-[data-cultural-theme='indigenous'] {
+[data-cultural-theme="indigenous"] {
   --font-family-sans: var(--font-family-indigenous);
   --font-heading-1: var(--font-indigenous-heading);
   --font-body-medium: var(--font-indigenous-body);
   --font-display-large: var(--font-indigenous-display);
 }
 
-[data-cultural-theme='traditional'] {
+[data-cultural-theme="traditional"] {
   --font-family-sans: var(--font-family-traditional);
   --font-heading-1: var(--font-traditional-heading);
   --font-body-medium: var(--font-traditional-body);
   --font-display-large: var(--font-traditional-display);
 }
 
-[data-cultural-theme='ceremonial'] {
+[data-cultural-theme="ceremonial"] {
   --font-family-sans: var(--font-family-ceremonial);
   --font-heading-1: var(--font-ceremonial-heading);
   --font-body-medium: var(--font-ceremonial-body);
   --font-display-large: var(--font-ceremonial-display);
 }
 
-[data-cultural-theme='academic'] {
+[data-cultural-theme="academic"] {
   --font-family-sans: var(--font-family-academic);
   --font-heading-1: var(--font-academic-heading);
   --font-body-medium: var(--font-academic-body);
   --font-display-large: var(--font-academic-display);
 }
 
-[data-cultural-theme='community'] {
+[data-cultural-theme="community"] {
   --font-family-sans: var(--font-family-community);
   --font-heading-1: var(--font-community-heading);
   --font-body-medium: var(--font-community-body);
@@ -330,7 +332,7 @@
 
 /* ===== RTL TYPOGRAPHY SUPPORT ===== */
 
-[dir='rtl'] {
+[dir="rtl"] {
   --text-align-left: right;
   --text-align-right: left;
 }

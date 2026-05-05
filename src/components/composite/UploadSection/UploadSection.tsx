@@ -1,4 +1,4 @@
-import { Component, JSX, createSignal, Show, For } from 'solid-js';
+import { type Component, JSX, createSignal, Show, For } from 'solid-js';
 import { Button, Input, Card } from '../../foundation';
 import { Upload, FileText, AlertCircle, Check, X, Info } from 'lucide-solid';
 import { validationService } from '../../../services';

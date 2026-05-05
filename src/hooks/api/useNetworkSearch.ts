@@ -118,7 +118,10 @@ export const useNetworkSearch = (): UseNetworkSearchReturn => {
     const q = (filters.query || '').trim();
     if (!q) return [];
     // Delegate to service (it should aggregate peers via libp2p/Tor)
-    const raw = await p2pNetworkService.searchNetwork(q, { mode: 'title', anonymous: options.anonymous !== false });
+    const raw = await p2pNetworkService.searchNetwork(q, {
+      mode: 'title',
+      anonymous: options.anonymous !== false,
+    });
     // Adapt to NetworkSearchResult
     const mapped: NetworkSearchResult[] = (raw || []).map((r: any) => ({
       document: {

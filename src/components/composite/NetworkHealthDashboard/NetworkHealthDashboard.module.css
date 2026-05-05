@@ -58,7 +58,7 @@
 }
 
 .dashboardHeader::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -173,7 +173,7 @@
 }
 
 .metricCard::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -262,7 +262,7 @@
 }
 
 .stabilityProgress::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -300,7 +300,7 @@
 }
 
 .antiCensorshipNotice::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -388,7 +388,7 @@
 }
 
 .resourceCard::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -482,7 +482,7 @@
 }
 
 .storageProgress::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -537,7 +537,7 @@
 }
 
 .culturalCard::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;

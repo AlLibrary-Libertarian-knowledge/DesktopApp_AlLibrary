@@ -6,7 +6,7 @@
  * Positioned next to language selector for easy access
  */
 
-import { Component, createSignal, createEffect, createMemo, Show, For } from 'solid-js';
+import { type Component, createSignal, createEffect, createMemo, Show, For } from 'solid-js';
 import { useTheme } from '@/hooks/ui/useTheme';
 import styles from './ThemeSwitcher.module.css';
 

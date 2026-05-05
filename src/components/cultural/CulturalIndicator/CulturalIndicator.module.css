@@ -13,16 +13,16 @@
   cursor: default;
 }
 
-.culturalIndicator[role='button'] {
+.culturalIndicator[role="button"] {
   cursor: pointer;
 }
 
-.culturalIndicator:hover[role='button'] {
+.culturalIndicator:hover[role="button"] {
   transform: translateY(-1px);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.culturalIndicator:focus[role='button'] {
+.culturalIndicator:focus[role="button"] {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
@@ -80,11 +80,11 @@
   transition: all 0.2s ease;
 }
 
-.culturalBadge[role='button'] {
+.culturalBadge[role="button"] {
   cursor: pointer;
 }
 
-.culturalBadge:hover[role='button'] {
+.culturalBadge:hover[role="button"] {
   opacity: 0.8;
 }
 
@@ -203,7 +203,7 @@
     transition: none;
   }
 
-  .culturalIndicator:hover[role='button'] {
+  .culturalIndicator:hover[role="button"] {
     transform: none;
   }
 }

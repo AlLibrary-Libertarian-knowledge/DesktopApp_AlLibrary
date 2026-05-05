@@ -189,15 +189,15 @@
 }
 
 /* Cultural Theme Support */
-.modal[data-cultural-theme='indigenous'] {
+.modal[data-cultural-theme="indigenous"] {
   border-color: var(--color-cultural-traditional);
 }
 
-.modal[data-cultural-theme='traditional'] {
+.modal[data-cultural-theme="traditional"] {
   border-color: var(--color-cultural-sacred);
 }
 
-.modal[data-cultural-theme='academic'] {
+.modal[data-cultural-theme="academic"] {
   border-color: var(--color-cultural-academic);
 }
 
@@ -666,8 +666,8 @@
 }
 
 /* Screen Reader Support */
-.modal-overlay[aria-modal='true']::after {
-  content: 'Modal dialog';
+.modal-overlay[aria-modal="true"]::after {
+  content: "Modal dialog";
   position: absolute;
   left: -10000px;
   width: 1px;

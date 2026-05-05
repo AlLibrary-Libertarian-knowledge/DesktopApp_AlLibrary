@@ -27,7 +27,7 @@
  * - Local storage integration
  */
 
-import { Component, createSignal, createEffect, onMount, Show, For } from 'solid-js';
+import { type Component, createSignal, createEffect, onMount, Show, For } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
 import {
   Settings,

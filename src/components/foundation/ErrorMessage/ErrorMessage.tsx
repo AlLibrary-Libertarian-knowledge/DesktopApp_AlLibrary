@@ -1,4 +1,4 @@
-import { Component, createSignal, Show, For } from 'solid-js';
+import { type Component, createSignal, Show, For } from 'solid-js';
 import { CULTURAL_SENSITIVITY_LEVELS, CULTURAL_LABELS } from '../../../constants/cultural';
 import styles from './ErrorMessage.module.css';
 

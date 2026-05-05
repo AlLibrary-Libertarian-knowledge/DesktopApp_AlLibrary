@@ -5,8 +5,8 @@
  * and decentralized collection management with respect for traditional knowledge.
  */
 
-import { CulturalMetadata, CulturalSensitivityLevel } from './Cultural';
-import { Document } from './Document';
+import type { CulturalMetadata, CulturalSensitivityLevel } from './Cultural';
+import type { Document } from './Document';
 
 /**
  * Collection types for different organizational purposes

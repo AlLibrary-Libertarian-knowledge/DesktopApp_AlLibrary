@@ -20,6 +20,3 @@ describe('documentApi stats performance', () => {
     expect(dt).toBeLessThan(200);
   });
 });
-
-
-

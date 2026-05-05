@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
 # -----------------------------
-# AlLibrary Pre-commit — ESLint + Prettier (lint-staged) + secret scan
+# AlLibrary Pre-commit — Biome (lint-staged) + secret scan
 # -----------------------------
 
 if [ -t 1 ] && command -v tput >/dev/null 2>&1; then
@@ -23,11 +23,8 @@ on_error() {
   echo "${RED}✖ Pre-commit failed${RESET} at $(stamp)"
   if [ -f .git/lint-staged.log ]; then
     echo "${YELLOW}Failure analysis:${RESET}"
-    if grep -qE "eslint|ESLint" .git/lint-staged.log; then
-      echo "${BLUE}• ESLint:${RESET} Run ${BOLD}pnpm run lint:fix${RESET}"
-    fi
-    if grep -qE "Prettier|prettier" .git/lint-staged.log; then
-      echo "${BLUE}• Format:${RESET} Run ${BOLD}pnpm run format${RESET}"
+    if grep -qE "biome|Biome" .git/lint-staged.log; then
+      echo "${BLUE}• Biome:${RESET} Run ${BOLD}pnpm run lint:fix${RESET}"
     fi
     echo "${YELLOW}Recent output:${RESET}"
     tail -n 20 .git/lint-staged.log || true
@@ -48,7 +45,7 @@ fi
 echo "${BOLD}${CYAN}════════════════════════════════════════════════════════════${RESET}"
 echo "${BOLD}🔍 Pre-commit · Quality checks${RESET}  $(stamp)"
 echo "${BOLD}${CYAN}════════════════════════════════════════════════════════════${RESET}"
-echo "${BLUE}• Checklist:${RESET} Secret scan, lint-staged (ESLint + Prettier)"
+echo "${BLUE}• Checklist:${RESET} Secret scan, lint-staged (Biome)"
 
 STAGED_FILES=$(git diff --name-only --cached || true)
 STAGED_COUNT=$(printf "%s" "$STAGED_FILES" | grep -c . || true)

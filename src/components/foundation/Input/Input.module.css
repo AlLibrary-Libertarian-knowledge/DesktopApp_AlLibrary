@@ -249,7 +249,7 @@
 }
 
 .input-error-message::before {
-  content: '⚠️';
+  content: "⚠️";
   font-size: 0.75rem;
 }
 
@@ -264,7 +264,7 @@
 }
 
 .input-hint::before {
-  content: '💡';
+  content: "💡";
   font-size: 0.75rem;
 }
 

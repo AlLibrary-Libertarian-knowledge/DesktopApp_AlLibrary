@@ -497,8 +497,8 @@
 }
 
 /* Screen Reader Support */
-.upload-area[role='button']::after {
-  content: 'Press Enter or Space to select files';
+.upload-area[role="button"]::after {
+  content: "Press Enter or Space to select files";
   position: absolute;
   left: -10000px;
   width: 1px;

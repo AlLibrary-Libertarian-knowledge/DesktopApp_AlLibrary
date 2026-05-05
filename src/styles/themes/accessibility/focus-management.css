@@ -7,7 +7,7 @@
  */
 
 /* Focus Management Color Palette */
-[data-accessibility='focus-management'] {
+[data-accessibility="focus-management"] {
   /* High Contrast Colors for Focus */
   --color-primary-50: #eff6ff;
   --color-primary-100: #dbeafe;
@@ -63,10 +63,10 @@
   --color-focus-error: #dc2626;
 
   /* Typography - Clear and Readable */
-  --font-family-primary: 'Arial', 'Helvetica', sans-serif;
-  --font-family-secondary: 'Verdana', 'Arial', sans-serif;
-  --font-family-display: 'Arial Black', 'Arial', sans-serif;
-  --font-family-mono: 'Courier New', 'Monaco', monospace;
+  --font-family-primary: "Arial", "Helvetica", sans-serif;
+  --font-family-secondary: "Verdana", "Arial", sans-serif;
+  --font-family-display: "Arial Black", "Arial", sans-serif;
+  --font-family-mono: "Courier New", "Monaco", monospace;
 
   /* Typography Sizes - Readable */
   --font-size-xs: 0.875rem;
@@ -106,7 +106,7 @@
 }
 
 /* Focus Management Button Styles */
-[data-accessibility='focus-management'] .btn-primary {
+[data-accessibility="focus-management"] .btn-primary {
   background-color: var(--color-primary-500);
   color: var(--color-text-inverse);
   border: 3px solid var(--color-primary-600);
@@ -120,25 +120,25 @@
   position: relative;
 }
 
-[data-accessibility='focus-management'] .btn-primary:hover {
+[data-accessibility="focus-management"] .btn-primary:hover {
   background-color: var(--color-primary-600);
   border-color: var(--color-primary-700);
 }
 
-[data-accessibility='focus-management'] .btn-primary:focus {
+[data-accessibility="focus-management"] .btn-primary:focus {
   outline: var(--focus-outline-width) solid var(--color-focus-primary);
   outline-offset: var(--focus-outline-offset);
   box-shadow: 0 0 0 var(--focus-ring-width) rgba(59, 130, 246, 0.3);
 }
 
-[data-accessibility='focus-management'] .btn-primary:focus-visible {
+[data-accessibility="focus-management"] .btn-primary:focus-visible {
   outline: var(--focus-outline-width) solid var(--color-focus-primary);
   outline-offset: var(--focus-outline-offset);
   box-shadow: 0 0 0 var(--focus-ring-width) rgba(59, 130, 246, 0.3);
 }
 
 /* Focus Management Form Styles */
-[data-accessibility='focus-management'] .form-input {
+[data-accessibility="focus-management"] .form-input {
   background-color: var(--color-surface-primary);
   border: 3px solid var(--color-border-primary);
   color: var(--color-text-primary);
@@ -150,21 +150,21 @@
   position: relative;
 }
 
-[data-accessibility='focus-management'] .form-input:focus {
+[data-accessibility="focus-management"] .form-input:focus {
   border-color: var(--color-focus-primary);
   outline: var(--focus-outline-width) solid var(--color-focus-primary);
   outline-offset: var(--focus-outline-offset);
   box-shadow: 0 0 0 var(--focus-ring-width) rgba(59, 130, 246, 0.3);
 }
 
-[data-accessibility='focus-management'] .form-input:focus-visible {
+[data-accessibility="focus-management"] .form-input:focus-visible {
   border-color: var(--color-focus-primary);
   outline: var(--focus-outline-width) solid var(--color-focus-primary);
   outline-offset: var(--focus-outline-offset);
   box-shadow: 0 0 0 var(--focus-ring-width) rgba(59, 130, 246, 0.3);
 }
 
-[data-accessibility='focus-management'] .form-label {
+[data-accessibility="focus-management"] .form-label {
   font-size: var(--font-size-base);
   font-weight: 700;
   color: var(--color-text-primary);
@@ -173,7 +173,7 @@
 }
 
 /* Focus Management Navigation */
-[data-accessibility='focus-management'] .nav-item {
+[data-accessibility="focus-management"] .nav-item {
   color: var(--color-text-secondary);
   font-family: var(--font-family-primary);
   font-weight: 600;
@@ -185,26 +185,26 @@
   border-radius: var(--radius-md);
 }
 
-[data-accessibility='focus-management'] .nav-item:hover {
+[data-accessibility="focus-management"] .nav-item:hover {
   color: var(--color-primary-500);
   background-color: var(--color-surface-secondary);
 }
 
-[data-accessibility='focus-management'] .nav-item:focus {
+[data-accessibility="focus-management"] .nav-item:focus {
   outline: var(--focus-outline-width) solid var(--color-focus-primary);
   outline-offset: var(--focus-outline-offset);
   box-shadow: 0 0 0 var(--focus-ring-width) rgba(59, 130, 246, 0.3);
   border-color: var(--color-focus-primary);
 }
 
-[data-accessibility='focus-management'] .nav-item:focus-visible {
+[data-accessibility="focus-management"] .nav-item:focus-visible {
   outline: var(--focus-outline-width) solid var(--color-focus-primary);
   outline-offset: var(--focus-outline-offset);
   box-shadow: 0 0 0 var(--focus-ring-width) rgba(59, 130, 246, 0.3);
   border-color: var(--color-focus-primary);
 }
 
-[data-accessibility='focus-management'] .nav-item.active {
+[data-accessibility="focus-management"] .nav-item.active {
   color: var(--color-primary-600);
   border-bottom: 4px solid var(--color-primary-500);
   font-weight: 700;
@@ -212,7 +212,7 @@
 }
 
 /* Focus Management Card Styles */
-[data-accessibility='focus-management'] .card {
+[data-accessibility="focus-management"] .card {
   background-color: var(--color-surface-primary);
   border: 3px solid var(--color-border-primary);
   box-shadow: var(--shadow-md);
@@ -223,22 +223,22 @@
   position: relative;
 }
 
-[data-accessibility='focus-management'] .card:focus {
+[data-accessibility="focus-management"] .card:focus {
   outline: var(--focus-outline-width) solid var(--color-focus-primary);
   outline-offset: var(--focus-outline-offset);
   box-shadow: 0 0 0 var(--focus-ring-width) rgba(59, 130, 246, 0.3);
 }
 
-[data-accessibility='focus-management'] .card:focus-visible {
+[data-accessibility="focus-management"] .card:focus-visible {
   outline: var(--focus-outline-width) solid var(--color-focus-primary);
   outline-offset: var(--focus-outline-offset);
   box-shadow: 0 0 0 var(--focus-ring-width) rgba(59, 130, 246, 0.3);
 }
 
 /* Focus Management Typography */
-[data-accessibility='focus-management'] h1,
-[data-accessibility='focus-management'] h2,
-[data-accessibility='focus-management'] h3 {
+[data-accessibility="focus-management"] h1,
+[data-accessibility="focus-management"] h2,
+[data-accessibility="focus-management"] h3 {
   font-family: var(--font-family-display);
   color: var(--color-text-primary);
   font-weight: 800;
@@ -246,7 +246,7 @@
   margin-bottom: var(--space-md);
 }
 
-[data-accessibility='focus-management'] p {
+[data-accessibility="focus-management"] p {
   font-family: var(--font-family-primary);
   line-height: 1.7;
   color: var(--color-text-secondary);
@@ -255,7 +255,7 @@
 }
 
 /* Focus Management Link Styles */
-[data-accessibility='focus-management'] a {
+[data-accessibility="focus-management"] a {
   color: var(--color-primary-600);
   font-weight: 700;
   text-decoration: underline;
@@ -266,25 +266,25 @@
   position: relative;
 }
 
-[data-accessibility='focus-management'] a:hover {
+[data-accessibility="focus-management"] a:hover {
   color: var(--color-primary-700);
   text-decoration-thickness: 3px;
 }
 
-[data-accessibility='focus-management'] a:focus {
+[data-accessibility="focus-management"] a:focus {
   outline: var(--focus-outline-width) solid var(--color-focus-primary);
   outline-offset: var(--focus-outline-offset);
   box-shadow: 0 0 0 var(--focus-ring-width) rgba(59, 130, 246, 0.3);
 }
 
-[data-accessibility='focus-management'] a:focus-visible {
+[data-accessibility="focus-management"] a:focus-visible {
   outline: var(--focus-outline-width) solid var(--color-focus-primary);
   outline-offset: var(--focus-outline-offset);
   box-shadow: 0 0 0 var(--focus-ring-width) rgba(59, 130, 246, 0.3);
 }
 
 /* Focus Management Interactive Elements */
-[data-accessibility='focus-management'] .interactive-element {
+[data-accessibility="focus-management"] .interactive-element {
   min-height: 3rem;
   min-width: 6rem;
   padding: var(--space-md) var(--space-lg);
@@ -296,18 +296,18 @@
   cursor: pointer;
 }
 
-[data-accessibility='focus-management'] .interactive-element:hover {
+[data-accessibility="focus-management"] .interactive-element:hover {
   background-color: var(--color-surface-secondary);
 }
 
-[data-accessibility='focus-management'] .interactive-element:focus {
+[data-accessibility="focus-management"] .interactive-element:focus {
   outline: var(--focus-outline-width) solid var(--color-focus-primary);
   outline-offset: var(--focus-outline-offset);
   box-shadow: 0 0 0 var(--focus-ring-width) rgba(59, 130, 246, 0.3);
   border-color: var(--color-focus-primary);
 }
 
-[data-accessibility='focus-management'] .interactive-element:focus-visible {
+[data-accessibility="focus-management"] .interactive-element:focus-visible {
   outline: var(--focus-outline-width) solid var(--color-focus-primary);
   outline-offset: var(--focus-outline-offset);
   box-shadow: 0 0 0 var(--focus-ring-width) rgba(59, 130, 246, 0.3);
@@ -315,20 +315,20 @@
 }
 
 /* Focus Management Universal Focus Styles */
-[data-accessibility='focus-management'] *:focus {
+[data-accessibility="focus-management"] *:focus {
   outline: var(--focus-outline-width) solid var(--color-focus-primary);
   outline-offset: var(--focus-outline-offset);
   border-radius: var(--radius-sm);
 }
 
-[data-accessibility='focus-management'] *:focus-visible {
+[data-accessibility="focus-management"] *:focus-visible {
   outline: var(--focus-outline-width) solid var(--color-focus-primary);
   outline-offset: var(--focus-outline-offset);
   border-radius: var(--radius-sm);
 }
 
 /* Focus Management Skip Links */
-[data-accessibility='focus-management'] .skip-link {
+[data-accessibility="focus-management"] .skip-link {
   position: absolute;
   top: -40px;
   left: 6px;
@@ -343,7 +343,7 @@
   border: 3px solid var(--color-focus-primary);
 }
 
-[data-accessibility='focus-management'] .skip-link:focus {
+[data-accessibility="focus-management"] .skip-link:focus {
   top: 6px;
   outline: var(--focus-outline-width) solid var(--color-text-inverse);
   outline-offset: var(--focus-outline-offset);
@@ -351,12 +351,12 @@
 }
 
 /* Focus Management Focus Indicators */
-[data-accessibility='focus-management'] .focus-indicator {
+[data-accessibility="focus-management"] .focus-indicator {
   position: relative;
 }
 
-[data-accessibility='focus-management'] .focus-indicator::after {
-  content: '';
+[data-accessibility="focus-management"] .focus-indicator::after {
+  content: "";
   position: absolute;
   top: -var(--focus-outline-offset);
   left: -var(--focus-outline-offset);
@@ -368,35 +368,35 @@
   z-index: 1;
 }
 
-[data-accessibility='focus-management'] .focus-indicator:focus::after {
+[data-accessibility="focus-management"] .focus-indicator:focus::after {
   border-color: var(--color-focus-primary);
   box-shadow: 0 0 0 var(--focus-ring-width) rgba(59, 130, 246, 0.3);
 }
 
 /* Focus Management Keyboard Navigation */
-[data-accessibility='focus-management'] .keyboard-nav {
+[data-accessibility="focus-management"] .keyboard-nav {
   outline: none;
 }
 
-[data-accessibility='focus-management'] .keyboard-nav:focus {
+[data-accessibility="focus-management"] .keyboard-nav:focus {
   outline: var(--focus-outline-width) solid var(--color-focus-primary);
   outline-offset: var(--focus-outline-offset);
   box-shadow: 0 0 0 var(--focus-ring-width) rgba(59, 130, 246, 0.3);
 }
 
 /* Focus Management Touch Targets */
-[data-accessibility='focus-management'] button,
-[data-accessibility='focus-management'] input[type='button'],
-[data-accessibility='focus-management'] input[type='submit'],
-[data-accessibility='focus-management'] input[type='reset'],
-[data-accessibility='focus-management'] a {
+[data-accessibility="focus-management"] button,
+[data-accessibility="focus-management"] input[type="button"],
+[data-accessibility="focus-management"] input[type="submit"],
+[data-accessibility="focus-management"] input[type="reset"],
+[data-accessibility="focus-management"] a {
   min-height: 3.5rem;
   min-width: 8rem;
   padding: var(--space-md) var(--space-lg);
 }
 
 /* Focus Management Accessibility Indicators */
-[data-accessibility='focus-management'] .focus-indicator-badge {
+[data-accessibility="focus-management"] .focus-indicator-badge {
   background-color: var(--color-focus-primary);
   color: var(--color-text-inverse);
   border: 2px solid var(--color-focus-primary);
@@ -407,15 +407,15 @@
   font-size: var(--font-size-sm);
 }
 
-[data-accessibility='focus-management'] .focus-indicator-badge::before {
-  content: '⌨️';
+[data-accessibility="focus-management"] .focus-indicator-badge::before {
+  content: "⌨️";
   margin-right: var(--space-xs);
   font-size: 1.2em;
 }
 
 /* Focus Management Responsive Design */
 @media (max-width: 768px) {
-  [data-accessibility='focus-management'] {
+  [data-accessibility="focus-management"] {
     --font-size-base: 1rem;
     --font-size-lg: 1.125rem;
     --font-size-xl: 1.25rem;
@@ -430,7 +430,7 @@
 
 /* Focus Management Print Styles */
 @media print {
-  [data-accessibility='focus-management'] {
+  [data-accessibility="focus-management"] {
     --color-surface-primary: #ffffff;
     --color-surface-secondary: #f8f8f8;
     --color-text-primary: #000000;
@@ -441,7 +441,7 @@
 
 /* Focus Management High Contrast Mode */
 @media (prefers-contrast: high) {
-  [data-accessibility='focus-management'] {
+  [data-accessibility="focus-management"] {
     --color-focus-primary: #000000;
     --color-focus-secondary: #ffffff;
     --focus-outline-width: 5px;
@@ -453,7 +453,7 @@
 
 /* Focus Management Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
-  [data-accessibility='focus-management'] * {
+  [data-accessibility="focus-management"] * {
     transition: none !important;
     animation: none !important;
   }

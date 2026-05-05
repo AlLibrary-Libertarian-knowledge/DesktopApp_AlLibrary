@@ -34,7 +34,7 @@
 }
 
 .peerCard::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -218,7 +218,7 @@
 }
 
 .peerAvatar::before {
-  content: '';
+  content: "";
   position: absolute;
   top: -2px;
   left: -2px;
@@ -253,7 +253,7 @@
 }
 
 .peerId {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: "JetBrains Mono", monospace;
   font-size: 0.9rem;
   font-weight: 700;
   color: rgba(255, 0, 170, 0.95);
@@ -304,7 +304,7 @@
 }
 
 .peerMetrics::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -352,7 +352,7 @@
 .metricValue {
   color: rgba(204, 0, 255, 0.95);
   font-weight: 700;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: "JetBrains Mono", monospace;
   text-shadow: 0 0 8px rgba(204, 0, 255, 0.3);
 }
 
@@ -375,7 +375,7 @@
 }
 
 .culturalInfo::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -502,7 +502,7 @@
 }
 
 .reputationBar::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -514,7 +514,7 @@
 }
 
 .reputationValue {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: "JetBrains Mono", monospace;
   font-size: 0.9rem;
   font-weight: 700;
   color: rgba(255, 187, 0, 0.95);
@@ -549,7 +549,7 @@
 }
 
 .actionButton::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;

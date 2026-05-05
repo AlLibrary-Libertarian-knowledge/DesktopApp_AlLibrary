@@ -39,7 +39,7 @@
 
 /* Neural Network Grid Background */
 .peerNetworkPage::before {
-  content: '';
+  content: "";
   position: fixed;
   top: 0;
   left: 0;
@@ -65,7 +65,7 @@
 
 /* Peer Connection Nodes Background */
 .peerNetworkPage::after {
-  content: '';
+  content: "";
   position: fixed;
   top: 0;
   left: 0;
@@ -152,7 +152,7 @@
 }
 
 .pageHeader::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -166,7 +166,7 @@
 }
 
 .pageHeader::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -288,7 +288,7 @@
 }
 
 .viewModeButton::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -358,7 +358,7 @@
 }
 
 .overviewCard::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -593,7 +593,7 @@
 }
 
 .peerCard::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -1140,7 +1140,7 @@
 
 /* Animated Background Grid */
 .peer-network-page::before {
-  content: '';
+  content: "";
   position: fixed;
   top: 0;
   left: 0;
@@ -1276,7 +1276,7 @@
 }
 
 .tab::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -1336,7 +1336,7 @@
 }
 
 .stat-card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;

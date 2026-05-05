@@ -11,7 +11,7 @@
  * - Provides multiple search strategies for censorship resistance
  */
 
-import { Component, createSignal, createResource, Show, For, onMount } from 'solid-js';
+import { type Component, createSignal, createResource, Show, For, onMount } from 'solid-js';
 import { useTranslation } from '../../../../i18n/hooks';
 import { Card } from '@/components/foundation/Card';
 import { Button } from '@/components/foundation/Button';

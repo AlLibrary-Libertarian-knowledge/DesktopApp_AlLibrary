@@ -11,7 +11,15 @@
  * - Provides transparent network health metrics
  */
 
-import { Component, createSignal, createResource, onMount, onCleanup, Show, For } from 'solid-js';
+import {
+  type Component,
+  createSignal,
+  createResource,
+  onMount,
+  onCleanup,
+  Show,
+  For,
+} from 'solid-js';
 import { Card } from '@/components/foundation/Card';
 import { Button } from '@/components/foundation/Button';
 import { Badge } from '@/components/foundation/Badge';

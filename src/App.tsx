@@ -1,4 +1,4 @@
-import { Component, createSignal, ParentProps, Show, onMount, Suspense } from 'solid-js';
+import { type Component, createSignal, type ParentProps, Show, onMount, Suspense } from 'solid-js';
 import { settingsService } from '@/services/storage/settingsService';
 import { FirstRunWizard } from '@/components/composite/FirstRunWizard';
 import { Router, Route } from '@solidjs/router';

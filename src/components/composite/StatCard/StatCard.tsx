@@ -1,4 +1,4 @@
-import { Component, JSX } from 'solid-js';
+import type { Component, JSX } from 'solid-js';
 import { useTranslation } from '../../../i18n/hooks';
 import styles from './StatCard.module.css';
 

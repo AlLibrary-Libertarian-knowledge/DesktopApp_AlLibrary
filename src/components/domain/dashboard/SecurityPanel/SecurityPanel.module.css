@@ -39,7 +39,7 @@
 }
 
 .security-panel::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -401,7 +401,7 @@
 }
 
 .security-overview::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   padding: 2px;
@@ -426,7 +426,7 @@
 }
 
 .security-overview::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -566,7 +566,7 @@
 }
 
 .score-circle-large::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 8px;
   border-radius: 50%;
@@ -789,7 +789,7 @@
 }
 
 .score-details h4::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -8px;
   left: 0;
@@ -830,7 +830,7 @@
 }
 
 .threat-indicator::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -846,7 +846,7 @@
 }
 
 .threat-indicator::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   border-radius: var(--border-radius-xl);
@@ -1030,7 +1030,7 @@
 }
 
 .stat-item.enhanced::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -1582,7 +1582,7 @@
 }
 
 .metric-fill::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -1635,7 +1635,7 @@
 }
 
 .warnings-section.enhanced::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;

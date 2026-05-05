@@ -7,18 +7,18 @@
 
 import { invoke } from '@tauri-apps/api/core';
 import {
-  Collection,
+  type Collection,
   CollectionType,
   CollectionVisibility,
-  CreateCollectionRequest,
-  UpdateCollectionRequest,
-  CollectionSearchFilters,
-  CollectionSearchOptions,
-  CollectionAnalytics,
-  CollectionStatistics,
-  P2PSharingConfig,
-  CulturalValidationStatus,
-  CollectionOrganization,
+  type CreateCollectionRequest,
+  type UpdateCollectionRequest,
+  type CollectionSearchFilters,
+  type CollectionSearchOptions,
+  type CollectionAnalytics,
+  type CollectionStatistics,
+  type P2PSharingConfig,
+  type CulturalValidationStatus,
+  type CollectionOrganization,
 } from '../types/Collection';
 import type { Document } from '../types/Document';
 import type { CulturalMetadata, CulturalInformation } from '../types/Cultural';
@@ -232,16 +232,13 @@ class CollectionServiceImpl implements CollectionService {
         type: resolvedType as CollectionType,
         visibility: (result as any).visibility as CollectionVisibility,
         documentIds: [],
-        culturalMetadata:
-          (request && request.culturalMetadata
-            ? (request.culturalMetadata as any)
-            : {
-                sensitivityLevel: CulturalSensitivityLevel.PUBLIC,
-              }) as any,
+        culturalMetadata: (request && request.culturalMetadata
+          ? (request.culturalMetadata as any)
+          : {
+              sensitivityLevel: CulturalSensitivityLevel.PUBLIC,
+            }) as any,
         ownerId:
-          ((result as any).owner_id as string) ||
-          ((result as any).ownerId as string) ||
-          'user1',
+          ((result as any).owner_id as string) || ((result as any).ownerId as string) || 'user1',
         collaborators: [],
         createdAt: new Date(createdAtRaw),
         updatedAt: new Date(updatedAtRaw),

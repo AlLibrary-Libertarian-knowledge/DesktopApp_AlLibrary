@@ -1,21 +1,23 @@
 /* Futuristic glass sidebar */
 .app-sidebar {
-  background: rgba(20,20,24,0.6);
+  background: rgba(20, 20, 24, 0.6);
   backdrop-filter: blur(8px);
-  border-right: 1px solid rgba(255,255,255,0.06);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .sidebar-nav .section-header {
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .sidebar-nav .section-header.active {
-  background: rgba(59,130,246,0.12);
+  background: rgba(59, 130, 246, 0.12);
   color: var(--text-primary);
 }
 
 .nav-item.active {
-  background: rgba(255,255,255,0.06);
+  background: rgba(255, 255, 255, 0.06);
   border-left: 2px solid var(--primary-color);
 }
 
@@ -264,7 +266,7 @@
 }
 
 .nav-item.active::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   top: 50%;
@@ -399,7 +401,7 @@
 }
 
 .storage-used::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -425,7 +427,7 @@
   color: rgba(248, 250, 252, 0.6);
   display: block;
   text-align: center;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
 }
 
 /* Futuristic Connection Status */

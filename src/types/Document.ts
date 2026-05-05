@@ -5,7 +5,7 @@
  * while providing comprehensive information without access restrictions.
  */
 
-import { CulturalMetadata, CulturalSensitivityLevel } from './Cultural';
+import type { CulturalMetadata, CulturalSensitivityLevel } from './Cultural';
 
 /**
  * Document format types supported by AlLibrary

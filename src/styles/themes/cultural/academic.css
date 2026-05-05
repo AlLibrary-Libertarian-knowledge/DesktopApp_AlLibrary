@@ -7,7 +7,7 @@
  */
 
 /* Academic Color Palette */
-[data-cultural-theme='academic'] {
+[data-cultural-theme="academic"] {
   /* Primary Colors - Scholarly Blues */
   --color-primary-50: #eff6ff;
   --color-primary-100: #dbeafe;
@@ -63,10 +63,10 @@
   --color-info: #2563eb;
 
   /* Typography - Academic Serif */
-  --font-family-primary: 'Georgia', 'Times New Roman', serif;
-  --font-family-secondary: 'Palatino', 'Georgia', serif;
-  --font-family-display: 'Times New Roman', 'Georgia', serif;
-  --font-family-mono: 'Courier New', 'Monaco', monospace;
+  --font-family-primary: "Georgia", "Times New Roman", serif;
+  --font-family-secondary: "Palatino", "Georgia", serif;
+  --font-family-display: "Times New Roman", "Georgia", serif;
+  --font-family-mono: "Courier New", "Monaco", monospace;
 
   /* Academic Typography Adjustments */
   --font-size-base: 1rem;
@@ -98,7 +98,7 @@
 }
 
 /* Dark Mode - Academic */
-[data-cultural-theme='academic'][data-theme='dark'] {
+[data-cultural-theme="academic"][data-theme="dark"] {
   /* Dark Academic Colors */
   --color-surface-primary: #0f172a;
   --color-surface-secondary: #1e293b;
@@ -115,7 +115,7 @@
 }
 
 /* High Contrast - Academic */
-[data-cultural-theme='academic'][data-accessibility='high-contrast'] {
+[data-cultural-theme="academic"][data-accessibility="high-contrast"] {
   --color-primary-500: #3b82f6;
   --color-primary-600: #2563eb;
   --color-primary-700: #1d4ed8;
@@ -128,25 +128,25 @@
 }
 
 /* Reduced Motion - Academic */
-[data-cultural-theme='academic'][data-accessibility='reduced-motion'] {
+[data-cultural-theme="academic"][data-accessibility="reduced-motion"] {
   --transition-duration-fast: 0ms;
   --transition-duration-normal: 0ms;
   --transition-duration-slow: 0ms;
 }
 
 /* Focus Management - Academic */
-[data-cultural-theme='academic'] *:focus {
+[data-cultural-theme="academic"] *:focus {
   outline: 2px solid var(--color-primary-500);
   outline-offset: 1px;
 }
 
-[data-cultural-theme='academic'] *:focus-visible {
+[data-cultural-theme="academic"] *:focus-visible {
   outline: 2px solid var(--color-primary-500);
   outline-offset: 1px;
 }
 
 /* Academic Cultural Indicators */
-[data-cultural-theme='academic'] .cultural-indicator {
+[data-cultural-theme="academic"] .cultural-indicator {
   background-color: var(--color-primary-500);
   color: var(--color-text-inverse);
   border: 1px solid var(--color-primary-600);
@@ -154,7 +154,7 @@
   font-weight: 600;
 }
 
-[data-cultural-theme='academic'] .cultural-context {
+[data-cultural-theme="academic"] .cultural-context {
   background-color: var(--color-surface-secondary);
   border-left: 3px solid var(--color-primary-500);
   color: var(--color-text-secondary);
@@ -162,7 +162,7 @@
 }
 
 /* Academic Button Styles */
-[data-cultural-theme='academic'] .btn-primary {
+[data-cultural-theme="academic"] .btn-primary {
   background-color: var(--color-primary-500);
   color: var(--color-text-inverse);
   border: 1px solid var(--color-primary-600);
@@ -171,13 +171,13 @@
   border-radius: var(--radius-md);
 }
 
-[data-cultural-theme='academic'] .btn-primary:hover {
+[data-cultural-theme="academic"] .btn-primary:hover {
   background-color: var(--color-primary-600);
   border-color: var(--color-primary-700);
 }
 
 /* Academic Card Styles */
-[data-cultural-theme='academic'] .card {
+[data-cultural-theme="academic"] .card {
   background-color: var(--color-surface-primary);
   border: 1px solid var(--color-border-primary);
   box-shadow: var(--shadow-md);
@@ -186,7 +186,7 @@
 }
 
 /* Academic Form Styles */
-[data-cultural-theme='academic'] .form-input {
+[data-cultural-theme="academic"] .form-input {
   background-color: var(--color-surface-primary);
   border: 1px solid var(--color-border-primary);
   color: var(--color-text-primary);
@@ -194,53 +194,53 @@
   border-radius: var(--radius-md);
 }
 
-[data-cultural-theme='academic'] .form-input:focus {
+[data-cultural-theme="academic"] .form-input:focus {
   border-color: var(--color-primary-500);
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
 }
 
 /* Academic Navigation */
-[data-cultural-theme='academic'] .nav-item {
+[data-cultural-theme="academic"] .nav-item {
   color: var(--color-text-secondary);
   font-family: var(--font-family-primary);
   font-weight: 500;
 }
 
-[data-cultural-theme='academic'] .nav-item:hover {
+[data-cultural-theme="academic"] .nav-item:hover {
   color: var(--color-primary-500);
 }
 
-[data-cultural-theme='academic'] .nav-item.active {
+[data-cultural-theme="academic"] .nav-item.active {
   color: var(--color-primary-600);
   border-bottom: 2px solid var(--color-primary-500);
 }
 
 /* Academic Typography Enhancements */
-[data-cultural-theme='academic'] h1,
-[data-cultural-theme='academic'] h2,
-[data-cultural-theme='academic'] h3 {
+[data-cultural-theme="academic"] h1,
+[data-cultural-theme="academic"] h2,
+[data-cultural-theme="academic"] h3 {
   font-family: var(--font-family-display);
   color: var(--color-text-primary);
   font-weight: 700;
   line-height: 1.2;
 }
 
-[data-cultural-theme='academic'] h1 {
+[data-cultural-theme="academic"] h1 {
   font-size: var(--font-size-3xl);
   margin-bottom: var(--space-lg);
 }
 
-[data-cultural-theme='academic'] h2 {
+[data-cultural-theme="academic"] h2 {
   font-size: var(--font-size-2xl);
   margin-bottom: var(--space-md);
 }
 
-[data-cultural-theme='academic'] h3 {
+[data-cultural-theme="academic"] h3 {
   font-size: var(--font-size-xl);
   margin-bottom: var(--space-sm);
 }
 
-[data-cultural-theme='academic'] p {
+[data-cultural-theme="academic"] p {
   font-family: var(--font-family-primary);
   line-height: 1.6;
   color: var(--color-text-secondary);
@@ -248,7 +248,7 @@
 }
 
 /* Academic Code Styles */
-[data-cultural-theme='academic'] code {
+[data-cultural-theme="academic"] code {
   font-family: var(--font-family-mono);
   background-color: var(--color-surface-tertiary);
   color: var(--color-text-primary);
@@ -257,7 +257,7 @@
   font-size: 0.875rem;
 }
 
-[data-cultural-theme='academic'] pre {
+[data-cultural-theme="academic"] pre {
   font-family: var(--font-family-mono);
   background-color: var(--color-surface-tertiary);
   color: var(--color-text-primary);
@@ -268,20 +268,20 @@
 }
 
 /* Academic List Styles */
-[data-cultural-theme='academic'] ul,
-[data-cultural-theme='academic'] ol {
+[data-cultural-theme="academic"] ul,
+[data-cultural-theme="academic"] ol {
   font-family: var(--font-family-primary);
   color: var(--color-text-secondary);
   line-height: 1.6;
   margin-bottom: var(--space-sm);
 }
 
-[data-cultural-theme='academic'] li {
+[data-cultural-theme="academic"] li {
   margin-bottom: 0.25rem;
 }
 
 /* Academic Blockquote Styles */
-[data-cultural-theme='academic'] blockquote {
+[data-cultural-theme="academic"] blockquote {
   font-family: var(--font-family-primary);
   font-style: italic;
   color: var(--color-text-tertiary);
@@ -291,32 +291,32 @@
 }
 
 /* Academic Table Styles */
-[data-cultural-theme='academic'] table {
+[data-cultural-theme="academic"] table {
   font-family: var(--font-family-primary);
   border-collapse: collapse;
   width: 100%;
   margin: var(--space-md) 0;
 }
 
-[data-cultural-theme='academic'] th,
-[data-cultural-theme='academic'] td {
+[data-cultural-theme="academic"] th,
+[data-cultural-theme="academic"] td {
   border: 1px solid var(--color-border-primary);
   padding: var(--space-sm);
   text-align: left;
 }
 
-[data-cultural-theme='academic'] th {
+[data-cultural-theme="academic"] th {
   background-color: var(--color-surface-secondary);
   font-weight: 600;
   color: var(--color-text-primary);
 }
 
-[data-cultural-theme='academic'] td {
+[data-cultural-theme="academic"] td {
   color: var(--color-text-secondary);
 }
 
 /* Academic Cultural Education Elements */
-[data-cultural-theme='academic'] .cultural-education {
+[data-cultural-theme="academic"] .cultural-education {
   background-color: var(--color-surface-secondary);
   border: 1px solid var(--color-border-primary);
   padding: var(--space-md);
@@ -324,21 +324,21 @@
   margin: var(--space-md) 0;
 }
 
-[data-cultural-theme='academic'] .cultural-education h3 {
+[data-cultural-theme="academic"] .cultural-education h3 {
   color: var(--color-primary-600);
   font-family: var(--font-family-display);
   margin-bottom: var(--space-sm);
   font-size: var(--font-size-lg);
 }
 
-[data-cultural-theme='academic'] .cultural-education p {
+[data-cultural-theme="academic"] .cultural-education p {
   color: var(--color-text-secondary);
   font-family: var(--font-family-primary);
   margin-bottom: var(--space-sm);
 }
 
 /* Academic Citation Styles */
-[data-cultural-theme='academic'] .citation {
+[data-cultural-theme="academic"] .citation {
   font-family: var(--font-family-primary);
   font-size: 0.875rem;
   color: var(--color-text-tertiary);
@@ -348,7 +348,7 @@
 
 /* Academic Responsive Design */
 @media (max-width: 768px) {
-  [data-cultural-theme='academic'] {
+  [data-cultural-theme="academic"] {
     --font-size-base: 0.95rem;
     --font-size-lg: 1.05rem;
     --font-size-xl: 1.15rem;
@@ -359,7 +359,7 @@
 
 /* Academic Print Styles */
 @media print {
-  [data-cultural-theme='academic'] {
+  [data-cultural-theme="academic"] {
     --color-surface-primary: #ffffff;
     --color-surface-secondary: #f8f8f8;
     --color-text-primary: #000000;

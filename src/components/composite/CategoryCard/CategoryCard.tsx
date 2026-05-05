@@ -1,4 +1,4 @@
-import { Component, Show, createSignal, For } from 'solid-js';
+import { type Component, Show, createSignal, For } from 'solid-js';
 import { Folder, FileText, Users, Star, Info, Globe, ChevronRight } from 'lucide-solid';
 import { Card } from '../../foundation/Card';
 import { CULTURAL_LABELS } from '../../../constants/cultural';

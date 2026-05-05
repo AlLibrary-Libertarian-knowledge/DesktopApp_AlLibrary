@@ -5,7 +5,7 @@
  * Follows WCAG 2.1 AA standards with proper ARIA attributes.
  */
 
-import { Component, For, JSX } from 'solid-js';
+import { type Component, For, type JSX } from 'solid-js';
 import styles from './BreadcrumbNavigation.module.css';
 
 export interface BreadcrumbItem {

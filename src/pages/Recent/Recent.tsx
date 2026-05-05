@@ -1,4 +1,4 @@
-import { Component, createSignal, createEffect, For, Show } from 'solid-js';
+import { type Component, createSignal, createEffect, For, Show } from 'solid-js';
 import { Card } from '../../components/foundation/Card';
 import { Button } from '../../components/foundation/Button';
 import { Input } from '../../components/foundation/Input';
@@ -18,14 +18,14 @@ import {
   History,
 } from 'lucide-solid';
 import {
-  Document,
+  type Document,
   DocumentFormat,
   DocumentContentType,
   DocumentStatus,
 } from '../../types/Document';
 import { CulturalSensitivityLevel } from '../../types/Cultural';
 import styles from './Recent.module.css';
-import { CustomDropdown, DropdownOption } from './CustomDropdown';
+import { CustomDropdown, type DropdownOption } from './CustomDropdown';
 
 interface RecentActivity {
   id: string;
@@ -288,7 +288,7 @@ const RecentPage: Component = () => {
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
+    return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   };
 
   const activityTypeOptions: DropdownOption[] = [
@@ -454,9 +454,7 @@ const RecentPage: Component = () => {
                           {formatFileSize(activity.document.fileSize)}
                         </span>
                         {activity.duration && (
-                          <span class={styles.duration}>
-                            ⏱️ {formatDuration(activity.duration)}
-                          </span>
+                          <span class={styles.duration}>⏱️ {formatDuration(activity.duration)}</span>
                         )}
                         {activity.deviceName && (
                           <span class={styles.device}>💻 {activity.deviceName}</span>

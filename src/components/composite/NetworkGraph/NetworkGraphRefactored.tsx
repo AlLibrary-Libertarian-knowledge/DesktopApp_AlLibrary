@@ -1,4 +1,4 @@
-import { Component, onMount, onCleanup } from 'solid-js';
+import { type Component, onMount, onCleanup } from 'solid-js';
 import {
   CanvasRenderer,
   AnimationManager,

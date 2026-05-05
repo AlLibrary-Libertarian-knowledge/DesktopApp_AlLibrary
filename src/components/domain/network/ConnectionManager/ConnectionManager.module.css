@@ -47,7 +47,7 @@
 }
 
 .connectionManager::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -63,7 +63,7 @@
 }
 
 .connectionManager::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -201,7 +201,7 @@
 }
 
 .controls button::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -311,7 +311,7 @@
 }
 
 .connectionItem::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;

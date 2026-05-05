@@ -538,7 +538,7 @@
 
 /* Screen Reader Support */
 .document-status[aria-label]::after {
-  content: 'Document status overview';
+  content: "Document status overview";
   position: absolute;
   left: -10000px;
   width: 1px;

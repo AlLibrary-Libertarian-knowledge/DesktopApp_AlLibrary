@@ -228,8 +228,7 @@ DesktopApp_AlLibrary/
 ├── 📄 tsconfig.json               # TypeScript configuration
 ├── 📄 vite.config.ts              # Vite build configuration
 ├── 📄 .gitignore                  # Git ignore rules
-├── 📄 .eslintrc.js                # ESLint configuration
-├── 📄 .prettierrc                 # Prettier configuration
+├── 📄 biome.json                  # Biome (format + lint) configuration
 └── 📄 README.md                   # This file
 ```
 
@@ -367,7 +366,7 @@ pnpm format           # Format all code
 - Use strict TypeScript configuration
 - Implement proper type definitions
 - Write component tests with Vitest
-- Use ESLint and Prettier for code quality
+- Use [Biome](https://biomejs.dev/) for formatting and linting (`pnpm run lint`, `pnpm run format`)
 - Follow SolidJS reactive patterns
 - Implement proper error boundaries
 ```

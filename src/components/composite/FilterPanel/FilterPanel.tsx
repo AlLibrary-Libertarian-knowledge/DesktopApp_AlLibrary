@@ -1,4 +1,4 @@
-import { Component, createSignal, For, Show, createEffect } from 'solid-js';
+import { type Component, createSignal, For, Show, createEffect } from 'solid-js';
 import { Filter, X, ChevronDown, ChevronUp, RotateCcw } from 'lucide-solid';
 import { Button } from '../../foundation/Button';
 import { Input } from '../../foundation/Input';

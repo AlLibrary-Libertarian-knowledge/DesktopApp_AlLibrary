@@ -135,10 +135,10 @@
 .btn,
 .input,
 button,
-[role='button'],
-input[type='button'],
-input[type='submit'],
-input[type='reset'],
+[role="button"],
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
 a {
   min-height: 44px;
   min-width: 44px;
@@ -224,7 +224,7 @@ label {
 
 /* Required field indicator */
 .required::after {
-  content: ' *';
+  content: " *";
   color: var(--color-danger);
 }
 
@@ -301,7 +301,7 @@ main {
   }
 
   a[href]:after {
-    content: ' (' attr(href) ')';
+    content: " (" attr(href) ")";
   }
 
   .btn {

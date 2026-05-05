@@ -1,23 +1,23 @@
 /* theme.css - AlLibrary Theme System */
 
 /* Import Design System Modules */
-@import './variables.css';
-@import './tokens/colors.css';
-@import './tokens/spacing.css';
-@import './tokens/typography.css';
-@import './tokens/shadows.css';
-@import './tokens/border-radius.css';
-@import './responsive.css';
-@import './accessibility.css';
-@import './themes/cultural/indigenous.css';
-@import './themes/cultural/traditional.css';
-@import './themes/cultural/ceremonial.css';
-@import './themes/cultural/academic.css';
-@import './themes/cultural/community.css';
-@import './themes/accessibility/high-contrast.css';
-@import './themes/accessibility/large-text.css';
-@import './themes/accessibility/reduced-motion.css';
-@import './themes/accessibility/focus-management.css';
+@import "./variables.css";
+@import "./tokens/colors.css";
+@import "./tokens/spacing.css";
+@import "./tokens/typography.css";
+@import "./tokens/shadows.css";
+@import "./tokens/border-radius.css";
+@import "./responsive.css";
+@import "./accessibility.css";
+@import "./themes/cultural/indigenous.css";
+@import "./themes/cultural/traditional.css";
+@import "./themes/cultural/ceremonial.css";
+@import "./themes/cultural/academic.css";
+@import "./themes/cultural/community.css";
+@import "./themes/accessibility/high-contrast.css";
+@import "./themes/accessibility/large-text.css";
+@import "./themes/accessibility/reduced-motion.css";
+@import "./themes/accessibility/focus-management.css";
 
 /* ==========================================================================
    DARK MODE AS DEFAULT - Enhanced Theme System
@@ -132,9 +132,9 @@
 
   /* ===== TYPOGRAPHY ===== */
   --font-family-sans:
-    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
     sans-serif;
-  --font-family-mono: 'JetBrains Mono', 'Fira Code', 'Monaco', 'Cascadia Code', monospace;
+  --font-family-mono: "JetBrains Mono", "Fira Code", "Monaco", "Cascadia Code", monospace;
 
   --font-size-xs: 0.75rem;
   --font-size-sm: 0.875rem;
@@ -521,8 +521,8 @@
   .loading-spinner,
   .loadingSpinner,
   .spinner,
-  [class*='spinner'],
-  [class*='loading'] {
+  [class*="spinner"],
+  [class*="loading"] {
     animation-duration: 1s !important;
     animation-iteration-count: infinite !important;
   }

@@ -164,24 +164,20 @@ export interface LocaleTranslations {
 }
 
 // Translation function interface
-export interface TranslationFunction {
-  (key: TranslationKey, params?: TranslationParams): string;
-}
+export type TranslationFunction = (key: TranslationKey, params?: TranslationParams) => string;
 
 // Plural translation function interface
-export interface PluralTranslationFunction {
-  (key: TranslationKey, count: number, params?: TranslationParams): string;
-}
+export type PluralTranslationFunction = (
+  key: TranslationKey,
+  count: number,
+  params?: TranslationParams
+) => string;
 
 // Translation existence check function
-export interface TranslationExistsFunction {
-  (key: TranslationKey): boolean;
-}
+export type TranslationExistsFunction = (key: TranslationKey) => boolean;
 
 // Language change handler
-export interface LanguageChangeHandler {
-  (locale: SupportedLocale): Promise<void>;
-}
+export type LanguageChangeHandler = (locale: SupportedLocale) => Promise<void>;
 
 // i18n service interface
 export interface I18nService {

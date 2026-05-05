@@ -530,7 +530,7 @@
 }
 
 .educationalTips li::before {
-  content: '•';
+  content: "•";
   color: var(--search-primary);
   font-weight: bold;
   position: absolute;
@@ -617,17 +617,17 @@
 }
 
 /* Cultural Theme Variants */
-.censorshipResistantSearch[data-cultural-theme='indigenous'] {
+.censorshipResistantSearch[data-cultural-theme="indigenous"] {
   --search-primary: var(--search-cultural-indigenous);
   --search-secondary: var(--search-cultural-traditional);
 }
 
-.censorshipResistantSearch[data-cultural-theme='traditional'] {
+.censorshipResistantSearch[data-cultural-theme="traditional"] {
   --search-primary: var(--search-cultural-traditional);
   --search-secondary: var(--search-cultural-ceremonial);
 }
 
-.censorshipResistantSearch[data-cultural-theme='ceremonial'] {
+.censorshipResistantSearch[data-cultural-theme="ceremonial"] {
   --search-primary: var(--search-cultural-ceremonial);
   --search-secondary: var(--search-cultural-indigenous);
 }

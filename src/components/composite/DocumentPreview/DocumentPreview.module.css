@@ -428,27 +428,27 @@
 }
 
 /* Cultural Themes */
-.documentPreview[data-cultural-theme='indigenous'] {
+.documentPreview[data-cultural-theme="indigenous"] {
   --primary-color: #dc2626;
   --primary-bg: rgba(220, 38, 38, 0.1);
 }
 
-.documentPreview[data-cultural-theme='traditional'] {
+.documentPreview[data-cultural-theme="traditional"] {
   --primary-color: #7c3aed;
   --primary-bg: rgba(124, 58, 237, 0.1);
 }
 
-.documentPreview[data-cultural-theme='modern'] {
+.documentPreview[data-cultural-theme="modern"] {
   --primary-color: #0ea5e9;
   --primary-bg: rgba(14, 165, 233, 0.1);
 }
 
-.documentPreview[data-cultural-theme='ceremonial'] {
+.documentPreview[data-cultural-theme="ceremonial"] {
   --primary-color: #ca8a04;
   --primary-bg: rgba(202, 138, 4, 0.1);
 }
 
-.documentPreview[data-cultural-theme='community'] {
+.documentPreview[data-cultural-theme="community"] {
   --primary-color: #059669;
   --primary-bg: rgba(5, 150, 105, 0.1);
 }

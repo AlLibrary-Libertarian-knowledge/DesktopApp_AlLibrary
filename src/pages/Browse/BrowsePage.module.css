@@ -1,6 +1,6 @@
 /**
  * Enhanced Browse Categories Page Styles - Cyberpunk Emerald Theme
- * 
+ *
  * Sophisticated cyberpunk design with emerald knowledge matrix aesthetic
  * Comprehensive styling for category browsing with cultural awareness
  * Supports multiple view modes and responsive design
@@ -45,14 +45,14 @@
     radial-gradient(circle at 40% 40%, rgba(0, 204, 102, 0.08) 0%, transparent 50%),
     linear-gradient(135deg, var(--browse-darker) 0%, var(--browse-dark) 100%);
   color: rgba(255, 255, 255, 0.95);
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: "Inter", system-ui, sans-serif;
   overflow-x: hidden;
   position: relative;
 }
 
 /* Enhanced Knowledge Matrix Grid Background */
 .browsePage::before {
-  content: '';
+  content: "";
   position: fixed;
   top: 0;
   left: 0;
@@ -84,7 +84,7 @@
 
 /* Enhanced Knowledge Nodes Background */
 .browsePage::after {
-  content: '';
+  content: "";
   position: fixed;
   top: 0;
   left: 0;
@@ -223,7 +223,7 @@
 }
 
 .pageHeader::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -260,13 +260,13 @@
   text-transform: uppercase;
   letter-spacing: 0.1em;
   margin: 0;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: "JetBrains Mono", monospace;
   position: relative;
   animation: hologramFlicker 4s ease-in-out infinite;
 }
 
 .pageTitle::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -10px;
   left: 0;
@@ -326,7 +326,7 @@
 }
 
 .viewButton::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -392,7 +392,7 @@
 }
 
 .culturalButton::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -491,7 +491,7 @@
 }
 
 .searchInput::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -603,7 +603,7 @@
 }
 
 .statCard::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -659,7 +659,7 @@
   font-weight: 900;
   color: var(--browse-primary);
   margin: 0;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: "JetBrains Mono", monospace;
   text-shadow: 0 0 20px var(--browse-glow);
   transition: all 0.3s ease;
 }
@@ -737,7 +737,7 @@
 }
 
 .pageFooter::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -856,7 +856,7 @@
 }
 
 .categoryCard::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -911,7 +911,7 @@
 }
 
 .categoryIcon::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;
@@ -953,7 +953,7 @@
 }
 
 .sensitivityBadge::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -986,13 +986,13 @@
   text-transform: uppercase;
   letter-spacing: 0.75px;
   text-shadow: 0 0 20px var(--browse-glow);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: "JetBrains Mono", monospace;
   transition: all 0.3s ease;
   position: relative;
 }
 
 .categoryTitle::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -5px;
   left: 0;
@@ -1031,7 +1031,7 @@
   font-size: 1.1rem;
   color: var(--browse-primary);
   font-weight: 800;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: "JetBrains Mono", monospace;
   text-shadow: 0 0 15px var(--browse-glow);
   transition: all 0.3s ease;
 }
@@ -1087,7 +1087,7 @@
 }
 
 .subcategory::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -1158,7 +1158,7 @@
 }
 
 .cardActions button::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;

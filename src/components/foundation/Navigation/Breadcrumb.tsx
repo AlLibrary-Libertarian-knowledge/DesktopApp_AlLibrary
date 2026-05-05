@@ -1,4 +1,4 @@
-import { Component, For, JSX } from 'solid-js';
+import { type Component, For, type JSX } from 'solid-js';
 import { A } from '@solidjs/router';
 import { useTranslation } from '../../../i18n/hooks';
 

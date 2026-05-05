@@ -5,7 +5,7 @@
  * INFORMATION ONLY - NO GATEKEEPING - Community empowerment through information.
  */
 
-import { Component, createSignal, For, Show } from 'solid-js';
+import { type Component, createSignal, For, Show } from 'solid-js';
 import styles from './CommunityContributions.module.css';
 
 export interface CommunityContribution {

@@ -41,7 +41,7 @@
 }
 
 .title::before {
-  content: '📚';
+  content: "📚";
   font-size: var(--font-size-xl);
   opacity: 0.8;
 }
@@ -711,17 +711,17 @@
 }
 
 /* Cultural Theme Variations */
-.culturalEducationPropagation[data-cultural-theme='indigenous'] {
+.culturalEducationPropagation[data-cultural-theme="indigenous"] {
   --color-primary: var(--color-cultural-indigenous);
   --color-accent: var(--color-cultural-earth);
 }
 
-.culturalEducationPropagation[data-cultural-theme='traditional'] {
+.culturalEducationPropagation[data-cultural-theme="traditional"] {
   --color-primary: var(--color-cultural-traditional);
   --color-accent: var(--color-cultural-wisdom);
 }
 
-.culturalEducationPropagation[data-cultural-theme='ceremonial'] {
+.culturalEducationPropagation[data-cultural-theme="ceremonial"] {
   --color-primary: var(--color-cultural-sacred);
   --color-accent: var(--color-cultural-ceremony);
 }

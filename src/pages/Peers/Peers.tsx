@@ -1,4 +1,4 @@
-import { Component } from 'solid-js';
+import type { Component } from 'solid-js';
 import { PeerNetworkPage } from './PeerNetworkPage';
 
 const Peers: Component = () => {

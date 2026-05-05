@@ -8,7 +8,7 @@ declare global {
   function setTimeout(callback: () => void, delay: number): number;
 }
 
-import { Component, createSignal, For } from 'solid-js';
+import { type Component, createSignal, For } from 'solid-js';
 import {
   Users,
   Globe,

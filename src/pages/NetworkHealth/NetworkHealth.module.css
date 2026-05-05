@@ -57,7 +57,7 @@
 
 /* Animated circuit pattern background */
 .network-health-page::before {
-  content: '';
+  content: "";
   position: fixed;
   top: 0;
   left: 0;
@@ -83,7 +83,7 @@
 
 /* Floating data particles */
 .network-health-page::after {
-  content: '';
+  content: "";
   position: fixed;
   top: 0;
   left: 0;
@@ -135,7 +135,7 @@
 }
 
 .page-header::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -330,7 +330,7 @@
 .monitoring-toggle::before,
 .refresh-button::before,
 .action-button::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -870,7 +870,7 @@
 }
 
 .metric-card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -1161,7 +1161,7 @@
   padding: 1rem;
   border-radius: 12px;
   margin-bottom: 1rem;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   border: 1px solid rgba(0, 217, 255, 0.2);
   box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.6),
@@ -1199,7 +1199,7 @@
 
 .terminal-prompt {
   color: var(--network-primary);
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   font-weight: bold;
 }
 
@@ -1208,7 +1208,7 @@
   background: transparent;
   border: none;
   color: var(--network-success);
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   outline: none;
 }
 

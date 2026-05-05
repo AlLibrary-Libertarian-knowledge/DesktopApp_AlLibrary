@@ -39,8 +39,7 @@ function matchesAny(regex) {
 }
 
 const DOCS_ONLY =
-  files.length > 0 &&
-  matchesAll(/^(docs\/|progress\/|.*\.md$|COMPREHENSIVE_PROJECT_ANALYSIS\.md)/);
+  files.length > 0 && matchesAll(/^(docs\/|progress\/|.*\.md$|COMPREHENSIVE_PROJECT_ANALYSIS\.md)/);
 
 /** Every changed path is under tests/ (including e2e). */
 const TESTS_TREE_ONLY = files.length > 0 && matchesAll(/^tests\//);
@@ -52,14 +51,11 @@ const AFFECTS_E2E = matchesAny(
 );
 
 const AFFECTS_CONFIG = matchesAny(
-  /^(vite\.config\.|vitest\.config\.|tsconfig.*\.json|package\.json|pnpm-lock\.yaml|eslint\.config\.|postcss\.config\.|\.prettierrc|\.husky\/|\.github\/)/
+  /^(vite\.config\.|vitest\.config\.|tsconfig.*\.json|package\.json|pnpm-lock\.yaml|biome\.json|postcss\.config\.|\.husky\/|\.github\/)/
 );
 
 const AFFECTS_AUDIT =
-  matchesAny(/^package\.json$/) ||
-  matchesAny(/^pnpm-lock\.yaml$/) ||
-  AFFECTS_SRC ||
-  AFFECTS_RUST;
+  matchesAny(/^package\.json$/) || matchesAny(/^pnpm-lock\.yaml$/) || AFFECTS_SRC || AFFECTS_RUST;
 
 const AFFECTS_CULTURAL = matchesAny(
   /^(docs\/|progress\/|COMPREHENSIVE_PROJECT_ANALYSIS\.md|scripts\/verify-cultural)/
@@ -70,7 +66,7 @@ const AFFECTS_BUILD = AFFECTS_SRC || AFFECTS_CONFIG || AFFECTS_RUST;
 const CONFIG_ONLY =
   files.length > 0 &&
   matchesAll(
-    /^(package\.json|pnpm-lock\.yaml|tsconfig.*\.json|vite\.config\.|vitest\.config\.|eslint\.config\.|postcss\.config\.|\.prettierrc|\.husky\/|\.github\/)/
+    /^(package\.json|pnpm-lock\.yaml|tsconfig.*\.json|vite\.config\.|vitest\.config\.|biome\.json|postcss\.config\.|\.husky\/|\.github\/)/
   ) &&
   !AFFECTS_SRC &&
   !AFFECTS_RUST;
@@ -82,17 +78,15 @@ const changeImpact = {
   CRITICAL: AFFECTS_CONFIG || AFFECTS_E2E,
 };
 
-const impact =
-  Object.entries(changeImpact).find(([, value]) => value)?.[0] || 'LOW';
+const impact = Object.entries(changeImpact).find(([, value]) => value)?.[0] || 'LOW';
 
 const fileCounts = {
   total: files.length,
   src: files.filter(f => f.startsWith('src/')).length,
   tests: files.filter(f => f.startsWith('tests/')).length,
   rust: files.filter(f => f.startsWith('src-tauri/')).length,
-  docs: files.filter(
-    f => f.startsWith('docs/') || f.endsWith('.md') || f.startsWith('progress/')
-  ).length,
+  docs: files.filter(f => f.startsWith('docs/') || f.endsWith('.md') || f.startsWith('progress/'))
+    .length,
 };
 
 const flags = {
@@ -117,18 +111,9 @@ if (process.argv.includes('--format=compact')) {
   );
 } else if (process.argv.includes('--format=run')) {
   const n = b => (b ? 1 : 0);
-  const forceFull =
-    process.env.HUSKY_FULL === '1' || process.env.HUSKY_FULL === 'true';
+  const forceFull = process.env.HUSKY_FULL === '1' || process.env.HUSKY_FULL === 'true';
 
-  let t1_quality,
-    t1_coverage,
-    t2_audit,
-    t2_cultural,
-    t3_e2e,
-    t3_build,
-    t3_budget,
-    t3_lh,
-    scope;
+  let t1_quality, t1_coverage, t2_audit, t2_cultural, t3_e2e, t3_build, t3_budget, t3_lh, scope;
 
   if (forceFull) {
     t1_quality = 1;
@@ -141,15 +126,7 @@ if (process.argv.includes('--format=compact')) {
     t3_lh = 0;
     scope = 5;
   } else if (DOCS_ONLY) {
-    t1_quality =
-      t1_coverage =
-      t2_audit =
-      t2_cultural =
-      t3_e2e =
-      t3_build =
-      t3_budget =
-      t3_lh =
-        0;
+    t1_quality = t1_coverage = t2_audit = t2_cultural = t3_e2e = t3_build = t3_budget = t3_lh = 0;
     scope = 1;
   } else if (TESTS_TREE_ONLY && !matchesAny(/^src\//)) {
     t1_quality = 1;

@@ -4,7 +4,10 @@ vi.mock('@tauri-apps/api/core', () => ({
   invoke: vi.fn(async (cmd: string, args?: any) => {
     switch (cmd) {
       case 'init_p2p_node':
-        return { id: 'node1', config: { enableCulturalFiltering: false, enableContentBlocking: false } };
+        return {
+          id: 'node1',
+          config: { enableCulturalFiltering: false, enableContentBlocking: false },
+        };
       case 'search_p2p_network':
         // return a small result set to verify flags mapping
         return [
@@ -34,6 +37,3 @@ describe('P2P distributed search (anti-censorship flags)', () => {
     expect(results.length).toBeGreaterThan(0);
   });
 });
-
-
-

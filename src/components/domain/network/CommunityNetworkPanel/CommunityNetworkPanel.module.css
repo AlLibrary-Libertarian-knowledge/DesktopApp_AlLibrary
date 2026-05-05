@@ -29,7 +29,7 @@
 }
 
 .communityNetworkPanel::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -43,7 +43,7 @@
 }
 
 .communityNetworkPanel::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -244,7 +244,7 @@
 }
 
 .communityCard::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -699,12 +699,12 @@
 }
 
 /* Cultural Theme Support */
-.communityNetworkPanel[data-cultural-theme='traditional'] {
+.communityNetworkPanel[data-cultural-theme="traditional"] {
   --primary-color: rgba(168, 85, 247, 0.8);
   --accent-color: rgba(124, 58, 237, 0.8);
 }
 
-.communityNetworkPanel[data-cultural-theme='traditional']::before {
+.communityNetworkPanel[data-cultural-theme="traditional"]::before {
   background:
     radial-gradient(circle at 20% 50%, rgba(168, 85, 247, 0.08) 0%, transparent 70%),
     radial-gradient(circle at 80% 20%, rgba(124, 58, 237, 0.06) 0%, transparent 70%);

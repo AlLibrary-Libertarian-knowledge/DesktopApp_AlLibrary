@@ -423,7 +423,7 @@
 }
 
 /* Cultural Theme Support */
-.newArrivalsPage[data-cultural-theme='indigenous'] {
+.newArrivalsPage[data-cultural-theme="indigenous"] {
   --color-cultural-background: var(--color-cultural-traditional-bg);
   --color-cultural-surface: var(--color-cultural-traditional-surface);
   --color-cultural-surface-elevated: var(--color-cultural-traditional-elevated);
@@ -432,7 +432,7 @@
   --color-cultural-text-secondary: var(--color-cultural-traditional-text-secondary);
 }
 
-.newArrivalsPage[data-cultural-theme='traditional'] {
+.newArrivalsPage[data-cultural-theme="traditional"] {
   --color-cultural-background: var(--color-cultural-sacred-bg);
   --color-cultural-surface: var(--color-cultural-sacred-surface);
   --color-cultural-surface-elevated: var(--color-cultural-sacred-elevated);
@@ -441,7 +441,7 @@
   --color-cultural-text-secondary: var(--color-cultural-sacred-text-secondary);
 }
 
-.newArrivalsPage[data-cultural-theme='academic'] {
+.newArrivalsPage[data-cultural-theme="academic"] {
   --color-cultural-background: var(--color-cultural-academic-bg);
   --color-cultural-surface: var(--color-cultural-academic-surface);
   --color-cultural-surface-elevated: var(--color-cultural-academic-elevated);

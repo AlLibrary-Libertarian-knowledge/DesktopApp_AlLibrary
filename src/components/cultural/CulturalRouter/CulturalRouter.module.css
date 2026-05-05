@@ -1,6 +1,6 @@
 /**
  * CulturalRouter Component Styles
- * 
+ *
  * Provides beautiful, accessible styling for culturally-aware content routing
  * with educational context display and anti-censorship visualization.
  */
@@ -23,7 +23,7 @@
 }
 
 .culturalRouter::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -429,7 +429,7 @@
 }
 
 .educationalListItem::before {
-  content: '•';
+  content: "•";
   color: var(--color-cultural-academic);
   font-weight: bold;
   flex-shrink: 0;
@@ -512,15 +512,15 @@
    CULTURAL THEMES
    ============================================================================ */
 
-.culturalRouter[data-cultural-theme='traditional'] {
+.culturalRouter[data-cultural-theme="traditional"] {
   --route-color-primary: var(--color-cultural-traditional);
 }
 
-.culturalRouter[data-cultural-theme='academic'] {
+.culturalRouter[data-cultural-theme="academic"] {
   --route-color-primary: var(--color-cultural-academic);
 }
 
-.culturalRouter[data-cultural-theme='ceremonial'] {
+.culturalRouter[data-cultural-theme="ceremonial"] {
   --route-color-primary: var(--color-cultural-sacred);
 }
 
@@ -616,13 +616,13 @@
 }
 
 /* Loading states */
-.culturalRouter[data-loading='true'] {
+.culturalRouter[data-loading="true"] {
   opacity: 0.7;
   pointer-events: none;
 }
 
-.culturalRouter[data-loading='true']::after {
-  content: '';
+.culturalRouter[data-loading="true"]::after {
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;

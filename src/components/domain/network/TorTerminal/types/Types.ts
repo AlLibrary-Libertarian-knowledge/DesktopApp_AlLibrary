@@ -4,5 +4,3 @@ export interface TorTerminalProps {
   class?: string;
   'data-testid'?: string;
 }
-
-

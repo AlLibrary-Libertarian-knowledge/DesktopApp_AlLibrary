@@ -5,7 +5,15 @@
  * interactive diagnostics, and comprehensive health visualization
  */
 
-import { Component, createSignal, createEffect, onMount, onCleanup, For, Show } from 'solid-js';
+import {
+  type Component,
+  createSignal,
+  createEffect,
+  onMount,
+  onCleanup,
+  For,
+  Show,
+} from 'solid-js';
 import { Button, Card, Modal } from '@/components/foundation';
 import { NetworkHealthDashboard } from '@/components/composite/NetworkHealthDashboard';
 import {

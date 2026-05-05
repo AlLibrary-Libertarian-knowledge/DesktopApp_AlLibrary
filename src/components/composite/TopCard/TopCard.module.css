@@ -47,11 +47,11 @@
 }
 
 /* Clickable card states */
-.top-card[role='button'] {
+.top-card[role="button"] {
   cursor: pointer;
 }
 
-.top-card[role='button']:focus {
+.top-card[role="button"]:focus {
   outline: 2px solid rgba(124, 58, 237, 0.6);
   outline-offset: 2px;
 }

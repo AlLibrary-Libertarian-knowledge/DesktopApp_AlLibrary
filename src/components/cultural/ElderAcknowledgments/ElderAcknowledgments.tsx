@@ -5,7 +5,7 @@
  * INFORMATION ONLY - Cultural respect through recognition and education.
  */
 
-import { Component, createSignal, For, Show } from 'solid-js';
+import { type Component, createSignal, For, Show } from 'solid-js';
 import styles from './ElderAcknowledgments.module.css';
 
 export interface ElderAcknowledgment {

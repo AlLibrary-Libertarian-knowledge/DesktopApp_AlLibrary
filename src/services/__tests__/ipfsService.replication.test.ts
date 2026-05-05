@@ -7,7 +7,10 @@ vi.mock('@tauri-apps/api/core', () => ({
     lastInvokeArgs[cmd] = args;
     switch (cmd) {
       case 'init_ipfs_node':
-        return { id: 'ipfs1', config: { enableCulturalFiltering: false, enableContentBlocking: false } };
+        return {
+          id: 'ipfs1',
+          config: { enableCulturalFiltering: false, enableContentBlocking: false },
+        };
       case 'start_ipfs_node':
         return true;
       case 'add_content_to_ipfs':
@@ -43,7 +46,10 @@ describe('IPFS replication and availability', () => {
     await svc.initializeNode({ redundantPinning: 3 });
     await svc.startNode();
 
-    const hash = await svc.addContent?.({ id: 'doc1', title: 'traditional knowledge' }, { sensitivityLevel: 2, culturalOrigin: 'origin' });
+    const hash = await svc.addContent?.(
+      { id: 'doc1', title: 'traditional knowledge' },
+      { sensitivityLevel: 2, culturalOrigin: 'origin' }
+    );
     expect(hash.ipfsHash).toBe('QmABC');
 
     // Pin with redundancy and verify call shape includes anti-censorship flags
@@ -51,14 +57,18 @@ describe('IPFS replication and availability', () => {
     expect(lastInvokeArgs['pin_content'].strategy.antiCensorship).toBe(true);
 
     // Redundant copies created
-    expect(Array.isArray(lastInvokeArgs['create_redundant_copies'].distributionStrategy)).toBeFalsy();
+    expect(
+      Array.isArray(lastInvokeArgs['create_redundant_copies'].distributionStrategy)
+    ).toBeFalsy();
     const copies = await svc.createRedundantCopies?.('QmABC', 3);
     expect(copies.length).toBeGreaterThanOrEqual(3);
 
     // Availability check passes with anti-censorship requirements
     const available = await svc.ensureAvailability?.('QmABC');
     expect(available).toBe(true);
-    expect(lastInvokeArgs['ensure_content_availability'].requirements.verifyCensorshipResistance).toBe(true);
+    expect(
+      lastInvokeArgs['ensure_content_availability'].requirements.verifyCensorshipResistance
+    ).toBe(true);
   });
 
   it('finds providers and announces content', async () => {
@@ -71,6 +81,3 @@ describe('IPFS replication and availability', () => {
     expect(lastInvokeArgs['announce_content'].announcement.enableAntiCensorship).toBe(true);
   });
 });
-
-
-

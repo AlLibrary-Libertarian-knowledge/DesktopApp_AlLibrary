@@ -41,7 +41,7 @@ if echo "$CHANGED_FILES" | grep -Eq '^\.husky/'; then
   echo "${YELLOW}🐕 Hooks:${RESET} active on next commit / push after ${BOLD}pnpm install${RESET}"
 fi
 
-if echo "$CHANGED_FILES" | grep -Eq '^(vite\.config\.|vitest\.config\.|tsconfig|eslint\.config\.)'; then
+if echo "$CHANGED_FILES" | grep -Eq '^(vite\.config\.|vitest\.config\.|tsconfig|biome\.json)'; then
   echo "${BLUE}⚙️ Tooling changed:${RESET} consider ${BOLD}pnpm run quality:ci${RESET}"
 fi
 

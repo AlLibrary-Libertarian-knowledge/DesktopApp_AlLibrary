@@ -4,7 +4,7 @@
 
 /* High Contrast Theme - Enhanced visibility for visual impairments */
 
-[data-accessibility-theme='high-contrast'] {
+[data-accessibility-theme="high-contrast"] {
   /* ===== COLOR OVERRIDES ===== */
 
   /* Primary Colors - Maximum contrast */
@@ -66,7 +66,7 @@
   /* ===== TYPOGRAPHY OVERRIDES ===== */
 
   /* Font Family - High contrast fonts */
-  --font-family-sans: 'Arial', 'Helvetica', sans-serif;
+  --font-family-sans: "Arial", "Helvetica", sans-serif;
 
   /* Typography Scale - Larger, bolder text */
   --font-weight-normal: 600; /* Bolder text for better visibility */
@@ -326,7 +326,7 @@
 /* ===== HIGH CONTRAST PRINT STYLES ===== */
 
 @media print {
-  [data-accessibility-theme='high-contrast'] {
+  [data-accessibility-theme="high-contrast"] {
     /* Print high contrast adjustments */
     --color-background-primary: #ffffff;
     --color-text-primary: #000000;

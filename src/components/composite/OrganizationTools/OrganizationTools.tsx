@@ -1,4 +1,4 @@
-import { Component, createSignal, Show, For, createMemo, Switch, Match } from 'solid-js';
+import { type Component, createSignal, Show, For, createMemo, Switch, Match } from 'solid-js';
 import { Button, Card, Modal } from '../../foundation';
 import { useTranslation } from '../../../i18n/hooks';
 import {

@@ -556,60 +556,60 @@
 }
 
 /* Cultural Theme Adaptations */
-[data-cultural-theme='indigenous'] .themeButton,
-[data-cultural-theme='indigenous'] .trigger,
-[data-cultural-theme='indigenous'] .compactTrigger {
+[data-cultural-theme="indigenous"] .themeButton,
+[data-cultural-theme="indigenous"] .trigger,
+[data-cultural-theme="indigenous"] .compactTrigger {
   background-color: var(--color-surface-primary);
   border-color: var(--color-cultural-traditional);
 }
 
-[data-cultural-theme='traditional'] .themeButton,
-[data-cultural-theme='traditional'] .trigger,
-[data-cultural-theme='traditional'] .compactTrigger {
+[data-cultural-theme="traditional"] .themeButton,
+[data-cultural-theme="traditional"] .trigger,
+[data-cultural-theme="traditional"] .compactTrigger {
   background-color: var(--color-surface-primary);
   border-color: var(--color-cultural-traditional);
 }
 
-[data-cultural-theme='ceremonial'] .themeButton,
-[data-cultural-theme='ceremonial'] .trigger,
-[data-cultural-theme='ceremonial'] .compactTrigger {
+[data-cultural-theme="ceremonial"] .themeButton,
+[data-cultural-theme="ceremonial"] .trigger,
+[data-cultural-theme="ceremonial"] .compactTrigger {
   background-color: var(--color-surface-primary);
   border-color: var(--color-cultural-sacred);
 }
 
-[data-cultural-theme='academic'] .themeButton,
-[data-cultural-theme='academic'] .trigger,
-[data-cultural-theme='academic'] .compactTrigger {
+[data-cultural-theme="academic"] .themeButton,
+[data-cultural-theme="academic"] .trigger,
+[data-cultural-theme="academic"] .compactTrigger {
   background-color: var(--color-surface-primary);
   border-color: var(--color-cultural-academic);
 }
 
-[data-cultural-theme='community'] .themeButton,
-[data-cultural-theme='community'] .trigger,
-[data-cultural-theme='community'] .compactTrigger {
+[data-cultural-theme="community"] .themeButton,
+[data-cultural-theme="community"] .trigger,
+[data-cultural-theme="community"] .compactTrigger {
   background-color: var(--color-surface-primary);
   border-color: var(--color-cultural-community);
 }
 
 /* Accessibility Theme Adaptations */
-[data-accessibility='high-contrast'] .themeButton,
-[data-accessibility='high-contrast'] .trigger,
-[data-accessibility='high-contrast'] .compactTrigger {
+[data-accessibility="high-contrast"] .themeButton,
+[data-accessibility="high-contrast"] .trigger,
+[data-accessibility="high-contrast"] .compactTrigger {
   border-width: 3px;
   border-color: var(--color-text-primary);
 }
 
-[data-accessibility='large-text'] .themeButton,
-[data-accessibility='large-text'] .trigger,
-[data-accessibility='large-text'] .compactTrigger {
+[data-accessibility="large-text"] .themeButton,
+[data-accessibility="large-text"] .trigger,
+[data-accessibility="large-text"] .compactTrigger {
   font-size: var(--font-size-base);
   padding: var(--space-md) var(--space-lg);
   min-height: 3rem;
 }
 
-[data-accessibility='focus-management'] .themeButton:focus,
-[data-accessibility='focus-management'] .trigger:focus,
-[data-accessibility='focus-management'] .compactTrigger:focus {
+[data-accessibility="focus-management"] .themeButton:focus,
+[data-accessibility="focus-management"] .trigger:focus,
+[data-accessibility="focus-management"] .compactTrigger:focus {
   outline-width: 4px;
   outline-offset: 3px;
 }

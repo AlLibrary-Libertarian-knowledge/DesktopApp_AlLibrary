@@ -11,7 +11,7 @@
  * - Information freedom preserved throughout
  */
 
-import { Component, createSignal, createResource, Show, For } from 'solid-js';
+import { type Component, createSignal, createResource, Show, For } from 'solid-js';
 import { Card } from '@/components/foundation/Card';
 import { Button } from '@/components/foundation/Button';
 import { Input } from '@/components/foundation/Input';

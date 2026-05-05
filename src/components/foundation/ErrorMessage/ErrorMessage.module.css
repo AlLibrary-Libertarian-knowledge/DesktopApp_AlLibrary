@@ -532,8 +532,8 @@
 }
 
 /* Screen Reader Support */
-.error-message[aria-live='assertive']::after {
-  content: 'Critical error';
+.error-message[aria-live="assertive"]::after {
+  content: "Critical error";
   position: absolute;
   left: -10000px;
   width: 1px;

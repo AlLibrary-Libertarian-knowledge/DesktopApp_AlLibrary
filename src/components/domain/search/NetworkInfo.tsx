@@ -1,4 +1,4 @@
-import { Component, createSignal, onCleanup, onMount, For } from 'solid-js';
+import { type Component, createSignal, onCleanup, onMount, For } from 'solid-js';
 import { invoke } from '@tauri-apps/api/core';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import * as onionShare from '@/services/network/onionShareService';

@@ -1,4 +1,4 @@
-import { Component, createSignal, createEffect, createResource, Show, For } from 'solid-js';
+import { type Component, createSignal, createEffect, createResource, Show, For } from 'solid-js';
 import { torAdapter } from '@/services/network/torAdapter';
 import { p2pNetworkService } from '@/services/network/p2pNetworkService';
 import { ipfsService } from '@/services/network/ipfsService';

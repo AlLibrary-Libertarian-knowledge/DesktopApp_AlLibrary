@@ -327,7 +327,7 @@
 }
 
 /* Cultural Theme Support */
-.communityNetworks[data-cultural-theme='indigenous'] {
+.communityNetworks[data-cultural-theme="indigenous"] {
   --color-primary-500: var(--color-cultural-traditional);
   --color-primary-100: #ecfdf5;
   --color-primary-200: #d1fae5;
@@ -337,7 +337,7 @@
   --color-primary-700: #065f46;
 }
 
-.communityNetworks[data-cultural-theme='traditional'] {
+.communityNetworks[data-cultural-theme="traditional"] {
   --color-primary-500: var(--color-cultural-sacred);
   --color-primary-100: #f3e8ff;
   --color-primary-200: #e9d5ff;
@@ -347,7 +347,7 @@
   --color-primary-700: #7c3aed;
 }
 
-.communityNetworks[data-cultural-theme='academic'] {
+.communityNetworks[data-cultural-theme="academic"] {
   --color-primary-500: var(--color-cultural-academic);
   --color-primary-100: #dbeafe;
   --color-primary-200: #bfdbfe;

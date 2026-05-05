@@ -5,7 +5,7 @@
  * and anti-censorship features.
  */
 
-import { Component, createSignal, Show } from 'solid-js';
+import { type Component, createSignal, Show } from 'solid-js';
 import { P2PSearchInterface } from '@/components/domain/network/P2PSearchInterface';
 import type {
   SearchResult,
@@ -67,7 +67,9 @@ export const P2PSearch: Component = () => {
             {torReady() ? 'TOR Enabled' : 'Enable TOR'}
           </Button>
           <Show when={torReady()}>
-            <span class={styles.statusChip} aria-live="polite">TOR active (anonymous mode)</span>
+            <span class={styles.statusChip} aria-live="polite">
+              TOR active (anonymous mode)
+            </span>
           </Show>
         </div>
 

@@ -5,7 +5,7 @@
  * ANTI-CENSORSHIP: Cultural information for education only, never restricts access.
  */
 
-import { Component, createSignal, createEffect, For, Show, createMemo } from 'solid-js';
+import { type Component, createSignal, createEffect, For, Show, createMemo } from 'solid-js';
 import { Card } from '../../components/foundation/Card';
 import { Button } from '../../components/foundation/Button';
 import { Input } from '../../components/foundation/Input';

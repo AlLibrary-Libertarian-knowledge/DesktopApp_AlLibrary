@@ -5,7 +5,7 @@
  * Supports multiple variants, sizes, and cultural themes.
  */
 
-import { Component, JSX } from 'solid-js';
+import type { Component, JSX } from 'solid-js';
 import styles from './Badge.module.css';
 
 export interface BadgeProps {

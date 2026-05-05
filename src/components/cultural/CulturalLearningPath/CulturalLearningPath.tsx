@@ -5,7 +5,7 @@
  * INFORMATION ONLY - NO ACCESS CONTROL - Educational enhancement.
  */
 
-import { Component, createSignal, For, Show } from 'solid-js';
+import { type Component, createSignal, For, Show } from 'solid-js';
 import styles from './CulturalLearningPath.module.css';
 
 export interface LearningResource {

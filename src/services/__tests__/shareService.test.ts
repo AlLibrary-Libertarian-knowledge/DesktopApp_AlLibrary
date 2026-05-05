@@ -37,5 +37,3 @@ describe('shareService', () => {
     expect(ok).toBe(false);
   });
 });
-
-

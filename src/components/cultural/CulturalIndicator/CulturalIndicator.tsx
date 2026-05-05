@@ -1,4 +1,4 @@
-import { Component, Show } from 'solid-js';
+import { type Component, Show } from 'solid-js';
 import { Info, BookOpen, Users, Shield, Heart, Eye, CheckCircle, HelpCircle } from 'lucide-solid';
 import styles from './CulturalIndicator.module.css';
 

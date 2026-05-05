@@ -23,7 +23,7 @@
 
 /* Neural network pattern background */
 .home-page::before {
-  content: '';
+  content: "";
   position: fixed;
   top: 0;
   left: 0;
@@ -39,7 +39,7 @@
 
 /* Animated geometric grid */
 .home-page::after {
-  content: '';
+  content: "";
   position: fixed;
   top: 0;
   left: 0;
@@ -106,7 +106,7 @@
 }
 
 .page-header.enhanced::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -120,7 +120,7 @@
 }
 
 .page-header.enhanced::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -221,7 +221,7 @@
 
 /* Neural network connection lines between stats */
 .stats-section.enhanced::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 5%;
@@ -284,7 +284,7 @@
 
 /* Unique accent lines for each card type */
 .stat-card.enhanced::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -316,7 +316,7 @@
 
 /* Enhanced shimmer effect - more subtle */
 .stat-card.enhanced::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -550,7 +550,7 @@
 
 /* Futuristic data flow accent */
 .stat-card.enhanced::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -587,7 +587,7 @@
 
 /* Holographic shimmer effect */
 .stat-card.enhanced::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -120%;
@@ -696,7 +696,7 @@
 
 /* Pulsing energy ring */
 .stat-icon::before {
-  content: '';
+  content: "";
   position: absolute;
   top: -2px;
   left: -2px;
@@ -1100,7 +1100,7 @@
 }
 
 .tab::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -1159,7 +1159,7 @@
 }
 
 .tab::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;
@@ -1759,7 +1759,7 @@
 }
 
 .stats-section.enhanced::before {
-  content: '';
+  content: "";
   position: absolute;
   top: -1px;
   left: -1px;
@@ -1818,7 +1818,7 @@
 }
 
 .stat-card.enhanced::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -1849,7 +1849,7 @@
 }
 
 .stat-card.enhanced::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -1886,7 +1886,7 @@
 }
 
 .pulse-ring::before {
-  content: '';
+  content: "";
   position: absolute;
   top: -2px;
   left: -2px;
@@ -1940,7 +1940,7 @@
   font-size: 0.75rem;
   font-weight: 600;
   margin-top: 0.125rem;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
@@ -1956,7 +1956,7 @@
 }
 
 .stat-trend::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
@@ -2118,7 +2118,7 @@
 }
 
 .peer-node::before {
-  content: '';
+  content: "";
   position: absolute;
   top: -2px;
   left: -2px;
@@ -2187,7 +2187,7 @@
 }
 
 .geo-dot::before {
-  content: '';
+  content: "";
   position: absolute;
   top: -1px;
   left: -1px;
@@ -2255,7 +2255,7 @@
 }
 
 .health-ring::before {
-  content: '';
+  content: "";
   position: absolute;
   width: 35px;
   height: 35px;
@@ -3067,7 +3067,7 @@
 }
 
 .stats-section.enhanced::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -3081,7 +3081,7 @@
 }
 
 .stats-section.enhanced::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -3119,7 +3119,7 @@
 }
 
 .stat-card.enhanced::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -3167,7 +3167,7 @@
 }
 
 .network-preview-section::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -3196,7 +3196,7 @@
 }
 
 .network-preview-card.enhanced::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -3230,7 +3230,7 @@
 }
 
 .activity-section.enhanced::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -3271,7 +3271,7 @@
 }
 
 .activity-card.downloads::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -3282,7 +3282,7 @@
 }
 
 .activity-card.network::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -3311,7 +3311,7 @@
 }
 
 .actions-section.enhanced::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -3359,7 +3359,7 @@
 }
 
 .section-header::before {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -1px;
   left: 0;
@@ -3374,7 +3374,7 @@
 }
 
 .section-title::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -8px;
   left: 0;
@@ -3406,7 +3406,7 @@
 
 /* Data Flow Lines Between Sections */
 .home-page::after {
-  content: '';
+  content: "";
   position: fixed;
   top: 0;
   left: 0;
@@ -3574,7 +3574,7 @@
 }
 
 .status-indicator::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -3609,7 +3609,7 @@
 }
 
 .status-pulse::before {
-  content: '';
+  content: "";
   position: absolute;
   top: -5px;
   left: -5px;
@@ -4060,7 +4060,7 @@
 }
 
 .activity-card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -4131,7 +4131,7 @@
 }
 
 .header-icon::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -4243,7 +4243,7 @@
 }
 
 .activity-list.modern .activity-item::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -4419,7 +4419,7 @@
 }
 
 .progress-fill::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -4529,7 +4529,7 @@
 }
 
 .status-badge::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;

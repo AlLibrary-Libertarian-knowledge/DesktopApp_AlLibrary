@@ -3,7 +3,7 @@
  * Enhanced to match HomePage and DocumentManagement sophisticated patterns
  */
 
-import { Component, createSignal, onMount, Show, For } from 'solid-js';
+import { type Component, createSignal, onMount, Show, For } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
 import { Search, Shield, Filter, Download, BookOpen, ArrowRight, Users } from 'lucide-solid';
 
@@ -81,8 +81,7 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
     } catch (e) {
       void e;
       setTorReady(false);
-    }
-    finally {
+    } finally {
       setTorEstablishing(false);
     }
   };
@@ -94,11 +93,15 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
       try {
         const status = await torAdapter.status();
         setTorReady(!!status?.circuitEstablished);
-      } catch (e) { void e; }
+      } catch (e) {
+        void e;
+      }
     };
     tick();
     timer = globalThis.setInterval(tick, 4000) as unknown as number;
-    const handler = () => { /* event -> refresh */ void tick(); };
+    const handler = () => {
+      /* event -> refresh */ void tick();
+    };
     window.addEventListener('tor-status-updated', handler as any);
     // Global shortcut: Ctrl/Cmd+K focuses search
     const keyHandler = (ev: KeyboardEvent) => {
@@ -152,19 +155,29 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
         rightContent={
           <div class={styles['network-status-enhanced']}>
             <NetworkStatus variant="default" />
-            <div class={styles['tor-pill']} data-on={torReady() ? '1' : '0'}>{torReady() ? 'Onion' : 'No Onion'}</div>
-        </div>
+            <div class={styles['tor-pill']} data-on={torReady() ? '1' : '0'}>
+              {torReady() ? 'Onion' : 'No Onion'}
+            </div>
+          </div>
         }
       />
 
       {/* Minimal tabs for clarity */}
       <div class={styles['contentTabs']}>
         <div class={styles['tabButtons']}>
-          <button class={`${activeTab() === 'search' ? 'active' : ''}`} onClick={() => setActiveTab('search')}>
-            <Search size={16} />&nbsp;Overview
+          <button
+            class={`${activeTab() === 'search' ? 'active' : ''}`}
+            onClick={() => setActiveTab('search')}
+          >
+            <Search size={16} />
+            &nbsp;Overview
           </button>
-          <button class={`${activeTab() === 'results' ? 'active' : ''}`} onClick={() => setActiveTab('results')}>
-            <BookOpen size={16} />&nbsp;Search Results
+          <button
+            class={`${activeTab() === 'results' ? 'active' : ''}`}
+            onClick={() => setActiveTab('results')}
+          >
+            <BookOpen size={16} />
+            &nbsp;Search Results
           </button>
         </div>
       </div>
@@ -179,70 +192,163 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
             <section class={styles['searchControls']}>
               <div class={styles['searchBar']}>
                 <div class={styles['searchOptions']}>
-                  <Button variant={torReady() ? 'outline' : 'primary'} size="sm" onClick={onEnableTorClick} disabled={torEstablishing()}>
+                  <Button
+                    variant={torReady() ? 'outline' : 'primary'}
+                    size="sm"
+                    onClick={onEnableTorClick}
+                    disabled={torEstablishing()}
+                  >
                     <Shield size={16} class="mr-2" />
-                    {torReady() ? 'TOR Enabled' : torEstablishing() ? 'Enabling…' : 'Enable TOR Search'}
+                    {torReady()
+                      ? 'TOR Enabled'
+                      : torEstablishing()
+                        ? 'Enabling…'
+                        : 'Enable TOR Search'}
                   </Button>
-                  <Button variant={enabled() ? 'outline' : 'primary'} size="sm" onClick={enable} disabled={busy()}>
+                  <Button
+                    variant={enabled() ? 'outline' : 'primary'}
+                    size="sm"
+                    onClick={enable}
+                    disabled={busy()}
+                  >
                     {enabled() ? 'Private Networking Enabled' : 'Enable Private Networking'}
                   </Button>
                   <div class={styles['searchOptionsRight']}>
                     <div>
-                      <Input type="text" placeholder="Download by hash" value={hash()} onInput={(v) => setHash(v)} />
-                      <Button variant="outline" size="sm" disabled={!enabled() || busy() || !hash().trim()} onClick={() => downloadByHash(hash().trim(), (window as any).api?.downloadsDir ?? 'downloads')}>
+                      <Input
+                        type="text"
+                        placeholder="Download by hash"
+                        value={hash()}
+                        onInput={v => setHash(v)}
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={!enabled() || busy() || !hash().trim()}
+                        onClick={() =>
+                          downloadByHash(
+                            hash().trim(),
+                            (window as any).api?.downloadsDir ?? 'downloads'
+                          )
+                        }
+                      >
                         <Download size={14} class="mr-2" />
                         Download
                       </Button>
                     </div>
-                  <Button variant="ghost" size="sm" onClick={() => setShowFilters(!showFilters())}>
-                    <Filter size={16} class="mr-2" />
-                    {showFilters() ? 'Hide Filters' : 'Show Filters'}
-                  </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowFilters(!showFilters())}
+                    >
+                      <Filter size={16} class="mr-2" />
+                      {showFilters() ? 'Hide Filters' : 'Show Filters'}
+                    </Button>
                   </div>
-              </div>
+                </div>
 
                 <div class={styles['searchInputContainer']}>
                   <Search size={20} />
-                    <Input
-                      type="text"
-                      placeholder="Search cultural heritage documents across P2P network..."
-                      value={searchQuery()}
+                  <Input
+                    type="text"
+                    placeholder="Search cultural heritage documents across P2P network..."
+                    value={searchQuery()}
                     onInput={handleSearchInput}
-                    onKeyDown={(e: any) => { if (e.key === 'Enter') handleSearch(); }}
-                    ref={(el: HTMLInputElement) => { searchInputEl = el; }}
+                    onKeyDown={(e: any) => {
+                      if (e.key === 'Enter') handleSearch();
+                    }}
+                    ref={(el: HTMLInputElement) => {
+                      searchInputEl = el;
+                    }}
                     class={styles['searchInput'] as unknown as string}
                   />
                   <div class={styles['searchActions']}>
-                      <Button
-                        variant="primary"
-                        onClick={handleSearch}
+                    <Button
+                      variant="primary"
+                      onClick={handleSearch}
                       disabled={!searchQuery().trim() || isSearching() || !torReady()}
-                      >
-                        {isSearching() ? 'Searching...' : 'Search Network'}
-                      </Button>
-                    </div>
+                    >
+                      {isSearching() ? 'Searching...' : 'Search Network'}
+                    </Button>
                   </div>
+                </div>
 
                 {/* Filters with smooth expand */}
-                <div class={styles['filtersPanel']} data-open={showFilters() ? '1' : '0'} aria-hidden={!showFilters()} aria-expanded={showFilters()}>
+                <div
+                  class={styles['filtersPanel']}
+                  data-open={showFilters() ? '1' : '0'}
+                  aria-hidden={!showFilters()}
+                  aria-expanded={showFilters()}
+                >
                   <div class={styles['searchOptions']}>
                     <div class={styles['searchOptionsLeft']}>
                       <label>Scope</label>
                       <div>
-                        <Button variant={searchScope() === 'all' ? 'primary' : 'outline'} size="sm" onClick={() => setSearchScope('all')}>All Peers</Button>
-                        <Button variant={searchScope() === 'trusted' ? 'primary' : 'outline'} size="sm" onClick={() => setSearchScope('trusted')}>Trusted Only</Button>
-                        <Button variant={searchScope() === 'nearby' ? 'primary' : 'outline'} size="sm" onClick={() => setSearchScope('nearby')}>Nearby Peers</Button>
+                        <Button
+                          variant={searchScope() === 'all' ? 'primary' : 'outline'}
+                          size="sm"
+                          onClick={() => setSearchScope('all')}
+                        >
+                          All Peers
+                        </Button>
+                        <Button
+                          variant={searchScope() === 'trusted' ? 'primary' : 'outline'}
+                          size="sm"
+                          onClick={() => setSearchScope('trusted')}
+                        >
+                          Trusted Only
+                        </Button>
+                        <Button
+                          variant={searchScope() === 'nearby' ? 'primary' : 'outline'}
+                          size="sm"
+                          onClick={() => setSearchScope('nearby')}
+                        >
+                          Nearby Peers
+                        </Button>
                       </div>
-                        </div>
+                    </div>
                     <div class={styles['searchOptionsRight']}>
                       <label>Types</label>
                       <div>
-                        <Button variant={fileTypes().includes('pdf') ? 'primary' : 'outline'} size="sm" onClick={() => { const types = fileTypes(); setFileTypes(types.includes('pdf') ? types.filter(t => t !== 'pdf') : [...types, 'pdf']); }}>PDF</Button>
-                        <Button variant={fileTypes().includes('epub') ? 'primary' : 'outline'} size="sm" onClick={() => { const types = fileTypes(); setFileTypes(types.includes('epub') ? types.filter(t => t !== 'epub') : [...types, 'epub']); }}>EPUB</Button>
-                        <Button variant={anonymousMode() ? 'primary' : 'outline'} size="sm" onClick={() => setAnonymousMode(!anonymousMode())}><Shield size={16} />&nbsp;Anonymous</Button>
+                        <Button
+                          variant={fileTypes().includes('pdf') ? 'primary' : 'outline'}
+                          size="sm"
+                          onClick={() => {
+                            const types = fileTypes();
+                            setFileTypes(
+                              types.includes('pdf')
+                                ? types.filter(t => t !== 'pdf')
+                                : [...types, 'pdf']
+                            );
+                          }}
+                        >
+                          PDF
+                        </Button>
+                        <Button
+                          variant={fileTypes().includes('epub') ? 'primary' : 'outline'}
+                          size="sm"
+                          onClick={() => {
+                            const types = fileTypes();
+                            setFileTypes(
+                              types.includes('epub')
+                                ? types.filter(t => t !== 'epub')
+                                : [...types, 'epub']
+                            );
+                          }}
+                        >
+                          EPUB
+                        </Button>
+                        <Button
+                          variant={anonymousMode() ? 'primary' : 'outline'}
+                          size="sm"
+                          onClick={() => setAnonymousMode(!anonymousMode())}
+                        >
+                          <Shield size={16} />
+                          &nbsp;Anonymous
+                        </Button>
                       </div>
                     </div>
-                </div>
+                  </div>
                 </div>
               </div>
             </section>
@@ -305,10 +411,15 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
 
             <Show when={isSearching()}>
               <div class={styles['search-progress']}>
-                <LoadingSpinner variant="ring" size="md" message={`Searching across ${net.connectedPeers()} connected peers...`} showMessage />
+                <LoadingSpinner
+                  variant="ring"
+                  size="md"
+                  message={`Searching across ${net.connectedPeers()} connected peers...`}
+                  showMessage
+                />
               </div>
               <div class={styles['skeleton-grid']}>
-                <For each={[1,2,3,4,5,6]}>{() => <div class={styles['skeleton-card']} />}</For>
+                <For each={[1, 2, 3, 4, 5, 6]}>{() => <div class={styles['skeleton-card']} />}</For>
               </div>
             </Show>
 

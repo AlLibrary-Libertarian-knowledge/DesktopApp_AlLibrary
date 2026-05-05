@@ -433,7 +433,7 @@
 }
 
 .progress-fill::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -453,7 +453,7 @@
 }
 
 .progress-text {
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
   font-size: 0.75rem;
   font-weight: 600;
   color: rgba(248, 250, 252, 0.8);
@@ -469,7 +469,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
   font-size: 0.75rem;
   font-weight: 600;
 }
@@ -510,7 +510,7 @@
 
 /* Sophisticated Peers Cell */
 .peers-cell {
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
   gap: 0.375rem;
   flex-direction: column;
   align-items: center;
@@ -538,7 +538,7 @@
 
 /* Elegant ETA Cell */
 .eta-cell {
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
   color: rgba(248, 250, 252, 0.8);
   justify-content: center;
   font-weight: 600;
@@ -551,7 +551,7 @@
 
 /* Premium Ratio Cell */
 .ratio {
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
   font-weight: 700;
   font-size: 0.875rem;
   padding: 0.25rem 0.5rem;
@@ -677,7 +677,7 @@
 }
 
 .health-fill::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -50%;
@@ -698,7 +698,7 @@
 
 .health-text {
   font-size: 0.75rem;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
   font-weight: 600;
   color: rgba(248, 250, 252, 0.8);
   min-width: 35px;
@@ -731,7 +731,7 @@
 }
 
 .status-group span {
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
   font-weight: 500;
   padding: 0.25rem 0.5rem;
   background: rgba(30, 41, 59, 0.3);

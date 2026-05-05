@@ -457,17 +457,17 @@
 }
 
 /* Cultural Theme Support */
-[data-cultural-theme='indigenous'] .culturalContentSharing {
+[data-cultural-theme="indigenous"] .culturalContentSharing {
   --color-cultural-primary: var(--color-cultural-indigenous);
   --color-cultural-secondary: var(--color-cultural-indigenous-secondary);
 }
 
-[data-cultural-theme='traditional'] .culturalContentSharing {
+[data-cultural-theme="traditional"] .culturalContentSharing {
   --color-cultural-primary: var(--color-cultural-traditional);
   --color-cultural-secondary: var(--color-cultural-traditional-secondary);
 }
 
-[data-cultural-theme='ceremonial'] .culturalContentSharing {
+[data-cultural-theme="ceremonial"] .culturalContentSharing {
   --color-cultural-primary: var(--color-cultural-sacred);
   --color-cultural-secondary: var(--color-cultural-sacred-secondary);
 }

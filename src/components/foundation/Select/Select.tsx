@@ -30,7 +30,7 @@
  * - Debounced search filtering
  */
 
-import { Component, createSignal, createEffect, Show, For, onCleanup } from 'solid-js';
+import { type Component, createSignal, createEffect, Show, For, onCleanup } from 'solid-js';
 import { ChevronDown, Check, Search } from 'lucide-solid';
 import styles from './Select.module.css';
 

@@ -6,7 +6,15 @@
  * Follows SOLID principles and anti-censorship architecture.
  */
 
-import { Component, createSignal, Show, onMount, onCleanup, createEffect, For } from 'solid-js';
+import {
+  type Component,
+  createSignal,
+  Show,
+  onMount,
+  onCleanup,
+  createEffect,
+  For,
+} from 'solid-js';
 import {
   ChevronLeft,
   ChevronRight,
@@ -32,7 +40,7 @@ import { globalNotesStore } from '@/stores/notes/globalNotesStore';
 
 // PDF.js imports
 import * as pdfjsLib from 'pdfjs-dist';
-import { PDFDocumentProxy } from 'pdfjs-dist';
+import type { PDFDocumentProxy } from 'pdfjs-dist';
 // Use local worker asset with Vite to avoid CDN/CORS failures in Tauri
 // Vite will transform this import into a URL to the built worker file
 // Type declaration provided in src/types/pdfjs-worker.d.ts
@@ -44,7 +52,7 @@ import { Book, Rendition } from 'epubjs';
 // Set PDF.js worker to local bundled worker (no network request)
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl as unknown as string;
 // Hint PDF.js to load JPEG2000 fallback (no-wasm) module from the same bundle; prevents blank JPX images
-// @ts-ignore
+// @ts-expect-error
 pdfjsLib.GlobalWorkerOptions.wasmUrl = undefined;
 
 export interface DocumentViewerProps {

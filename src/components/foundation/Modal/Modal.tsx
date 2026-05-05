@@ -29,7 +29,7 @@
  * - Optimized animations
  */
 
-import { Component, ParentProps, createEffect, onCleanup, Show } from 'solid-js';
+import { type Component, type ParentProps, createEffect, onCleanup, Show } from 'solid-js';
 import { Portal } from 'solid-js/web';
 import { X } from 'lucide-solid';
 import { Button } from '../Button';

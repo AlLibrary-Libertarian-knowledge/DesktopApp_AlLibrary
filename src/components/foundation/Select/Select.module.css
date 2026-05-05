@@ -295,12 +295,12 @@
 }
 
 /* Cultural Theme Support */
-.select[data-cultural-theme='indigenous'] {
+.select[data-cultural-theme="indigenous"] {
   --color-primary-500: var(--color-cultural-traditional);
   --color-primary-100: var(--color-cultural-traditional-light);
 }
 
-.select[data-cultural-theme='traditional'] {
+.select[data-cultural-theme="traditional"] {
   --color-primary-500: var(--color-cultural-sacred);
   --color-primary-100: var(--color-cultural-sacred-light);
 }

@@ -27,7 +27,3 @@ class ShareService {
 }
 
 export const shareService = new ShareService();
-
-
-
-

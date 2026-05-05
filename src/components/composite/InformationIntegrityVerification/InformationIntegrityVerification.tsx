@@ -9,7 +9,7 @@
  * Educational approach to information literacy and critical thinking.
  */
 
-import { Component, createSignal, createEffect, Show, For, onMount } from 'solid-js';
+import { type Component, createSignal, createEffect, Show, For, onMount } from 'solid-js';
 import { Card, Button, Badge, ProgressBar, Modal } from '../../foundation';
 import {
   Shield,

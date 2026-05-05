@@ -1,4 +1,4 @@
-import { Component, Show } from 'solid-js';
+import { type Component, Show } from 'solid-js';
 import { CULTURAL_LABELS } from '../../../constants/cultural';
 import styles from './LoadingSpinner.module.css';
 

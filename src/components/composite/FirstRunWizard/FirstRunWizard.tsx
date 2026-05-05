@@ -1,4 +1,4 @@
-import { Component, createSignal, Show } from 'solid-js';
+import { type Component, createSignal, Show } from 'solid-js';
 import styles from './FirstRunWizard.module.css';
 import { settingsService } from '@/services/storage/settingsService';
 import { invoke } from '@tauri-apps/api/core';
@@ -21,7 +21,9 @@ export const FirstRunWizard: Component<FirstRunWizardProps> = props => {
     try {
       const path = await invoke<string | null>('pick_library_folder');
       if (path && path.trim().length > 0) setPickedPath(path);
-    } catch { setError('Failed to open folder picker'); }
+    } catch {
+      setError('Failed to open folder picker');
+    }
   };
 
   const finish = async () => {
@@ -31,7 +33,11 @@ export const FirstRunWizard: Component<FirstRunWizardProps> = props => {
     setError(null);
     try {
       await settingsService.setProjectFolder(path);
-      try { globalThis.localStorage?.setItem('FIRST_RUN_DONE', '1'); } catch { /* noop */ }
+      try {
+        globalThis.localStorage?.setItem('FIRST_RUN_DONE', '1');
+      } catch {
+        /* noop */
+      }
       props.onComplete();
     } catch {
       setError('Failed to save folder');
@@ -48,7 +54,10 @@ export const FirstRunWizard: Component<FirstRunWizardProps> = props => {
           <Show when={step() === 1}>
             <div class={styles.section}>
               <h3 class={styles.title}>Private P2P over Tor</h3>
-              <p class={styles.text}>Your library shares only PDFs/EPUBs over an anonymous network. Cultural info is educational only.</p>
+              <p class={styles.text}>
+                Your library shares only PDFs/EPUBs over an anonymous network. Cultural info is
+                educational only.
+              </p>
               <ul class={styles.list}>
                 <li>Security-first: malware/legal checks only</li>
                 <li>No censorship: information-only cultural context</li>
@@ -62,7 +71,9 @@ export const FirstRunWizard: Component<FirstRunWizardProps> = props => {
               <p class={styles.text}>All documents, indexes and cache will be stored here.</p>
               <div class={styles.pathRow}>
                 <div class={styles.pathBox}>{pickedPath() || 'No folder selected'}</div>
-                <button class={styles.btn} onClick={pickFolder}>Pick Folder</button>
+                <button class={styles.btn} onClick={pickFolder}>
+                  Pick Folder
+                </button>
               </div>
               <Show when={error()}>
                 <div class={styles.error}>{error()}</div>
@@ -73,17 +84,30 @@ export const FirstRunWizard: Component<FirstRunWizardProps> = props => {
             <div class={styles.section}>
               <h3 class={styles.title}>Ready</h3>
               <p class={styles.text}>We will index your folder and prepare private networking.</p>
-              <div class={styles.summary}><span>Folder</span><span>{pickedPath() || '-'}</span></div>
+              <div class={styles.summary}>
+                <span>Folder</span>
+                <span>{pickedPath() || '-'}</span>
+              </div>
             </div>
           </Show>
         </div>
         <div class={styles.footer}>
-          <button class={styles.btnSecondary} disabled={step() === 1 || busy()} onClick={back}>Back</button>
+          <button class={styles.btnSecondary} disabled={step() === 1 || busy()} onClick={back}>
+            Back
+          </button>
           <Show when={step() < 3}>
-            <button class={styles.btnPrimary} onClick={next} disabled={busy() || (step() === 2 && !pickedPath())}>Next</button>
+            <button
+              class={styles.btnPrimary}
+              onClick={next}
+              disabled={busy() || (step() === 2 && !pickedPath())}
+            >
+              Next
+            </button>
           </Show>
           <Show when={step() === 3}>
-            <button class={styles.btnPrimary} onClick={finish} disabled={busy() || !pickedPath()}>{busy() ? 'Saving...' : 'Finish'}</button>
+            <button class={styles.btnPrimary} onClick={finish} disabled={busy() || !pickedPath()}>
+              {busy() ? 'Saving...' : 'Finish'}
+            </button>
           </Show>
         </div>
       </div>
@@ -92,5 +116,3 @@ export const FirstRunWizard: Component<FirstRunWizardProps> = props => {
 };
 
 export default FirstRunWizard;
-
-

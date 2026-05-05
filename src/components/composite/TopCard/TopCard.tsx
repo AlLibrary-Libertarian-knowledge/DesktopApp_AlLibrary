@@ -1,4 +1,4 @@
-import { Component, JSX, children } from 'solid-js';
+import { type Component, type JSX, children } from 'solid-js';
 import styles from './TopCard.module.css';
 
 export interface TopCardProps {

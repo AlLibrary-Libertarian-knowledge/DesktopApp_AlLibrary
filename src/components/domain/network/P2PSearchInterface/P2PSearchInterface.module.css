@@ -42,7 +42,7 @@
 
 /* Animated Circuit Grid Background */
 .searchInterface::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -68,7 +68,7 @@
 
 /* Scanning Light Effect */
 .searchInterface::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -206,7 +206,7 @@
 }
 
 .searchControls::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -280,7 +280,7 @@
 }
 
 .searchButton::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -326,7 +326,7 @@
 }
 
 .optionGroup::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -469,7 +469,7 @@
 }
 
 .progressBar::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -548,7 +548,7 @@
 }
 
 .resultItem::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;

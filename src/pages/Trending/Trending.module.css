@@ -7,17 +7,13 @@
     radial-gradient(circle at 40% 40%, rgba(68, 255, 153, 0.1) 0%, transparent 50%),
     linear-gradient(135deg, #0a0f0a 0%, #0d1b0d 25%, #0a1a0a 50%, #0d0f0d 75%, #0a0f0a 100%);
   color: #e8f5e8;
-  font-family:
-    'Inter',
-    -apple-system,
-    BlinkMacSystemFont,
-    sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
   position: relative;
   overflow-x: hidden;
 }
 
 .trending-page::before {
-  content: '';
+  content: "";
   position: fixed;
   top: 0;
   left: 0;
@@ -435,7 +431,7 @@
 }
 
 .metric-card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -640,7 +636,7 @@
 }
 
 .trending-card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;

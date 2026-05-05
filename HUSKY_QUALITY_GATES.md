@@ -14,7 +14,7 @@ pnpm install
 ### Pre-commit
 
 - Secret scan on staged files (`scripts/hooks/secret-scan.cjs`)
-- **lint-staged**: ESLint `--fix` + Prettier on staged files (see `package.json` → `lint-staged`)
+- **lint-staged**: Biome `check --write` on staged files (see `package.json` → `lint-staged`)
 
 ### Commit message
 

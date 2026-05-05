@@ -3,7 +3,7 @@
  * Orange/Amber Cyberpunk Theme - Educational Focus
  */
 
-import { Component, createSignal, For } from 'solid-js';
+import { type Component, createSignal, For } from 'solid-js';
 import {
   BookOpen,
   Leaf,

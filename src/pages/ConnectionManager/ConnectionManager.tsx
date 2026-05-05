@@ -5,7 +5,7 @@
  * and cultural network participation.
  */
 
-import { Component } from 'solid-js';
+import type { Component } from 'solid-js';
 import { ConnectionManager as ConnectionManagerComponent } from '@/components/domain/network/ConnectionManager';
 import styles from './ConnectionManager.module.css';
 

@@ -1,4 +1,4 @@
-import { createSignal, createEffect, onCleanup, JSX, For, Show } from 'solid-js';
+import { createSignal, createEffect, onCleanup, type JSX, For, Show } from 'solid-js';
 import styles from './CustomDropdown.module.css';
 
 export interface DropdownOption {

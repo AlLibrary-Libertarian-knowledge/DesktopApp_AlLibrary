@@ -109,7 +109,7 @@
 
 /* Gradient Effect for Progress Fill */
 .progressFill::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -204,7 +204,7 @@
 }
 
 /* Cultural Theme Support */
-.progress[data-cultural-theme='indigenous'] .progressFill {
+.progress[data-cultural-theme="indigenous"] .progressFill {
   background: linear-gradient(
     90deg,
     var(--color-cultural-traditional),
@@ -212,7 +212,7 @@
   );
 }
 
-.progress[data-cultural-theme='traditional'] .progressFill {
+.progress[data-cultural-theme="traditional"] .progressFill {
   background: linear-gradient(
     90deg,
     var(--color-cultural-sacred),
@@ -220,7 +220,7 @@
   );
 }
 
-.progress[data-cultural-theme='academic'] .progressFill {
+.progress[data-cultural-theme="academic"] .progressFill {
   background: linear-gradient(
     90deg,
     var(--color-cultural-academic),

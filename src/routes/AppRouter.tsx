@@ -31,124 +31,190 @@ const AppRouter = () => {
   return (
     <Router>
       {/* Library Routes */}
-      <Route path="/" component={() => (
-        <Suspense fallback={<RouteLoading />}>
-          <Home />
-        </Suspense>
-      )} />
-      <Route path="/collections" component={() => (
-        <Suspense fallback={<RouteLoading />}>
-          <Collections />
-        </Suspense>
-      )} />
-      <Route path="/favorites" component={() => (
-        <Suspense fallback={<RouteLoading />}>
-          <Favorites />
-        </Suspense>
-      )} />
-      <Route path="/recent" component={() => (
-        <Suspense fallback={<RouteLoading />}>
-          <Recent />
-        </Suspense>
-      )} />
+      <Route
+        path="/"
+        component={() => (
+          <Suspense fallback={<RouteLoading />}>
+            <Home />
+          </Suspense>
+        )}
+      />
+      <Route
+        path="/collections"
+        component={() => (
+          <Suspense fallback={<RouteLoading />}>
+            <Collections />
+          </Suspense>
+        )}
+      />
+      <Route
+        path="/favorites"
+        component={() => (
+          <Suspense fallback={<RouteLoading />}>
+            <Favorites />
+          </Suspense>
+        )}
+      />
+      <Route
+        path="/recent"
+        component={() => (
+          <Suspense fallback={<RouteLoading />}>
+            <Recent />
+          </Suspense>
+        )}
+      />
 
       {/* Discovery Routes */}
-      <Route path="/search" component={() => (
-        <Suspense fallback={<RouteLoading />}>
-          <SearchPage />
-        </Suspense>
-      )} />
-      <Route path="/search-network" component={() => (
-        <Suspense fallback={<RouteLoading />}>
-          <SearchNetworkPage />
-        </Suspense>
-      )} />
-      <Route path="/browse" component={() => (
-        <Suspense fallback={<RouteLoading />}>
-          <Browse />
-        </Suspense>
-      )} />
-      <Route path="/trending" component={() => (
-        <Suspense fallback={<RouteLoading />}>
-          <Trending />
-        </Suspense>
-      )} />
-      <Route path="/new-arrivals" component={() => (
-        <Suspense fallback={<RouteLoading />}>
-          <NewArrivalsPage />
-        </Suspense>
-      )} />
+      <Route
+        path="/search"
+        component={() => (
+          <Suspense fallback={<RouteLoading />}>
+            <SearchPage />
+          </Suspense>
+        )}
+      />
+      <Route
+        path="/search-network"
+        component={() => (
+          <Suspense fallback={<RouteLoading />}>
+            <SearchNetworkPage />
+          </Suspense>
+        )}
+      />
+      <Route
+        path="/browse"
+        component={() => (
+          <Suspense fallback={<RouteLoading />}>
+            <Browse />
+          </Suspense>
+        )}
+      />
+      <Route
+        path="/trending"
+        component={() => (
+          <Suspense fallback={<RouteLoading />}>
+            <Trending />
+          </Suspense>
+        )}
+      />
+      <Route
+        path="/new-arrivals"
+        component={() => (
+          <Suspense fallback={<RouteLoading />}>
+            <NewArrivalsPage />
+          </Suspense>
+        )}
+      />
 
       {/* Cultural Heritage Routes */}
-      <Route path="/cultural-contexts" component={() => (
-        <Suspense fallback={<RouteLoading />}>
-          <CulturalContexts />
-        </Suspense>
-      )} />
-      <Route path="/traditional-knowledge" component={() => (
-        <Suspense fallback={<RouteLoading />}>
-          <TraditionalKnowledge />
-        </Suspense>
-      )} />
-      <Route path="/community-guidelines" component={() => (
-        <Suspense fallback={<RouteLoading />}>
-          <CommunityGuidelines />
-        </Suspense>
-      )} />
-      <Route path="/preservation" component={() => (
-        <Suspense fallback={<RouteLoading />}>
-          <Preservation />
-        </Suspense>
-      )} />
+      <Route
+        path="/cultural-contexts"
+        component={() => (
+          <Suspense fallback={<RouteLoading />}>
+            <CulturalContexts />
+          </Suspense>
+        )}
+      />
+      <Route
+        path="/traditional-knowledge"
+        component={() => (
+          <Suspense fallback={<RouteLoading />}>
+            <TraditionalKnowledge />
+          </Suspense>
+        )}
+      />
+      <Route
+        path="/community-guidelines"
+        component={() => (
+          <Suspense fallback={<RouteLoading />}>
+            <CommunityGuidelines />
+          </Suspense>
+        )}
+      />
+      <Route
+        path="/preservation"
+        component={() => (
+          <Suspense fallback={<RouteLoading />}>
+            <Preservation />
+          </Suspense>
+        )}
+      />
 
       {/* Network Routes */}
-      <Route path="/peers" component={() => (
-        <Suspense fallback={<RouteLoading />}>
-          <Peers />
-        </Suspense>
-      )} />
-      <Route path="/network-health" component={() => (
-        <Suspense fallback={<RouteLoading />}>
-          <NetworkHealth />
-        </Suspense>
-      )} />
-      <Route path="/p2p-search" component={() => (
-        <Suspense fallback={<RouteLoading />}>
-          <P2PSearch />
-        </Suspense>
-      )} />
-      <Route path="/p2p-overview" component={() => (
-        <Suspense fallback={<RouteLoading />}>
-          <P2POverview />
-        </Suspense>
-      )} />
-      <Route path="/connection-manager" component={() => (
-        <Suspense fallback={<RouteLoading />}>
-          <ConnectionManager />
-        </Suspense>
-      )} />
-      <Route path="/sharing" component={() => (
-        <Suspense fallback={<RouteLoading />}>
-          <div>Sharing Status Page</div>
-        </Suspense>
-      )} />
-      <Route path="/downloads" component={() => (
-        <Suspense fallback={<RouteLoading />}>
-          <div>Downloads Page</div>
-        </Suspense>
-      )} />
-      <Route path="/sync" component={() => (
-        <Suspense fallback={<RouteLoading />}>
-          <div>Synchronization Page</div>
-        </Suspense>
-      )} />
+      <Route
+        path="/peers"
+        component={() => (
+          <Suspense fallback={<RouteLoading />}>
+            <Peers />
+          </Suspense>
+        )}
+      />
+      <Route
+        path="/network-health"
+        component={() => (
+          <Suspense fallback={<RouteLoading />}>
+            <NetworkHealth />
+          </Suspense>
+        )}
+      />
+      <Route
+        path="/p2p-search"
+        component={() => (
+          <Suspense fallback={<RouteLoading />}>
+            <P2PSearch />
+          </Suspense>
+        )}
+      />
+      <Route
+        path="/p2p-overview"
+        component={() => (
+          <Suspense fallback={<RouteLoading />}>
+            <P2POverview />
+          </Suspense>
+        )}
+      />
+      <Route
+        path="/connection-manager"
+        component={() => (
+          <Suspense fallback={<RouteLoading />}>
+            <ConnectionManager />
+          </Suspense>
+        )}
+      />
+      <Route
+        path="/sharing"
+        component={() => (
+          <Suspense fallback={<RouteLoading />}>
+            <div>Sharing Status Page</div>
+          </Suspense>
+        )}
+      />
+      <Route
+        path="/downloads"
+        component={() => (
+          <Suspense fallback={<RouteLoading />}>
+            <div>Downloads Page</div>
+          </Suspense>
+        )}
+      />
+      <Route
+        path="/sync"
+        component={() => (
+          <Suspense fallback={<RouteLoading />}>
+            <div>Synchronization Page</div>
+          </Suspense>
+        )}
+      />
 
       {/* Document Reader */}
-      <Route path="/reader" component={() => (
-        <Suspense fallback={<RouteLoading />}>
-          <DocumentReader />
-        </Suspense>
-      )} />
+      <Route
+        path="/reader"
+        component={() => (
+          <Suspense fallback={<RouteLoading />}>
+            <DocumentReader />
+          </Suspense>
+        )}
+      />
 
       {/* Fallback Route */}
       <Route

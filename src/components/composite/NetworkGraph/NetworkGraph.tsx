@@ -1,4 +1,4 @@
-import { Component, onMount, onCleanup, For } from 'solid-js';
+import { type Component, onMount, onCleanup, For } from 'solid-js';
 import { useTranslation } from '../../../i18n/hooks';
 import {
   CanvasRenderer,

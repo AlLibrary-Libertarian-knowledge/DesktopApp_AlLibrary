@@ -5,7 +5,7 @@
  * is working correctly with the language selector
  */
 
-import { Component, onMount, For } from 'solid-js';
+import { type Component, onMount, For } from 'solid-js';
 import { useTranslation, useLanguage } from './i18n/hooks';
 import styles from './test-i18n.module.css';
 

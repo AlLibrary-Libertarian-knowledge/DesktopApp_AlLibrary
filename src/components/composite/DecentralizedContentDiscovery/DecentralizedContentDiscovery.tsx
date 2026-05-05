@@ -8,7 +8,7 @@
  * educational cultural context and resistance to information blocking.
  */
 
-import { Component, createSignal, Show, For, onMount } from 'solid-js';
+import { type Component, createSignal, Show, For, onMount } from 'solid-js';
 import { Card, Button, Badge, Modal, Input } from '../../foundation';
 import {
   Search,

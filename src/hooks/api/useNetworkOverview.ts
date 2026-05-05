@@ -32,5 +32,3 @@ export const useNetworkOverview = () => {
 
   return { nodeStatus, metrics, torStatus };
 };
-
-

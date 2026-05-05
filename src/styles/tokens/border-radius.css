@@ -290,35 +290,35 @@
 
 /* ===== CULTURAL BORDER RADIUS ADJUSTMENTS ===== */
 
-[data-cultural-theme='indigenous'] {
+[data-cultural-theme="indigenous"] {
   --radius-component-md: var(--radius-cultural-indigenous-md);
   --radius-button-md: var(--radius-cultural-indigenous-md);
   --radius-card-md: var(--radius-cultural-indigenous-md);
   --radius-input-md: var(--radius-cultural-indigenous-md);
 }
 
-[data-cultural-theme='traditional'] {
+[data-cultural-theme="traditional"] {
   --radius-component-md: var(--radius-cultural-traditional-md);
   --radius-button-md: var(--radius-cultural-traditional-md);
   --radius-card-md: var(--radius-cultural-traditional-md);
   --radius-input-md: var(--radius-cultural-traditional-md);
 }
 
-[data-cultural-theme='ceremonial'] {
+[data-cultural-theme="ceremonial"] {
   --radius-component-md: var(--radius-cultural-ceremonial-md);
   --radius-button-md: var(--radius-cultural-ceremonial-md);
   --radius-card-md: var(--radius-cultural-ceremonial-md);
   --radius-input-md: var(--radius-cultural-ceremonial-md);
 }
 
-[data-cultural-theme='academic'] {
+[data-cultural-theme="academic"] {
   --radius-component-md: var(--radius-cultural-academic-md);
   --radius-button-md: var(--radius-cultural-academic-md);
   --radius-card-md: var(--radius-cultural-academic-md);
   --radius-input-md: var(--radius-cultural-academic-md);
 }
 
-[data-cultural-theme='community'] {
+[data-cultural-theme="community"] {
   --radius-component-md: var(--radius-cultural-community-md);
   --radius-button-md: var(--radius-cultural-community-md);
   --radius-card-md: var(--radius-cultural-community-md);
@@ -327,7 +327,7 @@
 
 /* ===== RTL BORDER RADIUS SUPPORT ===== */
 
-[dir='rtl'] {
+[dir="rtl"] {
   /* RTL border radius adjustments for directional elements */
   --radius-tl-xs: 0 var(--radius-xs) 0 0;
   --radius-tr-xs: var(--radius-xs) 0 0 0;

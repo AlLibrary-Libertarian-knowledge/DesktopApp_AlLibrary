@@ -1,4 +1,4 @@
-import { Page, BrowserContext } from '@playwright/test';
+import type { Page, BrowserContext } from '@playwright/test';
 import { Buffer } from 'buffer';
 
 /**
@@ -13,12 +13,12 @@ export class TestDataGenerator {
   }
 
   static generateTestEmail(): string {
-    return `test-${this.generateRandomString(8)}@example.com`;
+    return `test-${TestDataGenerator.generateRandomString(8)}@example.com`;
   }
 
   static generateTestDocument() {
     return {
-      title: `Test Document ${this.generateRandomString(5)}`,
+      title: `Test Document ${TestDataGenerator.generateRandomString(5)}`,
       description: `This is a test document created at ${new Date().toISOString()}`,
       category: 'Test Category',
       tags: ['test', 'automated', 'e2e'],
@@ -27,7 +27,7 @@ export class TestDataGenerator {
 
   static generateTestCollection() {
     return {
-      name: `Test Collection ${this.generateRandomString(5)}`,
+      name: `Test Collection ${TestDataGenerator.generateRandomString(5)}`,
       description: `Test collection created for e2e testing at ${new Date().toISOString()}`,
       isPublic: false,
     };

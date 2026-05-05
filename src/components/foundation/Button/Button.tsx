@@ -1,4 +1,4 @@
-import { Component, ParentProps, createSignal, createEffect } from 'solid-js';
+import { type Component, type ParentProps, createSignal, createEffect } from 'solid-js';
 import { CULTURAL_SENSITIVITY_LEVELS, CULTURAL_LABELS } from '../../../constants/cultural';
 import { useTranslation } from '../../../i18n/hooks';
 import styles from './Button.module.css';

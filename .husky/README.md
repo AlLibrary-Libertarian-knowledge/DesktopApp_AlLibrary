@@ -6,7 +6,7 @@ Git hooks for the **desktopapp-allibrary** repo (SolidJS, Vite, Tauri v2, pnpm).
 
 | Hook                   | Purpose                                                                                                                                                            |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **pre-commit**         | Block secrets; run **lint-staged** (ESLint + Prettier on staged files)                                                                                             |
+| **pre-commit**         | Block secrets; run **lint-staged** (Biome on staged files)                                                                                                        |
 | **prepare-commit-msg** | Comment hints for conventional commit format                                                                                                                       |
 | **commit-msg**         | Validate branch name + conventional commit header                                                                                                                  |
 | **pre-push**           | Router → [`pre-push.linux.sh`](pre-push.linux.sh) or [`pre-push.windows.sh`](pre-push.windows.sh) — tiered quality, audit, cultural policy, Playwright, Vite build |
@@ -20,7 +20,7 @@ See **[OS_DETECTION.md](OS_DETECTION.md)** for Windows vs Linux/macOS pre-push b
 
 - **`package.json`**
   - `"prepare": "husky"`
-  - `"lint-staged"` — staged ESLint/Prettier (no Vitest in pre-commit; tests run in CI/pre-push)
+  - `"lint-staged"` — staged Biome (no Vitest in pre-commit; tests run in CI/pre-push)
   - `"quality"`, `"quality:ci"`, `"husky:analyze:changes"`
 - **`scripts/hooks/`** — `secret-scan.cjs`, `changed-files.cjs`
 - **[`../HUSKY_QUALITY_GATES.md`](../HUSKY_QUALITY_GATES.md)** — full gate documentation

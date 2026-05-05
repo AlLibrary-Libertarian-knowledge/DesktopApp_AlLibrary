@@ -11,7 +11,7 @@
  * - Provides trust metrics without censoring access
  */
 
-import { Component, For, Show, createMemo } from 'solid-js';
+import { type Component, For, Show, createMemo } from 'solid-js';
 import { Card } from '@/components/foundation/Card';
 import { Badge } from '@/components/foundation/Badge';
 import { Button } from '@/components/foundation/Button';

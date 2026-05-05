@@ -1,4 +1,4 @@
-import { Component, JSX, createSignal, createEffect, Show } from 'solid-js';
+import { type Component, type JSX, createSignal, createEffect, Show } from 'solid-js';
 import { useTranslation } from '../../../i18n/hooks';
 import { validationService } from '../../../services/validationService';
 import { CULTURAL_LABELS } from '../../../constants/cultural';

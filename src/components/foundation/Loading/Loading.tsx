@@ -1,4 +1,4 @@
-import { Component, createSignal, onMount, onCleanup, createEffect, Index } from 'solid-js';
+import { type Component, createSignal, onMount, onCleanup, createEffect, Index } from 'solid-js';
 import { Dynamic } from 'solid-js/web';
 import {
   Globe,

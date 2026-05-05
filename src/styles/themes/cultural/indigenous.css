@@ -4,7 +4,7 @@
 
 /* Indigenous Theme - Natural, Organic, Respectful */
 
-[data-cultural-theme='indigenous'] {
+[data-cultural-theme="indigenous"] {
   /* ===== COLOR OVERRIDES ===== */
 
   /* Primary Colors - Natural Earth Tones */
@@ -67,7 +67,7 @@
 
   /* Font Family - Indigenous-friendly fonts */
   --font-family-sans:
-    'Noto Sans', 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
+    "Noto Sans", "Source Sans Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
     sans-serif;
 
   /* Typography Scale - Natural proportions */
@@ -249,7 +249,7 @@
 /* ===== DARK MODE SUPPORT ===== */
 
 @media (prefers-color-scheme: dark) {
-  [data-cultural-theme='indigenous'] {
+  [data-cultural-theme="indigenous"] {
     /* Dark mode color adjustments */
     --color-background-primary: #0f172a;
     --color-background-secondary: #1e293b;

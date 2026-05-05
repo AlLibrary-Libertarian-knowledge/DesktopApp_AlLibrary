@@ -96,7 +96,9 @@ export class DocumentApiService {
   /**
    * Get document engagement stats
    */
-  async getDocumentStats(documentId: string): Promise<{ viewCount: number; favoriteCount: number; commentCount: number }> {
+  async getDocumentStats(
+    documentId: string
+  ): Promise<{ viewCount: number; favoriteCount: number; commentCount: number }> {
     try {
       const result = await invoke('get_document_stats', { documentId });
       return {

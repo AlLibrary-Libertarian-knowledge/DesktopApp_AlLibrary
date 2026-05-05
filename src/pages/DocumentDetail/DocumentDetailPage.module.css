@@ -304,15 +304,15 @@
 }
 
 /* Cultural Theme Support */
-.documentDetailPage[data-cultural-theme='indigenous'] {
+.documentDetailPage[data-cultural-theme="indigenous"] {
   --color-primary: var(--color-cultural-traditional);
 }
 
-.documentDetailPage[data-cultural-theme='traditional'] {
+.documentDetailPage[data-cultural-theme="traditional"] {
   --color-primary: var(--color-cultural-sacred);
 }
 
-.documentDetailPage[data-cultural-theme='academic'] {
+.documentDetailPage[data-cultural-theme="academic"] {
   --color-primary: var(--color-cultural-academic);
 }
 

@@ -13,7 +13,11 @@ export const settingsService = {
   },
   async setProjectFolder(path: string): Promise<void> {
     globalThis.localStorage?.setItem(SETTINGS_KEY, path);
-    try { await invoke('save_app_settings', { settings: { projectFolderPath: path } }); } catch { /* noop */ }
+    try {
+      await invoke('save_app_settings', { settings: { projectFolderPath: path } });
+    } catch {
+      /* noop */
+    }
     try {
       if (typeof window !== 'undefined') {
         const evt: any = (window as any).CustomEvent
@@ -21,12 +25,12 @@ export const settingsService = {
           : { type: 'project-folder-changed' };
         window.dispatchEvent(evt);
       }
-    } catch { /* noop */ }
+    } catch {
+      /* noop */
+    }
   },
   async ensureInitialized(): Promise<string | null> {
     // First-run flow now; no installer-based adoption.
     return await this.getProjectFolder();
   },
 };
-
-

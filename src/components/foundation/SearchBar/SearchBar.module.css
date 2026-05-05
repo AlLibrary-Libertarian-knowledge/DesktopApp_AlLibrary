@@ -495,8 +495,8 @@
 }
 
 /* Screen Reader Support */
-.search-bar[aria-busy='true']::after {
-  content: 'Searching...';
+.search-bar[aria-busy="true"]::after {
+  content: "Searching...";
   position: absolute;
   left: -10000px;
   width: 1px;

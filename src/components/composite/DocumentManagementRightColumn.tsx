@@ -9,7 +9,7 @@ import {
   AlertTriangle,
   CheckCircle,
 } from 'lucide-solid';
-import { For, Show, createMemo, Component } from 'solid-js';
+import { For, Show, createMemo, type Component } from 'solid-js';
 import type { LucideIcon } from 'lucide-solid';
 
 interface StorageInfo {

@@ -1,4 +1,4 @@
-import { Component, JSX, createSignal, Show, For } from 'solid-js';
+import { type Component, JSX, createSignal, Show, For } from 'solid-js';
 import { Button, Card } from '../../foundation';
 import {
   Download,

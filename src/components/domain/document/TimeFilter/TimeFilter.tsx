@@ -27,7 +27,7 @@
  * - NO ACCESS RESTRICTIONS - information only
  */
 
-import { Component, createSignal, createMemo, Show, For } from 'solid-js';
+import { type Component, createSignal, createMemo, Show, For } from 'solid-js';
 import { Calendar, Clock, Filter, Info } from 'lucide-solid';
 import { Button } from '@/components/foundation/Button';
 import { Badge } from '@/components/foundation/Badge';

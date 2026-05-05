@@ -26,7 +26,7 @@ export class PhysicsEngine {
 
     if (distance > 0 && distance < this.physicsConfig.atmosphereRadius) {
       const penetration = 1 - distance / this.physicsConfig.atmosphereRadius;
-      const repulsionStrength = this.physicsConfig.maxRepulsionForce * Math.pow(penetration, 2);
+      const repulsionStrength = this.physicsConfig.maxRepulsionForce * penetration ** 2;
       const forceX = (dx / distance) * repulsionStrength;
       const forceY = (dy / distance) * repulsionStrength;
       return { fx: forceX, fy: forceY };
@@ -114,11 +114,10 @@ export class PhysicsEngine {
             Math.min(this.physicsConfig.maxOrbitRadius, newOrbitRadius)
           );
 
-          const speedMultiplier = Math.pow(
-            this.physicsConfig.minOrbitRadius /
-              Math.max(constrainedRadius, this.physicsConfig.minOrbitRadius),
-            0.5
-          );
+          const speedMultiplier =
+            (this.physicsConfig.minOrbitRadius /
+              Math.max(constrainedRadius, this.physicsConfig.minOrbitRadius)) **
+            0.5;
           const baseSpeed =
             this.physicsConfig.baseOrbitSpeed *
             speedMultiplier *
@@ -174,11 +173,10 @@ export class PhysicsEngine {
         const distanceFromCenter = Math.sqrt(
           (node.x - centerNode.x) ** 2 + (node.y - centerNode.y) ** 2
         );
-        const speedMultiplier = Math.pow(
-          this.physicsConfig.minOrbitRadius /
-            Math.max(distanceFromCenter, this.physicsConfig.minOrbitRadius),
-          0.7
-        );
+        const speedMultiplier =
+          (this.physicsConfig.minOrbitRadius /
+            Math.max(distanceFromCenter, this.physicsConfig.minOrbitRadius)) **
+          0.7;
         const adjustedSpeed = speed * speedMultiplier;
         const newAngle = currentAngle + adjustedSpeed;
 
@@ -199,15 +197,14 @@ export class PhysicsEngine {
             if (distance > 0 && distance < this.physicsConfig.minSafeDistance) {
               const emergencyPenetration = 1 - distance / this.physicsConfig.minSafeDistance;
               const emergencyForce =
-                this.physicsConfig.emergencyRepulsion * Math.pow(emergencyPenetration, 1.5);
+                this.physicsConfig.emergencyRepulsion * emergencyPenetration ** 1.5;
               repulsionX += (dx / distance) * emergencyForce;
               repulsionY += (dy / distance) * emergencyForce;
               maxAtmosphereInfluence = 1.0;
             } else if (distance > 0 && distance < this.physicsConfig.atmosphereRadius) {
               const penetration = 1 - distance / this.physicsConfig.atmosphereRadius;
               maxAtmosphereInfluence = Math.max(maxAtmosphereInfluence, penetration);
-              const repulsionStrength =
-                this.physicsConfig.maxRepulsionForce * Math.pow(penetration, 2);
+              const repulsionStrength = this.physicsConfig.maxRepulsionForce * penetration ** 2;
               repulsionX += (dx / distance) * repulsionStrength;
               repulsionY += (dy / distance) * repulsionStrength;
             }

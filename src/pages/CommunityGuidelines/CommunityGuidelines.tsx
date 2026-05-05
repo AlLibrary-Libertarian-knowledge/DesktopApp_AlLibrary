@@ -3,7 +3,7 @@
  * Blue/Cyan Cyberpunk Theme - Community Collaboration Focus
  */
 
-import { Component, createSignal, For } from 'solid-js';
+import { type Component, createSignal, For } from 'solid-js';
 import {
   Users,
   Heart,

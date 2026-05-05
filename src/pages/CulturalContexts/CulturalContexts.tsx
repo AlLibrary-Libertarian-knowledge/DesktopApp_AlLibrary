@@ -3,7 +3,7 @@
  * Purple/Violet Cyberpunk Theme - Information-First Approach
  */
 
-import { Component, createSignal } from 'solid-js';
+import { type Component, createSignal } from 'solid-js';
 import { Globe, BookOpen, Users, Heart, Lightbulb, Info } from 'lucide-solid';
 
 // Styles

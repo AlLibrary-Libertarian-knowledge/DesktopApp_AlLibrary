@@ -8,7 +8,7 @@
  * never for access restriction. Multiple perspectives supported equally.
  */
 
-import { Component, createSignal, Show, For } from 'solid-js';
+import { type Component, createSignal, Show, For } from 'solid-js';
 import { Button, Input, Card, Modal } from '../../foundation';
 import { Upload, FileText, AlertCircle, CheckCircle, Clock, Shield, Globe } from 'lucide-solid';
 import { UploadService } from '../../../services/upload/uploadService';

@@ -5,7 +5,7 @@
  * Provides consistent page structure across the application.
  */
 
-import { Component, JSX, Show, For } from 'solid-js';
+import { type Component, type JSX, Show, For } from 'solid-js';
 import { useTranslation } from '../../../i18n/hooks';
 import styles from './PageHeader.module.css';
 

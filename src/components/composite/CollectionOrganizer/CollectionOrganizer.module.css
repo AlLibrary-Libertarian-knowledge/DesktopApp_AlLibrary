@@ -25,7 +25,7 @@
 }
 
 .organizer::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -96,7 +96,7 @@
 }
 
 .progressFill::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -160,7 +160,7 @@
   cursor: pointer;
 }
 
-.controlLabel input[type='checkbox'] {
+.controlLabel input[type="checkbox"] {
   width: 16px;
   height: 16px;
   accent-color: #8b4513;
@@ -250,7 +250,7 @@
 }
 
 .suggestionItem.selected::before {
-  content: '✓';
+  content: "✓";
   position: absolute;
   right: 1rem;
   top: 50%;

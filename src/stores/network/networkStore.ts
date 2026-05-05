@@ -58,7 +58,12 @@ export function useNetworkStore() {
     refresh: refreshOnce,
     startPolling,
     stopPolling,
-    snapshot: (): NetworkSnapshot => ({ status: status(), metrics: metrics(), tor: tor(), lastSyncAt: lastSyncAt() }),
+    snapshot: (): NetworkSnapshot => ({
+      status: status(),
+      metrics: metrics(),
+      tor: tor(),
+      lastSyncAt: lastSyncAt(),
+    }),
     labelTorMode: () => (tor()?.circuitEstablished ? 'Internet + TOR' : 'Internet'),
     connectedPeers: () => status()?.connectedPeers ?? 0,
     networkHealthPct: () => {
@@ -69,7 +74,8 @@ export function useNetworkStore() {
     downloadMbps: () => {
       const m = metrics() as any;
       // Support both shapes: { performance: { totalBandwidth } } or { download_rate }
-      if (m?.performance?.totalBandwidth != null) return (m.performance.totalBandwidth / (1024 * 1024)).toFixed(1);
+      if (m?.performance?.totalBandwidth != null)
+        return (m.performance.totalBandwidth / (1024 * 1024)).toFixed(1);
       if (typeof m?.download_rate === 'number') return (m.download_rate / (1024 * 1024)).toFixed(1);
       return '0.0';
     },
@@ -84,5 +90,3 @@ export function useNetworkStore() {
     activeDiscovery: () => Number((metrics() as any)?.active_discovery ?? 0),
   };
 }
-
-

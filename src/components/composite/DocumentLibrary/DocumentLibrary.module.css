@@ -615,7 +615,7 @@
 
 /* Screen Reader Support */
 .document-library[aria-label]::after {
-  content: 'Document library interface';
+  content: "Document library interface";
   position: absolute;
   left: -10000px;
   width: 1px;
@@ -624,27 +624,27 @@
 }
 
 /* Cultural Theme Variations */
-.document-library[data-cultural-theme='indigenous'] {
+.document-library[data-cultural-theme="indigenous"] {
   --cultural-accent: var(--indigenous-accent);
   --cultural-bg: var(--indigenous-bg);
 }
 
-.document-library[data-cultural-theme='traditional'] {
+.document-library[data-cultural-theme="traditional"] {
   --cultural-accent: var(--traditional-accent);
   --cultural-bg: var(--traditional-bg);
 }
 
-.document-library[data-cultural-theme='modern'] {
+.document-library[data-cultural-theme="modern"] {
   --cultural-accent: var(--modern-accent);
   --cultural-bg: var(--modern-bg);
 }
 
-.document-library[data-cultural-theme='ceremonial'] {
+.document-library[data-cultural-theme="ceremonial"] {
   --cultural-accent: var(--ceremonial-accent);
   --cultural-bg: var(--ceremonial-bg);
 }
 
-.document-library[data-cultural-theme='community'] {
+.document-library[data-cultural-theme="community"] {
   --cultural-accent: var(--community-accent);
   --cultural-bg: var(--community-bg);
 }

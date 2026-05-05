@@ -6,7 +6,7 @@
  * Provides comprehensive cultural learning experiences with respect and understanding.
  */
 
-import { Component, createSignal, createEffect, For, Show, ErrorBoundary } from 'solid-js';
+import { type Component, createSignal, createEffect, For, Show, ErrorBoundary } from 'solid-js';
 import { createAsync } from '@solidjs/router';
 import {
   culturalApi,

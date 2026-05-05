@@ -1,4 +1,4 @@
-import { Component, createSignal, createEffect, Show, For, Switch, Match } from 'solid-js';
+import { type Component, createSignal, createEffect, Show, For, Switch, Match } from 'solid-js';
 import { Card, Button, Input } from '../../components/foundation';
 import { Search, Heart, Globe, Shield, Users, Code, Book } from 'lucide-solid';
 import styles from './About.module.css';

@@ -28,7 +28,7 @@
  */
 
 import {
-  Component,
+  type Component,
   createSignal,
   createMemo,
   createEffect,
@@ -38,7 +38,23 @@ import {
 } from 'solid-js';
 import { useParams, useNavigate } from '@solidjs/router';
 import { createAsync } from '@solidjs/router';
-import { BookOpen, Download, Share2, Bookmark, Eye, MessageCircle, Info, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Search, Globe, Users, Heart } from 'lucide-solid';
+import {
+  BookOpen,
+  Download,
+  Share2,
+  Bookmark,
+  Eye,
+  MessageCircle,
+  Info,
+  ChevronLeft,
+  ChevronRight,
+  ZoomIn,
+  ZoomOut,
+  Search,
+  Globe,
+  Users,
+  Heart,
+} from 'lucide-solid';
 
 // Import components
 import { Button } from '@/components/foundation/Button';
@@ -64,7 +80,7 @@ import { p2pNetworkService } from '@/services/network/p2pNetworkService';
 import styles from './DocumentDetailPage.module.css';
 import { useP2PTransfers } from '@/hooks/api/useP2PTransfers';
 
-interface DocumentDetailPageProps {}
+type DocumentDetailPageProps = {};
 
 export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
   const { enabled, busy, enable, seedFile, downloadByHash, error, lastOp } = useP2PTransfers();
@@ -130,7 +146,8 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
   const culturalLevel = createMemo(() => document()?.culturalMetadata?.sensitivityLevel || 0);
   const hasEducationalContent = createMemo(() => {
     const ctx = culturalContext();
-    const resources = (ctx as any)?.educationalResources || (ctx as any)?.educationalContent?.learningResources;
+    const resources =
+      (ctx as any)?.educationalResources || (ctx as any)?.educationalContent?.learningResources;
     return Array.isArray(resources) && resources.length > 0;
   });
 
@@ -165,7 +182,7 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
           .then(list => setComments(list))
           .catch(() => setComments([]));
       }
-      }
+    }
   });
 
   // Event handlers
@@ -175,7 +192,11 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
     const { favoriteService } = await import('@/services');
     const res = await favoriteService.toggleFavorite(doc.id);
     setIsBookmarked(res.isFavorite);
-    toast.success(res.isFavorite ? tf('pages.documentDetail.toasts.addedToFavorites') : tf('pages.documentDetail.toasts.removedFromFavorites'));
+    toast.success(
+      res.isFavorite
+        ? tf('pages.documentDetail.toasts.addedToFavorites')
+        : tf('pages.documentDetail.toasts.removedFromFavorites')
+    );
   };
 
   const handleShare = async () => {
@@ -223,18 +244,22 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
   return (
     <ErrorBoundary
       fallback={err => (
-        <ErrorMessage message="Failed to load document details" description={err.message} onRetry={() => window.location.reload()} />
+        <ErrorMessage
+          message="Failed to load document details"
+          description={err.message}
+          onRetry={() => window.location.reload()}
+        />
       )}
     >
       <div class={styles.documentDetailPage}>
         {/* Header */}
         <header class={styles.pageHeader}>
           <div class={styles.headerLeft}>
-              <Button
+            <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate(-1)}
-                class={styles.backButton || ''}
+              class={styles.backButton || ''}
             >
               <ChevronLeft size={16} />
               Back
@@ -307,7 +332,10 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
                 variant="ghost"
                 size="sm"
                 disabled={!enabled() || busy()}
-                onClick={() => { const doc = document(); if (doc) seedFile((doc as any).path || (doc as any).filePath); }}
+                onClick={() => {
+                  const doc = document();
+                  if (doc) seedFile((doc as any).path || (doc as any).filePath);
+                }}
                 class={styles.actionButton || ''}
               >
                 <Share2 size={16} />
@@ -417,7 +445,11 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
               </Show>
 
               <Show when={viewMode() === 'cultural' && culturalContext()}>
-                <CulturalContext contextInfo={culturalContext() as any} showEducationalResources={true} showCommunityInfo={true} />
+                <CulturalContext
+                  contextInfo={culturalContext() as any}
+                  showEducationalResources={true}
+                  showCommunityInfo={true}
+                />
               </Show>
 
               <Show when={viewMode() === 'community'}>
@@ -471,7 +503,9 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
                         <div class={styles.commentItem}>
                           <div class={styles.commentHeader}>
                             <span class={styles.author}>{c.authorName || c.authorId}</span>
-                            <span class={styles.time}>{new Date(c.createdAt).toLocaleString()}</span>
+                            <span class={styles.time}>
+                              {new Date(c.createdAt).toLocaleString()}
+                            </span>
                           </div>
                           <div class={styles.commentText}>{c.text}</div>
                         </div>
@@ -550,7 +584,7 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
 
               {/* Document Viewer Component */}
               <div class={styles.viewerContainer}>
-                <Show when={document()} fallback={<Loading />}> 
+                <Show when={document()} fallback={<Loading />}>
                   {doc => (
                     <DocumentViewer
                       documentType={(doc() as any).fileType?.toLowerCase?.() || 'pdf'}
@@ -602,7 +636,9 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
                         <div class={styles.commentItem}>
                           <div class={styles.commentHeader}>
                             <span class={styles.author}>{c.authorName || c.authorId}</span>
-                            <span class={styles.time}>{new Date(c.createdAt).toLocaleString()}</span>
+                            <span class={styles.time}>
+                              {new Date(c.createdAt).toLocaleString()}
+                            </span>
                             <div class={styles.commentActions}>
                               <Button
                                 variant="ghost"
@@ -613,11 +649,17 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
                                   const ok = await commentService.edit((c as any).id, text);
                                   if (ok) {
                                     setComments(
-                                      comments().map(x => ((x as any).id === (c as any).id ? { ...(x as any), text } : x))
+                                      comments().map(x =>
+                                        (x as any).id === (c as any).id
+                                          ? { ...(x as any), text }
+                                          : x
+                                      )
                                     );
                                     toast.success(tf('pages.documentDetail.toasts.commentUpdated'));
                                   } else {
-                                    toast.error(tf('pages.documentDetail.toasts.commentUpdateFailed'));
+                                    toast.error(
+                                      tf('pages.documentDetail.toasts.commentUpdateFailed')
+                                    );
                                   }
                                 }}
                               >
@@ -629,10 +671,14 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
                                 onClick={async () => {
                                   const ok = await commentService.remove((c as any).id);
                                   if (ok) {
-                                    setComments(comments().filter(x => (x as any).id !== (c as any).id));
+                                    setComments(
+                                      comments().filter(x => (x as any).id !== (c as any).id)
+                                    );
                                     toast.success(tf('pages.documentDetail.toasts.commentDeleted'));
                                   } else {
-                                    toast.error(tf('pages.documentDetail.toasts.commentDeleteFailed'));
+                                    toast.error(
+                                      tf('pages.documentDetail.toasts.commentDeleteFailed')
+                                    );
                                   }
                                 }}
                               >
@@ -665,7 +711,11 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
         >
           <Show when={culturalContext()}>
             {context => (
-              <CulturalContext contextInfo={context() as any} showEducationalResources={true} showCommunityInfo={true} />
+              <CulturalContext
+                contextInfo={context() as any}
+                showEducationalResources={true}
+                showCommunityInfo={true}
+              />
             )}
           </Show>
         </Modal>
@@ -679,7 +729,10 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
         >
           <div class={styles.shareOptions}>
             <div class={styles.row}>
-              <input type="text" placeholder="Paste hash to download" class={styles.searchInput}
+              <input
+                type="text"
+                placeholder="Paste hash to download"
+                class={styles.searchInput}
                 onKeyDown={e => {
                   if (e.key === 'Enter') {
                     const input = e.currentTarget as HTMLInputElement;
@@ -695,15 +748,27 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
             <Show when={lastOp()}>
               <div class={styles.mutedText}>Last operation: {lastOp()}</div>
             </Show>
-            <Button variant="outline" onClick={() => handleShare()} class={styles.shareButton || ''}>
+            <Button
+              variant="outline"
+              onClick={() => handleShare()}
+              class={styles.shareButton || ''}
+            >
               <Users size={16} />
               Share via P2P Network
             </Button>
-            <Button variant="outline" onClick={() => handleShare()} class={styles.shareButton || ''}>
+            <Button
+              variant="outline"
+              onClick={() => handleShare()}
+              class={styles.shareButton || ''}
+            >
               <Share2 size={16} />
               Copy Share Link
             </Button>
-            <Button variant="outline" onClick={() => handleShare()} class={styles.shareButton || ''}>
+            <Button
+              variant="outline"
+              onClick={() => handleShare()}
+              class={styles.shareButton || ''}
+            >
               <Download size={16} />
               Export with Metadata
             </Button>

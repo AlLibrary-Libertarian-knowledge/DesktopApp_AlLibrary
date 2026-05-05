@@ -1,4 +1,4 @@
-import { Component } from 'solid-js';
+import type { Component } from 'solid-js';
 import StatCard from '@/components/composite/StatCard/StatCard';
 import { Users, Activity, Shield, TrendingUp, Gauge, Plug } from 'lucide-solid';
 
@@ -11,7 +11,9 @@ interface StatGridProps {
 
 export const StatGrid: Component<StatGridProps> = props => {
   return (
-    <div style={{ display: 'grid', 'grid-template-columns': 'repeat(12, minmax(0,1fr))', gap: '14px' }}>
+    <div
+      style={{ display: 'grid', 'grid-template-columns': 'repeat(12, minmax(0,1fr))', gap: '14px' }}
+    >
       <div style={{ 'grid-column': 'span 3' }}>
         <StatCard
           type="peers"
@@ -65,7 +67,3 @@ export const StatGrid: Component<StatGridProps> = props => {
 };
 
 export default StatGrid;
-
-
-
-

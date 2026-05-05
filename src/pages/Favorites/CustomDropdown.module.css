@@ -28,7 +28,7 @@
   backdrop-filter: blur(10px);
 }
 .button:focus,
-.button[aria-expanded='true'] {
+.button[aria-expanded="true"] {
   border-color: #a78bfa;
   background: rgba(168, 85, 247, 0.1);
   box-shadow:
@@ -59,7 +59,7 @@
     transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
   pointer-events: none;
 }
-.button[aria-expanded='true'] .arrow {
+.button[aria-expanded="true"] .arrow {
   border-color: #fff;
   opacity: 1;
   transform: rotate(225deg) scale(1.1);

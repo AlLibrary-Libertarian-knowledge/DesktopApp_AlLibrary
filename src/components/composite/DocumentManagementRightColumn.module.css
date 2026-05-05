@@ -17,7 +17,7 @@
 }
 
 .rightColumn::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   background: radial-gradient(circle at top right, rgba(127, 95, 255, 0.1), transparent 70%);
@@ -95,7 +95,7 @@
 }
 
 .section::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   background: radial-gradient(circle at top right, rgba(127, 95, 255, 0.05), transparent 70%);
@@ -172,7 +172,7 @@
 }
 
 .storageRing::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 10px;
   border-radius: 50%;

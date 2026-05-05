@@ -20,7 +20,11 @@ vi.mock('../projectService', () => ({
         documentsFolder: '/tmp/docs',
         culturalContextsFolder: '/tmp/cult',
       },
-      project: { projectFolderPath: '/tmp/project', searchHistoryLimit: 50, defaultCulturalSensitivityLevel: 3 },
+      project: {
+        projectFolderPath: '/tmp/project',
+        searchHistoryLimit: 50,
+        defaultCulturalSensitivityLevel: 3,
+      },
       search: { respectCulturalBoundaries: false },
     }),
   },
@@ -42,21 +46,37 @@ describe('searchService performance', () => {
       await svc.search({
         query: 'test',
         filters: {
-          contentTypes: [], formats: [], languages: [], culturalOrigins: [], sensitivityLevels: [1,2,3], educationalOnly: false,
-          tags: [], categories: [], authors: [], dateRange: {}, verifiedOnly: false,
+          contentTypes: [],
+          formats: [],
+          languages: [],
+          culturalOrigins: [],
+          sensitivityLevels: [1, 2, 3],
+          educationalOnly: false,
+          tags: [],
+          categories: [],
+          authors: [],
+          dateRange: {},
+          verifiedOnly: false,
         },
         options: {
-          caseSensitive: false, exactMatch: false, includeContent: true, includeMetadata: true,
-          maxResults: 50, sortBy: 'relevance', sortOrder: 'desc', respectCulturalBoundaries: false,
-          showEducationalContext: true, enableCommunityValidation: false,
+          caseSensitive: false,
+          exactMatch: false,
+          includeContent: true,
+          includeMetadata: true,
+          maxResults: 50,
+          sortBy: 'relevance',
+          sortOrder: 'desc',
+          respectCulturalBoundaries: false,
+          showEducationalContext: true,
+          enableCommunityValidation: false,
         },
       });
       const end = performance.now();
       timings.push(end - start);
     }
 
-    const sorted = timings.slice().sort((a,b) => a-b);
-    const median = sorted[Math.floor(sorted.length/2)];
+    const sorted = timings.slice().sort((a, b) => a - b);
+    const median = sorted[Math.floor(sorted.length / 2)];
     expect(median).toBeLessThan(500);
   });
 });

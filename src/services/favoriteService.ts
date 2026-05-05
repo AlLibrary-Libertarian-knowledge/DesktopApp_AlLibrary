@@ -75,7 +75,3 @@ class FavoriteServiceImpl {
 }
 
 export const favoriteService = new FavoriteServiceImpl();
-
-
-
-

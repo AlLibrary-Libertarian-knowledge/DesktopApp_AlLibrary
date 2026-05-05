@@ -1,4 +1,4 @@
-import { Component, createResource, createSignal, onCleanup, onMount } from 'solid-js';
+import { type Component, createResource, createSignal, onCleanup, onMount } from 'solid-js';
 import './Header.css';
 import logoSvg from '/src/assets/logo.svg';
 import { LanguageSwitcher } from '@/components/foundation/LanguageSwitcher';

@@ -5,7 +5,7 @@
  * Follows WCAG 2.1 AA standards with proper ARIA attributes.
  */
 
-import { Component, createSignal, createEffect, createUniqueId } from 'solid-js';
+import { type Component, createSignal, createEffect, createUniqueId } from 'solid-js';
 import styles from './Slider.module.css';
 
 export interface SliderProps {

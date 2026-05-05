@@ -1,4 +1,4 @@
-import { Component, createSignal, onMount } from 'solid-js';
+import { type Component, createSignal, onMount } from 'solid-js';
 import { Button, Card, Modal } from '../../components/foundation';
 import {
   NetworkGraph,

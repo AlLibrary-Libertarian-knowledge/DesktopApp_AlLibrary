@@ -68,7 +68,7 @@ export interface P2PNetworkService {
   shareWithCommunity(content: Document | Collection, communityId: string): Promise<void>;
 
   // Anti-censorship features
-   enableTorRouting(): Promise<void>;
+  enableTorRouting(): Promise<void>;
   disableTorRouting(): Promise<void>;
   createHiddenService(): Promise<string>; // Returns onion address
 
@@ -130,17 +130,22 @@ class P2PNetworkServiceImpl implements P2PNetworkService {
         ...defaultConfig,
         ...config,
         ports: { ...defaultConfig.ports, ...(config.ports || {}) },
-        contentSharing: { ...defaultConfig.contentSharing, ...(config.contentSharing as any || {}) },
-        security: { ...defaultConfig.security, ...(config.security as any || {}) },
+        contentSharing: {
+          ...defaultConfig.contentSharing,
+          ...((config.contentSharing as any) || {}),
+        },
+        security: { ...defaultConfig.security, ...((config.security as any) || {}) },
       } as NetworkConfig;
 
       // If Tor is up, pass socks proxy explicitly to backend
-      let socksProxy: string | undefined = undefined;
+      let socksProxy: string | undefined;
       try {
         const { torAdapter } = await import('./torAdapter');
         const tor = await torAdapter.status();
         if (tor?.circuitEstablished && tor?.socks) socksProxy = tor.socks;
-      } catch { /* best-effort, continue without socks */ }
+      } catch {
+        /* best-effort, continue without socks */
+      }
 
       const node = await invoke<P2PNode>('init_p2p_node', {
         config: { ...mergedConfig, socks_proxy: socksProxy },
@@ -225,13 +230,22 @@ class P2PNetworkServiceImpl implements P2PNetworkService {
         return 'offline';
       };
       const connectedPeers = Number(raw?.connectedPeers ?? raw?.connected_peers ?? 0);
-      const discoveredPeers = Number(raw?.discoveredPeers ?? raw?.discovered_peers ?? connectedPeers);
+      const discoveredPeers = Number(
+        raw?.discoveredPeers ?? raw?.discovered_peers ?? connectedPeers
+      );
       const networkHealth = Number(raw?.networkHealth ?? raw?.network_health ?? 0);
       const torStatus = raw?.torStatus || undefined;
       const ipfsStatus = Boolean(raw?.ipfsStatus ?? raw?.ipfs_status ?? false);
       const censorshipResistance = raw?.censorshipResistance || undefined;
       const activeCommunityNetworks = raw?.activeCommunityNetworks || [];
-      const contentStats = raw?.contentStats || { totalShared: 0, totalReceived: 0, culturalContentShared: 0, educationalContentShared: 0, alternativeNarrativesShared: 0, communityContentShared: 0 };
+      const contentStats = raw?.contentStats || {
+        totalShared: 0,
+        totalReceived: 0,
+        culturalContentShared: 0,
+        educationalContentShared: 0,
+        alternativeNarrativesShared: 0,
+        communityContentShared: 0,
+      };
 
       const result: NetworkStatus = {
         nodeStatus: toEnum(statusStr),
@@ -671,7 +685,9 @@ class P2PNetworkServiceImpl implements P2PNetworkService {
         const { torAdapter } = await import('./torAdapter');
         const tor = await torAdapter.status();
         await invoke('enable_tor_routing', { nodeId: this.nodeId, socksProxy: tor?.socks });
-      } catch { await invoke('enable_tor_routing', { nodeId: this.nodeId, socksProxy: null }); }
+      } catch {
+        await invoke('enable_tor_routing', { nodeId: this.nodeId, socksProxy: null });
+      }
       this.torEnabled = true;
     } catch (error) {
       console.error('Failed to enable TOR routing:', error);
@@ -792,7 +808,8 @@ class P2PNetworkServiceImpl implements P2PNetworkService {
       const folder = await settingsService.getProjectFolder();
       if (!folder) return { seeded: 0, errors: 0 };
       const entries = await readDir(folder, { recursive: true });
-      let seeded = 0; let errors = 0;
+      let seeded = 0;
+      let errors = 0;
       for (const entry of entries) {
         if (entry.children) continue;
         const p = entry.path || entry.name;
@@ -802,11 +819,15 @@ class P2PNetworkServiceImpl implements P2PNetworkService {
           try {
             await invoke<string>('publish_content', { path: p });
             seeded += 1;
-          } catch { errors += 1; }
+          } catch {
+            errors += 1;
+          }
         }
       }
       return { seeded, errors };
-    } catch (_) { return { seeded: 0, errors: 1 }; }
+    } catch (_) {
+      return { seeded: 0, errors: 1 };
+    }
   }
 
   /**
@@ -816,24 +837,29 @@ class P2PNetworkServiceImpl implements P2PNetworkService {
     const folder = await settingsService.getProjectFolder();
     if (!folder) return;
     try {
-      const unwatch = await watch(folder, async (event) => {
-        try {
-          const path = (event as any).path as string | undefined;
-          if (!path) return;
-          const lower = path.toLowerCase();
-          if (lower.endsWith('.pdf') || lower.endsWith('.epub')) {
-            await invoke<string>('publish_content', { path });
+      const unwatch = await watch(
+        folder,
+        async event => {
+          try {
+            const path = (event as any).path as string | undefined;
+            if (!path) return;
+            const lower = path.toLowerCase();
+            if (lower.endsWith('.pdf') || lower.endsWith('.epub')) {
+              await invoke<string>('publish_content', { path });
+            }
+          } catch {
+            /* ignore */
           }
-        } catch { /* ignore */ }
-      }, { recursive: true });
+        },
+        { recursive: true }
+      );
       // optional: store unwatch somewhere if needed later
       void unwatch; // avoid linter warning
-    } catch { /* noop */ }
+    } catch {
+      /* noop */
+    }
   }
-
- 
 }
 
 // Export singleton instance
 export const p2pNetworkService: P2PNetworkService = new P2PNetworkServiceImpl();
-

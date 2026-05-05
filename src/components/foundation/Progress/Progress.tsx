@@ -27,7 +27,7 @@
  * - Minimal re-renders
  */
 
-import { Component, createMemo, Show } from 'solid-js';
+import { type Component, createMemo, Show } from 'solid-js';
 import { useTranslation } from '../../../i18n/hooks';
 import styles from './Progress.module.css';
 

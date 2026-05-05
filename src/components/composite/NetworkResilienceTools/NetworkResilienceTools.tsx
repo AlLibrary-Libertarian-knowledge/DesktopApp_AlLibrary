@@ -8,7 +8,7 @@
  * censorship with educational transparency and information freedom principles.
  */
 
-import { Component, createSignal, Show, For, onMount, createEffect } from 'solid-js';
+import { type Component, createSignal, Show, For, onMount, createEffect } from 'solid-js';
 import { Card, Button, Badge, Modal, Progress } from '../../foundation';
 import {
   Shield,

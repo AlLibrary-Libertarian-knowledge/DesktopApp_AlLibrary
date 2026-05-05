@@ -280,31 +280,31 @@
 
 /* ===== CULTURAL SHADOW ADJUSTMENTS ===== */
 
-[data-cultural-theme='indigenous'] {
+[data-cultural-theme="indigenous"] {
   --shadow-component-md: var(--shadow-cultural-indigenous-md);
   --shadow-card-md: var(--shadow-cultural-indigenous-md);
   --shadow-button-md: var(--shadow-cultural-indigenous-md);
 }
 
-[data-cultural-theme='traditional'] {
+[data-cultural-theme="traditional"] {
   --shadow-component-md: var(--shadow-cultural-traditional-md);
   --shadow-card-md: var(--shadow-cultural-traditional-md);
   --shadow-button-md: var(--shadow-cultural-traditional-md);
 }
 
-[data-cultural-theme='ceremonial'] {
+[data-cultural-theme="ceremonial"] {
   --shadow-component-md: var(--shadow-cultural-ceremonial-md);
   --shadow-card-md: var(--shadow-cultural-ceremonial-md);
   --shadow-button-md: var(--shadow-cultural-ceremonial-md);
 }
 
-[data-cultural-theme='academic'] {
+[data-cultural-theme="academic"] {
   --shadow-component-md: var(--shadow-cultural-academic-md);
   --shadow-card-md: var(--shadow-cultural-academic-md);
   --shadow-button-md: var(--shadow-cultural-academic-md);
 }
 
-[data-cultural-theme='community'] {
+[data-cultural-theme="community"] {
   --shadow-component-md: var(--shadow-cultural-community-md);
   --shadow-card-md: var(--shadow-cultural-community-md);
   --shadow-button-md: var(--shadow-cultural-community-md);

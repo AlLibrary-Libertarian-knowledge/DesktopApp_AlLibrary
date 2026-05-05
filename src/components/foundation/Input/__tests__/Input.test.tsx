@@ -166,16 +166,20 @@ describe('Input Component', () => {
   });
 
   describe('Cultural Theme Support (INFORMATION ONLY)', () => {
-    it.each(['indigenous', 'traditional', 'modern', 'ceremonial', 'community', 'default'])(
-      'renders with cultural theme %s',
-      theme => {
-        render(() => <Input culturalTheme={theme as CulturalTheme} />);
-        const input = screen.getByRole('textbox');
-        if (theme !== 'default') {
-          expect(input).toHaveClass(getClassName(`input-cultural-${theme}`));
-        }
+    it.each([
+      'indigenous',
+      'traditional',
+      'modern',
+      'ceremonial',
+      'community',
+      'default',
+    ])('renders with cultural theme %s', theme => {
+      render(() => <Input culturalTheme={theme as CulturalTheme} />);
+      const input = screen.getByRole('textbox');
+      if (theme !== 'default') {
+        expect(input).toHaveClass(getClassName(`input-cultural-${theme}`));
       }
-    );
+    });
 
     it('shows cultural indicator when enabled', () => {
       render(() => (

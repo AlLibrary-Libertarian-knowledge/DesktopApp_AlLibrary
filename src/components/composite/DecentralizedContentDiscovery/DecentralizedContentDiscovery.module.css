@@ -503,66 +503,66 @@
    ============================================================================ */
 
 /* Indigenous Theme */
-.discoveryContainer[data-cultural-theme='indigenous'] {
+.discoveryContainer[data-cultural-theme="indigenous"] {
   --cultural-primary: #059669;
   --cultural-secondary: #34d399;
   --cultural-accent: #a7f3d0;
 }
 
-.discoveryContainer[data-cultural-theme='indigenous'] .culturalPreview {
+.discoveryContainer[data-cultural-theme="indigenous"] .culturalPreview {
   background: var(--cultural-accent);
   border-color: var(--cultural-secondary);
 }
 
-.discoveryContainer[data-cultural-theme='indigenous'] .culturalHeader {
+.discoveryContainer[data-cultural-theme="indigenous"] .culturalHeader {
   color: var(--cultural-primary);
 }
 
 /* Traditional Theme */
-.discoveryContainer[data-cultural-theme='traditional'] {
+.discoveryContainer[data-cultural-theme="traditional"] {
   --cultural-primary: #7c3aed;
   --cultural-secondary: #a855f7;
   --cultural-accent: #ddd6fe;
 }
 
-.discoveryContainer[data-cultural-theme='traditional'] .culturalPreview {
+.discoveryContainer[data-cultural-theme="traditional"] .culturalPreview {
   background: var(--cultural-accent);
   border-color: var(--cultural-secondary);
 }
 
-.discoveryContainer[data-cultural-theme='traditional'] .culturalHeader {
+.discoveryContainer[data-cultural-theme="traditional"] .culturalHeader {
   color: var(--cultural-primary);
 }
 
 /* Ceremonial Theme */
-.discoveryContainer[data-cultural-theme='ceremonial'] {
+.discoveryContainer[data-cultural-theme="ceremonial"] {
   --cultural-primary: #dc2626;
   --cultural-secondary: #f87171;
   --cultural-accent: #fecaca;
 }
 
-.discoveryContainer[data-cultural-theme='ceremonial'] .culturalPreview {
+.discoveryContainer[data-cultural-theme="ceremonial"] .culturalPreview {
   background: var(--cultural-accent);
   border-color: var(--cultural-secondary);
 }
 
-.discoveryContainer[data-cultural-theme='ceremonial'] .culturalHeader {
+.discoveryContainer[data-cultural-theme="ceremonial"] .culturalHeader {
   color: var(--cultural-primary);
 }
 
 /* Community Theme */
-.discoveryContainer[data-cultural-theme='community'] {
+.discoveryContainer[data-cultural-theme="community"] {
   --cultural-primary: #2563eb;
   --cultural-secondary: #60a5fa;
   --cultural-accent: #dbeafe;
 }
 
-.discoveryContainer[data-cultural-theme='community'] .culturalPreview {
+.discoveryContainer[data-cultural-theme="community"] .culturalPreview {
   background: var(--cultural-accent);
   border-color: var(--cultural-secondary);
 }
 
-.discoveryContainer[data-cultural-theme='community'] .culturalHeader {
+.discoveryContainer[data-cultural-theme="community"] .culturalHeader {
   color: var(--cultural-primary);
 }
 
@@ -786,13 +786,13 @@
    LOADING STATES
    ============================================================================ */
 
-.discoveryContainer[data-loading='true'] .searchButton {
+.discoveryContainer[data-loading="true"] .searchButton {
   position: relative;
   color: transparent;
 }
 
-.discoveryContainer[data-loading='true'] .searchButton::after {
-  content: '';
+.discoveryContainer[data-loading="true"] .searchButton::after {
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;

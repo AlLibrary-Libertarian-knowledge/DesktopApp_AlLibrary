@@ -5,7 +5,7 @@
  * with smooth animations and excellent accessibility
  */
 
-import { Component, createSignal, createMemo, For, Show } from 'solid-js';
+import { type Component, createSignal, createMemo, For, Show } from 'solid-js';
 import type { SupportedLocale } from '@/i18n/types';
 import { useLanguage } from '@/i18n/hooks';
 import { SUPPORTED_LANGUAGES } from '@/i18n/config';

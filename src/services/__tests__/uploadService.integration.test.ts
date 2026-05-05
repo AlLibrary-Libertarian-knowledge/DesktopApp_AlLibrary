@@ -24,9 +24,7 @@ describe('uploadService integration', () => {
     vi.spyOn(UploadService.prototype as any, 'readFileContent').mockResolvedValue(
       new ArrayBuffer(8)
     );
-    vi.spyOn(UploadService.prototype as any, 'calculateFileHash').mockResolvedValue(
-      'deadbeef'
-    );
+    vi.spyOn(UploadService.prototype as any, 'calculateFileHash').mockResolvedValue('deadbeef');
   });
 
   it('happy path: sanitize→malware→legal passes and persists info-only cultural metadata', async () => {
@@ -68,7 +66,11 @@ describe('uploadService integration', () => {
       new ArrayBuffer(8)
     );
     vi.spyOn(UploadService.prototype as any, 'calculateFileHash').mockResolvedValue('deadbeef');
-    const res = await svc.uploadDocument(file, { title: 'Bad doc' }, { userId: 'user1', onProgress: () => {} });
+    const res = await svc.uploadDocument(
+      file,
+      { title: 'Bad doc' },
+      { userId: 'user1', onProgress: () => {} }
+    );
 
     expect(res.success).toBe(false);
     expect(res.error).toMatch(/Validation failed/i);
@@ -88,7 +90,11 @@ describe('uploadService integration', () => {
       new ArrayBuffer(8)
     );
     vi.spyOn(UploadService.prototype as any, 'calculateFileHash').mockResolvedValue('deadbeef');
-    const res = await svc.uploadDocument(file, { title: 'doc' }, { userId: 'u', onProgress: () => {} });
+    const res = await svc.uploadDocument(
+      file,
+      { title: 'doc' },
+      { userId: 'u', onProgress: () => {} }
+    );
 
     expect(res.success).toBe(false);
   });

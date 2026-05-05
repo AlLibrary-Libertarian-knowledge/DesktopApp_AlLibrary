@@ -1,4 +1,4 @@
-import { Component, Show, createMemo, createSignal, onMount } from 'solid-js';
+import { type Component, Show, createMemo, createSignal, onMount } from 'solid-js';
 import { useSearchParams } from '@solidjs/router';
 import { convertFileSrc } from '@tauri-apps/api/core';
 import { DocumentViewer } from '@/components/composite/DocumentViewer';
@@ -81,5 +81,3 @@ export const DocumentReader: Component = () => {
 };
 
 export default DocumentReader;
-
-

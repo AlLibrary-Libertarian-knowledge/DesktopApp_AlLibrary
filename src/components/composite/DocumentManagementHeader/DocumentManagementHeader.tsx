@@ -1,4 +1,4 @@
-import { Component, JSX, Show } from 'solid-js';
+import { type Component, type JSX, Show } from 'solid-js';
 import { Button } from '../../foundation';
 import { TopCard } from '../TopCard';
 import { Upload, Settings, HardDrive, Folder, RefreshCw } from 'lucide-solid';

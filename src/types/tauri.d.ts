@@ -25,5 +25,3 @@ export interface TauriAPI {
   os: any;
   app: any;
 }
-
-export {};
