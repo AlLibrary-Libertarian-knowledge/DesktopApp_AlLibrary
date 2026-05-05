@@ -1,4 +1,13 @@
-import { Component, createSignal, Show, createEffect, createResource, onMount, onCleanup } from 'solid-js';
+import {
+  Component,
+  createSignal,
+  Show,
+  createEffect,
+  createResource,
+  onMount,
+  onCleanup,
+  For,
+} from 'solid-js';
 import { settingsService } from '@/services/storage/settingsService';
 import { invoke } from '@tauri-apps/api/core';
 import { A, useLocation } from '@solidjs/router';
@@ -193,10 +202,15 @@ const Sidebar: Component<SidebarProps> = props => {
   onMount(() => {
     const handler = () => refetchDisk();
     window.addEventListener('project-folder-changed' as any, handler);
-    onCleanup(() => { window.removeEventListener('project-folder-changed' as any, handler); });
+    onCleanup(() => {
+      window.removeEventListener('project-folder-changed' as any, handler);
+    });
   });
-  const storagePercentage = () => Math.round((diskInfo()?.used_disk_space_bytes || 0) * 100 / (diskInfo()?.total_disk_space_bytes || 1));
-  const toGB = (bytes?: number) => `${((bytes || 0) / (1024 ** 3)).toFixed(1)}GB`;
+  const storagePercentage = () =>
+    Math.round(
+      ((diskInfo()?.used_disk_space_bytes || 0) * 100) / (diskInfo()?.total_disk_space_bytes || 1)
+    );
+  const toGB = (bytes?: number) => `${((bytes || 0) / 1024 ** 3).toFixed(1)}GB`;
   const storageUsed = () => toGB(diskInfo()?.used_disk_space_bytes);
   const storageTotal = () => toGB(diskInfo()?.total_disk_space_bytes);
 
@@ -204,47 +218,56 @@ const Sidebar: Component<SidebarProps> = props => {
     <aside class={`app-sidebar ${props.collapsed ? 'collapsed' : ''}`}>
       {/* Navigation */}
       <nav class="sidebar-nav" data-testid="main-navigation">
-        {navigationItems.map(section => (
-          <div class="nav-section">
-            <button
-              class={`section-header ${activeSection() === section.section ? 'active' : ''}`}
-              onClick={() => toggleSection(section.section)}
-              aria-expanded={activeSection() === section.section}
-              aria-controls={`section-${section.section}`}
-            >
-              <span class="section-icon">
-                <section.icon size={18} />
-              </span>
-              <Show when={!props.collapsed}>
-                <span class="section-title">{section.title}</span>
-                <span
-                  class={`expand-icon ${activeSection() === section.section ? 'expanded' : ''}`}
-                >
-                  <ChevronDown size={14} />
+        <For each={navigationItems}>
+          {section => (
+            <div class="nav-section">
+              <button
+                class={`section-header ${activeSection() === section.section ? 'active' : ''}`}
+                onClick={() => toggleSection(section.section)}
+                aria-expanded={activeSection() === section.section}
+                aria-controls={`section-${section.section}`}
+              >
+                <span class="section-icon">
+                  <section.icon size={18} />
                 </span>
-              </Show>
-            </button>
-
-            <div
-              class={`nav-items ${activeSection() === section.section ? 'expanded' : ''}`}
-              id={`section-${section.section}`}
-            >
-              {section.items.map(item => (
-                <A href={item.path} class="nav-item" activeClass="active" end={item.path === '/'}>
-                  <span class="nav-icon">
-                    <item.icon size={16} />
+                <Show when={!props.collapsed}>
+                  <span class="section-title">{section.title}</span>
+                  <span
+                    class={`expand-icon ${activeSection() === section.section ? 'expanded' : ''}`}
+                  >
+                    <ChevronDown size={14} />
                   </span>
-                  <Show when={!props.collapsed}>
-                    <span class="nav-label">{item.label}</span>
-                    <Show when={item.badge}>
-                      <span class="nav-badge">{item.badge}</span>
-                    </Show>
-                  </Show>
-                </A>
-              ))}
+                </Show>
+              </button>
+
+              <div
+                class={`nav-items ${activeSection() === section.section ? 'expanded' : ''}`}
+                id={`section-${section.section}`}
+              >
+                <For each={section.items}>
+                  {item => (
+                    <A
+                      href={item.path}
+                      class="nav-item"
+                      activeClass="active"
+                      end={item.path === '/'}
+                    >
+                      <span class="nav-icon">
+                        <item.icon size={16} />
+                      </span>
+                      <Show when={!props.collapsed}>
+                        <span class="nav-label">{item.label}</span>
+                        <Show when={item.badge}>
+                          <span class="nav-badge">{item.badge}</span>
+                        </Show>
+                      </Show>
+                    </A>
+                  )}
+                </For>
+              </div>
             </div>
-          </div>
-        ))}
+          )}
+        </For>
       </nav>
 
       {/* Enhanced Footer */}
@@ -257,13 +280,22 @@ const Sidebar: Component<SidebarProps> = props => {
               <span class="storage-label">Storage</span>
             </div>
             <div class="storage-bar">
-              <div class="storage-used" style={`width: ${storagePercentage()}%`}></div>
+              <div class="storage-used" style={`width: ${storagePercentage()}%`} />
             </div>
             <span class="storage-text">
               {storageUsed()} / {storageTotal()}
             </span>
             <Show when={diskInfo()}>
-              <div class="storage-path" style="opacity:0.75;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+              <div
+                class="storage-path"
+                style={{
+                  opacity: '0.75',
+                  'font-size': '12px',
+                  overflow: 'hidden',
+                  'text-overflow': 'ellipsis',
+                  'white-space': 'nowrap',
+                }}
+              >
                 {diskInfo()?.project_path}
               </div>
             </Show>
@@ -278,13 +310,20 @@ const Sidebar: Component<SidebarProps> = props => {
           <Show when={!props.collapsed}>
             <span class="connection-text">{isOnline() ? 'Network Online' : 'Network Offline'}</span>
             <div class="connection-indicator">
-              <div class="signal-dot"></div>
-              <div class="signal-dot"></div>
-              <div class="signal-dot"></div>
+              <div class="signal-dot" />
+              <div class="signal-dot" />
+              <div class="signal-dot" />
             </div>
-            <div class="tor-status-pill" title={torStatus()?.circuitEstablished ? 'Onion routing active' : 'Onion routing inactive'}>
-              <span class={`pill-dot ${torStatus()?.circuitEstablished ? 'on' : 'off'}`}></span>
-              <span class="pill-text">{torStatus()?.circuitEstablished ? 'Onion' : 'No Onion'}</span>
+            <div
+              class="tor-status-pill"
+              title={
+                torStatus()?.circuitEstablished ? 'Onion routing active' : 'Onion routing inactive'
+              }
+            >
+              <span class={`pill-dot ${torStatus()?.circuitEstablished ? 'on' : 'off'}`} />
+              <span class="pill-text">
+                {torStatus()?.circuitEstablished ? 'Onion' : 'No Onion'}
+              </span>
             </div>
           </Show>
         </div>

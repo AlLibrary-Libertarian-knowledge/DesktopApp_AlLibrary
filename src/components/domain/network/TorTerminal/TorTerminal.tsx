@@ -1,17 +1,28 @@
-import { Component, Show, createEffect, createResource, createSignal, onCleanup, onMount } from 'solid-js';
+import {
+  Component,
+  Show,
+  createEffect,
+  createResource,
+  createSignal,
+  onCleanup,
+  onMount,
+} from 'solid-js';
 import styles from './TorTerminal.module.css';
 import type { TorTerminalProps } from './types/Types';
 import { torAdapter } from '@/services/network/torAdapter';
 
-export const TorTerminal: Component<TorTerminalProps> = (props) => {
+export const TorTerminal: Component<TorTerminalProps> = props => {
   const [lines, setLines] = createSignal<number>(props.lines ?? 500);
-  const [log, { refetch }] = createResource(async () => {
-    try {
-      return await torAdapter.getLogTail(lines());
-    } catch {
-      return 'Tor log not available. Starting...';
-    }
-  }, { initialValue: '' });
+  const [log, { refetch }] = createResource(
+    async () => {
+      try {
+        return await torAdapter.getLogTail(lines());
+      } catch {
+        return 'Tor log not available. Starting...';
+      }
+    },
+    { initialValue: '' }
+  );
 
   let scrollerRef: HTMLDivElement | undefined;
 
@@ -21,7 +32,9 @@ export const TorTerminal: Component<TorTerminalProps> = (props) => {
     queueMicrotask(() => {
       try {
         scrollerRef!.scrollTop = scrollerRef!.scrollHeight;
-      } catch {}
+      } catch {
+        void 0;
+      }
     });
   };
 
@@ -43,7 +56,7 @@ export const TorTerminal: Component<TorTerminalProps> = (props) => {
   });
 
   return (
-    <div class={`${styles.terminal} ${props.class || ''}`} data-testid={props['data-testid']}> 
+    <div class={`${styles.terminal} ${props.class || ''}`} data-testid={props['data-testid']}>
       <div class={styles.header}>
         <span class={styles.dot} data-color="red" />
         <span class={styles.dot} data-color="yellow" />
@@ -53,9 +66,9 @@ export const TorTerminal: Component<TorTerminalProps> = (props) => {
       </div>
       <div class={styles.body} ref={scrollerRef}>
         <pre class={styles.pre}>
-<Show when={!log.loading} fallback={'Loading tor log...'}>
-{log()}
-</Show>
+          <Show when={!log.loading} fallback={'Loading tor log...'}>
+            {log()}
+          </Show>
         </pre>
       </div>
     </div>
@@ -63,5 +76,3 @@ export const TorTerminal: Component<TorTerminalProps> = (props) => {
 };
 
 export default TorTerminal;
-
-

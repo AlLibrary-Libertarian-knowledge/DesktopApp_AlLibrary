@@ -336,7 +336,7 @@ export const Trending: Component = () => {
 
   // Enhanced filtering logic
   const filteredTrendingDocs = () => {
-    let filtered = trendingDocs().filter(item => {
+    const filtered = trendingDocs().filter(item => {
       const matchesSearch =
         searchQuery() === '' ||
         item.document.title.toLowerCase().includes(searchQuery().toLowerCase()) ||
@@ -436,7 +436,7 @@ export const Trending: Component = () => {
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
   };
 
   const formatTimeAgo = (date: Date): string => {
@@ -481,7 +481,7 @@ export const Trending: Component = () => {
               <div
                 class={`${styles['status-indicator']} ${realTimeUpdates() ? styles.active : styles.inactive}`}
               >
-                <div class={styles['status-pulse']}></div>
+                <div class={styles['status-pulse']} />
               </div>
               <span class={styles['status-text']}>
                 {realTimeUpdates() ? 'Live Updates' : 'Updates Paused'}
@@ -738,9 +738,9 @@ export const Trending: Component = () => {
           fallback={
             <div class={styles['loading-state']}>
               <div class={styles['loading-spinner']}>
-                <div class={styles['spinner-ring']}></div>
-                <div class={styles['spinner-ring']}></div>
-                <div class={styles['spinner-ring']}></div>
+                <div class={styles['spinner-ring']} />
+                <div class={styles['spinner-ring']} />
+                <div class={styles['spinner-ring']} />
               </div>
               <h3>Analyzing Trending Content</h3>
               <p>Discovering popular content across the P2P network...</p>

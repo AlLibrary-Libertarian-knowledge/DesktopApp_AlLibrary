@@ -363,7 +363,7 @@ export const CommunityNetworks: Component<CommunityNetworksProps> = props => {
       {/* Network Loading State */}
       <Show when={isLoading()}>
         <div class={styles.loadingState}>
-          <div class={styles.loadingSpinner}></div>
+          <div class={styles.loadingSpinner} />
           <p>Connecting to community networks...</p>
         </div>
       </Show>

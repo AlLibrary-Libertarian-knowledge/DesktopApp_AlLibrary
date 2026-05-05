@@ -19,8 +19,12 @@ const Header: Component<HeaderProps> = props => {
 
   // Lightweight, one-shot resources for header indicators
   const [tick, setTick] = createSignal(0);
-  const [torStatus, { refetch: refetchTor }] = createResource(tick, async () => torAdapter.status());
-  const [nodeStatus, { refetch: refetchNode }] = createResource(tick, async () => p2pNetworkService.getNodeStatus());
+  const [torStatus, { refetch: refetchTor }] = createResource(tick, async () =>
+    torAdapter.status()
+  );
+  const [nodeStatus, { refetch: refetchNode }] = createResource(tick, async () =>
+    p2pNetworkService.getNodeStatus()
+  );
 
   onMount(() => {
     setTick(t => t + 1);
@@ -62,7 +66,11 @@ const Header: Component<HeaderProps> = props => {
 
         <div class="header-brand">
           <div class="brand-content">
-            <img src={logoSvg} alt={t('components.header.accessibility.logoAlt')} class="app-logo" />
+            <img
+              src={logoSvg}
+              alt={t('components.header.accessibility.logoAlt')}
+              class="app-logo"
+            />
             <div class="brand-text">
               <h1 class="app-title">AlLibrary</h1>
               <span class="app-subtitle">{t('pages.home.subtitle')}</span>
@@ -79,7 +87,11 @@ const Header: Component<HeaderProps> = props => {
             class="global-search"
             data-testid="search-input"
           />
-          <button class="search-button" aria-label={t('common.actions.search')} title={t('common.actions.search')}>
+          <button
+            class="search-button"
+            aria-label={t('common.actions.search')}
+            title={t('common.actions.search')}
+          >
             <SearchIcon size={18} />
           </button>
         </div>
@@ -91,14 +103,14 @@ const Header: Component<HeaderProps> = props => {
           showFlags={true}
           showNativeName={false}
           size="sm"
-          className="header-language-switcher"
+          class="header-language-switcher"
           ariaLabel={t('common.actions.changeLanguage', 'Change language')}
         />
 
         <ThemeSwitcher
           variant="compact"
           size="sm"
-          className="header-theme-switcher"
+          class="header-theme-switcher"
           ariaLabel={t('components.themeSwitcher.buttonLabel', 'Open theme selection menu')}
         />
 
@@ -110,17 +122,30 @@ const Header: Component<HeaderProps> = props => {
           <Bell size={20} />
         </button>
 
-        <button class="header-action" aria-label={t('common.actions.settings')} title={t('common.actions.settings')}>
+        <button
+          class="header-action"
+          aria-label={t('common.actions.settings')}
+          title={t('common.actions.settings')}
+        >
           <SettingsIcon size={20} />
         </button>
 
-        <div class="network-status" style={{ display: 'flex', 'align-items': 'center', gap: '8px' }}>
+        <div
+          class="network-status"
+          style={{ display: 'flex', 'align-items': 'center', gap: '8px' }}
+        >
           <span
-            class={`status-indicator ${((nodeStatus()?.connectedPeers || 0) > 0) ? 'online' : 'offline'}`}
-            title={((nodeStatus()?.connectedPeers || 0) > 0) ? t('common.status.connected') : t('common.status.disconnected')}
-          ></span>
+            class={`status-indicator ${(nodeStatus()?.connectedPeers || 0) > 0 ? 'online' : 'offline'}`}
+            title={
+              (nodeStatus()?.connectedPeers || 0) > 0
+                ? t('common.status.connected')
+                : t('common.status.disconnected')
+            }
+          />
           <span class="network-text">
-            {((nodeStatus()?.connectedPeers || 0) > 0) ? t('common.status.online') : t('common.status.offline')}
+            {(nodeStatus()?.connectedPeers || 0) > 0
+              ? t('common.status.online')
+              : t('common.status.offline')}
           </span>
           <Badge variant={torStatus()?.circuitEstablished ? 'success' : 'secondary'}>
             {torStatus()?.circuitEstablished ? 'Onion' : 'No Onion'}

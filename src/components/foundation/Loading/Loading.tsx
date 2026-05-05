@@ -1,4 +1,4 @@
-import { Component, createSignal, onMount, onCleanup, createEffect } from 'solid-js';
+import { Component, createSignal, onMount, onCleanup, createEffect, Index } from 'solid-js';
 import { Dynamic } from 'solid-js/web';
 import {
   Globe,
@@ -121,16 +121,18 @@ const LoadingScreen: Component<LoadingScreenProps> = props => {
       {/* Background Pattern */}
       <div class={styles.loadingBackground}>
         <div class={styles.floatingParticles}>
-          {Array.from({ length: 20 }).map((_, _i) => (
-            <div
-              class={styles.particle}
-              style={`
+          <Index each={Array.from({ length: 20 })}>
+            {() => (
+              <div
+                class={styles.particle}
+                style={`
                 left: ${Math.random() * 100}%; 
                 animation-delay: ${Math.random() * 3}s;
                 animation-duration: ${3 + Math.random() * 4}s;
               `}
-            />
-          ))}
+              />
+            )}
+          </Index>
         </div>
       </div>
 

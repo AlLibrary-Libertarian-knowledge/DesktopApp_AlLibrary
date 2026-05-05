@@ -45,17 +45,17 @@ const Footer: Component = () => {
 
           <div class="status-indicators">
             <span class="status-item">
-              <span class="status-dot security-good" title="Security: Good"></span>
+              <span class="status-dot security-good" title="Security: Good" />
               <span class="status-label">Secure</span>
             </span>
 
             <span class="status-item">
-              <span class="status-dot privacy-protected" title="Privacy: Protected"></span>
+              <span class="status-dot privacy-protected" title="Privacy: Protected" />
               <span class="status-label">Private</span>
             </span>
 
             <span class="status-item">
-              <span class="status-dot cultural-aware" title="Cultural Sensitivity: Active"></span>
+              <span class="status-dot cultural-aware" title="Cultural Sensitivity: Active" />
               <span class="status-label">Cultural</span>
             </span>
           </div>

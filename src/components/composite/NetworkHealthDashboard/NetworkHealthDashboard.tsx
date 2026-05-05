@@ -75,11 +75,15 @@ export const NetworkHealthDashboard: Component<NetworkHealthDashboardProps> = pr
     () => props.enableRealTimeUpdates !== false,
     async (): Promise<NetworkHealthMetrics> => {
       try {
-        const rawMetrics = (await p2pNetworkService.getNetworkMetrics()) || {} as any;
+        const rawMetrics = (await p2pNetworkService.getNetworkMetrics()) || ({} as any);
         const nodeStatus = (await p2pNetworkService.getNodeStatus()) || ({} as any);
         const torStatus = (await torAdapter.status()) || ({} as any);
 
-        const perf = rawMetrics.performance || { averageLatency: 0, totalBandwidth: 0, errorRate: 0 };
+        const perf = rawMetrics.performance || {
+          averageLatency: 0,
+          totalBandwidth: 0,
+          errorRate: 0,
+        };
         const health = rawMetrics.health || {
           nodeUptime: 0,
           connectionStability: 0,
@@ -128,8 +132,10 @@ export const NetworkHealthDashboard: Component<NetworkHealthDashboardProps> = pr
 
           // Anti-Censorship Metrics
           torConnectionActive: Boolean(torStatus.connected),
-          alternativeRoutesAvailable: Number((rawMetrics.censorshipResistance?.alternativeRoutes) || 0),
-          censorshipAttempts: Number((rawMetrics.censorshipResistance?.censorshipAttempts) || 0),
+          alternativeRoutesAvailable: Number(
+            rawMetrics.censorshipResistance?.alternativeRoutes || 0
+          ),
+          censorshipAttempts: Number(rawMetrics.censorshipResistance?.censorshipAttempts || 0),
           informationIntegrityScore: Number(health.contentAvailability || 0),
         };
       } catch (error) {
@@ -220,7 +226,9 @@ export const NetworkHealthDashboard: Component<NetworkHealthDashboardProps> = pr
             accessibleContent: Number(rawMetrics.culturalSharing?.culturalContentShared || 0),
             blockedAttempts: 0, // Always 0 - no blocking
             educationalContext: Number(rawMetrics.culturalSharing?.educationalContextProvided || 0),
-            multiplePerspectives: Number(rawMetrics.culturalSharing?.alternativeNarrativesSupported || 0),
+            multiplePerspectives: Number(
+              rawMetrics.culturalSharing?.alternativeNarrativesSupported || 0
+            ),
           },
         };
       } catch (error) {
@@ -277,7 +285,7 @@ export const NetworkHealthDashboard: Component<NetworkHealthDashboardProps> = pr
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
   };
 
   const formatUptime = (seconds: number): string => {

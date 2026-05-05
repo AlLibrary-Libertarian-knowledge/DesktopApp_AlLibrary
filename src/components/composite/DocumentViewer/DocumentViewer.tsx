@@ -6,7 +6,7 @@
  * Follows SOLID principles and anti-censorship architecture.
  */
 
-import { Component, createSignal, Show, onMount, onCleanup, createEffect } from 'solid-js';
+import { Component, createSignal, Show, onMount, onCleanup, createEffect, For } from 'solid-js';
 import {
   ChevronLeft,
   ChevronRight,
@@ -109,7 +109,6 @@ export const DocumentViewer: Component<DocumentViewerProps> = props => {
   const [epubRendition, setEpubRendition] = createSignal<Rendition | null>(null);
   const [totalPages, setTotalPages] = createSignal(props.totalPages || 1);
   const [searchResults, setSearchResults] = createSignal<any[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [currentSearchIndex, setCurrentSearchIndex] = createSignal<number>(0);
   const [isFullscreen, setIsFullscreen] = createSignal(false);
   const [rotation, setRotation] = createSignal(0); // degrees
@@ -126,9 +125,34 @@ export const DocumentViewer: Component<DocumentViewerProps> = props => {
   const [addNoteMode, setAddNoteMode] = createSignal(false);
   const [addHighlightMode, setAddHighlightMode] = createSignal(false);
   const [addTextMode, setAddTextMode] = createSignal(false);
-  type Note = { id: string; page: number; x: number; y: number; w: number; h: number; text: string; lotId?: string };
-  type Highlight = { id: string; page: number; x: number; y: number; w: number; h: number; color?: string };
-  type TextAnnotation = { id: string; page: number; x: number; y: number; text: string; color?: string; size?: number };
+  type Note = {
+    id: string;
+    page: number;
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+    text: string;
+    lotId?: string;
+  };
+  type Highlight = {
+    id: string;
+    page: number;
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+    color?: string;
+  };
+  type TextAnnotation = {
+    id: string;
+    page: number;
+    x: number;
+    y: number;
+    text: string;
+    color?: string;
+    size?: number;
+  };
   type Lot = { id: string; name: string };
   const [notes, setNotes] = createSignal<Array<Note>>([]);
   const [highlights, setHighlights] = createSignal<Array<Highlight>>([]);
@@ -138,7 +162,12 @@ export const DocumentViewer: Component<DocumentViewerProps> = props => {
   const [lots, setLots] = createSignal<Array<Lot>>([]);
   const [newLotName, setNewLotName] = createSignal('');
   const [activeLotId, setActiveLotId] = createSignal<string>('all');
-  const [draftRect, setDraftRect] = createSignal<{ x: number; y: number; w: number; h: number } | null>(null);
+  const [draftRect, setDraftRect] = createSignal<{
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+  } | null>(null);
 
   // Default props
   const showControls = () => props.showControls ?? true;
@@ -151,8 +180,9 @@ export const DocumentViewer: Component<DocumentViewerProps> = props => {
   const [canvasWrapper, setCanvasWrapper] = createSignal<any | null>(null);
   const [pageSurfaceRef, setPageSurfaceRef] = createSignal<any | null>(null);
   const [textLayerEl, setTextLayerEl] = createSignal<any | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [pendingSelectionRects, setPendingSelectionRects] = createSignal<Array<{ x: number; y: number; w: number; h: number }>>([]);
+  const [pendingSelectionRects, setPendingSelectionRects] = createSignal<
+    Array<{ x: number; y: number; w: number; h: number }>
+  >([]);
 
   // Handle page navigation
   const handlePageChange = (page: number) => {
@@ -199,7 +229,10 @@ export const DocumentViewer: Component<DocumentViewerProps> = props => {
 
     if (addTextMode()) {
       const id = Math.random().toString(36).slice(2);
-      setTextAnnotations([...textAnnotations(), { id, page: currentPage(), x: startX, y: startY, text: '', color: '#e5e7eb', size: 14 }]);
+      setTextAnnotations([
+        ...textAnnotations(),
+        { id, page: currentPage(), x: startX, y: startY, text: '', color: '#e5e7eb', size: 14 },
+      ]);
       setAddTextMode(false);
       setEditingTextId(id);
       setTextEditorValue('');
@@ -221,15 +254,25 @@ export const DocumentViewer: Component<DocumentViewerProps> = props => {
       (window as any).removeEventListener('mouseup', onUp);
       const d = draftRect();
       setDraftRect(null);
-      if (!d || d.w < 0.01 || d.h < 0.01) { setAddNoteMode(false); setAddHighlightMode(false); return; }
+      if (!d || d.w < 0.01 || d.h < 0.01) {
+        setAddNoteMode(false);
+        setAddHighlightMode(false);
+        return;
+      }
       const id = Math.random().toString(36).slice(2);
       if (addNoteMode()) {
-        setNotes([...notes(), { id, page: currentPage(), x: d.x, y: d.y, w: d.w, h: d.h, text: '' }]);
+        setNotes([
+          ...notes(),
+          { id, page: currentPage(), x: d.x, y: d.y, w: d.w, h: d.h, text: '' },
+        ]);
         setAddNoteMode(false);
         setEditingNoteId(id);
         setEditorText('');
       } else if (addHighlightMode()) {
-        setHighlights([...highlights(), { id, page: currentPage(), x: d.x, y: d.y, w: d.w, h: d.h, color: '#fde68a' }]);
+        setHighlights([
+          ...highlights(),
+          { id, page: currentPage(), x: d.x, y: d.y, w: d.w, h: d.h, color: '#fde68a' },
+        ]);
         setAddHighlightMode(false);
       }
     };
@@ -237,14 +280,19 @@ export const DocumentViewer: Component<DocumentViewerProps> = props => {
     (window as any).addEventListener('mouseup', onUp);
   };
 
-  const updateNoteText = (id: string, text: string) => setNotes(notes().map(n => n.id === id ? { ...n, text } : n));
+  const updateNoteText = (id: string, text: string) =>
+    setNotes(notes().map(n => (n.id === id ? { ...n, text } : n)));
   const openNoteEditor = (id: string) => {
     setEditingNoteId(id);
     const n = notes().find(nn => nn.id === id);
     setEditorText(n?.text || '');
   };
-  const assignNoteLot = (id: string, lotId: string) => setNotes(notes().map(n => n.id === id ? { ...n, lotId } : n));
-  const deleteNote = (id: string) => { setNotes(notes().filter(n => n.id !== id)); if (editingNoteId() === id) setEditingNoteId(null); };
+  const assignNoteLot = (id: string, lotId: string) =>
+    setNotes(notes().map(n => (n.id === id ? { ...n, lotId } : n)));
+  const deleteNote = (id: string) => {
+    setNotes(notes().filter(n => n.id !== id));
+    if (editingNoteId() === id) setEditingNoteId(null);
+  };
   // remove unused until Step B wiring
 
   // Step B helpers will be added in the next step
@@ -314,7 +362,11 @@ export const DocumentViewer: Component<DocumentViewerProps> = props => {
     setHighlights([...highlights(), ...newHls]);
     setPendingSelectionRects([]);
     setAddHighlightMode(false);
-    try { (window as any).getSelection?.()?.removeAllRanges(); } catch { /* ignore */ }
+    try {
+      (window as any).getSelection?.()?.removeAllRanges();
+    } catch {
+      /* ignore */
+    }
   };
 
   const toggleFullscreen = () => {
@@ -548,9 +600,7 @@ export const DocumentViewer: Component<DocumentViewerProps> = props => {
         if (e.ctrlKey) {
           e.preventDefault();
           // Focus search input
-          const searchInput = document.querySelector(
-            '[data-testid="document-search"]'
-          ) as any;
+          const searchInput = document.querySelector('[data-testid="document-search"]') as any;
           searchInput?.focus();
         }
         break;
@@ -593,7 +643,9 @@ export const DocumentViewer: Component<DocumentViewerProps> = props => {
       if (Array.isArray(saved.textAnnotations)) setTextAnnotations(saved.textAnnotations);
       if (Array.isArray(saved.lots)) setLots(saved.lots);
       if (typeof saved.activeLotId === 'string') setActiveLotId(saved.activeLotId);
-    } catch {/* ignore */}
+    } catch {
+      /* ignore */
+    }
   });
 
   // Cleanup
@@ -615,9 +667,17 @@ export const DocumentViewer: Component<DocumentViewerProps> = props => {
       const key = `dv:${props.documentUrl || props.title || 'doc'}`;
       (window as any).localStorage.setItem(
         key,
-        JSON.stringify({ notes: notes(), highlights: highlights(), textAnnotations: textAnnotations(), lots: lots(), activeLotId: activeLotId() })
+        JSON.stringify({
+          notes: notes(),
+          highlights: highlights(),
+          textAnnotations: textAnnotations(),
+          lots: lots(),
+          activeLotId: activeLotId(),
+        })
       );
-    } catch {/* ignore */}
+    } catch {
+      /* ignore */
+    }
   });
 
   // Viewer classes
@@ -636,7 +696,9 @@ export const DocumentViewer: Component<DocumentViewerProps> = props => {
     if (error()) {
       return (
         <div class={styles.errorState}>
-          <div class={styles.errorIcon}><AlertTriangle size={28} /></div>
+          <div class={styles.errorIcon}>
+            <AlertTriangle size={28} />
+          </div>
           <div class={styles.errorText}>{error()}</div>
           <button class={styles.retryButton} onClick={() => setError(null)}>
             Retry
@@ -651,10 +713,10 @@ export const DocumentViewer: Component<DocumentViewerProps> = props => {
           <div class={styles.pdfViewer}>
             <div class={styles.pageSurface} ref={setPageSurfaceRef}>
               <div ref={setCanvasWrapper} class={styles.canvasWrapper}>
-            <canvas
-              ref={setPdfCanvas}
-              class={styles.pdfCanvas}
-              title={props.title || 'PDF Document'}
+                <canvas
+                  ref={setPdfCanvas}
+                  class={styles.pdfCanvas}
+                  title={props.title || 'PDF Document'}
                   style={`transform: rotate(${rotation()}deg); filter: ${invertColors() ? 'invert(1)' : 'invert(0)'} ${grayscale() ? 'grayscale(1)' : 'grayscale(0)'} brightness(${brightness()}%) contrast(${contrast()}%);`}
                   onMouseDown={handleSurfaceMouseDown}
                 />
@@ -668,85 +730,136 @@ export const DocumentViewer: Component<DocumentViewerProps> = props => {
                     />
                   )}
                   {/* Highlights */}
-                  {highlights()
-                    .filter(h => h.page === currentPage())
-                    .map(h => (
+                  <For each={highlights().filter(h => h.page === currentPage())}>
+                    {h => (
                       <div
                         class={styles.highlightRect}
                         style={`left:${h.x * 100}%; top:${h.y * 100}%; width:${h.w * 100}%; height:${h.h * 100}%;`}
                         title="Highlight"
                       />
-                    ))}
+                    )}
+                  </For>
                   {/* Notes */}
-                  {notes()
-                    .filter(n => n.page === currentPage())
-                    .map(n => (
+                  <For each={notes().filter(n => n.page === currentPage())}>
+                    {n => (
                       <>
                         <div
                           class={styles.noteRect}
                           style={`left:${n.x * 100}%; top:${n.y * 100}%; width:${n.w * 100}%; height:${n.h * 100}%;`}
-                          onClick={(e:any)=>{e.stopPropagation(); setAddNoteMode(false); openNoteEditor(n.id);}}
+                          onClick={(e: any) => {
+                            e.stopPropagation();
+                            setAddNoteMode(false);
+                            openNoteEditor(n.id);
+                          }}
                           title={n.text || 'Note'}
                         />
                         {editingNoteId() === n.id && (
                           <div
                             class={styles.noteEditor}
                             style={`left: calc(${n.x * 100}% + ${n.w * 100}% + 8px); top: ${n.y * 100}%;`}
-                            onClick={(e:any)=>e.stopPropagation()}
+                            onClick={(e: any) => e.stopPropagation()}
                           >
                             <div class={styles.noteEditorHeader}>
                               <span>Note</span>
                               <div class={styles.noteEditorActions}>
-                                <button class={styles.smallBtn} onClick={() => deleteNote(n.id)}>Delete</button>
-                                <button class={styles.smallBtn} onClick={() => { updateNoteText(n.id, editorText()); setEditingNoteId(null); }}>Close</button>
+                                <button class={styles.smallBtn} onClick={() => deleteNote(n.id)}>
+                                  Delete
+                                </button>
+                                <button
+                                  class={styles.smallBtn}
+                                  onClick={() => {
+                                    updateNoteText(n.id, editorText());
+                                    setEditingNoteId(null);
+                                  }}
+                                >
+                                  Close
+                                </button>
                               </div>
                             </div>
                             <textarea
                               class={styles.noteEditorInput}
                               rows={4}
                               value={editorText()}
-                              onInput={(e:any)=>{ const val=(e.target as any).value; setEditorText(val); }}
-                              onBlur={()=> updateNoteText(n.id, editorText())}
-                              onKeyDown={(e:any)=>{ e.stopPropagation(); if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { updateNoteText(n.id, editorText()); setEditingNoteId(null); } }}
+                              onInput={(e: any) => {
+                                const val = (e.target as any).value;
+                                setEditorText(val);
+                              }}
+                              onBlur={() => updateNoteText(n.id, editorText())}
+                              onKeyDown={(e: any) => {
+                                e.stopPropagation();
+                                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                                  updateNoteText(n.id, editorText());
+                                  setEditingNoteId(null);
+                                }
+                              }}
                             />
                             <div class={styles.noteEditorRow}>
                               <label>Lot</label>
-                              <select value={n.lotId || ''} onInput={(e:any)=>assignNoteLot(n.id, (e.target as any).value)}>
-                                <option value=''>None</option>
-                                {lots().map(l => (
-                                  <option value={l.id}>{l.name}</option>
-                                ))}
+                              <select
+                                value={n.lotId || ''}
+                                onInput={(e: any) => assignNoteLot(n.id, (e.target as any).value)}
+                              >
+                                <option value="">None</option>
+                                <For each={lots()}>
+                                  {l => <option value={l.id}>{l.name}</option>}
+                                </For>
                               </select>
                             </div>
                           </div>
                         )}
                       </>
-                    ))}
+                    )}
+                  </For>
                   {/* Text Annotations */}
-                  {textAnnotations()
-                    .filter(t => t.page === currentPage())
-                    .map(t => (
+                  <For each={textAnnotations().filter(t => t.page === currentPage())}>
+                    {t => (
                       <>
                         <div
                           class={styles.textAnno}
                           style={`left:${t.x * 100}%; top:${t.y * 100}%; color:${t.color || '#e5e7eb'}; font-size:${t.size || 14}px;`}
-                          onClick={(e:any)=>{ e.stopPropagation(); setEditingTextId(t.id); setTextEditorValue(t.text); }}
+                          onClick={(e: any) => {
+                            e.stopPropagation();
+                            setEditingTextId(t.id);
+                            setTextEditorValue(t.text);
+                          }}
                         >
                           {t.text || 'Click to write'}
                         </div>
                         {editingTextId() === t.id && (
-                          <div class={styles.textEditor} style={`left:${t.x * 100}%; top:${t.y * 100}%;`} onClick={(e:any)=>e.stopPropagation()}>
+                          <div
+                            class={styles.textEditor}
+                            style={`left:${t.x * 100}%; top:${t.y * 100}%;`}
+                            onClick={(e: any) => e.stopPropagation()}
+                          >
                             <input
                               class={styles.textEditorInput}
                               value={textEditorValue()}
-                              onInput={(e:any)=>setTextEditorValue((e.target as any).value)}
-                              onKeyDown={(e:any)=>{ e.stopPropagation(); if (e.key==='Enter') { setTextAnnotations(textAnnotations().map(x=>x.id===t.id?{...x,text:textEditorValue()}:x)); setEditingTextId(null); } }}
-                              onBlur={()=>{ setTextAnnotations(textAnnotations().map(x=>x.id===t.id?{...x,text:textEditorValue()}:x)); setEditingTextId(null); }}
+                              onInput={(e: any) => setTextEditorValue((e.target as any).value)}
+                              onKeyDown={(e: any) => {
+                                e.stopPropagation();
+                                if (e.key === 'Enter') {
+                                  setTextAnnotations(
+                                    textAnnotations().map(x =>
+                                      x.id === t.id ? { ...x, text: textEditorValue() } : x
+                                    )
+                                  );
+                                  setEditingTextId(null);
+                                }
+                              }}
+                              onBlur={() => {
+                                setTextAnnotations(
+                                  textAnnotations().map(x =>
+                                    x.id === t.id ? { ...x, text: textEditorValue() } : x
+                                  )
+                                );
+                                setEditingTextId(null);
+                              }}
                             />
                           </div>
                         )}
                       </>
-                    ))}
+                    )}
+                  </For>
                 </div>
                 {/* Text layer overlay for pdf.js selection */}
                 <Show when={pdfDocument()}>
@@ -754,14 +867,20 @@ export const DocumentViewer: Component<DocumentViewerProps> = props => {
                     ref={setTextLayerEl as any}
                     class={styles.pdfTextLayer}
                     onMouseUp={handleTextLayerMouseUp}
-                    style="position:absolute; inset:0; pointer-events:auto; color: transparent; user-select:text;"
+                    style={{
+                      position: 'absolute',
+                      inset: '0',
+                      'pointer-events': 'auto',
+                      color: 'transparent',
+                      'user-select': 'text',
+                    }}
                   />
                 </Show>
               </div>
             </div>
             <Show when={isLoading()}>
               <div class={styles.loadingOverlay}>
-                <div class={styles.loadingSpinner}></div>
+                <div class={styles.loadingSpinner} />
                 <div class={styles.loadingText}>Loading document...</div>
               </div>
             </Show>
@@ -776,7 +895,7 @@ export const DocumentViewer: Component<DocumentViewerProps> = props => {
             </div>
             <Show when={isLoading()}>
               <div class={styles.loadingOverlay}>
-                <div class={styles.loadingSpinner}></div>
+                <div class={styles.loadingSpinner} />
                 <div class={styles.loadingText}>Loading document...</div>
               </div>
             </Show>
@@ -796,7 +915,9 @@ export const DocumentViewer: Component<DocumentViewerProps> = props => {
       default:
         return (
           <div class={styles.unsupportedType}>
-              <div class={styles.unsupportedIcon}><FileWarning size={28} /></div>
+            <div class={styles.unsupportedIcon}>
+              <FileWarning size={28} />
+            </div>
             <div class={styles.unsupportedText}>
               Unsupported document type: {props.documentType}
             </div>
@@ -982,37 +1103,55 @@ export const DocumentViewer: Component<DocumentViewerProps> = props => {
             </button>
 
             <div class={styles.exportMenu}>
-              <button class={styles.zoomButton} aria-label="Export" title="Export" onClick={()=>setShowExport(!showExport())}>Export</button>
+              <button
+                class={styles.zoomButton}
+                aria-label="Export"
+                title="Export"
+                onClick={() => setShowExport(!showExport())}
+              >
+                Export
+              </button>
               {showExport() && (
                 <div class={styles.exportDropdown}>
-                  <button class={styles.exportItem} onClick={async()=>{
-                    setShowExport(false);
-                    if (!props.documentUrl) return;
-                    const noteOverlays = notes().map(n=>({
-                      page: n.page,
-                      x: n.x, y: n.y, w: n.w, h: n.h,
-                      fill_rgba: [59,130,246,64] as [number,number,number,number],
-                      stroke_rgba: [99,102,241,180] as [number,number,number,number],
-                      stroke_width: 2
-                    }));
-                    const hlOverlays = highlights().map(h=>({
-                      page: h.page,
-                      x: h.x, y: h.y, w: h.w, h: h.h,
-                      fill_rgba: [253, 230, 138, 96] as [number,number,number,number],
-                      stroke_rgba: [234, 179, 8, 140] as [number,number,number,number],
-                      stroke_width: 1
-                    }));
-                    const overlays = [...noteOverlays, ...hlOverlays];
-                    try {
-                      await documentService.exportAnnotatedPngs(
-                        props.documentUrl,
-                        overlays,
-                        Math.max(1, Math.round(zoomLevel()/100))
-                      );
-                    } catch {
-                      // ignore
-                    }
-                  }}>Annotated PNGs</button>
+                  <button
+                    class={styles.exportItem}
+                    onClick={async () => {
+                      setShowExport(false);
+                      if (!props.documentUrl) return;
+                      const noteOverlays = notes().map(n => ({
+                        page: n.page,
+                        x: n.x,
+                        y: n.y,
+                        w: n.w,
+                        h: n.h,
+                        fill_rgba: [59, 130, 246, 64] as [number, number, number, number],
+                        stroke_rgba: [99, 102, 241, 180] as [number, number, number, number],
+                        stroke_width: 2,
+                      }));
+                      const hlOverlays = highlights().map(h => ({
+                        page: h.page,
+                        x: h.x,
+                        y: h.y,
+                        w: h.w,
+                        h: h.h,
+                        fill_rgba: [253, 230, 138, 96] as [number, number, number, number],
+                        stroke_rgba: [234, 179, 8, 140] as [number, number, number, number],
+                        stroke_width: 1,
+                      }));
+                      const overlays = [...noteOverlays, ...hlOverlays];
+                      try {
+                        await documentService.exportAnnotatedPngs(
+                          props.documentUrl,
+                          overlays,
+                          Math.max(1, Math.round(zoomLevel() / 100))
+                        );
+                      } catch {
+                        // ignore
+                      }
+                    }}
+                  >
+                    Annotated PNGs
+                  </button>
                 </div>
               )}
             </div>
@@ -1056,7 +1195,7 @@ export const DocumentViewer: Component<DocumentViewerProps> = props => {
                 class={styles.lotInput}
                 placeholder="New lot"
                 value={newLotName()}
-                onInput={(e:any)=>setNewLotName((e.target as any).value)}
+                onInput={(e: any) => setNewLotName((e.target as any).value)}
               />
               <button
                 class={styles.smallBtn}
@@ -1067,20 +1206,28 @@ export const DocumentViewer: Component<DocumentViewerProps> = props => {
                   setLots([...lots(), lot]);
                   setNewLotName('');
                 }}
-              >Add</button>
+              >
+                Add
+              </button>
             </div>
           </div>
           <div class={styles.lotChips}>
             <button
-              class={`${styles.lotChip} ${activeLotId()==='all' ? styles.lotChipActive : ''}`}
-              onClick={()=>setActiveLotId('all')}
-            >All ({notes().length})</button>
-            {lots().map(l => (
-              <button
-                class={`${styles.lotChip} ${activeLotId()===l.id ? styles.lotChipActive : ''}`}
-                onClick={()=>setActiveLotId(l.id)}
-              >{l.name} ({notes().filter(n=>n.lotId===l.id).length})</button>
-            ))}
+              class={`${styles.lotChip} ${activeLotId() === 'all' ? styles.lotChipActive : ''}`}
+              onClick={() => setActiveLotId('all')}
+            >
+              All ({notes().length})
+            </button>
+            <For each={lots()}>
+              {l => (
+                <button
+                  class={`${styles.lotChip} ${activeLotId() === l.id ? styles.lotChipActive : ''}`}
+                  onClick={() => setActiveLotId(l.id)}
+                >
+                  {l.name} ({notes().filter(n => n.lotId === l.id).length})
+                </button>
+              )}
+            </For>
           </div>
         </div>
 
@@ -1098,47 +1245,68 @@ export const DocumentViewer: Component<DocumentViewerProps> = props => {
                   content: '',
                 });
               }}
-            >Add</button>
+            >
+              Add
+            </button>
           </div>
           <ul class={styles.annotationsList}>
-            {globalNotesStore.listByDoc(props.documentPath).map(gn => (
-              <li class={styles.annotationItem}>
-                <div class={styles.annotationMeta}>
-                  <span class={styles.annotationBadge}>global</span>
-                  <span class={styles.annotationPage}>p.{gn.page ?? '-'}</span>
-                </div>
-                <div class={styles.annotationText}>
-                  <input
-                    class={styles.lotInput}
-                    value={gn.title || ''}
-                    onInput={(e:any)=>globalNotesStore.update(gn.id, { title: (e.target as any).value })}
-                    placeholder="Title"
-                  />
-                  <textarea
-                    class={styles.noteEditorInput}
-                    rows={3}
-                    value={gn.content}
-                    onInput={(e:any)=>globalNotesStore.update(gn.id, { content: (e.target as any).value })}
-                    placeholder="Write your side note here"
-                  />
-                </div>
-                <div class={styles.annotationActions}>
-                  <button class={styles.smallBtn} onClick={()=> gn.page && handlePageChange(gn.page!)}>Open</button>
-                  <button class={styles.smallBtn} onClick={()=> globalNotesStore.remove(gn.id)}>Delete</button>
-                </div>
-              </li>
-            ))}
+            <For each={globalNotesStore.listByDoc(props.documentPath)}>
+              {gn => (
+                <li class={styles.annotationItem}>
+                  <div class={styles.annotationMeta}>
+                    <span class={styles.annotationBadge}>global</span>
+                    <span class={styles.annotationPage}>p.{gn.page ?? '-'}</span>
+                  </div>
+                  <div class={styles.annotationText}>
+                    <input
+                      class={styles.lotInput}
+                      value={gn.title || ''}
+                      onInput={(e: any) =>
+                        globalNotesStore.update(gn.id, { title: (e.target as any).value })
+                      }
+                      placeholder="Title"
+                    />
+                    <textarea
+                      class={styles.noteEditorInput}
+                      rows={3}
+                      value={gn.content}
+                      onInput={(e: any) =>
+                        globalNotesStore.update(gn.id, { content: (e.target as any).value })
+                      }
+                      placeholder="Write your side note here"
+                    />
+                  </div>
+                  <div class={styles.annotationActions}>
+                    <button
+                      class={styles.smallBtn}
+                      onClick={() => gn.page && handlePageChange(gn.page!)}
+                    >
+                      Open
+                    </button>
+                    <button class={styles.smallBtn} onClick={() => globalNotesStore.remove(gn.id)}>
+                      Delete
+                    </button>
+                  </div>
+                </li>
+              )}
+            </For>
           </ul>
         </div>
 
         {/* Notes list */}
         <div class={styles.drawerSection}>
           <div class={styles.sectionTitle}>Notes</div>
-          <Show when={notes().length>0} fallback={<div class={styles.emptyAnnotations}>No notes yet</div>}>
+          <Show
+            when={notes().length > 0}
+            fallback={<div class={styles.emptyAnnotations}>No notes yet</div>}
+          >
             <ul class={styles.annotationsList}>
-              {notes()
-                .filter(n => activeLotId()==='all' ? true : n.lotId===activeLotId())
-                .map(n => (
+              <For
+                each={notes().filter(n =>
+                  activeLotId() === 'all' ? true : n.lotId === activeLotId()
+                )}
+              >
+                {n => (
                   <li class={styles.annotationItem}>
                     <div class={styles.annotationMeta}>
                       <span class={styles.annotationBadge}>{n.lotId ? 'lot' : 'note'}</span>
@@ -1146,10 +1314,19 @@ export const DocumentViewer: Component<DocumentViewerProps> = props => {
                     </div>
                     <div class={styles.annotationText}>{n.text || '—'}</div>
                     <div class={styles.annotationActions}>
-                      <button class={styles.smallBtn} onClick={()=>{ setCurrentPage(n.page); setEditingNoteId(n.id); }}>Open</button>
+                      <button
+                        class={styles.smallBtn}
+                        onClick={() => {
+                          setCurrentPage(n.page);
+                          setEditingNoteId(n.id);
+                        }}
+                      >
+                        Open
+                      </button>
                     </div>
                   </li>
-                ))}
+                )}
+              </For>
             </ul>
           </Show>
         </div>
@@ -1160,14 +1337,33 @@ export const DocumentViewer: Component<DocumentViewerProps> = props => {
         <div class={styles.editorPanel}>
           <div class={styles.editorRow}>
             <label>Brightness</label>
-            <input type="range" min="50" max="150" value={brightness()} onInput={e => setBrightness(Number((e.target as any).value))} />
+            <input
+              type="range"
+              min="50"
+              max="150"
+              value={brightness()}
+              onInput={e => setBrightness(Number((e.target as any).value))}
+            />
           </div>
           <div class={styles.editorRow}>
             <label>Contrast</label>
-            <input type="range" min="50" max="150" value={contrast()} onInput={e => setContrast(Number((e.target as any).value))} />
+            <input
+              type="range"
+              min="50"
+              max="150"
+              value={contrast()}
+              onInput={e => setContrast(Number((e.target as any).value))}
+            />
           </div>
           <div class={styles.editorRowToggle}>
-            <label><input type="checkbox" checked={grayscale()} onInput={e => setGrayscale((e.target as any).checked)} /> Grayscale</label>
+            <label>
+              <input
+                type="checkbox"
+                checked={grayscale()}
+                onInput={e => setGrayscale((e.target as any).checked)}
+              />{' '}
+              Grayscale
+            </label>
           </div>
         </div>
       </Show>

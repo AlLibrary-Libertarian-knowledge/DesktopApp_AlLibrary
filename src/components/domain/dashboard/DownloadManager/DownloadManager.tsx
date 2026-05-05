@@ -66,7 +66,15 @@ const DownloadManager: Component<DownloadManagerProps> = props => {
     return items.map((t: any) => ({
       id: String(t.id ?? t.hash ?? t.name),
       name: String(t.name || 'Unknown'),
-      type: (String(t.name || '').toLowerCase().endsWith('.epub') ? 'EPUB' : String(t.name || '').toLowerCase().endsWith('.pdf') ? 'PDF' : 'Collection') as any,
+      type: (String(t.name || '')
+        .toLowerCase()
+        .endsWith('.epub')
+        ? 'EPUB'
+        : String(t.name || '')
+              .toLowerCase()
+              .endsWith('.pdf')
+          ? 'PDF'
+          : 'Collection') as any,
       size: Number(t.size ?? 0),
       downloaded: Number(t.downloaded ?? 0),
       uploadSpeed: Number(t.upload_speed ?? 0),
@@ -88,11 +96,11 @@ const DownloadManager: Component<DownloadManagerProps> = props => {
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
   };
 
   const formatSpeed = (speed: number): string => {
-    return formatBytes(speed) + '/s';
+    return `${formatBytes(speed)}/s`;
   };
 
   const formatTime = (seconds: number): string => {
@@ -126,7 +134,7 @@ const DownloadManager: Component<DownloadManagerProps> = props => {
 
   const filteredDownloads = () => {
     const list = liveDownloads();
-    let filtered = list.filter(item => {
+    const filtered = list.filter(item => {
       if (filter() === 'all') return true;
       return item.status === filter();
     });

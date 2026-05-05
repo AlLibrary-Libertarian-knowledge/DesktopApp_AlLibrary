@@ -284,7 +284,7 @@ export const CulturalContextsPage: Component = () => {
                 value={searchQuery()}
                 onSearch={handleSearch}
                 onClear={() => setSearchQuery('')}
-                className={styles.contextSearch}
+                class={styles.contextSearch}
               />
             </div>
 
@@ -303,7 +303,7 @@ export const CulturalContextsPage: Component = () => {
                 ],
                 regions: [], // Will be populated from backend
               }}
-              className={styles.filterPanel}
+              class={styles.filterPanel}
             />
           </div>
         </Show>
@@ -360,7 +360,7 @@ export const CulturalContextsPage: Component = () => {
                   expanded={true}
                   showEducationalContent={true}
                   showCommunityInfo={true}
-                  className={styles.contextDisplay}
+                  class={styles.contextDisplay}
                 />
 
                 {/* Educational Content */}
@@ -538,7 +538,7 @@ export const CulturalContextsPage: Component = () => {
                 // Handle pathway selection
                 console.log('Selected pathway:', pathwayId);
               }}
-              className={styles.learningSection}
+              class={styles.learningSection}
             />
           </Show>
 
@@ -590,7 +590,7 @@ export const CulturalContextsPage: Component = () => {
           <Show when={viewMode() === 'acknowledgments' && elderAcknowledgments()}>
             <ElderAcknowledgments
               acknowledgments={elderAcknowledgments()!}
-              className={styles.acknowledgementsSection}
+              class={styles.acknowledgementsSection}
             />
           </Show>
         </main>

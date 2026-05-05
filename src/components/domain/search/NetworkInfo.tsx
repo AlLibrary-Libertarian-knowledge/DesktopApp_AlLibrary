@@ -1,4 +1,4 @@
-import { Component, createSignal, onCleanup, onMount } from 'solid-js';
+import { Component, createSignal, onCleanup, onMount, For } from 'solid-js';
 import { invoke } from '@tauri-apps/api/core';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import * as onionShare from '@/services/network/onionShareService';
@@ -8,7 +8,7 @@ interface NetworkInfoProps {
   class?: string;
 }
 
-export const NetworkInfo: Component<NetworkInfoProps> = (props) => {
+export const NetworkInfo: Component<NetworkInfoProps> = props => {
   const [myAddress, setMyAddress] = createSignal<string>('');
   const [peerAddress, setPeerAddress] = createSignal<string>('');
   const [isLoading, setIsLoading] = createSignal(false);
@@ -45,15 +45,14 @@ export const NetworkInfo: Component<NetworkInfoProps> = (props) => {
   const loadNetworkInfo = async () => {
     try {
       setIsLoading(true);
-      
+
       // Get my onion address
       const address = await invoke<string>('get_my_onion_address');
       setMyAddress(address);
-      
+
       // Get connected peers
       const peers = await invoke<string[]>('get_network_peers');
       setConnectedPeers(peers);
-      
     } catch (error) {
       console.error('Failed to load network info:', error);
       setMessage('Failed to load network information');
@@ -71,14 +70,13 @@ export const NetworkInfo: Component<NetworkInfoProps> = (props) => {
     try {
       setIsLoading(true);
       setMessage('');
-      
+
       const result = await invoke<string>('add_peer_address', { address: peerAddress() });
       setMessage(`✅ ${result}`);
       setPeerAddress('');
-      
+
       // Refresh peer list
       await loadNetworkInfo();
-      
     } catch (error) {
       console.error('Failed to add peer address:', error);
       setMessage(`❌ Failed to add peer: ${error}`);
@@ -148,10 +146,7 @@ export const NetworkInfo: Component<NetworkInfoProps> = (props) => {
     <div class={`${styles.networkInfo} ${props.class || ''}`}>
       <div class={styles.header}>
         <h3>🌐 Network Information</h3>
-        <button 
-          class={styles.expandButton}
-          onClick={() => setIsExpanded(!isExpanded())}
-        >
+        <button class={styles.expandButton} onClick={() => setIsExpanded(!isExpanded())}>
           {isExpanded() ? '▼' : '▶'}
         </button>
       </div>
@@ -163,7 +158,7 @@ export const NetworkInfo: Component<NetworkInfoProps> = (props) => {
             <h4>🔑 My Onion Address</h4>
             <div class={styles.addressContainer}>
               <code class={styles.address}>{myAddress() || 'Loading...'}</code>
-              <button 
+              <button
                 class={styles.copyButton}
                 onClick={() => copyToClipboard(myAddress())}
                 disabled={!myAddress() || isLoading()}
@@ -171,9 +166,7 @@ export const NetworkInfo: Component<NetworkInfoProps> = (props) => {
                 📋 Copy
               </button>
             </div>
-            <p class={styles.helpText}>
-              Share this address with your friends to connect directly
-            </p>
+            <p class={styles.helpText}>Share this address with your friends to connect directly</p>
           </div>
 
           {/* Add Peer Address Section */}
@@ -184,11 +177,11 @@ export const NetworkInfo: Component<NetworkInfoProps> = (props) => {
                 type="text"
                 placeholder="Enter peer address (e.g., /dnsaddr/abc123.onion/tcp/12345/ws/p2p/QmPeerId)"
                 value={peerAddress()}
-                onInput={(e) => setPeerAddress(e.currentTarget.value)}
+                onInput={e => setPeerAddress(e.currentTarget.value)}
                 class={styles.addressInput}
                 disabled={isLoading()}
               />
-              <button 
+              <button
                 class={styles.addButton}
                 onClick={addPeerAddress}
                 disabled={!peerAddress() || isLoading()}
@@ -206,9 +199,7 @@ export const NetworkInfo: Component<NetworkInfoProps> = (props) => {
             <h4>👥 Connected Peers ({connectedPeers().length})</h4>
             {connectedPeers().length > 0 ? (
               <ul class={styles.peerList}>
-                {connectedPeers().map(peer => (
-                  <li class={styles.peerItem}>{peer}</li>
-                ))}
+                <For each={connectedPeers()}>{peer => <li class={styles.peerItem}>{peer}</li>}</For>
               </ul>
             ) : (
               <p class={styles.noPeers}>No peers connected yet</p>
@@ -218,7 +209,8 @@ export const NetworkInfo: Component<NetworkInfoProps> = (props) => {
           <div class={styles.section}>
             <h4>Onion share (M5 / POC-compatible)</h4>
             <p class={styles.helpText}>
-              Local Axum chunk server + tracker lobby. Uses Tor from the app; start host before copying links.
+              Local Axum chunk server + tracker lobby. Uses Tor from the app; start host before
+              copying links.
             </p>
             <div class={styles.inputContainer}>
               <input
@@ -238,7 +230,12 @@ export const NetworkInfo: Component<NetworkInfoProps> = (props) => {
               </label>
             </div>
             <div class={styles.actions}>
-              <button type="button" class={styles.addButton} onClick={saveTrackerConfig} disabled={isLoading()}>
+              <button
+                type="button"
+                class={styles.addButton}
+                onClick={saveTrackerConfig}
+                disabled={isLoading()}
+              >
                 Save tracker
               </button>
               <button
@@ -368,14 +365,20 @@ export const NetworkInfo: Component<NetworkInfoProps> = (props) => {
               </button>
             </div>
             <ul class={styles.peerList}>
-              {m5LocalShares().map(s => (
-                <li class={styles.peerItem}>
-                  {s.name} —{' '}
-                  <button type="button" class={styles.copyButton} onClick={() => copyToClipboard(s.link)}>
-                    copy link
-                  </button>
-                </li>
-              ))}
+              <For each={m5LocalShares()}>
+                {s => (
+                  <li class={styles.peerItem}>
+                    {s.name} —{' '}
+                    <button
+                      type="button"
+                      class={styles.copyButton}
+                      onClick={() => copyToClipboard(s.link)}
+                    >
+                      copy link
+                    </button>
+                  </li>
+                )}
+              </For>
             </ul>
             <div class={styles.inputContainer}>
               <input
@@ -415,27 +418,26 @@ export const NetworkInfo: Component<NetworkInfoProps> = (props) => {
 
           {/* Action Buttons */}
           <div class={styles.actions}>
-            <button 
+            <button
               class={styles.refreshButton}
               onClick={refreshNetworkInfo}
               disabled={isLoading()}
             >
               🔄 Refresh
             </button>
-            
-            <button 
+
+            <button
               class={styles.forceOnionButton}
               onClick={async () => {
                 try {
                   setIsLoading(true);
                   setMessage('');
-                  
+
                   const result = await invoke<string>('force_create_onion_service');
                   setMessage(`✅ ${result}`);
-                  
+
                   // Refresh network info to show new onion address
                   await loadNetworkInfo();
-                  
                 } catch (error) {
                   console.error('Failed to force create onion service:', error);
                   setMessage(`❌ Failed to create onion service: ${error}`);
@@ -451,7 +453,9 @@ export const NetworkInfo: Component<NetworkInfoProps> = (props) => {
 
           {/* Status Messages */}
           {message() && (
-            <div class={`${styles.message} ${message().startsWith('✅') ? styles.success : styles.error}`}>
+            <div
+              class={`${styles.message} ${message().startsWith('✅') ? styles.success : styles.error}`}
+            >
               {message()}
             </div>
           )}

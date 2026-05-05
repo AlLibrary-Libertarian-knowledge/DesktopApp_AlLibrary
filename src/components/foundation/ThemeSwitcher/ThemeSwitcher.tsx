@@ -6,7 +6,7 @@
  * Positioned next to language selector for easy access
  */
 
-import { Component, createSignal, createEffect, createMemo, Show } from 'solid-js';
+import { Component, createSignal, createEffect, createMemo, Show, For } from 'solid-js';
 import { useTheme } from '@/hooks/ui/useTheme';
 import styles from './ThemeSwitcher.module.css';
 
@@ -196,21 +196,23 @@ export const ThemeSwitcher: Component<ThemeSwitcherProps> = props => {
               <div class={styles.section}>
                 <h4 class={styles.sectionTitle}>Display Mode</h4>
                 <div class={styles.themeGrid}>
-                  {modeThemes.map(themeOption => (
-                    <button
-                      type="button"
-                      class={`${styles.themeOption} ${theme.currentTheme().mode === themeOption.value ? styles.active : ''}`}
-                      onClick={() => handleModeChange(themeOption.value)}
-                      role="option"
-                      aria-label={themeOption.label}
-                    >
-                      <span class={styles.themeOptionIcon}>{themeOption.icon}</span>
-                      <span class={styles.themeOptionLabel}>{themeOption.label}</span>
-                      {theme.currentTheme().mode === themeOption.value && (
-                        <span class={styles.checkmark}>✓</span>
-                      )}
-                    </button>
-                  ))}
+                  <For each={modeThemes}>
+                    {themeOption => (
+                      <button
+                        type="button"
+                        class={`${styles.themeOption} ${theme.currentTheme().mode === themeOption.value ? styles.active : ''}`}
+                        onClick={() => handleModeChange(themeOption.value)}
+                        role="option"
+                        aria-label={themeOption.label}
+                      >
+                        <span class={styles.themeOptionIcon}>{themeOption.icon}</span>
+                        <span class={styles.themeOptionLabel}>{themeOption.label}</span>
+                        {theme.currentTheme().mode === themeOption.value && (
+                          <span class={styles.checkmark}>✓</span>
+                        )}
+                      </button>
+                    )}
+                  </For>
                 </div>
               </div>
             </Show>
@@ -220,21 +222,23 @@ export const ThemeSwitcher: Component<ThemeSwitcherProps> = props => {
               <div class={styles.section}>
                 <h4 class={styles.sectionTitle}>Cultural Themes</h4>
                 <div class={styles.themeGrid}>
-                  {culturalThemes.map(themeOption => (
-                    <button
-                      type="button"
-                      class={`${styles.themeOption} ${theme.currentTheme().culturalTheme === themeOption.value ? styles.active : ''}`}
-                      onClick={() => handleCulturalThemeChange(themeOption.value)}
-                      role="option"
-                      aria-label={themeOption.label}
-                    >
-                      <span class={styles.themeOptionIcon}>{themeOption.icon}</span>
-                      <span class={styles.themeOptionLabel}>{themeOption.label}</span>
-                      {theme.currentTheme().culturalTheme === themeOption.value && (
-                        <span class={styles.checkmark}>✓</span>
-                      )}
-                    </button>
-                  ))}
+                  <For each={culturalThemes}>
+                    {themeOption => (
+                      <button
+                        type="button"
+                        class={`${styles.themeOption} ${theme.currentTheme().culturalTheme === themeOption.value ? styles.active : ''}`}
+                        onClick={() => handleCulturalThemeChange(themeOption.value)}
+                        role="option"
+                        aria-label={themeOption.label}
+                      >
+                        <span class={styles.themeOptionIcon}>{themeOption.icon}</span>
+                        <span class={styles.themeOptionLabel}>{themeOption.label}</span>
+                        {theme.currentTheme().culturalTheme === themeOption.value && (
+                          <span class={styles.checkmark}>✓</span>
+                        )}
+                      </button>
+                    )}
+                  </For>
                 </div>
               </div>
             </Show>
@@ -244,21 +248,23 @@ export const ThemeSwitcher: Component<ThemeSwitcherProps> = props => {
               <div class={styles.section}>
                 <h4 class={styles.sectionTitle}>Accessibility</h4>
                 <div class={styles.themeGrid}>
-                  {accessibilityThemes.map(themeOption => (
-                    <button
-                      type="button"
-                      class={`${styles.themeOption} ${theme.currentTheme().accessibilityTheme === themeOption.value ? styles.active : ''}`}
-                      onClick={() => handleAccessibilityThemeChange(themeOption.value)}
-                      role="option"
-                      aria-label={themeOption.label}
-                    >
-                      <span class={styles.themeOptionIcon}>{themeOption.icon}</span>
-                      <span class={styles.themeOptionLabel}>{themeOption.label}</span>
-                      {theme.currentTheme().accessibilityTheme === themeOption.value && (
-                        <span class={styles.checkmark}>✓</span>
-                      )}
-                    </button>
-                  ))}
+                  <For each={accessibilityThemes}>
+                    {themeOption => (
+                      <button
+                        type="button"
+                        class={`${styles.themeOption} ${theme.currentTheme().accessibilityTheme === themeOption.value ? styles.active : ''}`}
+                        onClick={() => handleAccessibilityThemeChange(themeOption.value)}
+                        role="option"
+                        aria-label={themeOption.label}
+                      >
+                        <span class={styles.themeOptionIcon}>{themeOption.icon}</span>
+                        <span class={styles.themeOptionLabel}>{themeOption.label}</span>
+                        {theme.currentTheme().accessibilityTheme === themeOption.value && (
+                          <span class={styles.checkmark}>✓</span>
+                        )}
+                      </button>
+                    )}
+                  </For>
                 </div>
               </div>
             </Show>
@@ -303,55 +309,63 @@ export const ThemeSwitcher: Component<ThemeSwitcherProps> = props => {
         <div class={styles.backdrop} onClick={() => setIsOpen(false)} />
         <div class={styles.compactMenu} role="listbox">
           {/* Mode Themes */}
-          {modeThemes.map(themeOption => (
-            <button
-              class={[
-                styles.compactOption,
-                theme.currentTheme().mode === themeOption.value ? styles.active : '',
-              ].join(' ')}
-              onClick={() => handleModeChange(themeOption.value)}
-              aria-selected={theme.currentTheme().mode === themeOption.value}
-              role="option"
-              title={themeOption.label}
-            >
-              <span class={styles.themeIcon}>{themeOption.icon}</span>
-              <span class={styles.compactCode}>{themeOption.value.toUpperCase()}</span>
-            </button>
-          ))}
+          <For each={modeThemes}>
+            {themeOption => (
+              <button
+                class={[
+                  styles.compactOption,
+                  theme.currentTheme().mode === themeOption.value ? styles.active : '',
+                ].join(' ')}
+                onClick={() => handleModeChange(themeOption.value)}
+                aria-selected={theme.currentTheme().mode === themeOption.value}
+                role="option"
+                title={themeOption.label}
+              >
+                <span class={styles.themeIcon}>{themeOption.icon}</span>
+                <span class={styles.compactCode}>{themeOption.value.toUpperCase()}</span>
+              </button>
+            )}
+          </For>
 
           {/* Cultural Themes */}
-          {culturalThemes.map(themeOption => (
-            <button
-              class={[
-                styles.compactOption,
-                theme.currentTheme().culturalTheme === themeOption.value ? styles.active : '',
-              ].join(' ')}
-              onClick={() => handleCulturalThemeChange(themeOption.value)}
-              aria-selected={theme.currentTheme().culturalTheme === themeOption.value}
-              role="option"
-              title={themeOption.label}
-            >
-              <span class={styles.themeIcon}>{themeOption.icon}</span>
-              <span class={styles.compactCode}>{themeOption.value.toUpperCase()}</span>
-            </button>
-          ))}
+          <For each={culturalThemes}>
+            {themeOption => (
+              <button
+                class={[
+                  styles.compactOption,
+                  theme.currentTheme().culturalTheme === themeOption.value ? styles.active : '',
+                ].join(' ')}
+                onClick={() => handleCulturalThemeChange(themeOption.value)}
+                aria-selected={theme.currentTheme().culturalTheme === themeOption.value}
+                role="option"
+                title={themeOption.label}
+              >
+                <span class={styles.themeIcon}>{themeOption.icon}</span>
+                <span class={styles.compactCode}>{themeOption.value.toUpperCase()}</span>
+              </button>
+            )}
+          </For>
 
           {/* Accessibility Themes */}
-          {accessibilityThemes.map(themeOption => (
-            <button
-              class={[
-                styles.compactOption,
-                theme.currentTheme().accessibilityTheme === themeOption.value ? styles.active : '',
-              ].join(' ')}
-              onClick={() => handleAccessibilityThemeChange(themeOption.value)}
-              aria-selected={theme.currentTheme().accessibilityTheme === themeOption.value}
-              role="option"
-              title={themeOption.label}
-            >
-              <span class={styles.themeIcon}>{themeOption.icon}</span>
-              <span class={styles.compactCode}>{themeOption.value.toUpperCase()}</span>
-            </button>
-          ))}
+          <For each={accessibilityThemes}>
+            {themeOption => (
+              <button
+                class={[
+                  styles.compactOption,
+                  theme.currentTheme().accessibilityTheme === themeOption.value
+                    ? styles.active
+                    : '',
+                ].join(' ')}
+                onClick={() => handleAccessibilityThemeChange(themeOption.value)}
+                aria-selected={theme.currentTheme().accessibilityTheme === themeOption.value}
+                role="option"
+                title={themeOption.label}
+              >
+                <span class={styles.themeIcon}>{themeOption.icon}</span>
+                <span class={styles.compactCode}>{themeOption.value.toUpperCase()}</span>
+              </button>
+            )}
+          </For>
         </div>
       </Show>
     </div>

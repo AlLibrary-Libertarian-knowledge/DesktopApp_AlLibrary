@@ -34,7 +34,7 @@ export const TimeFilter: Component<TimeFilterProps> = props => {
   const handlePeriodChange = (period: string) => {
     setSelectedPeriod(period);
 
-    let filter: TimeFilterValue = { period };
+    const filter: TimeFilterValue = { period };
 
     // Calculate date ranges for predefined periods
     const now = new Date();
@@ -43,12 +43,13 @@ export const TimeFilter: Component<TimeFilterProps> = props => {
         filter.startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         filter.endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
         break;
-      case 'week':
+      case 'week': {
         const weekStart = new Date(now);
         weekStart.setDate(now.getDate() - now.getDay());
         filter.startDate = weekStart;
         filter.endDate = now;
         break;
+      }
       case 'month':
         filter.startDate = new Date(now.getFullYear(), now.getMonth(), 1);
         filter.endDate = now;

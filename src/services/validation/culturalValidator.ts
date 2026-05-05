@@ -56,7 +56,7 @@ export class CulturalValidator {
       const textContent =
         typeof content === 'string'
           ? content
-          : (content?.title || '') + ' ' + (content?.description || '');
+          : `${content?.title || ''} ${content?.description || ''}`;
 
       // Check if Document has existing cultural metadata
       const existingLevel =
@@ -173,7 +173,7 @@ export class CulturalValidator {
     enhancedMetadata: CulturalMetadata;
   }> {
     const suggestions: string[] = [];
-    let enhancedMetadata = { ...metadata };
+    const enhancedMetadata = { ...metadata };
 
     // Validate sensitivity level
     if (!Object.values(CulturalSensitivityLevel).includes(metadata.sensitivityLevel)) {

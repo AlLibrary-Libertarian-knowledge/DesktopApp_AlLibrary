@@ -430,7 +430,7 @@ export class StorageService {
     const { culturalMetadata } = document;
 
     if (culturalMetadata.sensitivityLevel > 1) {
-      return `This document contains ${culturalMetadata.culturalOrigin ? culturalMetadata.culturalOrigin + ' ' : ''}cultural content. Cultural context is provided for educational purposes only.`;
+      return `This document contains ${culturalMetadata.culturalOrigin ? `${culturalMetadata.culturalOrigin} ` : ''}cultural content. Cultural context is provided for educational purposes only.`;
     }
 
     return 'This document contains general cultural content.';

@@ -1,4 +1,4 @@
-import { Component, createMemo, createSignal, onMount, createEffect } from 'solid-js';
+import { Component, For, Show, createMemo, createSignal, onMount, createEffect } from 'solid-js';
 import { HardDrive, FileText, File, Shield, Globe, Clock } from 'lucide-solid';
 import { Card } from '../../foundation';
 import { SystemAPI, SystemUtils } from '../../../types/System';

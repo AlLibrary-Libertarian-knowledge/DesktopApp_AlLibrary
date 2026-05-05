@@ -51,8 +51,7 @@ const StatCard: Component<StatCardProps> = props => {
                 class={styles['chart-bar']}
                 style={`height: ${Math.random() * 60 + 20}%`}
                 aria-hidden="true"
-                key={i}
-              ></div>
+              />
             ))}
           </div>
         );
@@ -64,8 +63,7 @@ const StatCard: Component<StatCardProps> = props => {
               <div
                 class={`${styles['peer-node']} ${i < 4 ? styles['active'] : ''}`}
                 aria-hidden="true"
-                key={i}
-              ></div>
+              />
             ))}
           </div>
         );
@@ -79,8 +77,7 @@ const StatCard: Component<StatCardProps> = props => {
                   class={styles['geo-dot']}
                   style={`top: ${Math.random() * 80}%; left: ${Math.random() * 80}%`}
                   aria-hidden="true"
-                  key={i}
-                ></div>
+                />
               ))}
             </div>
           </div>
@@ -111,8 +108,8 @@ const StatCard: Component<StatCardProps> = props => {
               />
               <defs>
                 <linearGradient id="healthGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" style="stop-color: #10b981" />
-                  <stop offset="100%" style="stop-color: #34d399" />
+                  <stop offset="0%" style={{ 'stop-color': '#10b981' }} />
+                  <stop offset="100%" style={{ 'stop-color': '#34d399' }} />
                 </linearGradient>
               </defs>
             </svg>

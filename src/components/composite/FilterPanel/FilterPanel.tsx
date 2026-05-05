@@ -132,7 +132,7 @@ const FilterPanel: Component<FilterPanelProps> = props => {
         educationalContext: 'Learn about different cultural contexts and protocols',
         options: props.availableFilters.sensitivityLevels.map(level => ({
           value: level,
-          label: level.charAt(0).toUpperCase() + level.slice(1) + ' Context',
+          label: `${level.charAt(0).toUpperCase() + level.slice(1)} Context`,
           culturalContext: 'Educational context level',
         })),
       });

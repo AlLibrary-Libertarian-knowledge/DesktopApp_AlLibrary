@@ -132,14 +132,18 @@ const HomePage: Component = () => {
           class={styles['network-status-enhanced']}
           role="status"
           aria-live="polite"
-          aria-label={t('home.accessibility.networkStatusAria', { status: t('home.networkStatus.online'), peers: String(net.connectedPeers()), health: `${net.networkHealthPct()}%`, })}
+          aria-label={t('home.accessibility.networkStatusAria', {
+            status: t('home.networkStatus.online'),
+            peers: String(net.connectedPeers()),
+            health: `${net.networkHealthPct()}%`,
+          })}
         >
           {/* Network Status Indicator */}
           <div class={styles['network-status-main']}>
             <div class={styles['status-row']}>
               <span class={styles['status-text']}>{t('home.networkStatus.online')}</span>
               <div class={`${styles['status-indicator']} ${styles.online}`}>
-                <div class={styles['status-pulse']}></div>
+                <div class={styles['status-pulse']} />
               </div>
             </div>
             <div class={styles['health-row']}>
@@ -149,7 +153,7 @@ const HomePage: Component = () => {
                     class={styles['health-fill']}
                     style={`width: ${net.networkHealthPct()}%`}
                     aria-label={t('home.networkStatus.health')}
-                  ></div>
+                  />
                 </div>
                 <span class={styles['health-text']}>{t('home.networkStatus.health')}</span>
               </div>
@@ -167,9 +171,9 @@ const HomePage: Component = () => {
               </div>
               <div class={styles['flow-visual']}>
                 <div class={`${styles['flow-stream']} ${styles['download-stream']}`}>
-                  <div class={styles['flow-particle']}></div>
-                  <div class={styles['flow-particle']}></div>
-                  <div class={styles['flow-particle']}></div>
+                  <div class={styles['flow-particle']} />
+                  <div class={styles['flow-particle']} />
+                  <div class={styles['flow-particle']} />
                 </div>
                 <div class={styles['flow-speed']}>{net.downloadMbps()} MB/s</div>
               </div>
@@ -177,9 +181,9 @@ const HomePage: Component = () => {
 
             <div class={styles['network-center']}>
               <div class={styles['network-node']}>
-                <div class={styles['node-core']}></div>
-                <div class={styles['node-ring']}></div>
-                <div class={styles['node-outer']}></div>
+                <div class={styles['node-core']} />
+                <div class={styles['node-ring']} />
+                <div class={styles['node-outer']} />
               </div>
               <div class={styles['peer-count']}>
                 <span class={styles['peer-number']}>{net.connectedPeers()}</span>
@@ -196,9 +200,9 @@ const HomePage: Component = () => {
               </div>
               <div class={styles['flow-visual']}>
                 <div class={`${styles['flow-stream']} ${styles['upload-stream']}`}>
-                  <div class={styles['flow-particle']}></div>
-                  <div class={styles['flow-particle']}></div>
-                  <div class={styles['flow-particle']}></div>
+                  <div class={styles['flow-particle']} />
+                  <div class={styles['flow-particle']} />
+                  <div class={styles['flow-particle']} />
                 </div>
                 <div class={styles['flow-speed']}>{net.uploadMbps()} MB/s</div>
               </div>
@@ -208,19 +212,19 @@ const HomePage: Component = () => {
           {/* Network Activity Indicators - live counts */}
           <div class={styles['activity-indicators']}>
             <div class={styles['activity-item']}>
-              <div class={`${styles['activity-dot']} ${styles.active}`}></div>
+              <div class={`${styles['activity-dot']} ${styles.active}`} />
               <span class={styles['activity-text']}>
                 {net.activeDownloads()} {t('home.activityIndicators.downloads')}
               </span>
             </div>
             <div class={styles['activity-item']}>
-              <div class={`${styles['activity-dot']} ${styles.seeding}`}></div>
+              <div class={`${styles['activity-dot']} ${styles.seeding}`} />
               <span class={styles['activity-text']}>
                 {net.activeSeeding()} {t('home.activityIndicators.seeding')}
               </span>
             </div>
             <div class={styles['activity-item']}>
-              <div class={`${styles['activity-dot']} ${styles.discovering}`}></div>
+              <div class={`${styles['activity-dot']} ${styles.discovering}`} />
               <span class={styles['activity-text']}>
                 {net.activeDiscovery()} {t('home.activityIndicators.discovering')}
               </span>
@@ -350,11 +354,11 @@ const HomePage: Component = () => {
                 <div class={styles['header-actions']}>
                   <div class={styles['network-stats']}>
                     <span class={styles['stat-item']}>
-                      <span class={styles['stat-dot']} aria-hidden="true"></span>
+                      <span class={styles['stat-dot']} aria-hidden="true" />
                       89 {t('home.networkStatus.nodes')}
                     </span>
                     <span class={styles['stat-item']}>
-                      <span class={styles['stat-dot']} aria-hidden="true"></span>
+                      <span class={styles['stat-dot']} aria-hidden="true" />
                       156 {t('home.networkStatus.connections')}
                     </span>
                   </div>
@@ -434,7 +438,10 @@ const HomePage: Component = () => {
                   onClick={async () => {
                     // Open file picker via backend and stage into Document Management
                     const projectPath = await settingsService.getProjectFolder();
-                    if (!projectPath) { navigate('/documents'); return; }
+                    if (!projectPath) {
+                      navigate('/documents');
+                      return;
+                    }
                     try {
                       const files = await invoke<string[] | null>('pick_document_files');
                       if (files && files.length) {
@@ -603,8 +610,11 @@ const HomePage: Component = () => {
                   input.onchange = async e => {
                     const files = (e.target as HTMLInputElement).files;
                     if (files && files.length > 0) {
-                      const path = (files[0] as any).webkitRelativePath?.split('/')?.[0] || 'AlLibrary';
-                      await (await import('@/services/storage/settingsService')).settingsService.setProjectFolder(path);
+                      const path =
+                        (files[0] as any).webkitRelativePath?.split('/')?.[0] || 'AlLibrary';
+                      await (
+                        await import('@/services/storage/settingsService')
+                      ).settingsService.setProjectFolder(path);
                     }
                   };
                   input.click();

@@ -188,7 +188,7 @@ export const CommunityGuidelines: Component = () => {
             <div class={styles['stats-grid']}>
               <For each={communityStats}>
                 {stat => (
-                  <Card className={styles['stat-card']}>
+                  <Card class={styles['stat-card']}>
                     <div class={styles['stat-header']}>
                       <div class={styles['stat-icon']}>{stat.icon()}</div>
                       <div class={styles['stat-trend']}>

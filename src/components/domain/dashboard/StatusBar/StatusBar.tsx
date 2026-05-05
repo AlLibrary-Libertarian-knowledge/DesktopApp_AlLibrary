@@ -27,18 +27,21 @@ const StatusBar: Component = () => {
 
   // Live storage data
   const [diskInfo] = createResource(async (): Promise<DiskSpaceInfo | null> => {
-    const base = (await settingsService.ensureInitialized()) || (await settingsService.getProjectFolder()) || '';
+    const base =
+      (await settingsService.ensureInitialized()) ||
+      (await settingsService.getProjectFolder()) ||
+      '';
     if (!base) return null;
     return await invoke<DiskSpaceInfo>('get_disk_space_info', { projectPath: base });
   });
 
   const storageUsed = () => {
     const bytes = diskInfo()?.used_disk_space_bytes || 0;
-    return `${(bytes / (1024 ** 3)).toFixed(1)} GB`;
-    };
+    return `${(bytes / 1024 ** 3).toFixed(1)} GB`;
+  };
   const storageTotal = () => {
     const bytes = diskInfo()?.total_disk_space_bytes || 0;
-    return `${(bytes / (1024 ** 3)).toFixed(1)} GB`;
+    return `${(bytes / 1024 ** 3).toFixed(1)} GB`;
   };
   const storagePct = () => Math.min(100, Math.round(diskInfo()?.disk_usage_percentage || 0));
   const ioActivity = () => (storagePct() > 80 ? 'high' : storagePct() > 60 ? 'medium' : 'low');
@@ -49,16 +52,25 @@ const StatusBar: Component = () => {
   onMount(() => {
     const tick = async () => {
       try {
-        const v = await invoke<{ cpu_percent: number; memory_percent: number }>('get_resource_usage');
+        const v = await invoke<{ cpu_percent: number; memory_percent: number }>(
+          'get_resource_usage'
+        );
         setCpuPct(Math.round(v.cpu_percent));
         setMemPct(Math.round(v.memory_percent));
       } catch {
-        setCpuPct(0); setMemPct(0);
+        setCpuPct(0);
+        setMemPct(0);
       }
     };
     void tick();
     const id = globalThis.setInterval(tick, 3000);
-    return () => { try { globalThis.clearInterval(id as unknown as number); } catch { /* noop */ } };
+    return () => {
+      try {
+        globalThis.clearInterval(id as unknown as number);
+      } catch {
+        /* noop */
+      }
+    };
   });
 
   const getHealthLevel = (cpu: number, memory: number) => {
@@ -74,17 +86,14 @@ const StatusBar: Component = () => {
 
   return (
     <div class={`${styles['status-bar']} ${styles.futuristic}`}>
-      <div class={styles['scan-line']}></div>
+      <div class={styles['scan-line']} />
 
       {/* Network Status Card */}
-      <div
-        class={`${styles['status-section']} ${styles['network-status']}`}
-        data-status={'good'}
-      >
+      <div class={`${styles['status-section']} ${styles['network-status']}`} data-status={'good'}>
         <div class={styles['status-icon-container']}>
-          <div class={`${styles['icon-glow']} ${styles.network}`}></div>
+          <div class={`${styles['icon-glow']} ${styles.network}`} />
           <Globe size={20} class={styles['status-icon-main'] as string} />
-          <div class={styles['connection-pulse']}></div>
+          <div class={styles['connection-pulse']} />
         </div>
         <div class={styles['status-content']}>
           <div class={styles['status-title']}>
@@ -101,23 +110,27 @@ const StatusBar: Component = () => {
           </div>
           <div class={styles['status-footer']}>
             <span class={styles['footer-stat']}>
-              {t('statusBar.network.latency', { latency: net.metrics()?.performance?.averageLatency || 0 })}
+              {t('statusBar.network.latency', {
+                latency: net.metrics()?.performance?.averageLatency || 0,
+              })}
             </span>
           </div>
         </div>
-        <div class={styles['card-border-flow']}></div>
+        <div class={styles['card-border-flow']} />
       </div>
 
       {/* Downloads Status Card */}
       <div
         class={`${styles['status-section']} ${styles['download-status']}`}
-        data-activity={(Number(net.downloadMbps()) > 0 || Number(net.uploadMbps()) > 0) ? 'active' : 'idle'}
+        data-activity={
+          Number(net.downloadMbps()) > 0 || Number(net.uploadMbps()) > 0 ? 'active' : 'idle'
+        }
       >
         <div class={styles['status-icon-container']}>
-          <div class={`${styles['icon-glow']} ${styles.download}`}></div>
+          <div class={`${styles['icon-glow']} ${styles.download}`} />
           <Download size={20} class={styles['status-icon-main'] as string} />
           {(Number(net.downloadMbps()) > 0 || Number(net.uploadMbps()) > 0) && (
-            <div class={styles['activity-pulse']}></div>
+            <div class={styles['activity-pulse']} />
           )}
         </div>
         <div class={styles['status-content']}>
@@ -134,9 +147,9 @@ const StatusBar: Component = () => {
               <span class={styles['metric-unit']}>{t('statusBar.downloads.upSpeed')}</span>
             </div>
           </div>
-          <div class={styles['status-footer']}></div>
+          <div class={styles['status-footer']} />
         </div>
-        <div class={styles['card-border-flow']}></div>
+        <div class={styles['card-border-flow']} />
       </div>
 
       {/* Storage Status Card */}
@@ -145,9 +158,9 @@ const StatusBar: Component = () => {
         data-usage={ioActivity()}
       >
         <div class={styles['status-icon-container']}>
-          <div class={`${styles['icon-glow']} ${styles.storage}`}></div>
+          <div class={`${styles['icon-glow']} ${styles.storage}`} />
           <HardDrive size={20} class={styles['status-icon-main'] as string} />
-          <div class={styles['io-indicator']} data-activity={ioActivity()}></div>
+          <div class={styles['io-indicator']} data-activity={ioActivity()} />
         </div>
         <div class={styles['status-content']}>
           <div class={styles['status-title']}>
@@ -155,7 +168,9 @@ const StatusBar: Component = () => {
           </div>
           <div class={styles['status-metrics']}>
             <div class={`${styles['metric-row']} ${styles.primary}`}>
-              <span class={`${styles['metric-value']} ${styles['storage-used']}`}>{storageUsed()}</span>
+              <span class={`${styles['metric-value']} ${styles['storage-used']}`}>
+                {storageUsed()}
+              </span>
               <span class={styles['metric-separator']}>/</span>
               <span class={styles['metric-total']}>{storageTotal()}</span>
             </div>
@@ -164,14 +179,16 @@ const StatusBar: Component = () => {
                 <div
                   class={styles['storage-fill']}
                   style={`width: ${storagePct()}%`}
-                  data-level={storagePct() > 80 ? 'critical' : storagePct() > 60 ? 'warning' : 'normal'}
-                ></div>
+                  data-level={
+                    storagePct() > 80 ? 'critical' : storagePct() > 60 ? 'warning' : 'normal'
+                  }
+                />
               </div>
               <span class={styles['storage-percentage']}>{storagePct()}%</span>
             </div>
           </div>
         </div>
-        <div class={styles['card-border-flow']}></div>
+        <div class={styles['card-border-flow']} />
       </div>
 
       {/* System Health Card */}
@@ -180,9 +197,9 @@ const StatusBar: Component = () => {
         data-health={currentHealth}
       >
         <div class={styles['status-icon-container']}>
-          <div class={`${styles['icon-glow']} ${styles.health}`}></div>
+          <div class={`${styles['icon-glow']} ${styles.health}`} />
           <Cpu size={20} class={styles['status-icon-main'] as string} />
-          <div class={styles['health-pulse']} data-level={currentHealth}></div>
+          <div class={styles['health-pulse']} data-level={currentHealth} />
         </div>
         <div class={styles['status-content']}>
           <div class={styles['status-title']}>
@@ -194,20 +211,26 @@ const StatusBar: Component = () => {
                 <span class={styles['stat-label']}>{t('statusBar.system.cpu')}</span>
                 <span class={styles['stat-value']}>{cpuPct()}%</span>
                 <div class={styles['stat-bar']}>
-                  <div class={`${styles['stat-fill']} ${styles.cpu}`} style={`width: ${cpuPct()}%`}></div>
+                  <div
+                    class={`${styles['stat-fill']} ${styles.cpu}`}
+                    style={`width: ${cpuPct()}%`}
+                  />
                 </div>
               </div>
               <div class={styles['health-stat']}>
                 <span class={styles['stat-label']}>{t('statusBar.system.memory')}</span>
                 <span class={styles['stat-value']}>{memPct()}%</span>
                 <div class={styles['stat-bar']}>
-                  <div class={`${styles['stat-fill']} ${styles.memory}`} style={`width: ${memPct()}%`}></div>
+                  <div
+                    class={`${styles['stat-fill']} ${styles.memory}`}
+                    style={`width: ${memPct()}%`}
+                  />
                 </div>
               </div>
             </div>
           </div>
         </div>
-        <div class={styles['card-border-flow']}></div>
+        <div class={styles['card-border-flow']} />
       </div>
 
       {/* Cultural Protection Card */}
@@ -216,9 +239,9 @@ const StatusBar: Component = () => {
         data-status={net.tor()?.circuitEstablished ? 'active' : 'inactive'}
       >
         <div class={styles['status-icon-container']}>
-          <div class={`${styles['icon-glow']} ${styles.cultural}`}></div>
+          <div class={`${styles['icon-glow']} ${styles.cultural}`} />
           <Shield size={20} class={styles['status-icon-main'] as string} />
-          <div class={styles['protection-shield']}></div>
+          <div class={styles['protection-shield']} />
         </div>
         <div class={styles['status-content']}>
           <div class={styles['status-title']}>
@@ -243,11 +266,10 @@ const StatusBar: Component = () => {
             </span>
           </div>
         </div>
-        <div class={styles['card-border-flow']}></div>
+        <div class={styles['card-border-flow']} />
       </div>
     </div>
   );
 };
 
 export default StatusBar;
-

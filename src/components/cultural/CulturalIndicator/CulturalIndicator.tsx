@@ -93,141 +93,141 @@ export const CulturalIndicator: Component<CulturalIndicatorProps> = props => {
     }
   };
 
-  // Badge variant
-  if (variant() === 'badge') {
-    return (
-      <div
-        class={`${styles.culturalBadge} ${styles[levelInfo().color]} ${props.class || ''}`}
-        onClick={props.onClick ? handleClick : undefined}
-        onKeyDown={props.onClick ? handleKeyDown : undefined}
-        tabindex={props.onClick ? 0 : undefined}
-        role={props.onClick ? 'button' : 'status'}
-        style={{
-          'background-color': levelInfo().bgColor,
-          'border-color': levelInfo().borderColor,
-          color: levelInfo().textColor,
-          padding: '0.25rem 0.5rem',
-          'border-radius': '0.375rem',
-          border: '1px solid',
-          display: 'inline-flex',
-          'align-items': 'center',
-          gap: '0.25rem',
-          'font-size': '0.75rem',
-          'font-weight': '500',
-        }}
-        aria-label={
-          props['aria-label'] || `Cultural sensitivity level ${level()}: ${levelInfo().description}`
-        }
-      >
-        {levelInfo().icon}
-        <Show when={props.showLevel !== false}>
-          <span>Level {level()}</span>
-        </Show>
-      </div>
-    );
-  }
-
-  // Compact variant
-  if (variant() === 'compact') {
-    return (
-      <div
-        class={`${styles.culturalIndicator} ${styles.compact} ${styles[size()]} ${styles[levelInfo().color]} ${props.class || ''}`}
-        onClick={props.onClick ? handleClick : undefined}
-        onKeyDown={props.onClick ? handleKeyDown : undefined}
-        tabindex={props.onClick ? 0 : undefined}
-        role={props.onClick ? 'button' : 'status'}
-        aria-label={
-          props['aria-label'] || `Cultural sensitivity level ${level()}: ${levelInfo().description}`
-        }
-        style={{
-          'background-color': levelInfo().bgColor,
-          'border-color': levelInfo().borderColor,
-          color: levelInfo().textColor,
-        }}
-      >
-        {levelInfo().icon}
-        <Show when={props.showLevel !== false}>
-          <span class={styles.levelText}>{level()}</span>
-        </Show>
-      </div>
-    );
-  }
-
-  // Default and detailed variants
   return (
-    <div
-      class={`${styles.culturalIndicator} ${styles[variant()]} ${styles[size()]} ${styles[levelInfo().color]} ${props.class || ''}`}
-      onClick={props.onClick ? handleClick : undefined}
-      onKeyDown={props.onClick ? handleKeyDown : undefined}
-      tabindex={props.onClick ? 0 : undefined}
-      role={props.onClick ? 'button' : 'status'}
-      aria-label={
-        props['aria-label'] || `Cultural sensitivity level ${level()}: ${levelInfo().description}`
-      }
-      style={{
-        'background-color': levelInfo().bgColor,
-        'border-color': levelInfo().borderColor,
-        color: levelInfo().textColor,
-      }}
-    >
-      <div class={styles.indicatorHeader}>
-        <div class={styles.iconContainer}>{levelInfo().icon}</div>
-
-        <div class={styles.labelContainer}>
-          <span class={styles.label}>{levelInfo().label}</span>
+    <>
+      <Show when={variant() === 'badge'}>
+        <div
+          class={`${styles.culturalBadge} ${styles[levelInfo().color]} ${props.class || ''}`}
+          onClick={props.onClick ? handleClick : undefined}
+          onKeyDown={props.onClick ? handleKeyDown : undefined}
+          tabindex={props.onClick ? 0 : undefined}
+          role={props.onClick ? 'button' : 'status'}
+          style={{
+            'background-color': levelInfo().bgColor,
+            'border-color': levelInfo().borderColor,
+            color: levelInfo().textColor,
+            padding: '0.25rem 0.5rem',
+            'border-radius': '0.375rem',
+            border: '1px solid',
+            display: 'inline-flex',
+            'align-items': 'center',
+            gap: '0.25rem',
+            'font-size': '0.75rem',
+            'font-weight': '500',
+          }}
+          aria-label={
+            props['aria-label'] ||
+            `Cultural sensitivity level ${level()}: ${levelInfo().description}`
+          }
+        >
+          {levelInfo().icon}
           <Show when={props.showLevel !== false}>
-            <span class={styles.levelBadge}>Level {level()}</span>
+            <span>Level {level()}</span>
           </Show>
         </div>
+      </Show>
 
-        <Show when={props.informationOnly}>
-          <div class={styles.infoOnlyBadge}>
-            <Eye size={12} />
-            <span>Info Only</span>
+      <Show when={variant() === 'compact'}>
+        <div
+          class={`${styles.culturalIndicator} ${styles.compact} ${styles[size()]} ${styles[levelInfo().color]} ${props.class || ''}`}
+          onClick={props.onClick ? handleClick : undefined}
+          onKeyDown={props.onClick ? handleKeyDown : undefined}
+          tabindex={props.onClick ? 0 : undefined}
+          role={props.onClick ? 'button' : 'status'}
+          aria-label={
+            props['aria-label'] ||
+            `Cultural sensitivity level ${level()}: ${levelInfo().description}`
+          }
+          style={{
+            'background-color': levelInfo().bgColor,
+            'border-color': levelInfo().borderColor,
+            color: levelInfo().textColor,
+          }}
+        >
+          {levelInfo().icon}
+          <Show when={props.showLevel !== false}>
+            <span class={styles.levelText}>{level()}</span>
+          </Show>
+        </div>
+      </Show>
+
+      <Show when={variant() !== 'badge' && variant() !== 'compact'}>
+        <div
+          class={`${styles.culturalIndicator} ${styles[variant()]} ${styles[size()]} ${styles[levelInfo().color]} ${props.class || ''}`}
+          onClick={props.onClick ? handleClick : undefined}
+          onKeyDown={props.onClick ? handleKeyDown : undefined}
+          tabindex={props.onClick ? 0 : undefined}
+          role={props.onClick ? 'button' : 'status'}
+          aria-label={
+            props['aria-label'] ||
+            `Cultural sensitivity level ${level()}: ${levelInfo().description}`
+          }
+          style={{
+            'background-color': levelInfo().bgColor,
+            'border-color': levelInfo().borderColor,
+            color: levelInfo().textColor,
+          }}
+        >
+          <div class={styles.indicatorHeader}>
+            <div class={styles.iconContainer}>{levelInfo().icon}</div>
+
+            <div class={styles.labelContainer}>
+              <span class={styles.label}>{levelInfo().label}</span>
+              <Show when={props.showLevel !== false}>
+                <span class={styles.levelBadge}>Level {level()}</span>
+              </Show>
+            </div>
+
+            <Show when={props.informationOnly}>
+              <div class={styles.infoOnlyBadge}>
+                <Eye size={12} />
+                <span>Info Only</span>
+              </div>
+            </Show>
           </div>
-        </Show>
-      </div>
 
-      <Show when={variant() === 'detailed'}>
-        <div class={styles.indicatorContent}>
-          <p class={styles.description}>{levelInfo().description}</p>
+          <Show when={variant() === 'detailed'}>
+            <div class={styles.indicatorContent}>
+              <p class={styles.description}>{levelInfo().description}</p>
 
-          <Show when={props.culturalOrigin}>
-            <div class={styles.originInfo}>
-              <Users size={14} />
-              <span>Origin: {props.culturalOrigin}</span>
+              <Show when={props.culturalOrigin}>
+                <div class={styles.originInfo}>
+                  <Users size={14} />
+                  <span>Origin: {props.culturalOrigin}</span>
+                </div>
+              </Show>
+
+              <Show when={props.traditionalKnowledge}>
+                <div class={styles.knowledgeInfo}>
+                  <BookOpen size={14} />
+                  <span>Contains traditional knowledge</span>
+                </div>
+              </Show>
+
+              <Show when={props.communitySource}>
+                <div class={styles.communityInfo}>
+                  <Shield size={14} />
+                  <span>Community verified source</span>
+                </div>
+              </Show>
+
+              <Show when={props.showEducationalTip}>
+                <div class={styles.educationalTip}>
+                  <CheckCircle size={14} />
+                  <span>Educational resources available</span>
+                </div>
+              </Show>
             </div>
           </Show>
 
-          <Show when={props.traditionalKnowledge}>
-            <div class={styles.knowledgeInfo}>
-              <BookOpen size={14} />
-              <span>Contains traditional knowledge</span>
-            </div>
-          </Show>
-
-          <Show when={props.communitySource}>
-            <div class={styles.communityInfo}>
-              <Shield size={14} />
-              <span>Community verified source</span>
-            </div>
-          </Show>
-
-          <Show when={props.showEducationalTip}>
-            <div class={styles.educationalTip}>
-              <CheckCircle size={14} />
-              <span>Educational resources available</span>
+          <Show when={props.informationOnly && variant() !== 'detailed'}>
+            <div class={styles.infoNote}>
+              <span>Educational context provided</span>
             </div>
           </Show>
         </div>
       </Show>
-
-      <Show when={props.informationOnly && variant() !== 'detailed'}>
-        <div class={styles.infoNote}>
-          <span>Educational context provided</span>
-        </div>
-      </Show>
-    </div>
+    </>
   );
 };
 

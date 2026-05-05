@@ -59,19 +59,19 @@ class DocumentService {
       const result = await invoke<ScanResult>('scan_documents_folder', {
         folderPath: base,
       });
-      
+
       console.log('✅ Scan completed successfully:', {
         documentsFound: result.documents_found,
         totalSize: result.total_size,
         scanDuration: result.scan_duration_ms,
         documents: result.documents.length,
-        errors: result.errors.length
+        errors: result.errors.length,
       });
-      
+
       if (result.errors.length > 0) {
         console.warn('⚠️ Scan completed with errors:', result.errors);
       }
-      
+
       return result;
     } catch (error) {
       console.error('❌ Failed to scan documents folder:', error);
@@ -88,7 +88,7 @@ class DocumentService {
       const result = await invoke<FolderInfo>('get_folder_info', {
         folderPath: base,
       });
-      
+
       console.log('Folder info:', result);
       return result;
     } catch (error) {
@@ -106,7 +106,7 @@ class DocumentService {
       const result = await invoke<DocumentInfo[]>('list_documents_in_folder', {
         folderPath: base,
       });
-      
+
       console.log('Documents in folder:', result);
       return result;
     } catch (error) {
@@ -123,7 +123,7 @@ class DocumentService {
       const result = await invoke<DocumentInfo>('get_document_info', {
         filePath,
       });
-      
+
       console.log('Document info:', result);
       return result;
     } catch (error) {
@@ -140,7 +140,7 @@ class DocumentService {
       const result = await invoke<number[]>('open_document', {
         filePath,
       });
-      
+
       console.log('Document opened, size:', result.length);
       return new Uint8Array(result);
     } catch (error) {
@@ -167,7 +167,16 @@ class DocumentService {
 
   async exportAnnotatedPngs(
     filePath: string,
-    overlays: Array<{ page: number; x: number; y: number; w: number; h: number; fill_rgba: [number,number,number,number]; stroke_rgba: [number,number,number,number]; stroke_width: number }>,
+    overlays: Array<{
+      page: number;
+      x: number;
+      y: number;
+      w: number;
+      h: number;
+      fill_rgba: [number, number, number, number];
+      stroke_rgba: [number, number, number, number];
+      stroke_width: number;
+    }>,
     scale = 1
   ): Promise<string[]> {
     return await invoke<string[]>('export_annotated_pngs', { filePath, overlays, scale });
@@ -178,12 +187,12 @@ class DocumentService {
    */
   formatFileSize(bytes: number): string {
     if (bytes === 0) return '0 B';
-    
+
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
   }
 
   /**
@@ -237,7 +246,18 @@ class DocumentService {
    * Check if document type is supported
    */
   isSupportedDocumentType(documentType: string): boolean {
-    const supportedTypes = ['pdf', 'epub', 'txt', 'md', 'markdown', 'html', 'htm', 'rtf', 'doc', 'docx'];
+    const supportedTypes = [
+      'pdf',
+      'epub',
+      'txt',
+      'md',
+      'markdown',
+      'html',
+      'htm',
+      'rtf',
+      'doc',
+      'docx',
+    ];
     return supportedTypes.includes(documentType.toLowerCase());
   }
 

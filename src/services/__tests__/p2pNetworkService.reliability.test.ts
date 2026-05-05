@@ -6,9 +6,12 @@ vi.mock('@tauri-apps/api/core', () => ({
   invoke: vi.fn(async (cmd: string, args?: any) => {
     switch (cmd) {
       case 'init_p2p_node':
-        return { id: 'node1', config: { enableCulturalFiltering: false, enableContentBlocking: false } };
+        return {
+          id: 'node1',
+          config: { enableCulturalFiltering: false, enableContentBlocking: false },
+        };
       case 'discover_peers':
-        return [ { id: 'peer1', connected: toggle++ % 2 === 0 } ];
+        return [{ id: 'peer1', connected: toggle++ % 2 === 0 }];
       case 'connect_to_peer': {
         // Deterministic transient failure ~5% to keep test stable ≥90%
         connAttempt += 1;
@@ -33,7 +36,9 @@ describe('P2P reliability', () => {
       try {
         await svc.connectToPeer('peer1');
         successes++;
-      } catch {}
+      } catch {
+        void 0;
+      }
     }
     const rate = successes / attempts;
     expect(rate).toBeGreaterThanOrEqual(0.9);
@@ -45,12 +50,16 @@ describe('P2P reliability', () => {
     const timings: number[] = [];
     for (let i = 0; i < 5; i++) {
       const start = performance.now();
-      try { await svc.connectToPeer('peer1'); } catch {} // intermittent
+      try {
+        await svc.connectToPeer('peer1');
+      } catch {
+        void 0;
+      } // intermittent
       const end = performance.now();
       timings.push(end - start);
     }
-    const sorted = timings.slice().sort((a,b) => a-b);
-    const median = sorted[Math.floor(sorted.length/2)];
+    const sorted = timings.slice().sort((a, b) => a - b);
+    const median = sorted[Math.floor(sorted.length / 2)];
     expect(median).toBeLessThan(2000);
   });
 });

@@ -268,7 +268,7 @@ export const Preservation: Component = () => {
                             <div
                               class={styles['progress-fill']}
                               style={{ width: `${method.effectiveness}%` }}
-                            ></div>
+                            />
                           </div>
                         </div>
                       </div>

@@ -253,7 +253,7 @@ const SearchPage: Component = () => {
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
   };
 
   const resultCount = () => searchResults().length;
@@ -632,7 +632,7 @@ const SearchPage: Component = () => {
             }
           >
             <div class={styles.searchingState}>
-              <div class={styles.spinner}></div>
+              <div class={styles.spinner} />
               <p>Searching documents...</p>
             </div>
           </Show>

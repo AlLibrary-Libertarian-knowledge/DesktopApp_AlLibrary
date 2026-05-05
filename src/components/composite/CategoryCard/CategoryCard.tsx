@@ -1,4 +1,4 @@
-import { Component, Show, createSignal } from 'solid-js';
+import { Component, Show, createSignal, For } from 'solid-js';
 import { Folder, FileText, Users, Star, Info, Globe, ChevronRight } from 'lucide-solid';
 import { Card } from '../../foundation/Card';
 import { CULTURAL_LABELS } from '../../../constants/cultural';
@@ -217,9 +217,9 @@ const CategoryCard: Component<CategoryCardProps> = props => {
         {/* Category Tags */}
         <Show when={props.showTags && props.category.tags?.length}>
           <div class={styles['category-tags']}>
-            {props.category.tags!.slice(0, 3).map(tag => (
-              <span class={styles['category-tag']}>{tag}</span>
-            ))}
+            <For each={props.category.tags!.slice(0, 3)}>
+              {tag => <span class={styles['category-tag']}>{tag}</span>}
+            </For>
             <Show when={props.category.tags!.length > 3}>
               <span class={styles['more-tags']}>+{props.category.tags!.length - 3}</span>
             </Show>
@@ -255,14 +255,16 @@ const CategoryCard: Component<CategoryCardProps> = props => {
           <div class={styles['category-path']}>
             <span class={styles['path-label']}>Path:</span>
             <div class={styles['path-breadcrumbs']}>
-              {props.category.path.map((segment, index) => (
-                <>
-                  <span class={styles['path-segment']}>{segment}</span>
-                  <Show when={index < props.category.path.length - 1}>
-                    <ChevronRight size={12} class={styles['path-separator']} />
-                  </Show>
-                </>
-              ))}
+              <For each={props.category.path}>
+                {(segment, index) => (
+                  <>
+                    <span class={styles['path-segment']}>{segment}</span>
+                    <Show when={index() < props.category.path.length - 1}>
+                      <ChevronRight size={12} class={styles['path-separator']} />
+                    </Show>
+                  </>
+                )}
+              </For>
             </div>
           </div>
         </Show>
@@ -291,9 +293,7 @@ const CategoryCard: Component<CategoryCardProps> = props => {
               <div class={styles['tooltip-protocols']}>
                 <strong>Traditional Protocols:</strong>
                 <ul>
-                  {culturalInfo!.protocols.map(protocol => (
-                    <li>{protocol}</li>
-                  ))}
+                  <For each={culturalInfo!.protocols}>{protocol => <li>{protocol}</li>}</For>
                 </ul>
               </div>
             </Show>

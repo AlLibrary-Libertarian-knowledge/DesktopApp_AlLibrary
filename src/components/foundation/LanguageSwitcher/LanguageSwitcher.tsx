@@ -124,32 +124,31 @@ export const LanguageSwitcher: Component<LanguageSwitcherProps> = props => {
   );
 
   // Language option component
-  const LanguageOption: Component<{ language: (typeof SUPPORTED_LANGUAGES)[0] }> = ({
-    language,
-  }) => (
+  const LanguageOption: Component<{ language: (typeof SUPPORTED_LANGUAGES)[0] }> = props => (
     <button
-      class={[styles.languageOption, language.code === currentLanguage() ? styles.active : ''].join(
-        ' '
-      )}
-      onClick={() => handleLanguageSelect(language.code)}
+      class={[
+        styles.languageOption,
+        props.language.code === currentLanguage() ? styles.active : '',
+      ].join(' ')}
+      onClick={() => handleLanguageSelect(props.language.code)}
       disabled={isLoadingState()}
-      aria-selected={language.code === currentLanguage()}
+      aria-selected={props.language.code === currentLanguage()}
       role="option"
     >
       <Show when={showFlags}>
-        <span class={styles.flag} role="img" aria-label={language.name}>
-          {language.flag}
+        <span class={styles.flag} role="img" aria-label={props.language.name}>
+          {props.language.flag}
         </span>
       </Show>
       <div class={styles.languageInfo}>
         <span class={styles.languageName}>
-          {showNativeName ? language.nativeName : language.name}
+          {showNativeName ? props.language.nativeName : props.language.name}
         </span>
-        <Show when={showNativeName && language.name !== language.nativeName}>
-          <span class={styles.languageCode}>{language.name}</span>
+        <Show when={showNativeName && props.language.name !== props.language.nativeName}>
+          <span class={styles.languageCode}>{props.language.name}</span>
         </Show>
       </div>
-      <Show when={language.code === currentLanguage()}>
+      <Show when={props.language.code === currentLanguage()}>
         <svg class={styles.checkmark} viewBox="0 0 20 20" fill="currentColor">
           <path
             fill-rule="evenodd"

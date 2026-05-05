@@ -32,7 +32,7 @@ const initializeOrbitalProperties = (node: Node, centerX = 400, centerY = 300): 
     ...node,
     angle: initialAngle,
     orbitRadius: Math.max(120, distance), // Ensure minimum orbit distance
-    orbitSpeed: orbitSpeed, // Will be adjusted by physics engine based on connection status
+    orbitSpeed, // Will be adjusted by physics engine based on connection status
   };
 };
 

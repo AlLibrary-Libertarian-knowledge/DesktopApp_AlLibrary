@@ -44,37 +44,39 @@ interface InitProgress {
 const RouteWrapper: Component<{ children: any }> = props => {
   // Add timeout to prevent infinite loading
   const [showTimeoutMessage, setShowTimeoutMessage] = createSignal(false);
-  
+
   onMount(() => {
     // Show timeout message after 10 seconds
     globalThis.setTimeout(() => {
       setShowTimeoutMessage(true);
     }, 10000);
   });
-  
+
   return (
     <Suspense
       fallback={
         <div class="route-loading">
           <div class="loading-container">
-            <div class="loading-spinner"></div>
+            <div class="loading-spinner" />
             <h3>Loading page...</h3>
             <p>Please wait while we prepare your content</p>
-            
+
             {/* Timeout warning */}
             <Show when={showTimeoutMessage()}>
-              <div style={{
-                color: '#f59e0b',
-                'font-size': '14px',
-                'margin-top': '10px',
-                'text-align': 'center'
-              }}>
+              <div
+                style={{
+                  color: '#f59e0b',
+                  'font-size': '14px',
+                  'margin-top': '10px',
+                  'text-align': 'center',
+                }}
+              >
                 ⚠️ Loading is taking longer than expected
               </div>
             </Show>
-            
+
             {/* Component-level debug button */}
-            <button 
+            <button
               onClick={() => {
                 console.warn('Component loading bypass triggered');
                 // Force the component to render by updating a signal
@@ -89,7 +91,7 @@ const RouteWrapper: Component<{ children: any }> = props => {
                 'border-radius': '4px',
                 cursor: 'pointer',
                 'font-size': '12px',
-                'margin-top': '20px'
+                'margin-top': '20px',
               }}
             >
               🚨 Force Load Page (Debug)
@@ -100,7 +102,7 @@ const RouteWrapper: Component<{ children: any }> = props => {
     >
       {props.children}
     </Suspense>
-   );
+  );
 };
 
 // Wrapper component that includes MainLayout
@@ -138,7 +140,9 @@ const App: Component = () => {
         if (!path || !fr) {
           setNeedsFirstRun(true);
         }
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
 
       // Initialize i18n system
       await initializeI18n();
@@ -184,11 +188,15 @@ const App: Component = () => {
             globalThis.clearTimeout(fallbackTimer);
             fallbackTimer = null;
           }
-          
+
           globalThis.setTimeout(() => {
             setIsLoading(false);
             // Stop listening after initialization completes to prevent unnecessary re-renders
-            try { cleanup?.(); } catch { /* ignore */ }
+            try {
+              cleanup?.();
+            } catch {
+              /* ignore */
+            }
             cleanup = null;
           }, 1500); // Small delay to show completion
         }
@@ -203,7 +211,6 @@ const App: Component = () => {
         cleanup?.();
         cleanup = null;
       }, 5000); // Reduced to 5 seconds for faster recovery
-
     } catch (error) {
       console.error('App initialization error:', error);
       /* listener setup failed, fallback */
@@ -229,17 +236,19 @@ const App: Component = () => {
       <Show when={isLoading()}>
         <Loading onComplete={handleLoadingComplete} tauriProgress={initProgress()} />
         {/* Manual fallback for stuck loading */}
-        <div style={{
-          position: 'fixed',
-          bottom: '20px',
-          right: '20px',
-          'z-index': 10000,
-          background: 'rgba(0,0,0,0.8)',
-          padding: '10px',
-          'border-radius': '8px',
-          border: '1px solid #374151'
-        }}>
-          <button 
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '20px',
+            right: '20px',
+            'z-index': 10000,
+            background: 'rgba(0,0,0,0.8)',
+            padding: '10px',
+            'border-radius': '8px',
+            border: '1px solid #374151',
+          }}
+        >
+          <button
             onClick={() => {
               console.warn('Manual loading completion triggered');
               setIsLoading(false);
@@ -251,7 +260,7 @@ const App: Component = () => {
               padding: '8px 16px',
               'border-radius': '4px',
               cursor: 'pointer',
-              'font-size': '12px'
+              'font-size': '12px',
             }}
           >
             Skip Loading (Debug)

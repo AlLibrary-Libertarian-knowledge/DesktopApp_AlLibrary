@@ -102,11 +102,13 @@ export const NetworkHealth: Component = () => {
       // Map peers to nodes
       const nodes: NetworkNode[] = (peers || []).map((p: any, i: number) => ({
         id: p.id || `peer-${i}`,
-        ip: (p.addresses?.[0]?.multiaddr || p.addresses?.[0]?.address || 'unknown'),
+        ip: p.addresses?.[0]?.multiaddr || p.addresses?.[0]?.address || 'unknown',
         location: p.location || '—',
         latency: Number(p.connectionQuality?.latency || metrics?.performance?.averageLatency || 0),
         status: (p.connected ? 'online' : 'offline') as any,
-        bandwidth: Number(p.connectionQuality?.bandwidth || metrics?.performance?.totalBandwidth || 0) / (1024 * 1024),
+        bandwidth:
+          Number(p.connectionQuality?.bandwidth || metrics?.performance?.totalBandwidth || 0) /
+          (1024 * 1024),
         uptime: Number(metrics?.health?.nodeUptime || 0),
         country: p.country || '—',
       }));
@@ -119,12 +121,15 @@ export const NetworkHealth: Component = () => {
       })();
 
       const dl = (() => {
-        if (metrics?.performance?.totalBandwidth != null) return (metrics.performance.totalBandwidth * 0.6) / (1024 * 1024);
-        if (typeof metrics?.download_rate === 'number') return metrics.download_rate / (1024 * 1024);
+        if (metrics?.performance?.totalBandwidth != null)
+          return (metrics.performance.totalBandwidth * 0.6) / (1024 * 1024);
+        if (typeof metrics?.download_rate === 'number')
+          return metrics.download_rate / (1024 * 1024);
         return 0;
       })();
       const ul = (() => {
-        if (metrics?.performance?.totalBandwidth != null) return (metrics.performance.totalBandwidth * 0.4) / (1024 * 1024);
+        if (metrics?.performance?.totalBandwidth != null)
+          return (metrics.performance.totalBandwidth * 0.4) / (1024 * 1024);
         if (typeof metrics?.upload_rate === 'number') return metrics.upload_rate / (1024 * 1024);
         return 0;
       })();
@@ -132,20 +137,75 @@ export const NetworkHealth: Component = () => {
 
       // Build cards
       const cards: NetworkMetric[] = [
-        { id: 'network-health', name: 'Network Health', value: healthPct, unit: '%', status: healthPct > 80 ? 'good' : healthPct > 60 ? 'warning' : 'critical', trend: 'stable', history: [] },
-        { id: 'active-peers', name: 'Active Peers', value: Number(status?.connectedPeers || 0), unit: 'peers', status: 'good', trend: 'stable', history: [] },
-        { id: 'throughput', name: 'Data Throughput', value: Math.round((dl + ul) * 10) / 10, unit: 'MB/s', status: 'good', trend: 'stable', history: [] },
-        { id: 'latency', name: 'Average Latency', value: avgLat, unit: 'ms', status: avgLat < 100 ? 'good' : avgLat < 200 ? 'warning' : 'critical', trend: 'stable', history: [] },
+        {
+          id: 'network-health',
+          name: 'Network Health',
+          value: healthPct,
+          unit: '%',
+          status: healthPct > 80 ? 'good' : healthPct > 60 ? 'warning' : 'critical',
+          trend: 'stable',
+          history: [],
+        },
+        {
+          id: 'active-peers',
+          name: 'Active Peers',
+          value: Number(status?.connectedPeers || 0),
+          unit: 'peers',
+          status: 'good',
+          trend: 'stable',
+          history: [],
+        },
+        {
+          id: 'throughput',
+          name: 'Data Throughput',
+          value: Math.round((dl + ul) * 10) / 10,
+          unit: 'MB/s',
+          status: 'good',
+          trend: 'stable',
+          history: [],
+        },
+        {
+          id: 'latency',
+          name: 'Average Latency',
+          value: avgLat,
+          unit: 'ms',
+          status: avgLat < 100 ? 'good' : avgLat < 200 ? 'warning' : 'critical',
+          trend: 'stable',
+          history: [],
+        },
       ];
       const uptime = Number((metrics as any)?.health?.nodeUptime || 0);
-      if (uptime) cards.push({ id: 'uptime', name: 'Network Uptime', value: Math.round(uptime), unit: '%', status: 'good', trend: 'stable', history: [] });
+      if (uptime)
+        cards.push({
+          id: 'uptime',
+          name: 'Network Uptime',
+          value: Math.round(uptime),
+          unit: '%',
+          status: 'good',
+          trend: 'stable',
+          history: [],
+        });
       setNetworkMetrics(cards);
 
       // Security alerts
       const errRate = Number(metrics?.performance?.errorRate || 0);
       const alerts: SecurityAlert[] = [];
-      if (avgLat > 200) alerts.push({ id: 'latency', type: 'warning', message: 'High average latency detected', timestamp: new Date(), resolved: false });
-      if (errRate > 0.05) alerts.push({ id: 'errors', type: 'critical', message: 'Elevated network error rate', timestamp: new Date(), resolved: false });
+      if (avgLat > 200)
+        alerts.push({
+          id: 'latency',
+          type: 'warning',
+          message: 'High average latency detected',
+          timestamp: new Date(),
+          resolved: false,
+        });
+      if (errRate > 0.05)
+        alerts.push({
+          id: 'errors',
+          type: 'critical',
+          message: 'Elevated network error rate',
+          timestamp: new Date(),
+          resolved: false,
+        });
       setSecurityAlerts(alerts);
     } catch {
       // keep previous state on failure
@@ -155,14 +215,24 @@ export const NetworkHealth: Component = () => {
   createEffect(() => {
     if (autoRefresh() && monitoring()) {
       // Solid types for timer
-      refreshTimer = globalThis.setInterval(() => { void updateFromLive(); }, refreshInterval()) as unknown as number;
+      refreshTimer = globalThis.setInterval(() => {
+        void updateFromLive();
+      }, refreshInterval()) as unknown as number;
     }
-    onCleanup(() => { if (refreshTimer) globalThis.clearInterval(refreshTimer as unknown as number); });
+    onCleanup(() => {
+      if (refreshTimer) globalThis.clearInterval(refreshTimer as unknown as number);
+    });
   });
 
-  onMount(() => { void updateFromLive(); });
+  onMount(() => {
+    void updateFromLive();
+  });
 
-  const handleRefresh = async () => { setRefreshing(true); await updateFromLive(); setRefreshing(false); };
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await updateFromLive();
+    setRefreshing(false);
+  };
 
   // Terminal omitted in this trimmed version
 
@@ -184,7 +254,7 @@ export const NetworkHealth: Component = () => {
       case 'up':
         return <TrendingUp size={14} />;
       case 'down':
-        return <TrendingUp size={14} style="transform: rotate(180deg)" />;
+        return <TrendingUp size={14} style={{ transform: 'rotate(180deg)' }} />;
       default:
         return <Activity size={14} />;
     }
@@ -210,7 +280,7 @@ export const NetworkHealth: Component = () => {
               <div
                 class={`${styles['status-indicator']} ${monitoring() ? styles.active : styles.inactive}`}
               >
-                <div class={styles['status-pulse']}></div>
+                <div class={styles['status-pulse']} />
               </div>
               <span class={styles['status-text']}>
                 {monitoring() ? 'Live Monitoring' : 'Monitoring Paused'}
@@ -245,7 +315,7 @@ export const NetworkHealth: Component = () => {
         {/* Advanced Network Visualization */}
         <div class={styles['network-visualization']}>
           <div class={styles['network-grid']}>
-            <div class={styles['grid-lines']}></div>
+            <div class={styles['grid-lines']} />
 
             <div class={styles['network-topology']}>
               <div class={styles['central-node']}>
@@ -253,9 +323,9 @@ export const NetworkHealth: Component = () => {
                   <Server size={24} />
                 </div>
                 <div class={styles['node-rings']}>
-                  <div class={styles['ring-1']}></div>
-                  <div class={styles['ring-2']}></div>
-                  <div class={styles['ring-3']}></div>
+                  <div class={styles['ring-1']} />
+                  <div class={styles['ring-2']} />
+                  <div class={styles['ring-3']} />
                 </div>
               </div>
 
@@ -272,8 +342,8 @@ export const NetworkHealth: Component = () => {
                     <div class={styles['peer-indicator']}>
                       <Globe size={12} />
                     </div>
-                    <div class={styles['peer-pulse']}></div>
-                    <div class={styles['connection-line']}></div>
+                    <div class={styles['peer-pulse']} />
+                    <div class={styles['connection-line']} />
                   </div>
                 )}
               </For>
@@ -281,10 +351,10 @@ export const NetworkHealth: Component = () => {
 
             <div class={styles['data-streams']}>
               <div class={styles['upload-stream']}>
-                <div class={styles['stream-particles']}></div>
+                <div class={styles['stream-particles']} />
               </div>
               <div class={styles['download-stream']}>
-                <div class={styles['stream-particles']}></div>
+                <div class={styles['stream-particles']} />
               </div>
             </div>
           </div>
@@ -446,7 +516,7 @@ export const NetworkHealth: Component = () => {
                   class={styles['metric-status']}
                   style={{ color: getMetricStatusColor(metric.status) }}
                 >
-                  <div class={styles['status-dot']}></div>
+                  <div class={styles['status-dot']} />
                   {metric.status}
                 </div>
               </Card>
@@ -475,7 +545,11 @@ export const NetworkHealth: Component = () => {
               </Button>
             </div>
             <div class={styles['alerts-list']}>
-              <For each={securityAlerts().filter(a => !a.resolved).slice(0, 3)}>
+              <For
+                each={securityAlerts()
+                  .filter(a => !a.resolved)
+                  .slice(0, 3)}
+              >
                 {alert => (
                   <div class={`${styles['alert-item']} ${styles[alert.type]}`}>
                     <div class={styles['alert-icon']}>
@@ -506,19 +580,39 @@ export const NetworkHealth: Component = () => {
         >
           <div class={styles['diagnostics-content']}>
             <div class={styles['diagnostic-tools']}>
-              <Button variant="ghost" onClick={() => { /* run latency test */ }}>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  /* run latency test */
+                }}
+              >
                 <Clock size={16} />
                 Latency Test
               </Button>
-              <Button variant="ghost" onClick={() => { /* run bandwidth test */ }}>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  /* run bandwidth test */
+                }}
+              >
                 <Zap size={16} />
                 Bandwidth Test
               </Button>
-              <Button variant="ghost" onClick={() => { /* run connectivity test */ }}>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  /* run connectivity test */
+                }}
+              >
                 <Wifi size={16} />
                 Connectivity Test
               </Button>
-              <Button variant="ghost" onClick={() => { /* run security scan */ }}>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  /* run security scan */
+                }}
+              >
                 <Shield size={16} />
                 Security Scan
               </Button>
@@ -566,9 +660,7 @@ export const NetworkHealth: Component = () => {
           size="lg"
           class={styles['terminal-modal'] as string}
         >
-          <div class={styles['terminal-content']}>
-            {/* terminal UI omitted for brevity */}
-          </div>
+          <div class={styles['terminal-content']}>{/* terminal UI omitted for brevity */}</div>
         </Modal>
       </Show>
     </div>

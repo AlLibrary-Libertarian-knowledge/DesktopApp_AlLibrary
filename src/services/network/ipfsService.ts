@@ -80,7 +80,9 @@ class IPFSServiceImpl implements IPFSService {
         if (tor?.circuitEstablished && tor?.socks) {
           socksAddr = tor.socks;
         }
-      } catch {}
+      } catch {
+        void 0;
+      }
 
       const nodeConfig = {
         ...config,

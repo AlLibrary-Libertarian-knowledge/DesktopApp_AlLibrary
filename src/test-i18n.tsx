@@ -5,7 +5,7 @@
  * is working correctly with the language selector
  */
 
-import { Component, onMount } from 'solid-js';
+import { Component, onMount, For } from 'solid-js';
 import { useTranslation, useLanguage } from './i18n/hooks';
 import styles from './test-i18n.module.css';
 
@@ -50,16 +50,18 @@ export const I18nTestComponent: Component = () => {
       <div class={styles.section}>
         <h3>Language Selector</h3>
         <div class={styles.languageButtons}>
-          {supportedLanguages().map(lang => (
-            <button
-              class={`${styles.languageButton} ${
-                currentLanguage() === lang.code ? styles.active : ''
-              }`}
-              onClick={() => handleLanguageChange(lang.code)}
-            >
-              {lang.flag} {lang.nativeName}
-            </button>
-          ))}
+          <For each={supportedLanguages()}>
+            {lang => (
+              <button
+                class={`${styles.languageButton} ${
+                  currentLanguage() === lang.code ? styles.active : ''
+                }`}
+                onClick={() => handleLanguageChange(lang.code)}
+              >
+                {lang.flag} {lang.nativeName}
+              </button>
+            )}
+          </For>
         </div>
       </div>
     </div>

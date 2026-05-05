@@ -100,8 +100,8 @@ export class PhysicsEngine {
     return nodes.map(node => {
       // Handle dragging
       if (draggedNode && draggedNode.id === node.id && isDragging && mousePosition) {
-        let newX = mousePosition.x - dragOffset.x;
-        let newY = mousePosition.y - dragOffset.y;
+        const newX = mousePosition.x - dragOffset.x;
+        const newY = mousePosition.y - dragOffset.y;
 
         if (node.type !== 'self') {
           const dx = newX - centerNode.x;

@@ -143,7 +143,7 @@ const SecurityPanel: Component = () => {
     if (parts.length === 4) {
       return `${parts[0]}.${parts[1]}.***.**`;
     }
-    return ip.substring(0, 8) + '***';
+    return `${ip.substring(0, 8)}***`;
   };
 
   const getLatencyStatus = (latency?: number) => {
@@ -179,7 +179,7 @@ const SecurityPanel: Component = () => {
             <div class={styles['header-icon']}>
               <Shield size={24} />
             </div>
-            <div class={styles['header-pulse']}></div>
+            <div class={styles['header-pulse']} />
           </div>
           <div class={styles['header-text']}>
             <h3>{t('securityPanel.title')}</h3>
@@ -206,9 +206,9 @@ const SecurityPanel: Component = () => {
             <div class={styles['loading-animation']}>
               <div class={styles['loading-spinner-large']} />
               <div class={styles['loading-dots']}>
-                <span></span>
-                <span></span>
-                <span></span>
+                <span />
+                <span />
+                <span />
               </div>
             </div>
             <h4>{t('securityPanel.loadingTitle')}</h4>
@@ -267,8 +267,8 @@ const SecurityPanel: Component = () => {
                     </span>
                     <span class={styles['score-label']}>{t('securityPanel.scoreLabel')}</span>
                   </div>
-                  <div class={styles['score-ring']}></div>
-                  <div class={styles['score-glow']}></div>
+                  <div class={styles['score-ring']} />
+                  <div class={styles['score-glow']} />
                 </div>
                 <div class={styles['score-icon']}>
                   {(() => {
@@ -328,7 +328,7 @@ const SecurityPanel: Component = () => {
                       return <Icon size={20} />;
                     })()}
                   </div>
-                  <div class={`${styles['stat-indicator']} ${styles['active']}`}></div>
+                  <div class={`${styles['stat-indicator']} ${styles['active']}`} />
                 </div>
                 <div class={styles['stat-content']}>
                   <span class={styles['stat-label']}>{t('securityPanel.connectionType')}</span>
@@ -343,7 +343,7 @@ const SecurityPanel: Component = () => {
                   </div>
                   <div
                     class={`${styles['stat-indicator']} ${styles[getLatencyStatus(securityInfo()!.latency_ms).status]}`}
-                  ></div>
+                  />
                 </div>
                 <div class={styles['stat-content']}>
                   <span class={styles['stat-label']}>{t('securityPanel.networkLatency')}</span>
@@ -373,7 +373,7 @@ const SecurityPanel: Component = () => {
                   </div>
                   <div
                     class={`${styles['stat-indicator']} ${styles[securityInfo()!.ssl_available ? 'available' : 'unavailable']}`}
-                  ></div>
+                  />
                 </div>
                 <div class={styles['stat-content']}>
                   <span class={styles['stat-label']}>SSL/TLS Security</span>
@@ -390,7 +390,7 @@ const SecurityPanel: Component = () => {
                   <div class={styles['stat-icon']}>
                     <Server size={20} />
                   </div>
-                  <div class={`${styles['stat-indicator']} ${styles['active']}`}></div>
+                  <div class={`${styles['stat-indicator']} ${styles['active']}`} />
                 </div>
                 <div class={styles['stat-content']}>
                   <span class={styles['stat-label']}>Peer Status</span>
@@ -589,7 +589,7 @@ const SecurityPanel: Component = () => {
               <div class={styles['warnings-header']}>
                 <div class={styles['warning-icon-container']}>
                   <AlertTriangle size={20} />
-                  <div class={styles['warning-pulse']}></div>
+                  <div class={styles['warning-pulse']} />
                 </div>
                 <div class={styles['warnings-title']}>
                   <h4>Security Alerts</h4>

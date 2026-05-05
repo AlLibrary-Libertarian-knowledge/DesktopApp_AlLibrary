@@ -29,8 +29,8 @@ interface StorageStatusInfo {
   message: string;
 }
 
-const DocumentManagementRightColumn: Component<Props> = ({ storage, formats, recentUploads }) => {
-  const percentUsed = Math.min(100, (storage.used / storage.total) * 100);
+const DocumentManagementRightColumn: Component<Props> = props => {
+  const percentUsed = Math.min(100, (props.storage.used / props.storage.total) * 100);
   const storageStatus = createMemo<StorageStatusInfo>(() => {
     if (percentUsed > 90)
       return { type: 'critical', icon: AlertTriangle, message: 'Critical Storage' };
@@ -40,7 +40,7 @@ const DocumentManagementRightColumn: Component<Props> = ({ storage, formats, rec
   });
 
   const formatGroups = createMemo(() => {
-    const groups = formats.reduce(
+    const groups = props.formats.reduce(
       (acc, fmt) => {
         const type = fmt.toLowerCase();
         if (type.includes('pdf')) acc.documents++;
@@ -100,16 +100,16 @@ const DocumentManagementRightColumn: Component<Props> = ({ storage, formats, rec
               <div class={styles.storageMetrics}>
                 <div class={styles.metric}>
                   <span class={styles.metricLabel}>Used Space</span>
-                  <span class={styles.metricValue}>{storage.used.toFixed(2)} GB</span>
+                  <span class={styles.metricValue}>{props.storage.used.toFixed(2)} GB</span>
                 </div>
                 <div class={styles.metric}>
                   <span class={styles.metricLabel}>Total Space</span>
-                  <span class={styles.metricValue}>{storage.total.toFixed(2)} GB</span>
+                  <span class={styles.metricValue}>{props.storage.total.toFixed(2)} GB</span>
                 </div>
                 <div class={styles.metric}>
                   <span class={styles.metricLabel}>Available</span>
                   <span class={styles.metricValue}>
-                    {(storage.total - storage.used).toFixed(2)} GB
+                    {(props.storage.total - props.storage.used).toFixed(2)} GB
                   </span>
                 </div>
               </div>
@@ -123,7 +123,7 @@ const DocumentManagementRightColumn: Component<Props> = ({ storage, formats, rec
               <FileText size={18} />
               Document Formats
             </div>
-            <div class={styles.formatCount}>{formats.length} Types</div>
+            <div class={styles.formatCount}>{props.formats.length} Types</div>
           </div>
 
           <div class={styles.formatStats}>
@@ -142,7 +142,7 @@ const DocumentManagementRightColumn: Component<Props> = ({ storage, formats, rec
           </div>
 
           <div class={styles.formatsList}>
-            <For each={formats}>
+            <For each={props.formats}>
               {fmt => (
                 <div class={styles.formatItem}>
                   <div class={styles.formatIcon}>
@@ -162,14 +162,14 @@ const DocumentManagementRightColumn: Component<Props> = ({ storage, formats, rec
               <Clock size={18} />
               Recent Activity
             </div>
-            <Show when={recentUploads.length > 0}>
-              <div class={styles.uploadCount}>{recentUploads.length} Files</div>
+            <Show when={props.recentUploads.length > 0}>
+              <div class={styles.uploadCount}>{props.recentUploads.length} Files</div>
             </Show>
           </div>
 
           <div class={styles.uploadsList}>
             <Show
-              when={recentUploads.length > 0}
+              when={props.recentUploads.length > 0}
               fallback={
                 <div class={styles.empty}>
                   <Upload size={24} />
@@ -178,7 +178,7 @@ const DocumentManagementRightColumn: Component<Props> = ({ storage, formats, rec
                 </div>
               }
             >
-              <For each={recentUploads}>
+              <For each={props.recentUploads}>
                 {(file, index) => (
                   <div class={styles.uploadItem} style={{ 'animation-delay': `${index() * 0.1}s` }}>
                     <div class={styles.uploadIcon}>

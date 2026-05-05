@@ -288,7 +288,7 @@ export const BrowsePage: Component = () => {
           when={!loading()}
           fallback={
             <div class={styles.loadingContainer}>
-              <div class={styles.spinner}></div>
+              <div class={styles.spinner} />
               <p>Loading categories...</p>
             </div>
           }

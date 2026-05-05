@@ -171,7 +171,7 @@ export class SecurityValidator {
     if (!input) return '';
 
     // Remove dangerous script tags and event handlers
-    let sanitized = input
+    const sanitized = input
       .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
       .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
       .replace(/javascript:/gi, '')

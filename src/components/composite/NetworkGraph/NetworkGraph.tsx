@@ -1,4 +1,4 @@
-import { Component, onMount, onCleanup } from 'solid-js';
+import { Component, onMount, onCleanup, For } from 'solid-js';
 import { useTranslation } from '../../../i18n/hooks';
 import {
   CanvasRenderer,
@@ -1043,7 +1043,7 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
                             </div>
                             <div class="transfer-progress">
                               <div class="progress-bar">
-                                <div class="progress-fill" style="width: 75%" />
+                                <div class="progress-fill" style={{ width: '75%' }} />
                               </div>
                               <div class="progress-text">75%</div>
                             </div>
@@ -1059,16 +1059,16 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
                     <div class="capabilities-section">
                       <h3>Capabilities</h3>
                       <div class="capabilities-grid-compact">
-                        {Object.entries(expansionState.expandedNode.capabilities).map(
-                          ([key, value]) => (
+                        <For each={Object.entries(expansionState.expandedNode.capabilities)}>
+                          {([key, value]) => (
                             <div class="capability-item">
                               <span class="capability-label">{formatNodeType(key)}</span>
                               <span class="capability-status">
                                 {typeof value === 'boolean' ? (value ? '✓' : '✗') : String(value)}
                               </span>
                             </div>
-                          )
-                        )}
+                          )}
+                        </For>
                       </div>
                     </div>
                   )}

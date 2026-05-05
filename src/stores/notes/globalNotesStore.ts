@@ -26,7 +26,9 @@ function loadFromStorage(): GlobalNote[] {
 function saveToStorage(notes: GlobalNote[]) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
-  } catch {}
+  } catch {
+    void 0;
+  }
 }
 
 const [notes, setNotes] = createSignal<GlobalNote[]>(loadFromStorage());
@@ -48,7 +50,9 @@ export const globalNotesStore = {
     return newNote;
   },
   update: (id: string, update: Partial<GlobalNote>) => {
-    const updated = notes().map(n => (n.id === id ? { ...n, ...update, updatedAt: Date.now() } : n));
+    const updated = notes().map(n =>
+      n.id === id ? { ...n, ...update, updatedAt: Date.now() } : n
+    );
     setNotes(updated);
     saveToStorage(updated);
   },
@@ -60,5 +64,3 @@ export const globalNotesStore = {
 };
 
 export type GlobalNotesStore = typeof globalNotesStore;
-
-

@@ -323,13 +323,15 @@ export class DocumentValidator {
 
     // Binary format validation
     switch (fileType) {
-      case 'application/pdf':
+      case 'application/pdf': {
         const pdfResult = await this.validatePDFContent(content);
         return { valid: pdfResult.valid, errors: pdfResult.errors };
+      }
 
-      case 'application/epub+zip':
+      case 'application/epub+zip': {
         const epubResult = await this.validateEPUBContent(content);
         return { valid: epubResult.valid, errors: epubResult.errors };
+      }
 
       default:
         errors.push(`Unsupported file type: ${fileType}`);

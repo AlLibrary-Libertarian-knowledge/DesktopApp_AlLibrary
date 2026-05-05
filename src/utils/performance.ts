@@ -267,8 +267,8 @@ export class CanvasOptimizer {
     canvas.height = rect.height * devicePixelRatio;
 
     // Scale back down using CSS
-    canvas.style.width = rect.width + 'px';
-    canvas.style.height = rect.height + 'px';
+    canvas.style.width = `${rect.width}px`;
+    canvas.style.height = `${rect.height}px`;
 
     // Scale the drawing context so everything draws at the correct size
     ctx.scale(devicePixelRatio, devicePixelRatio);
@@ -353,8 +353,8 @@ export class LayeredCanvas {
     this.layers.forEach(canvas => {
       const ctx = CanvasOptimizer.setupHighDPICanvas(canvas);
       if (ctx) {
-        canvas.style.width = width + 'px';
-        canvas.style.height = height + 'px';
+        canvas.style.width = `${width}px`;
+        canvas.style.height = `${height}px`;
       }
     });
   }

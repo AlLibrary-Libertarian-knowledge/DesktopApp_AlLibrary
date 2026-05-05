@@ -1,4 +1,4 @@
-import { JSX } from 'solid-js';
+import { JSX, For } from 'solid-js';
 import { Download, Upload, CheckCircle } from 'lucide-solid';
 import { useTranslation } from '../../../i18n/hooks';
 import styles from './ActivityListCard.module.css';
@@ -142,9 +142,7 @@ export const ActivityListCard = (props: ActivityListCardProps) => {
       </div>
 
       <div class={styles['activity-list']}>
-        {props.items.map((item, _index) => (
-          <ActivityListItem item={item} />
-        ))}
+        <For each={props.items}>{item => <ActivityListItem item={item} />}</For>
       </div>
     </div>
   );

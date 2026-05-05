@@ -275,7 +275,7 @@ const Collections: Component = () => {
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
   };
 
   const getCulturalSensitivityLabel = (level: CulturalSensitivityLevel): string => {
@@ -466,7 +466,7 @@ const Collections: Component = () => {
           when={!collections.loading}
           fallback={
             <div class={styles['loading-container']}>
-              <div class={styles.spinner}></div>
+              <div class={styles.spinner} />
               <p>Loading collections...</p>
             </div>
           }

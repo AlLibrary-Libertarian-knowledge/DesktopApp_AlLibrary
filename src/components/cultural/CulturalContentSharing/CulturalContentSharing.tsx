@@ -480,7 +480,7 @@ export const CulturalContentSharing: Component<CulturalContentSharingProps> = pr
             <div class={styles.progressInfo}>
               <h4>Sharing Content...</h4>
               <div class={styles.progressBar}>
-                <div class={styles.progressFill} style={{ width: `${sharingProgress()}%` }}></div>
+                <div class={styles.progressFill} style={{ width: `${sharingProgress()}%` }} />
               </div>
               <p>{sharingProgress()}% complete</p>
             </div>

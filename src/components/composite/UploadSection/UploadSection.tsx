@@ -109,7 +109,7 @@ const UploadSection: Component<UploadSectionProps> = props => {
         continue; // Skip oversized files
       }
 
-      const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+      const fileExtension = `.${file.name.split('.').pop()?.toLowerCase()}`;
       if (!config.acceptedFormats.includes(fileExtension)) {
         continue; // Skip unsupported formats
       }

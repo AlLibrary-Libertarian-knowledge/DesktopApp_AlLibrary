@@ -23,6 +23,34 @@ import {
 import { CulturalSensitivityLevel } from '../../types/Cultural';
 import styles from './BrowsePage.module.css';
 
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+const HighlightedSearchText: Component<{
+  text: string;
+  query: string;
+  class?: string;
+}> = props => {
+  const segments = createMemo(() => {
+    const q = props.query.trim();
+    if (!q) return [{ highlight: false as const, text: props.text }];
+    const re = new RegExp(`(${escapeRegExp(q)})`, 'gi');
+    const parts = props.text.split(re);
+    return parts.map((piece, i) => ({
+      highlight: (i & 1) === 1,
+      text: piece,
+    }));
+  });
+  return (
+    <span class={props.class}>
+      <For each={segments()}>
+        {seg => (seg.highlight ? <mark>{seg.text}</mark> : <>{seg.text}</>)}
+      </For>
+    </span>
+  );
+};
+
 interface Category {
   id: string;
   name: string;
@@ -181,7 +209,7 @@ const BrowsePage: Component = () => {
 
   // Enhanced filtering with search highlighting
   const filteredCategories = createMemo(() => {
-    let filtered = categories().filter(category => {
+    const filtered = categories().filter(category => {
       const matchesSearch =
         category.name.toLowerCase().includes(searchQuery().toLowerCase()) ||
         category.description.toLowerCase().includes(searchQuery().toLowerCase()) ||
@@ -248,13 +276,6 @@ const BrowsePage: Component = () => {
 
   const getTotalDocuments = () => {
     return filteredCategories().reduce((total, category) => total + category.documentCount, 0);
-  };
-
-  // Highlight search terms in text
-  const highlightText = (text: string, query: string) => {
-    if (!query) return text;
-    const regex = new RegExp(`(${query})`, 'gi');
-    return text.replace(regex, '<mark>$1</mark>');
   };
 
   return (
@@ -404,7 +425,7 @@ const BrowsePage: Component = () => {
           when={!loading()}
           fallback={
             <div class={styles.loadingContainer}>
-              <div class={styles.spinner}></div>
+              <div class={styles.spinner} />
               <p>Loading categories...</p>
             </div>
           }
@@ -447,14 +468,15 @@ const BrowsePage: Component = () => {
                       </div>
 
                       <div class={styles.cardContent}>
-                        <h3
-                          class={styles.categoryTitle}
-                          innerHTML={highlightText(category.name, searchQuery())}
-                        ></h3>
-                        <p
-                          class={styles.categoryDescription}
-                          innerHTML={highlightText(category.description, searchQuery())}
-                        ></p>
+                        <h3 class={styles.categoryTitle}>
+                          <HighlightedSearchText text={category.name} query={searchQuery()} />
+                        </h3>
+                        <p class={styles.categoryDescription}>
+                          <HighlightedSearchText
+                            text={category.description}
+                            query={searchQuery()}
+                          />
+                        </p>
 
                         <div class={styles.categoryMeta}>
                           <span

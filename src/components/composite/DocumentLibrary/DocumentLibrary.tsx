@@ -192,7 +192,7 @@ const DocumentLibrary: Component<DocumentLibraryProps> = props => {
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
   };
 
   /**
@@ -232,11 +232,12 @@ const DocumentLibrary: Component<DocumentLibraryProps> = props => {
         case 'size':
           comparison = a.fileSize - b.fileSize;
           break;
-        case 'cultural':
+        case 'cultural': {
           const aLevel = a.culturalMetadata?.sensitivityLevel || 1;
           const bLevel = b.culturalMetadata?.sensitivityLevel || 1;
           comparison = aLevel - bLevel;
           break;
+        }
         default:
           comparison = 0;
       }
@@ -438,7 +439,7 @@ const DocumentLibrary: Component<DocumentLibraryProps> = props => {
                   <div
                     class={styles['cultural-indicator']}
                     style={{
-                      backgroundColor: getCulturalSensitivityColor(
+                      'background-color': getCulturalSensitivityColor(
                         document.culturalMetadata!.sensitivityLevel!
                       ),
                     }}
@@ -554,26 +555,28 @@ const DocumentLibrary: Component<DocumentLibraryProps> = props => {
         <div class={styles['filters-content']}>
           <h4>Cultural Sensitivity Levels</h4>
           <div class={styles['cultural-filters']}>
-            {[1, 2, 3, 4, 5].map(level => (
-              <label class={styles['filter-option']}>
-                <input
-                  type="checkbox"
-                  checked={culturalFilters().has(level)}
-                  onChange={() => {
-                    setCulturalFilters(prev => {
-                      const newSet = new Set(prev);
-                      if (newSet.has(level)) {
-                        newSet.delete(level);
-                      } else {
-                        newSet.add(level);
-                      }
-                      return newSet;
-                    });
-                  }}
-                />
-                <span>{getCulturalSensitivityLabel(level)}</span>
-              </label>
-            ))}
+            <For each={[1, 2, 3, 4, 5]}>
+              {level => (
+                <label class={styles['filter-option']}>
+                  <input
+                    type="checkbox"
+                    checked={culturalFilters().has(level)}
+                    onChange={() => {
+                      setCulturalFilters(prev => {
+                        const newSet = new Set(prev);
+                        if (newSet.has(level)) {
+                          newSet.delete(level);
+                        } else {
+                          newSet.add(level);
+                        }
+                        return newSet;
+                      });
+                    }}
+                  />
+                  <span>{getCulturalSensitivityLabel(level)}</span>
+                </label>
+              )}
+            </For>
           </div>
         </div>
 
@@ -602,23 +605,27 @@ const DocumentLibrary: Component<DocumentLibraryProps> = props => {
         <div class={styles['sort-content']}>
           <h4>Sort By</h4>
           <div class={styles['sort-options']}>
-            {[
-              { value: 'title', label: 'Title' },
-              { value: 'date', label: 'Date Created' },
-              { value: 'size', label: 'File Size' },
-              { value: 'cultural', label: 'Cultural Sensitivity' },
-            ].map(option => (
-              <label class={styles['sort-option']}>
-                <input
-                  type="radio"
-                  name="sortBy"
-                  value={option.value}
-                  checked={sortBy() === option.value}
-                  onChange={() => setSortBy(option.value as any)}
-                />
-                <span>{option.label}</span>
-              </label>
-            ))}
+            <For
+              each={[
+                { value: 'title', label: 'Title' },
+                { value: 'date', label: 'Date Created' },
+                { value: 'size', label: 'File Size' },
+                { value: 'cultural', label: 'Cultural Sensitivity' },
+              ]}
+            >
+              {option => (
+                <label class={styles['sort-option']}>
+                  <input
+                    type="radio"
+                    name="sortBy"
+                    value={option.value}
+                    checked={sortBy() === option.value}
+                    onChange={() => setSortBy(option.value as any)}
+                  />
+                  <span>{option.label}</span>
+                </label>
+              )}
+            </For>
           </div>
 
           <h4>Sort Order</h4>

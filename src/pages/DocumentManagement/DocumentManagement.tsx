@@ -1,4 +1,13 @@
-import { Component, createSignal, createResource, createMemo, Show, For, onMount, createEffect } from 'solid-js';
+import {
+  Component,
+  createSignal,
+  createResource,
+  createMemo,
+  Show,
+  For,
+  onMount,
+  createEffect,
+} from 'solid-js';
 import { Button, Card, Modal } from '../../components/foundation';
 import { TopCard, DocumentManagementRightColumn } from '../../components/composite';
 
@@ -44,7 +53,12 @@ import { validationService } from '../../services';
 import { invoke } from '@tauri-apps/api/core';
 import { searchService } from '../../services/searchService';
 import { projectService } from '../../services/projectService';
-import { documentService, type DocumentInfo, type ScanResult, type FolderInfo } from '../../services/documentService';
+import {
+  documentService,
+  type DocumentInfo,
+  type ScanResult,
+  type FolderInfo,
+} from '../../services/documentService';
 import { useTranslation } from '../../i18n/hooks';
 import type { Document } from '../../types/Document';
 import type {
@@ -103,15 +117,15 @@ const DocumentManagement: Component = () => {
   const { enabled, busy, enable, seedFile, error, lastOp } = useP2PTransfers();
 
   // Advanced Document Features - Task 0.3 Implementation
-const [showDocumentViewer, setShowDocumentViewer] = createSignal(false);
-const [annotations, setAnnotations] = createSignal<Map<string, Annotation[]>>(new Map());
-const [searchResults, setSearchResults] = createSignal<SearchResult[]>([]);
-// Missing search state signals
-const [searchMode, setSearchMode] = createSignal<'basic' | 'advanced'>('basic');
-const [showAdvancedSearch, setShowAdvancedSearch] = createSignal(false);
-const [isSearching, setIsSearching] = createSignal(false);
-const [searchError, setSearchError] = createSignal('');
-const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
+  const [showDocumentViewer, setShowDocumentViewer] = createSignal(false);
+  const [annotations, setAnnotations] = createSignal<Map<string, Annotation[]>>(new Map());
+  const [searchResults, setSearchResults] = createSignal<SearchResult[]>([]);
+  // Missing search state signals
+  const [searchMode, setSearchMode] = createSignal<'basic' | 'advanced'>('basic');
+  const [showAdvancedSearch, setShowAdvancedSearch] = createSignal(false);
+  const [isSearching, setIsSearching] = createSignal(false);
+  const [searchError, setSearchError] = createSignal('');
+  const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
 
   // Advanced search state
   const [searchFilters, setSearchFilters] = createSignal<SearchFilters>({
@@ -158,7 +172,10 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
       // Prefer persisted setting
       const settingsSvc = (await import('@/services/storage/settingsService')).settingsService;
       const savedPath = await settingsSvc.getProjectFolder();
-      if (savedPath) { setProjectFolderPath(savedPath); return; }
+      if (savedPath) {
+        setProjectFolderPath(savedPath);
+        return;
+      }
 
       // Prompt user to choose via first-run wizard/modal
       setProjectFolderPath('');
@@ -176,23 +193,27 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
     try {
       setIsScanning(true);
       setScanProgress(0);
-      
+
       const settingsSvc = (await import('@/services/storage/settingsService')).settingsService;
       const folderPath = (await settingsSvc.getProjectFolder()) || '';
-      if (!folderPath) { setShowFolderSetup(true); return; }
-      
+      if (!folderPath) {
+        setShowFolderSetup(true);
+        return;
+      }
+
       console.log('Scanning AlLibrary folder:', folderPath);
-      
+
       const info = await documentService.getFolderInfo(folderPath);
       setFolderInfo(info);
-      if (!info.exists) { return; }
-      
+      if (!info.exists) {
+        return;
+      }
+
       const result = await documentService.scanDocumentsFolder(folderPath);
       setScanResult(result);
       setScannedDocuments(result.documents);
       setProjectFolderPath(folderPath);
       await settingsSvc.setProjectFolder(folderPath);
-      
     } catch (error) {
       console.error('Failed to scan AlLibrary folder:', error);
     } finally {
@@ -207,13 +228,16 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
       console.log('🚀 Starting auto-scan...');
       const settingsSvc = (await import('@/services/storage/settingsService')).settingsService;
       const folderPath = (await settingsSvc.getProjectFolder()) || '';
-      if (!folderPath) { setShowFolderSetup(true); return; }
-      
+      if (!folderPath) {
+        setShowFolderSetup(true);
+        return;
+      }
+
       console.log('📁 Auto-scanning folder:', folderPath);
       const info = await documentService.getFolderInfo(folderPath);
       setFolderInfo(info);
       setProjectFolderPath(folderPath);
-      
+
       if (info.exists) {
         const result = await documentService.scanDocumentsFolder(folderPath);
         setScanResult(result);
@@ -236,14 +260,16 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
   // Retry auto-scan if no documents found after initial scan (with retry limit)
   let retryCount = 0;
   const MAX_RETRIES = 3;
-  
+
   createEffect(() => {
     const docs = documents();
     if (docs && docs.length === 0 && !isScanning() && retryCount < MAX_RETRIES) {
       // If no documents found and not currently scanning, try again after a delay
       retryCount++;
       globalThis.setTimeout(() => {
-        console.log(`🔄 No documents found, retrying auto-scan... (attempt ${retryCount}/${MAX_RETRIES})`);
+        console.log(
+          `🔄 No documents found, retrying auto-scan... (attempt ${retryCount}/${MAX_RETRIES})`
+        );
         autoScan();
       }, 2000);
     } else if (retryCount >= MAX_RETRIES) {
@@ -256,7 +282,10 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
     const docs = scannedDocuments();
     console.log('🔍 scannedDocuments changed:', docs?.length || 0, 'documents');
     if (docs && docs.length > 0) {
-      console.log('📄 Document names:', docs.map(d => d.filename));
+      console.log(
+        '📄 Document names:',
+        docs.map(d => d.filename)
+      );
     }
   });
 
@@ -265,7 +294,10 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
     const docs = documents();
     console.log('🔍 documents memo changed:', docs?.length || 0, 'documents');
     if (docs && docs.length > 0) {
-      console.log('📄 Converted document titles:', docs.map(d => d.title));
+      console.log(
+        '📄 Converted document titles:',
+        docs.map(d => d.title)
+      );
     }
   });
 
@@ -274,7 +306,10 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
     const docs = displayDocuments();
     console.log('🔍 displayDocuments changed:', docs?.length || 0, 'documents');
     if (docs && docs.length > 0) {
-      console.log('📄 Display document titles:', docs.map(d => d.title));
+      console.log(
+        '📄 Display document titles:',
+        docs.map(d => d.title)
+      );
     }
   });
 
@@ -283,7 +318,10 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
     const docs = sortedAndFilteredDocuments();
     console.log('🔍 sortedAndFilteredDocuments changed:', docs?.length || 0, 'documents');
     if (docs && docs.length > 0) {
-      console.log('📄 Sorted document titles:', docs.map(d => d.title));
+      console.log(
+        '📄 Sorted document titles:',
+        docs.map(d => d.title)
+      );
     }
   });
 
@@ -323,7 +361,7 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
   const documents = createMemo(() => {
     const scannedDocs = scannedDocuments();
     console.log('📄 Documents memo - scannedDocs:', scannedDocs);
-    
+
     if (!scannedDocs || scannedDocs.length === 0) {
       console.log('📄 No scanned documents found');
       return [] as Document[];
@@ -344,21 +382,24 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
     setIsSearching(true);
     try {
       // Simulate full-text search with highlighting
-      const results = documents().filter(doc => 
-        doc.title.toLowerCase().includes(query.toLowerCase()) ||
-        doc.description.toLowerCase().includes(query.toLowerCase()) ||
-        doc.tags.some(tag => tag.toLowerCase().includes(query.toLowerCase())) ||
-        doc.categories.some(cat => cat.toLowerCase().includes(query.toLowerCase()))
-      ).map(doc => ({
-        document: doc,
-        matches: [
-          ...(doc.title.toLowerCase().includes(query.toLowerCase()) ? ['title'] : []),
-          ...(doc.description.toLowerCase().includes(query.toLowerCase()) ? ['description'] : []),
-          ...doc.tags.filter(tag => tag.toLowerCase().includes(query.toLowerCase())),
-          ...doc.categories.filter(cat => cat.toLowerCase().includes(query.toLowerCase()))
-        ]
-      }));
-      
+      const results = documents()
+        .filter(
+          doc =>
+            doc.title.toLowerCase().includes(query.toLowerCase()) ||
+            doc.description.toLowerCase().includes(query.toLowerCase()) ||
+            doc.tags.some(tag => tag.toLowerCase().includes(query.toLowerCase())) ||
+            doc.categories.some(cat => cat.toLowerCase().includes(query.toLowerCase()))
+        )
+        .map(doc => ({
+          document: doc,
+          matches: [
+            ...(doc.title.toLowerCase().includes(query.toLowerCase()) ? ['title'] : []),
+            ...(doc.description.toLowerCase().includes(query.toLowerCase()) ? ['description'] : []),
+            ...doc.tags.filter(tag => tag.toLowerCase().includes(query.toLowerCase())),
+            ...doc.categories.filter(cat => cat.toLowerCase().includes(query.toLowerCase())),
+          ],
+        }));
+
       setSearchResults(results);
     } catch (error) {
       console.error('Search failed:', error);
@@ -402,7 +443,7 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
       protocols: cultural.traditionalProtocols,
       educationalResources: cultural.educationalResources,
       isInformationOnly: cultural.informationOnly,
-      isEducationalPurpose: cultural.educationalPurpose
+      isEducationalPurpose: cultural.educationalPurpose,
     };
   };
 
@@ -423,15 +464,15 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
     }
   };
 
-
-
   // Statistics
   const stats = createMemo(() => {
     const docs = documents() || [];
     return {
       totalDocuments: docs.length,
       totalSize: docs.reduce((sum, doc) => sum + doc.fileSize, 0),
-      culturalContexts: new Set(docs.map(doc => doc.culturalMetadata.culturalOrigin).filter(Boolean)).size,
+      culturalContexts: new Set(
+        docs.map(doc => doc.culturalMetadata.culturalOrigin).filter(Boolean)
+      ).size,
       recentUploads: docs.filter(doc => {
         const daysSinceUpload = (Date.now() - doc.createdAt.getTime()) / (1000 * 60 * 60 * 24);
         return daysSinceUpload <= 7;
@@ -577,7 +618,10 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
     try {
       const settingsSvc = (await import('@/services/storage/settingsService')).settingsService;
       const projectPath = (await settingsSvc.getProjectFolder()) || '';
-      if (!projectPath) { setShowFolderSetup(true); return; }
+      if (!projectPath) {
+        setShowFolderSetup(true);
+        return;
+      }
 
       // Pick files (PDF/EPUB)
       const files: string[] = await invoke('pick_document_files');
@@ -585,7 +629,7 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
       if (!files || files.length === 0) return;
 
       // Stage files for the Treatment Station (no import yet)
-      const staged = files.map((full) => {
+      const staged = files.map(full => {
         const parts = full.split(/[\\/]/);
         const fname = parts[parts.length - 1] || 'document';
         const lower = fname.toLowerCase();
@@ -597,9 +641,11 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
           tempId: `t-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
           filePath: full,
           filename: fname,
-          format: lower.endsWith('.pdf') ? 'pdf' : (lower.endsWith('.epub') ? 'epub' : ''),
+          format: lower.endsWith('.pdf') ? 'pdf' : lower.endsWith('.epub') ? 'epub' : '',
           title: fname.replace(/\.(pdf|epub)$/i, ''),
-          description: lower.endsWith('.pdf') ? 'Portable Document Format file' : 'Electronic Publication file',
+          description: lower.endsWith('.pdf')
+            ? 'Portable Document Format file'
+            : 'Electronic Publication file',
           tagsText: suggested.filter(Boolean).join(', '),
           processed: false,
         } as TreatmentItem;
@@ -619,7 +665,14 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
   // Use default folder path
   const useDefaultPath = () => {
     const defaultPath = projectFolderPath();
-    (async ()=>{ try { const s = (await import('@/services/storage/settingsService')).settingsService; await s.setProjectFolder(defaultPath); } catch {} })();
+    (async () => {
+      try {
+        const s = (await import('@/services/storage/settingsService')).settingsService;
+        await s.setProjectFolder(defaultPath);
+      } catch {
+        void 0;
+      }
+    })();
     setShowFolderSetup(false);
     console.log('Using default project folder:', defaultPath);
   };
@@ -639,7 +692,7 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
     // Generate better description based on file type
     const getDescription = () => {
       if (docInfo.metadata.description) return docInfo.metadata.description;
-      
+
       const format = docInfo.document_type.toLowerCase();
       switch (format) {
         case 'pdf':
@@ -663,7 +716,7 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
     const getTags = () => {
       const tags = [...(docInfo.metadata.tags || [])];
       const format = docInfo.document_type.toLowerCase();
-      
+
       // Add format-based tags
       tags.push(format);
       if (format === 'pdf') tags.push('document', 'portable');
@@ -671,7 +724,7 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
       if (format === 'txt') tags.push('text', 'plain');
       if (format === 'md' || format === 'markdown') tags.push('markdown', 'formatted');
       if (format === 'html' || format === 'htm') tags.push('web', 'html');
-      
+
       return tags;
     };
 
@@ -679,11 +732,11 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
     const getCategories = () => {
       const categories = [...(docInfo.metadata.categories || [])];
       const format = docInfo.document_type.toLowerCase();
-      
+
       if (format === 'pdf' || format === 'epub') categories.push('Documents');
       if (format === 'txt' || format === 'md') categories.push('Text Files');
       if (format === 'html' || format === 'htm') categories.push('Web Files');
-      
+
       return categories;
     };
 
@@ -720,8 +773,18 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
       securityValidation: {
         validatedAt: new Date(),
         passed: true,
-        malwareScanResult: { clean: true, threats: [], scanEngine: 'AlLibrary', scanDate: new Date() },
-        integrityCheck: { valid: true, expectedHash: docInfo.id, actualHash: docInfo.id, algorithm: 'sha256' },
+        malwareScanResult: {
+          clean: true,
+          threats: [],
+          scanEngine: 'AlLibrary',
+          scanDate: new Date(),
+        },
+        integrityCheck: {
+          valid: true,
+          expectedHash: docInfo.id,
+          actualHash: docInfo.id,
+          algorithm: 'sha256',
+        },
         legalCompliance: { compliant: true, issues: [], jurisdiction: 'global' },
         issues: [],
       },
@@ -747,15 +810,15 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
   const displayDocuments = createMemo(() => {
     // Use the documents from the reactive memo
     const docs = documents();
-    
+
     // Add search results if in advanced mode
     let allDocs = [...docs];
-    
+
     if (searchMode() === 'advanced' && searchResults().length > 0) {
       const searchDocs = searchResults().map(result => result.document);
       allDocs = [...allDocs, ...searchDocs];
     }
-    
+
     return allDocs;
   });
 
@@ -763,15 +826,16 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
   const filteredDocuments = createMemo(() => {
     const docs = displayDocuments();
     const query = searchQuery().toLowerCase();
-    
+
     if (!query) return docs;
-    
-    return docs.filter(doc => 
-      doc.title.toLowerCase().includes(query) ||
-      doc.description.toLowerCase().includes(query) ||
-      doc.tags.some(tag => tag.toLowerCase().includes(query)) ||
-      doc.categories.some(cat => cat.toLowerCase().includes(query)) ||
-      doc.authors.some(author => author.name.toLowerCase().includes(query))
+
+    return docs.filter(
+      doc =>
+        doc.title.toLowerCase().includes(query) ||
+        doc.description.toLowerCase().includes(query) ||
+        doc.tags.some(tag => tag.toLowerCase().includes(query)) ||
+        doc.categories.some(cat => cat.toLowerCase().includes(query)) ||
+        doc.authors.some(author => author.name.toLowerCase().includes(query))
     );
   });
 
@@ -880,12 +944,13 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
           clearSelection();
         }
         break;
-      case 'tag':
+      case 'tag': {
         const tag = prompt('Enter tag to add to selected documents:');
         if (tag) {
           alert(`Tag "${tag}" added to ${selectedIds.length} documents.`);
         }
         break;
+      }
       case 'export':
         alert(`Exporting ${selectedIds.length} documents...`);
         break;
@@ -961,11 +1026,12 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
         case 'size':
           comparison = a.fileSize - b.fileSize;
           break;
-        case 'cultural':
+        case 'cultural': {
           const aLevel = a.culturalMetadata?.sensitivityLevel || 0;
           const bLevel = b.culturalMetadata?.sensitivityLevel || 0;
           comparison = aLevel - bLevel;
           break;
+        }
         default:
           comparison = 0;
       }
@@ -977,9 +1043,9 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
   return (
     <div
       class={styles['document-management']}
-      style={{ display: 'flex', flexDirection: 'row', gap: '2rem' }}
+      style={{ display: 'flex', 'flex-direction': 'row', gap: '2rem' }}
     >
-      <div style={{ flex: 1, minWidth: 0 }}>
+      <div style={{ flex: 1, 'min-width': 0 }}>
         {/* Reusable Top Card Component */}
         <TopCard
           title="Document Management"
@@ -1025,7 +1091,12 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
             <div class={styles['toolbar-left']}>
               {/* P2P quick actions */}
               <div style={{ display: 'flex', 'align-items': 'center', gap: '0.5rem' }}>
-                <Button variant={enabled() ? 'secondary' : 'primary'} size="sm" onClick={enable} disabled={busy()}>
+                <Button
+                  variant={enabled() ? 'secondary' : 'primary'}
+                  size="sm"
+                  onClick={enable}
+                  disabled={busy()}
+                >
                   {enabled() ? 'Private Networking Enabled' : 'Enable Private Networking'}
                 </Button>
                 <Button
@@ -1188,7 +1259,7 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
                       <div class={styles['search-actions']}>
                         <Show when={isSearching()}>
                           <div class={styles['search-loading']}>
-                            <div class={styles['loading-pulse']}></div>
+                            <div class={styles['loading-pulse']} />
                           </div>
                         </Show>
                         <Show when={searchQuery()}>
@@ -1202,7 +1273,7 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
                             class={styles['clear-button']}
                             title="Clear search"
                           >
-                            <div class={styles['clear-icon']}></div>
+                            <div class={styles['clear-icon']} />
                           </button>
                         </Show>
                       </div>
@@ -1249,7 +1320,7 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
                               transform:
                                 searchMode() === 'advanced' ? 'translateX(100%)' : 'translateX(0%)',
                             }}
-                          ></div>
+                          />
                         </div>
                       </div>
 
@@ -1278,7 +1349,7 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
                               transform:
                                 viewMode() === 'list' ? 'translateX(100%)' : 'translateX(0%)',
                             }}
-                          ></div>
+                          />
                         </div>
                       </div>
                     </div>
@@ -1298,7 +1369,7 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
                       </div>
                       <div class={styles['results-list']}>
                         <For each={searchResults()}>
-                          {(result) => (
+                          {result => (
                             <div class={styles['result-item']}>
                               <div class={styles['result-document']}>
                                 <h4>{result.document.title}</h4>
@@ -1306,9 +1377,7 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
                                 <div class={styles['result-matches']}>
                                   <span class={styles['match-label']}>Matches:</span>
                                   <For each={result.matches}>
-                                    {(match) => (
-                                      <span class={styles['match-tag']}>{match}</span>
-                                    )}
+                                    {match => <span class={styles['match-tag']}>{match}</span>}
                                   </For>
                                 </div>
                                 <div class={styles['result-actions']}>
@@ -1329,7 +1398,7 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
                                         type: 'note',
                                         content: `Search result for: ${searchQuery()}`,
                                         createdAt: new Date(),
-                                        createdBy: 'user'
+                                        createdBy: 'user',
                                       };
                                       addAnnotation(result.document.id, annotation);
                                     }}
@@ -1385,7 +1454,7 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
                         >
                           <Globe size={16} />
                           <span>Cultural Context</span>
-                          <div class={styles['button-glow']}></div>
+                          <div class={styles['button-glow']} />
                         </button>
 
                         <button
@@ -1394,7 +1463,7 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
                         >
                           <Filter size={16} />
                           <span>Filters</span>
-                          <div class={styles['button-glow']}></div>
+                          <div class={styles['button-glow']} />
                         </button>
 
                         <Show when={searchHistory()?.length > 0}>
@@ -1406,7 +1475,7 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
                           >
                             <History size={16} />
                             <span>History</span>
-                            <div class={styles['button-glow']}></div>
+                            <div class={styles['button-glow']} />
                           </button>
                         </Show>
                       </div>
@@ -1426,10 +1495,7 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
                         </div>
                         <span class={styles['status-text']}>
                           {projectInfo()?.projectPath
-                            ? projectInfo()!
-                                .projectPath.split(/[\/\\]/)
-                                .slice(-2)
-                                .join('/')
+                            ? projectInfo()!.projectPath.split(/[/\\]/).slice(-2).join('/')
                             : 'tales/AlLibrary'}
                         </span>
                         <div class={styles['folder-change-hint']}>
@@ -1437,12 +1503,12 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
                         </div>
                       </button>
                       <Show when={indexInfo()}>
-                        <div class={styles['status-divider']}></div>
+                        <div class={styles['status-divider']} />
                         <div class={styles['status-item']}>
                           <div class={styles['status-indicator']}>
                             <div
                               class={`${styles['indicator-dot']} ${indexInfo()?.indexHealth === 'healthy' ? styles['healthy'] : styles['warning']}`}
-                            ></div>
+                            />
                           </div>
                           <span class={styles['status-text']}>
                             {indexInfo()?.documentCount || 0} documents indexed
@@ -1458,15 +1524,15 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
                           )}
                         </div>
                       </Show>
-                      
+
                       {/* Scan AlLibrary Folder Button */}
                       <Show when={folderInfo()}>
-                        <div class={styles['status-divider']}></div>
+                        <div class={styles['status-divider']} />
                         <div class={styles['status-item']}>
                           <div class={styles['status-indicator']}>
                             <div
                               class={`${styles['indicator-dot']} ${folderInfo()?.exists ? styles['healthy'] : styles['warning']}`}
-                            ></div>
+                            />
                           </div>
                           <span class={styles['status-text']}>
                             {folderInfo()?.document_count || 0} documents in AlLibrary folder
@@ -1477,7 +1543,7 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
                             disabled={isScanning()}
                             title="Scan AlLibrary folder for documents"
                           >
-                            <Show when={!isScanning()} fallback={<div class={styles['spinner']}></div>}>
+                            <Show when={!isScanning()} fallback={<div class={styles['spinner']} />}>
                               <RefreshCw size={12} />
                             </Show>
                           </button>
@@ -1616,7 +1682,7 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
               <div class={`${styles['documents-container']} ${styles[viewMode()]}`}>
                 <Show when={isScanning()}>
                   <div class={styles['loading-state']}>
-                    <div class={styles['loading-spinner']}></div>
+                    <div class={styles['loading-spinner']} />
                     <p>Scanning for documents...</p>
                   </div>
                 </Show>
@@ -1631,9 +1697,9 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
                         : 'Scan your AlLibrary folder to discover documents.'}
                     </p>
                     <div class={styles['scan-actions']}>
-                    <Button
-                      variant="futuristic"
-                      color="purple"
+                      <Button
+                        variant="futuristic"
+                        color="purple"
                         onClick={scanAlLibraryFolder}
                         disabled={isScanning()}
                       >
@@ -1643,11 +1709,11 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
                       <Button
                         variant="futuristic"
                         color="blue"
-                      onClick={() => setActiveTab('upload')}
-                    >
-                      <Upload size={16} class="mr-2" />
-                      Upload Document
-                    </Button>
+                        onClick={() => setActiveTab('upload')}
+                      >
+                        <Upload size={16} class="mr-2" />
+                        Upload Document
+                      </Button>
                     </div>
                   </div>
                 </Show>
@@ -1705,7 +1771,7 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
                                     type: 'note',
                                     content: 'User annotation',
                                     createdAt: new Date(),
-                                    createdBy: 'user'
+                                    createdBy: 'user',
                                   };
                                   addAnnotation(document.id, annotation);
                                 }}
@@ -1816,9 +1882,7 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
                                 <div class={styles['authors']}>
                                   <span class={styles['detail-label']}>Authors:</span>
                                   <For each={document.authors}>
-                                    {author => (
-                                      <span class={styles['author']}>{author.name}</span>
-                                    )}
+                                    {author => <span class={styles['author']}>{author.name}</span>}
                                   </For>
                                 </div>
                               </Show>
@@ -1843,7 +1907,12 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
           <Show when={activeTab() === 'upload'}>
             <section class={styles['upload-section']}>
               <div class={styles['upload-card']}>
-                <div class={styles['upload-zone']} onClick={handleFolderSelect} role="button" tabindex={0}>
+                <div
+                  class={styles['upload-zone']}
+                  onClick={handleFolderSelect}
+                  role="button"
+                  tabindex={0}
+                >
                   <div class={styles['upload-content']}>
                     <Upload size={40} class={styles['upload-icon']} />
                     <h3>Upload Documents</h3>
@@ -1857,9 +1926,14 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
                 <Show when={isUploading()}>
                   <div class={styles['upload-progress']}>
                     <div class={styles['progress-bar']}>
-                      <div class={styles['progress-fill']} style={{ width: `${uploadProgress()}%` }}></div>
+                      <div
+                        class={styles['progress-fill']}
+                        style={{ width: `${uploadProgress()}%` }}
+                      />
                     </div>
-                    <span style={{ 'text-align': 'right', color: 'rgba(203,213,225,0.9)' }}>{uploadProgress()}%</span>
+                    <span style={{ 'text-align': 'right', color: 'rgba(203,213,225,0.9)' }}>
+                      {uploadProgress()}%
+                    </span>
                   </div>
                 </Show>
               </div>
@@ -1898,15 +1972,40 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
                             <div class={styles['treatment-meta']}>
                               <div class={styles['treatment-row']}>
                                 <label>Title</label>
-                                <input type="text" value={item.title} onInput={e => { const copy=[...treatmentItems()]; copy[idx()].title=e.currentTarget.value; setTreatmentItems(copy); }} />
+                                <input
+                                  type="text"
+                                  value={item.title}
+                                  onInput={e => {
+                                    const copy = [...treatmentItems()];
+                                    copy[idx()].title = e.currentTarget.value;
+                                    setTreatmentItems(copy);
+                                  }}
+                                />
                               </div>
                               <div class={styles['treatment-row']}>
                                 <label>Description</label>
-                                <textarea rows={3} value={item.description} onInput={e => { const copy=[...treatmentItems()]; copy[idx()].description=e.currentTarget.value; setTreatmentItems(copy); }} />
+                                <textarea
+                                  rows={3}
+                                  value={item.description}
+                                  onInput={e => {
+                                    const copy = [...treatmentItems()];
+                                    copy[idx()].description = e.currentTarget.value;
+                                    setTreatmentItems(copy);
+                                  }}
+                                />
                               </div>
                               <div class={styles['treatment-row']}>
                                 <label>Tags</label>
-                                <input type="text" value={item.tagsText} placeholder="comma, separated, tags" onInput={e => { const copy=[...treatmentItems()]; copy[idx()].tagsText=e.currentTarget.value; setTreatmentItems(copy); }} />
+                                <input
+                                  type="text"
+                                  value={item.tagsText}
+                                  placeholder="comma, separated, tags"
+                                  onInput={e => {
+                                    const copy = [...treatmentItems()];
+                                    copy[idx()].tagsText = e.currentTarget.value;
+                                    setTreatmentItems(copy);
+                                  }}
+                                />
                               </div>
                               <div class={styles['treatment-hint']}>{item.filename}</div>
                               <div class={styles['treatment-actions']}>
@@ -1914,14 +2013,33 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
                                   onClick={async () => {
                                     try {
                                       // Now perform secure import to target dir using backend (copies and sanitizes)
-                                      const settingsSvc = (await import('@/services/storage/settingsService')).settingsService;
-                                      const projectPath = (await settingsSvc.getProjectFolder()) || '';
-                                      if (!projectPath) { setShowFolderSetup(true); return; }
-                                      const info = await invoke<any>('import_document', { targetDir: projectPath, sourcePath: item.filePath });
-                                      if (enabled() && info?.file_path) { await seedFile(info.file_path); }
+                                      const settingsSvc = (
+                                        await import('@/services/storage/settingsService')
+                                      ).settingsService;
+                                      const projectPath =
+                                        (await settingsSvc.getProjectFolder()) || '';
+                                      if (!projectPath) {
+                                        setShowFolderSetup(true);
+                                        return;
+                                      }
+                                      const info = await invoke<any>('import_document', {
+                                        targetDir: projectPath,
+                                        sourcePath: item.filePath,
+                                      });
+                                      if (enabled() && info?.file_path) {
+                                        await seedFile(info.file_path);
+                                      }
                                       // Robust update: find by tempId to avoid stale index after async
-                                      setTreatmentItems(prev => prev.map(it => it.tempId === item.tempId ? { ...it, processed: true } : it));
-                                    } catch (e) { console.error('Process failed', e); }
+                                      setTreatmentItems(prev =>
+                                        prev.map(it =>
+                                          it.tempId === item.tempId
+                                            ? { ...it, processed: true }
+                                            : it
+                                        )
+                                      );
+                                    } catch (e) {
+                                      console.error('Process failed', e);
+                                    }
                                   }}
                                 >
                                   Process This File
@@ -1936,7 +2054,13 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
                       <Button
                         variant="primary"
                         onClick={async () => {
-                          try { await scanAlLibraryFolder(); } finally { setShowTreatmentModal(false); setTreatmentItems([]); setActiveTab('library'); }
+                          try {
+                            await scanAlLibraryFolder();
+                          } finally {
+                            setShowTreatmentModal(false);
+                            setTreatmentItems([]);
+                            setActiveTab('library');
+                          }
                         }}
                       >
                         Finish and Update Library
@@ -1949,7 +2073,7 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
           </Show>
         </div>
       </div>
-      <div style={{ width: '370px', flexShrink: 0 }}>
+      <div style={{ width: '370px', 'flex-shrink': 0 }}>
         <DocumentManagementRightColumn
           storage={{ used: 156.85, total: 931.41 }}
           formats={['PDF', 'EPUB']}
@@ -2146,13 +2270,20 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
                 placeholder="Cultural origin and context for educational purposes"
                 readonly
               />
-              <small style="color: rgba(148, 163, 184, 0.7); font-size: 0.8rem;">
+              <small style={{ color: 'rgba(148, 163, 184, 0.7)', 'font-size': '0.8rem' }}>
                 Cultural information is displayed for educational purposes only and does not
                 restrict access.
               </small>
             </div>
 
-            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+            <div
+              style={{
+                display: 'flex',
+                gap: '1rem',
+                'justify-content': 'flex-end',
+                'margin-top': '1.5rem',
+              }}
+            >
               <Button
                 variant="futuristic"
                 color="purple"
@@ -2284,7 +2415,14 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
             </div>
           </div>
 
-          <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+          <div
+            style={{
+              display: 'flex',
+              gap: '1rem',
+              'justify-content': 'flex-end',
+              'margin-top': '1.5rem',
+            }}
+          >
             <Button
               variant="futuristic"
               color="purple"
@@ -2304,7 +2442,7 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
           </div>
         </Modal>
       </Show>
-      
+
       {/* Advanced Document Viewer Modal - Task 0.3 */}
       <Show when={showDocumentViewer() && selectedDocument()}>
         <Modal
@@ -2325,7 +2463,7 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
                     type: 'note',
                     content: 'Document viewer annotation',
                     createdAt: new Date(),
-                    createdBy: 'user'
+                    createdBy: 'user',
                   };
                   addAnnotation(selectedDocument()!.id, annotation);
                 }}
@@ -2333,16 +2471,12 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
                 <Tag size={14} />
                 Add Note
               </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={closeDocumentViewer}
-              >
+              <Button size="sm" variant="outline" onClick={closeDocumentViewer}>
                 Close
               </Button>
             </div>
           </div>
-          
+
           <div class={styles['viewer-content']}>
             <div class={styles['document-info']}>
               <div class={styles['info-section']}>
@@ -2366,19 +2500,26 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
                   </div>
                 </div>
               </div>
-              
+
               <div class={styles['cultural-section']}>
                 <h3>Cultural Context</h3>
                 <Show when={selectedDocument()?.culturalMetadata}>
                   <div class={styles['cultural-info']}>
                     <div class={styles['sensitivity-info']}>
                       <span class={styles['sensitivity-label']}>
-                        Sensitivity Level: {getCulturalSensitivityLabel(selectedDocument()!.culturalMetadata.sensitivityLevel)}
+                        Sensitivity Level:{' '}
+                        {getCulturalSensitivityLabel(
+                          selectedDocument()!.culturalMetadata.sensitivityLevel
+                        )}
                       </span>
-                      <div 
+                      <div
                         class={styles['sensitivity-indicator']}
-                        style={{ backgroundColor: getCulturalSensitivityColor(selectedDocument()!.culturalMetadata.sensitivityLevel) }}
-                      ></div>
+                        style={{
+                          'background-color': getCulturalSensitivityColor(
+                            selectedDocument()!.culturalMetadata.sensitivityLevel
+                          ),
+                        }}
+                      />
                     </div>
                     <Show when={selectedDocument()?.culturalMetadata.culturalOrigin}>
                       <div class={styles['origin-info']}>
@@ -2386,14 +2527,14 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
                         <span>{selectedDocument()?.culturalMetadata.culturalOrigin}</span>
                       </div>
                     </Show>
-                    <Show when={selectedDocument()?.culturalMetadata.educationalResources.length > 0}>
+                    <Show
+                      when={selectedDocument()?.culturalMetadata.educationalResources.length > 0}
+                    >
                       <div class={styles['educational-info']}>
                         <span class={styles['educational-label']}>Educational Resources:</span>
                         <div class={styles['resources-list']}>
                           <For each={selectedDocument()?.culturalMetadata.educationalResources}>
-                            {(resource) => (
-                              <span class={styles['resource-item']}>{resource}</span>
-                            )}
+                            {resource => <span class={styles['resource-item']}>{resource}</span>}
                           </For>
                         </div>
                       </div>
@@ -2401,13 +2542,13 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
                   </div>
                 </Show>
               </div>
-              
+
               <div class={styles['annotations-section']}>
                 <h3>Annotations</h3>
                 <Show when={annotations().get(selectedDocument()?.id || '')?.length > 0}>
                   <div class={styles['annotations-list']}>
                     <For each={annotations().get(selectedDocument()?.id || '') || []}>
-                      {(annotation) => (
+                      {annotation => (
                         <div class={styles['annotation-item']}>
                           <div class={styles['annotation-header']}>
                             <span class={styles['annotation-type']}>{annotation.type}</span>
@@ -2415,9 +2556,7 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
                               {annotation.createdAt.toLocaleDateString()}
                             </span>
                           </div>
-                          <div class={styles['annotation-content']}>
-                            {annotation.content}
-                          </div>
+                          <div class={styles['annotation-content']}>{annotation.content}</div>
                           <button
                             class={styles['annotation-delete']}
                             onClick={() => removeAnnotation(selectedDocument()!.id, annotation.id)}
@@ -2431,11 +2570,13 @@ const [searchSuggestions, setSearchSuggestions] = createSignal<string[]>([]);
                   </div>
                 </Show>
                 <Show when={!annotations().get(selectedDocument()?.id || '')?.length}>
-                  <p class={styles['no-annotations']}>No annotations yet. Add notes to enhance your understanding.</p>
+                  <p class={styles['no-annotations']}>
+                    No annotations yet. Add notes to enhance your understanding.
+                  </p>
                 </Show>
               </div>
             </div>
-            
+
             <div class={styles['document-preview']}>
               <div class={styles['preview-placeholder']}>
                 <FileText size={48} />

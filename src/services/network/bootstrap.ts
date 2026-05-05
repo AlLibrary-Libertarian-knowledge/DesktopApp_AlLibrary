@@ -18,7 +18,9 @@ export const enableTorAndP2P = async (): Promise<EnableTorResult> => {
       if (t?.socks) {
         await torAdapter.useSocks(t.socks);
       }
-    } catch {}
+    } catch {
+      void 0;
+    }
 
     // Initialize and start P2P with TOR routing
     await p2pNetworkService.initializeNode({ torSupport: true });
@@ -37,7 +39,9 @@ export const enableTorAndP2P = async (): Promise<EnableTorResult> => {
           }
           const ns = await p2pNetworkService.getNodeStatus();
           if (ns.nodeStatus === NodeStatus.ONLINE) return true;
-        } catch {}
+        } catch {
+          void 0;
+        }
         await new Promise(r => setTimeout(r, 500));
       }
       return false;
@@ -49,12 +53,12 @@ export const enableTorAndP2P = async (): Promise<EnableTorResult> => {
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('tor-status-updated'));
       }
-    } catch {}
+    } catch {
+      void 0;
+    }
     return result;
   } catch (error) {
     console.error('enableTorAndP2P failed:', error);
     return { torConnected: false, p2pStarted: false };
   }
 };
-
-
