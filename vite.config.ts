@@ -1,25 +1,24 @@
 import { defineConfig } from 'vite';
 import solid from 'vite-plugin-solid';
-import { resolve } from 'path';
 
 // @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST;
 
 // https://vitejs.dev/config/
-export default defineConfig(async () => ({
+export default defineConfig(() => ({
   plugins: [solid()],
 
   // Path aliases for clean imports
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'src'),
-      '@/components': resolve(__dirname, 'src/components'),
-      '@/pages': resolve(__dirname, 'src/pages'),
-      '@/stores': resolve(__dirname, 'src/stores'),
-      '@/services': resolve(__dirname, 'src/services'),
-      '@/utils': resolve(__dirname, 'src/utils'),
-      '@/assets': resolve(__dirname, 'src/assets'),
-      '@/styles': resolve(__dirname, 'src/styles'),
+      '@': new URL('./src', import.meta.url).pathname,
+      '@/components': new URL('./src/components', import.meta.url).pathname,
+      '@/pages': new URL('./src/pages', import.meta.url).pathname,
+      '@/stores': new URL('./src/stores', import.meta.url).pathname,
+      '@/services': new URL('./src/services', import.meta.url).pathname,
+      '@/utils': new URL('./src/utils', import.meta.url).pathname,
+      '@/assets': new URL('./src/assets', import.meta.url).pathname,
+      '@/styles': new URL('./src/styles', import.meta.url).pathname,
     },
   },
 
@@ -36,39 +35,60 @@ export default defineConfig(async () => ({
     },
     rollupOptions: {
       output: {
-        manualChunks: {
-          // OPTIMIZATION: Enhanced chunk grouping for better caching
-          // Core vendor libraries (rarely change)
-          'vendor-core': ['solid-js'],
-          'vendor-ui': ['@solidjs/router', 'lucide-solid'],
-          'vendor-tauri': ['@tauri-apps/api', '@tauri-apps/plugin-opener'],
+        manualChunks(id) {
+          // Keep chunk grouping stable while using function form required by newer rolldown.
+          if (id.includes('node_modules/solid-js')) return 'vendor-core';
+          if (
+            id.includes('node_modules/@solidjs/router') ||
+            id.includes('node_modules/lucide-solid')
+          ) {
+            return 'vendor-ui';
+          }
+          if (
+            id.includes('node_modules/@tauri-apps/api') ||
+            id.includes('node_modules/@tauri-apps/plugin-opener')
+          ) {
+            return 'vendor-tauri';
+          }
 
-          // UI components (frequently used, group together)
-          'ui-components': [
-            './src/components/foundation/Button/Button.tsx',
-            './src/components/foundation/Loading/Loading.tsx',
-            './src/components/layout/Header.tsx',
-            './src/components/layout/Sidebar.tsx',
-          ],
+          if (
+            id.includes('/src/components/foundation/Button/Button.tsx') ||
+            id.includes('/src/components/foundation/Loading/Loading.tsx') ||
+            id.includes('/src/components/layout/Header.tsx') ||
+            id.includes('/src/components/layout/Sidebar.tsx')
+          ) {
+            return 'ui-components';
+          }
 
-          // Performance-critical network components (separate for caching)
-          'network-graph': [
-            './src/components/composite/NetworkGraph/NetworkGraph.tsx',
-            './src/utils/performance.ts',
-          ],
+          if (
+            id.includes('/src/components/composite/NetworkGraph/NetworkGraph.tsx') ||
+            id.includes('/src/utils/performance.ts')
+          ) {
+            return 'network-graph';
+          }
 
-          // Page components (lazy-loaded, separate chunks)
-          'pages-main': ['./src/pages/Home/Home.tsx', './src/pages/Collections/Collections.tsx'],
-          'pages-secondary': [
-            './src/pages/DocumentManagement/DocumentManagement.tsx',
-            './src/pages/Browse/Browse.tsx',
-            './src/pages/Trending/Trending.tsx',
-          ],
-          'pages-network': [
-            './src/pages/Peers/Peers.tsx',
-            './src/pages/Favorites/Favorites.tsx',
-            './src/pages/Recent/Recent.tsx',
-          ],
+          if (
+            id.includes('/src/pages/Home/Home.tsx') ||
+            id.includes('/src/pages/Collections/Collections.tsx')
+          ) {
+            return 'pages-main';
+          }
+
+          if (
+            id.includes('/src/pages/DocumentManagement/DocumentManagement.tsx') ||
+            id.includes('/src/pages/Browse/Browse.tsx') ||
+            id.includes('/src/pages/Trending/Trending.tsx')
+          ) {
+            return 'pages-secondary';
+          }
+
+          if (
+            id.includes('/src/pages/Peers/Peers.tsx') ||
+            id.includes('/src/pages/Favorites/Favorites.tsx') ||
+            id.includes('/src/pages/Recent/Recent.tsx')
+          ) {
+            return 'pages-network';
+          }
         },
       },
     },
