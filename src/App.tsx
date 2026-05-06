@@ -27,12 +27,6 @@ import { DocumentDetailPage } from './pages/DocumentDetail';
 import { SearchNetworkPage } from './pages/SearchNetwork';
 import { DocumentReader } from './pages/DocumentReader';
 
-// Cultural Heritage Pages
-import { CulturalContexts } from './pages/CulturalContexts';
-import { TraditionalKnowledge } from './pages/TraditionalKnowledge';
-import { CommunityGuidelines } from './pages/CommunityGuidelines';
-import { Preservation } from './pages/Preservation';
-
 interface InitProgress {
   phase: string;
   message: string;
@@ -417,42 +411,6 @@ const App: Component = () => {
                 <h1>New Arrivals</h1>
                 <p>Recently added documents to the network.</p>
               </div>
-            )}
-          />
-
-          <Route
-            path="/cultural-contexts"
-            component={() => (
-              <RouteWrapper>
-                <CulturalContexts />
-              </RouteWrapper>
-            )}
-          />
-
-          <Route
-            path="/traditional-knowledge"
-            component={() => (
-              <RouteWrapper>
-                <TraditionalKnowledge />
-              </RouteWrapper>
-            )}
-          />
-
-          <Route
-            path="/community-guidelines"
-            component={() => (
-              <RouteWrapper>
-                <CommunityGuidelines />
-              </RouteWrapper>
-            )}
-          />
-
-          <Route
-            path="/preservation"
-            component={() => (
-              <RouteWrapper>
-                <Preservation />
-              </RouteWrapper>
             )}
           />
 

@@ -21,12 +21,6 @@ export { default as BrowsePage } from './Browse/BrowsePage';
 export { default as SearchPage } from './Search/Search';
 export { default as TrendingPage } from './Trending/Trending';
 
-// Cultural Education & Context
-export { default as CulturalContextsPage } from './CulturalContexts/CulturalContextsPage';
-export { default as TraditionalKnowledgePage } from './TraditionalKnowledge/TraditionalKnowledge';
-export { default as CommunityGuidelinesPage } from './CommunityGuidelines/CommunityGuidelines';
-export { default as PreservationPage } from './Preservation/Preservation';
-
 // Network & Peers
 export { default as PeerNetworkPage } from './Peers/PeerNetworkPage';
 export { NetworkHealth as NetworkHealthPage } from './NetworkHealth';
@@ -96,30 +90,6 @@ export const pageRoutes = [
     component: 'CollectionsPage',
     title: 'Collections - AlLibrary',
     description: 'Organize and manage your document collections',
-  },
-  {
-    path: '/cultural-contexts',
-    component: 'CulturalContextsPage',
-    title: 'Cultural Contexts - AlLibrary',
-    description: 'Explore cultural knowledge systems with respect and understanding',
-  },
-  {
-    path: '/traditional-knowledge',
-    component: 'TraditionalKnowledgePage',
-    title: 'Traditional Knowledge - AlLibrary',
-    description: 'Respectful sharing of indigenous and traditional wisdom',
-  },
-  {
-    path: '/community-guidelines',
-    component: 'CommunityGuidelinesPage',
-    title: 'Community Guidelines - AlLibrary',
-    description: 'Guidelines for respectful participation in the decentralized network',
-  },
-  {
-    path: '/preservation',
-    component: 'PreservationPage',
-    title: 'Digital Preservation - AlLibrary',
-    description: 'Digital heritage preservation methods and archival systems',
   },
   {
     path: '/peers',

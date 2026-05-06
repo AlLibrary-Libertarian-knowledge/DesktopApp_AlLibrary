@@ -15,10 +15,6 @@ const NetworkHealth = lazy(() => import('../pages/NetworkHealth'));
 const P2PSearch = lazy(() => import('../pages/P2PSearch'));
 const P2POverview = lazy(() => import('../pages/P2POverview'));
 const ConnectionManager = lazy(() => import('../pages/ConnectionManager'));
-const CulturalContexts = lazy(() => import('../pages/CulturalContexts'));
-const TraditionalKnowledge = lazy(() => import('../pages/TraditionalKnowledge'));
-const CommunityGuidelines = lazy(() => import('../pages/CommunityGuidelines'));
-const Preservation = lazy(() => import('../pages/Preservation'));
 const DocumentReader = lazy(() => import('../pages/DocumentReader'));
 
 const RouteLoading = () => (
@@ -102,40 +98,6 @@ const AppRouter = () => {
         component={() => (
           <Suspense fallback={<RouteLoading />}>
             <NewArrivalsPage />
-          </Suspense>
-        )}
-      />
-
-      {/* Cultural Heritage Routes */}
-      <Route
-        path="/cultural-contexts"
-        component={() => (
-          <Suspense fallback={<RouteLoading />}>
-            <CulturalContexts />
-          </Suspense>
-        )}
-      />
-      <Route
-        path="/traditional-knowledge"
-        component={() => (
-          <Suspense fallback={<RouteLoading />}>
-            <TraditionalKnowledge />
-          </Suspense>
-        )}
-      />
-      <Route
-        path="/community-guidelines"
-        component={() => (
-          <Suspense fallback={<RouteLoading />}>
-            <CommunityGuidelines />
-          </Suspense>
-        )}
-      />
-      <Route
-        path="/preservation"
-        component={() => (
-          <Suspense fallback={<RouteLoading />}>
-            <Preservation />
           </Suspense>
         )}
       />
