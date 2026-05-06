@@ -1,0 +1,405 @@
+/**
+ * Enhanced Browse Categories Page - Cyberpunk Emerald Theme
+ *
+ * Provides comprehensive category browsing with cultural awareness and sophisticated cyberpunk design.
+ * ANTI-CENSORSHIP: Cultural information for education only, never restricts access.
+ */
+
+import { type Component, createSignal, createEffect, For, Show } from 'solid-js';
+import { Card } from '../../components/foundation/Card';
+import { Button } from '../../components/foundation/Button';
+import { Input } from '../../components/foundation/Input';
+import { BookOpen, Search, Grid, List, FolderOpen, Users, Globe } from 'lucide-solid';
+import { CulturalSensitivityLevel } from '../../types/Cultural';
+import styles from './BrowsePage.module.css';
+
+interface Category {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  documentCount: number;
+  culturalOrigin?: string;
+  sensitivityLevel: CulturalSensitivityLevel;
+  subcategories: SubCategory[];
+  color: string;
+}
+
+interface SubCategory {
+  id: string;
+  name: string;
+  documentCount: number;
+}
+
+/**
+ * Enhanced Browse Categories Page Component
+ * Implements comprehensive category browsing with cultural awareness and cyberpunk emerald theme
+ */
+export const BrowsePage: Component = () => {
+  const [categories, setCategories] = createSignal<Category[]>([]);
+  const [searchQuery, setSearchQuery] = createSignal('');
+  const [selectedSensitivity, setSelectedSensitivity] = createSignal<
+    CulturalSensitivityLevel | 'all'
+  >('all');
+  const [viewMode, setViewMode] = createSignal<'grid' | 'list'>('grid');
+  const [loading, setLoading] = createSignal(true);
+
+  // Mock data for development
+  createEffect(() => {
+    setTimeout(() => {
+      setCategories([
+        {
+          id: 'traditional-knowledge',
+          name: 'Traditional Knowledge',
+          description: 'Indigenous wisdom, practices, and cultural heritage',
+          icon: '🌿',
+          documentCount: 234,
+          culturalOrigin: 'Global Indigenous Communities',
+          sensitivityLevel: CulturalSensitivityLevel.COMMUNITY,
+          color: '#00ff88',
+          subcategories: [
+            { id: 'medicine', name: 'Traditional Medicine', documentCount: 67 },
+            { id: 'astronomy', name: 'Indigenous Astronomy', documentCount: 23 },
+            { id: 'agriculture', name: 'Traditional Agriculture', documentCount: 89 },
+            { id: 'crafts', name: 'Traditional Crafts', documentCount: 55 },
+          ],
+        },
+        {
+          id: 'science-technology',
+          name: 'Science & Technology',
+          description: 'Scientific papers, technical documentation, and research',
+          icon: '🔬',
+          documentCount: 1847,
+          culturalOrigin: 'Global Scientific Community',
+          sensitivityLevel: CulturalSensitivityLevel.PUBLIC,
+          color: '#00cc66',
+          subcategories: [
+            { id: 'physics', name: 'Physics', documentCount: 423 },
+            { id: 'biology', name: 'Biology', documentCount: 567 },
+            { id: 'computer-science', name: 'Computer Science', documentCount: 789 },
+            { id: 'engineering', name: 'Engineering', documentCount: 68 },
+          ],
+        },
+        {
+          id: 'literature-arts',
+          name: 'Literature & Arts',
+          description: 'Literary works, poetry, and artistic expressions',
+          icon: '📚',
+          documentCount: 892,
+          culturalOrigin: 'Global Cultural Communities',
+          sensitivityLevel: CulturalSensitivityLevel.EDUCATIONAL,
+          color: '#44ff99',
+          subcategories: [
+            { id: 'poetry', name: 'Poetry', documentCount: 234 },
+            { id: 'novels', name: 'Novels & Stories', documentCount: 345 },
+            { id: 'theater', name: 'Theater & Performance', documentCount: 123 },
+            { id: 'visual-arts', name: 'Visual Arts', documentCount: 190 },
+          ],
+        },
+        {
+          id: 'history-culture',
+          name: 'History & Culture',
+          description: 'Historical documents, cultural studies, and heritage',
+          icon: '🏛️',
+          documentCount: 1203,
+          culturalOrigin: 'Various Cultural Communities',
+          sensitivityLevel: CulturalSensitivityLevel.EDUCATIONAL,
+          color: '#aa44ff',
+          subcategories: [
+            { id: 'ancient-history', name: 'Ancient History', documentCount: 312 },
+            { id: 'cultural-studies', name: 'Cultural Studies', documentCount: 445 },
+            { id: 'archaeology', name: 'Archaeology', documentCount: 267 },
+            { id: 'anthropology', name: 'Anthropology', documentCount: 179 },
+          ],
+        },
+        {
+          id: 'education-learning',
+          name: 'Education & Learning',
+          description: 'Educational materials, tutorials, and learning resources',
+          icon: '🎓',
+          documentCount: 756,
+          culturalOrigin: 'Educational Communities',
+          sensitivityLevel: CulturalSensitivityLevel.PUBLIC,
+          color: '#ffaa00',
+          subcategories: [
+            { id: 'textbooks', name: 'Textbooks', documentCount: 234 },
+            { id: 'tutorials', name: 'Tutorials & Guides', documentCount: 267 },
+            { id: 'research-methods', name: 'Research Methods', documentCount: 123 },
+            { id: 'language-learning', name: 'Language Learning', documentCount: 132 },
+          ],
+        },
+        {
+          id: 'community-resources',
+          name: 'Community Resources',
+          description: 'Local community documents, guidelines, and resources',
+          icon: '🏘️',
+          documentCount: 445,
+          culturalOrigin: 'Local Communities',
+          sensitivityLevel: CulturalSensitivityLevel.COMMUNITY,
+          color: '#ff4466',
+          subcategories: [
+            { id: 'governance', name: 'Community Governance', documentCount: 89 },
+            { id: 'guidelines', name: 'Guidelines & Protocols', documentCount: 156 },
+            { id: 'events', name: 'Community Events', documentCount: 123 },
+            { id: 'projects', name: 'Community Projects', documentCount: 77 },
+          ],
+        },
+      ]);
+      setLoading(false);
+    }, 1000);
+  });
+
+  const filteredCategories = () => {
+    return categories().filter(category => {
+      const matchesSearch =
+        category.name.toLowerCase().includes(searchQuery().toLowerCase()) ||
+        category.description.toLowerCase().includes(searchQuery().toLowerCase()) ||
+        category.subcategories.some(sub =>
+          sub.name.toLowerCase().includes(searchQuery().toLowerCase())
+        );
+
+      const matchesSensitivity =
+        selectedSensitivity() === 'all' || category.sensitivityLevel === selectedSensitivity();
+
+      return matchesSearch && matchesSensitivity;
+    });
+  };
+
+  const getSensitivityColor = (level: CulturalSensitivityLevel) => {
+    switch (level) {
+      case CulturalSensitivityLevel.PUBLIC:
+        return '#00ff88';
+      case CulturalSensitivityLevel.EDUCATIONAL:
+        return '#00cc66';
+      case CulturalSensitivityLevel.COMMUNITY:
+        return '#ffaa00';
+      case CulturalSensitivityLevel.GUARDIAN:
+        return '#aa44ff';
+      case CulturalSensitivityLevel.SACRED:
+        return '#ff4466';
+      default:
+        return '#00ff88';
+    }
+  };
+
+  const getTotalDocuments = () => {
+    return filteredCategories().reduce((total, category) => total + category.documentCount, 0);
+  };
+
+  return (
+    <div class={styles.browsePage}>
+      {/* Enhanced Header Section */}
+      <header class={styles.pageHeader}>
+        <div class={styles.titleSection}>
+          <h1 class={styles.pageTitle}>Browse Categories</h1>
+          <p class={styles.pageSubtitle}>
+            Explore our comprehensive collection organized by categories, cultures, and traditional
+            knowledge systems
+          </p>
+        </div>
+
+        {/* View Mode Controls */}
+        <div class={styles.viewControls}>
+          <button
+            class={`${styles.viewButton} ${viewMode() === 'grid' ? styles.active : ''}`}
+            onClick={() => setViewMode('grid')}
+            aria-label="Grid view"
+          >
+            <Grid size={16} />
+            Grid
+          </button>
+          <button
+            class={`${styles.viewButton} ${viewMode() === 'list' ? styles.active : ''}`}
+            onClick={() => setViewMode('list')}
+            aria-label="List view"
+          >
+            <List size={16} />
+            List
+          </button>
+        </div>
+      </header>
+
+      {/* Search and Filter Section */}
+      <div class={styles.searchFilterSection}>
+        <div class={styles.searchContainer}>
+          <div class={styles.categorySearch}>
+            <Search class={styles.searchIcon} />
+            <Input
+              type="search"
+              placeholder="Search categories and topics..."
+              value={searchQuery()}
+              onInput={setSearchQuery}
+              class={styles.searchInput}
+            />
+          </div>
+        </div>
+
+        <div class={styles.filterPanel}>
+          <select
+            value={selectedSensitivity()}
+            onChange={e => setSelectedSensitivity(e.target.value as any)}
+            class={styles.filterSelect}
+          >
+            <option value="all">All Sensitivity Levels</option>
+            <option value={CulturalSensitivityLevel.PUBLIC}>🌍 Public</option>
+            <option value={CulturalSensitivityLevel.EDUCATIONAL}>📚 Educational</option>
+            <option value={CulturalSensitivityLevel.COMMUNITY}>🏘️ Community</option>
+            <option value={CulturalSensitivityLevel.GUARDIAN}>👥 Guardian</option>
+            <option value={CulturalSensitivityLevel.SACRED}>🔒 Sacred</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Stats Cards */}
+      <div class={styles.stats}>
+        <div class={styles.statCard}>
+          <FolderOpen class={styles.statIcon} />
+          <div>
+            <h3>{filteredCategories().length}</h3>
+            <p>Categories</p>
+          </div>
+        </div>
+        <div class={styles.statCard}>
+          <BookOpen class={styles.statIcon} />
+          <div>
+            <h3>{getTotalDocuments().toLocaleString()}</h3>
+            <p>Total Documents</p>
+          </div>
+        </div>
+        <div class={styles.statCard}>
+          <Users class={styles.statIcon} />
+          <div>
+            <h3>
+              {
+                categories().filter(c => c.sensitivityLevel === CulturalSensitivityLevel.COMMUNITY)
+                  .length
+              }
+            </h3>
+            <p>Community Categories</p>
+          </div>
+        </div>
+        <div class={styles.statCard}>
+          <Globe class={styles.statIcon} />
+          <div>
+            <h3>
+              {
+                categories().filter(c => c.sensitivityLevel === CulturalSensitivityLevel.PUBLIC)
+                  .length
+              }
+            </h3>
+            <p>Public Categories</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <main class={styles.mainContent}>
+        <Show
+          when={!loading()}
+          fallback={
+            <div class={styles.loadingContainer}>
+              <div class={styles.spinner} />
+              <p>Loading categories...</p>
+            </div>
+          }
+        >
+          <Show
+            when={filteredCategories().length > 0}
+            fallback={
+              <div class={styles.emptyState}>
+                <BookOpen class={styles.emptyIcon} />
+                <h3>No categories found</h3>
+                <p>
+                  {searchQuery() || selectedSensitivity() !== 'all'
+                    ? 'Try adjusting your filters to find more categories.'
+                    : 'Categories are being organized by the community.'}
+                </p>
+                <Button variant="primary" onClick={() => (window.location.href = '/documents')}>
+                  Explore All Documents
+                </Button>
+              </div>
+            }
+          >
+            <div class={styles.categoriesContainer}>
+              <div class={styles[`categoriesGrid${viewMode() === 'grid' ? 'Grid' : 'List'}`]}>
+                <For each={filteredCategories()}>
+                  {category => (
+                    <Card class={styles.categoryCard}>
+                      <div class={styles.cardHeader}>
+                        <div class={styles.categoryIcon} style={{ color: category.color }}>
+                          {category.icon}
+                        </div>
+                        <div
+                          class={styles.sensitivityBadge}
+                          style={{
+                            'background-color': getSensitivityColor(category.sensitivityLevel),
+                          }}
+                        >
+                          {category.sensitivityLevel}
+                        </div>
+                      </div>
+
+                      <div class={styles.cardContent}>
+                        <h3 class={styles.categoryTitle}>{category.name}</h3>
+                        <p class={styles.categoryDescription}>{category.description}</p>
+
+                        <div class={styles.categoryMeta}>
+                          <span class={styles.documentCount}>
+                            📄 {category.documentCount.toLocaleString()} documents
+                          </span>
+                          {category.culturalOrigin && (
+                            <span class={styles.culturalOrigin}>📍 {category.culturalOrigin}</span>
+                          )}
+                        </div>
+
+                        <div class={styles.subcategories}>
+                          <h4>Popular Topics:</h4>
+                          <div class={styles.subcategoryList}>
+                            <For each={category.subcategories.slice(0, 3)}>
+                              {sub => (
+                                <span class={styles.subcategory}>
+                                  {sub.name} ({sub.documentCount})
+                                </span>
+                              )}
+                            </For>
+                            {category.subcategories.length > 3 && (
+                              <span class={styles.subcategoryMore}>
+                                +{category.subcategories.length - 3} more
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class={styles.cardActions}>
+                        <Button variant="primary" size="sm">
+                          Explore Category
+                        </Button>
+                        <Button variant="secondary" size="sm">
+                          View Subcategories
+                        </Button>
+                      </div>
+                    </Card>
+                  )}
+                </For>
+              </div>
+            </div>
+          </Show>
+        </Show>
+      </main>
+
+      {/* Cultural Acknowledgments */}
+      <footer class={styles.pageFooter}>
+        <div class={styles.culturalAcknowledgment}>
+          <p>
+            We acknowledge and respect the traditional knowledge systems and cultural
+            classifications presented here. All cultural information is shared for educational
+            purposes with the guidance and approval of cultural guardians and community elders.
+          </p>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default BrowsePage;

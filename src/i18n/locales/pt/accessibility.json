@@ -1,0 +1,50 @@
+{
+  "screenReader": {
+    "loading": "Carregando",
+    "error": "Erro ocorreu",
+    "success": "Sucesso",
+    "warning": "Aviso",
+    "info": "Informação",
+    "button": "Botão",
+    "link": "Link",
+    "image": "Imagem",
+    "form": "Formulário",
+    "table": "Tabela",
+    "list": "Lista",
+    "navigation": "Navegação",
+    "main": "Conteúdo principal",
+    "footer": "Rodapé",
+    "sidebar": "Barra lateral"
+  },
+  "aria": {
+    "button": "Botão {{action}}",
+    "link": "Link para {{destination}}",
+    "image": "Imagem {{description}}",
+    "form": "Formulário {{purpose}}",
+    "table": "Tabela {{description}}",
+    "list": "Lista {{items}}",
+    "navigation": "Navegação {{section}}",
+    "main": "Conteúdo principal",
+    "footer": "Rodapé da página",
+    "sidebar": "Barra lateral"
+  },
+  "keyboard": {
+    "enter": "Pressione Enter para executar",
+    "space": "Pressione Espaço para executar",
+    "tab": "Use Tab para navegar",
+    "escape": "Pressione Escape para cancelar",
+    "arrowKeys": "Use as teclas de seta para navegar",
+    "home": "Pressione Home para o início",
+    "end": "Pressione End para o fim"
+  },
+  "highContrast": {
+    "enabled": "Alto contraste ativado",
+    "disabled": "Alto contraste desativado",
+    "toggle": "Alternar alto contraste"
+  },
+  "reducedMotion": {
+    "enabled": "Movimento reduzido ativado",
+    "disabled": "Movimento reduzido desativado",
+    "toggle": "Alternar movimento reduzido"
+  }
+}

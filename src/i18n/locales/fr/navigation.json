@@ -1,0 +1,53 @@
+{
+  "main": {
+    "home": "Accueil",
+    "library": "Bibliothèque",
+    "documents": "Documents",
+    "collections": "Collections",
+    "search": "Recherche",
+    "browse": "Parcourir",
+    "recent": "Récent",
+    "trending": "Tendance",
+    "favorites": "Favoris",
+    "peers": "Pairs",
+    "network": "Réseau",
+    "settings": "Paramètres",
+    "profile": "Profil",
+    "cultural": "Culturel",
+    "traditional": "Traditionnel",
+    "community": "Communauté",
+    "preservation": "Préservation",
+    "about": "À propos"
+  },
+  "sections": {
+    "personal": "Personnel",
+    "community": "Communauté",
+    "network": "Réseau",
+    "tools": "Outils",
+    "preferences": "Préférences"
+  },
+  "items": {
+    "myDocuments": "Mes Documents",
+    "recentDocuments": "Documents Récents",
+    "sharedDocuments": "Documents Partagés",
+    "myCollections": "Mes Collections",
+    "browseCategories": "Parcourir les Catégories",
+    "localSearch": "Recherche Locale",
+    "networkSearch": "Recherche Réseau",
+    "peers": "Pairs",
+    "communities": "Communautés",
+    "networkHealth": "Santé du Réseau",
+    "downloadManager": "Gestionnaire de Téléchargements",
+    "fileOrganizer": "Organisateur de Fichiers",
+    "culturalSettings": "Paramètres Culturels",
+    "appearance": "Apparence",
+    "privacy": "Confidentialité",
+    "advanced": "Avancé",
+    "notifications": "Notifications"
+  },
+  "breadcrumbs": {
+    "home": "Accueil",
+    "back": "Retour",
+    "separator": "/"
+  }
+}

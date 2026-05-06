@@ -1,0 +1,50 @@
+{
+  "screenReader": {
+    "loading": "Tāuta ana",
+    "error": "Kua hē",
+    "success": "Angitu",
+    "warning": "Whakatūpato",
+    "info": "Mōhiohio",
+    "button": "Pātene",
+    "link": "Hononga",
+    "image": "Whakaahua",
+    "form": "Puka",
+    "table": "Ripanga",
+    "list": "Rārangi",
+    "navigation": "Huarahi",
+    "main": "Te wāhanga matua",
+    "footer": "Te wāhanga raro",
+    "sidebar": "Te wāhanga taha"
+  },
+  "aria": {
+    "button": "Pātene {{action}}",
+    "link": "Hononga ki {{destination}}",
+    "image": "Whakaahua {{description}}",
+    "form": "Puka {{purpose}}",
+    "table": "Ripanga {{description}}",
+    "list": "Rārangi {{items}}",
+    "navigation": "Huarahi {{section}}",
+    "main": "Te wāhanga matua",
+    "footer": "Te wāhanga raro",
+    "sidebar": "Te wāhanga taha"
+  },
+  "keyboard": {
+    "enter": "Pāwhiri Enter",
+    "space": "Pāwhiri Space",
+    "tab": "Whakamahi Tab",
+    "escape": "Pāwhiri Escape",
+    "arrowKeys": "Whakamahi ngā pātene pere",
+    "home": "Pāwhiri Home",
+    "end": "Pāwhiri End"
+  },
+  "highContrast": {
+    "enabled": "Kua whakahohe te tāwhai",
+    "disabled": "Kāore i whakahohe te tāwhai",
+    "toggle": "Huri tāwhai"
+  },
+  "reducedMotion": {
+    "enabled": "Kua whakaiti te neke",
+    "disabled": "Kāore i whakaiti te neke",
+    "toggle": "Huri neke"
+  }
+}

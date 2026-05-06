@@ -1,0 +1,159 @@
+import { type Component, createResource, createSignal, onCleanup, onMount } from 'solid-js';
+import './Header.css';
+import logoSvg from '/src/assets/logo.svg';
+import { LanguageSwitcher } from '@/components/foundation/LanguageSwitcher';
+import { ThemeSwitcher } from '@/components/foundation/ThemeSwitcher';
+import { useTranslation } from '@/i18n';
+import { Bell, Menu, Search as SearchIcon, Settings as SettingsIcon } from 'lucide-solid';
+import { Badge } from '@/components/foundation/Badge';
+import { torAdapter } from '@/services/network/torAdapter';
+import { p2pNetworkService } from '@/services/network/p2pNetworkService';
+
+interface HeaderProps {
+  sidebarCollapsed?: boolean;
+  onSidebarToggle?: (() => void) | undefined;
+}
+
+const Header: Component<HeaderProps> = props => {
+  const { t } = useTranslation();
+
+  // Lightweight, one-shot resources for header indicators
+  const [tick, setTick] = createSignal(0);
+  const [torStatus, { refetch: refetchTor }] = createResource(tick, async () =>
+    torAdapter.status()
+  );
+  const [nodeStatus, { refetch: refetchNode }] = createResource(tick, async () =>
+    p2pNetworkService.getNodeStatus()
+  );
+
+  onMount(() => {
+    setTick(t => t + 1);
+    const id = globalThis.setInterval(() => setTick(t => t + 1), 5000) as unknown as number;
+    onCleanup(() => globalThis.clearInterval(id));
+  });
+
+  // Instant refresh when bootstrap completes
+  onMount(() => {
+    const handler = () => setTick(t => t + 1);
+    window.addEventListener('tor-status-updated', handler as any);
+    onCleanup(() => window.removeEventListener('tor-status-updated', handler as any));
+  });
+
+  // Global keyboard shortcut: Ctrl/Cmd + B to toggle sidebar
+  onMount(() => {
+    const handler = (e: KeyboardEvent) => {
+      const isToggle = (e.ctrlKey || e.metaKey) && (e.key === 'b' || e.key === 'B');
+      if (isToggle && props.onSidebarToggle) {
+        e.preventDefault();
+        props.onSidebarToggle();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    onCleanup(() => window.removeEventListener('keydown', handler));
+  });
+
+  return (
+    <header class="app-header">
+      <div class="header-left">
+        <button
+          class="sidebar-toggle"
+          onClick={props.onSidebarToggle}
+          aria-label={t('components.header.accessibility.toggleSidebar')}
+          title={t('components.header.accessibility.toggleSidebar')}
+        >
+          <Menu size={20} />
+        </button>
+
+        <div class="header-brand">
+          <div class="brand-content">
+            <img
+              src={logoSvg}
+              alt={t('components.header.accessibility.logoAlt')}
+              class="app-logo"
+            />
+            <div class="brand-text">
+              <h1 class="app-title">AlLibrary</h1>
+              <span class="app-subtitle">{t('pages.home.subtitle')}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-center">
+        <div class="search-container">
+          <input
+            type="search"
+            placeholder={t('components.searchBar.placeholder')}
+            class="global-search"
+            data-testid="search-input"
+          />
+          <button
+            class="search-button"
+            aria-label={t('common.actions.search')}
+            title={t('common.actions.search')}
+          >
+            <SearchIcon size={18} />
+          </button>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <LanguageSwitcher
+          variant="compact"
+          showFlags={true}
+          showNativeName={false}
+          size="sm"
+          className="header-language-switcher"
+          ariaLabel={t('common.actions.changeLanguage')}
+        />
+
+        <ThemeSwitcher
+          variant="compact"
+          size="sm"
+          class="header-theme-switcher"
+          ariaLabel={t('components.themeSwitcher.buttonLabel')}
+        />
+
+        <button
+          class="header-action"
+          aria-label={t('navigation.items.notifications')}
+          title={t('navigation.items.notifications')}
+        >
+          <Bell size={20} />
+        </button>
+
+        <button
+          class="header-action"
+          aria-label={t('common.actions.settings')}
+          title={t('common.actions.settings')}
+        >
+          <SettingsIcon size={20} />
+        </button>
+
+        <div
+          class="network-status"
+          style={{ display: 'flex', 'align-items': 'center', gap: '8px' }}
+        >
+          <span
+            class={`status-indicator ${(nodeStatus()?.connectedPeers || 0) > 0 ? 'online' : 'offline'}`}
+            title={
+              (nodeStatus()?.connectedPeers || 0) > 0
+                ? t('common.status.connected')
+                : t('common.status.disconnected')
+            }
+          />
+          <span class="network-text">
+            {(nodeStatus()?.connectedPeers || 0) > 0
+              ? t('common.status.online')
+              : t('common.status.offline')}
+          </span>
+          <Badge variant={torStatus()?.circuitEstablished ? 'success' : 'secondary'}>
+            {torStatus()?.circuitEstablished ? 'Onion' : 'No Onion'}
+          </Badge>
+        </div>
+      </div>
+    </header>
+  );
+};
+
+export default Header;

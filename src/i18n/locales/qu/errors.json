@@ -1,0 +1,8 @@
+{
+  "documentNotFound": "Manan tarikusqa documento",
+  "networkConnectionFailed": "Network conexión falló",
+  "uploadFailed": "Subida falló",
+  "searchFailed": "Búsqueda falló",
+  "accessDenied": "Acceso negado",
+  "validationFailed": "Validación falló"
+}

@@ -1,0 +1,52 @@
+#!/usr/bin/env sh
+
+# -----------------------------
+# AlLibrary — post-merge advisory (pnpm, Tauri, Playwright)
+# -----------------------------
+
+if [ -t 1 ] && command -v tput >/dev/null 2>&1; then
+  ncolors=$(tput colors 2>/dev/null || echo 0)
+  if [ -n "$ncolors" ] && [ "$ncolors" -ge 8 ]; then
+    RED="$(tput setaf 1)"; GREEN="$(tput setaf 2)"; YELLOW="$(tput setaf 3)"; BLUE="$(tput setaf 4)"; CYAN="$(tput setaf 6)"; BOLD="$(tput bold)"; RESET="$(tput sgr0)"
+  else
+    RED=""; GREEN=""; YELLOW=""; BLUE=""; CYAN=""; BOLD=""; RESET=""
+  fi
+else
+  RED=""; GREEN=""; YELLOW=""; BLUE=""; CYAN=""; BOLD=""; RESET=""
+fi
+
+echo "${BOLD}${CYAN}┌ Post-merge notes ┐${RESET}"
+
+CHANGED_FILES=$(git diff --name-only HEAD@{1}..HEAD 2>/dev/null || echo "")
+if [ -z "$CHANGED_FILES" ]; then
+  echo "${GREEN}✅ No file list from merge${RESET}"
+  exit 0
+fi
+
+echo "${BLUE}• Changed paths:${RESET} $(echo "$CHANGED_FILES" | wc -l | tr -d ' ') files"
+
+if echo "$CHANGED_FILES" | grep -Eq '^pnpm-lock\.yaml|package\.json'; then
+  echo "${YELLOW}📦 Dependencies:${RESET} run ${BOLD}pnpm install${RESET}"
+fi
+
+if echo "$CHANGED_FILES" | grep -Eq '^src-tauri/'; then
+  echo "${YELLOW}🦀 Rust / Tauri:${RESET} ${BOLD}cd src-tauri && cargo build${RESET}"
+fi
+
+if echo "$CHANGED_FILES" | grep -Eq '^playwright\.config\.|^playwright-windows-only\.config\.'; then
+  echo "${YELLOW}🎭 Playwright:${RESET} ${BOLD}pnpm exec playwright install${RESET}"
+fi
+
+if echo "$CHANGED_FILES" | grep -Eq '^\.husky/'; then
+  echo "${YELLOW}🐕 Hooks:${RESET} active on next commit / push after ${BOLD}pnpm install${RESET}"
+fi
+
+if echo "$CHANGED_FILES" | grep -Eq '^(vite\.config\.|vitest\.config\.|tsconfig|biome\.json)'; then
+  echo "${BLUE}⚙️ Tooling changed:${RESET} consider ${BOLD}pnpm run quality:ci${RESET}"
+fi
+
+if echo "$CHANGED_FILES" | grep -Eq '^src/'; then
+  echo "${BLUE}• Frontend:${RESET} ${BOLD}pnpm run test:ci${RESET} if needed"
+fi
+
+echo "${GREEN}✅ Post-merge notes done${RESET}"

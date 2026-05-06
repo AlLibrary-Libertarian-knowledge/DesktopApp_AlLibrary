@@ -1,0 +1,95 @@
+#!/usr/bin/env sh
+
+# -----------------------------
+# AlLibrary Pre-commit — Biome (lint-staged) + secret scan
+# -----------------------------
+
+if [ -t 1 ] && command -v tput >/dev/null 2>&1; then
+  ncolors=$(tput colors 2>/dev/null || echo 0)
+  if [ -n "$ncolors" ] && [ "$ncolors" -ge 8 ]; then
+    RED="$(tput setaf 1)"; GREEN="$(tput setaf 2)"; YELLOW="$(tput setaf 3)"; BLUE="$(tput setaf 4)"; CYAN="$(tput setaf 6)"; BOLD="$(tput bold)"; RESET="$(tput sgr0)"
+  else
+    RED=""; GREEN=""; YELLOW=""; BLUE=""; CYAN=""; BOLD=""; RESET=""
+  fi
+else
+  RED=""; GREEN=""; YELLOW=""; BLUE=""; CYAN=""; BOLD=""; RESET=""
+fi
+
+stamp() { date +%H:%M:%S; }
+start_ts=$(date +%s)
+
+on_error() {
+  echo ""
+  echo "${RED}✖ Pre-commit failed${RESET} at $(stamp)"
+  if [ -f .git/lint-staged.log ]; then
+    echo "${YELLOW}Failure analysis:${RESET}"
+    if grep -qE "biome|Biome" .git/lint-staged.log; then
+      echo "${BLUE}• Biome:${RESET} Run ${BOLD}pnpm run lint:fix${RESET}"
+    fi
+    echo "${YELLOW}Recent output:${RESET}"
+    tail -n 20 .git/lint-staged.log || true
+  fi
+  echo "${YELLOW}Quick fixes:${RESET}"
+  echo "  1) ${BOLD}pnpm run lint:fix${RESET}"
+  echo "  2) ${BOLD}pnpm run format${RESET}"
+  echo "  3) ${BOLD}git add . && git commit${RESET}"
+  exit 1
+}
+
+if (trap '' ERR 2>/dev/null); then
+  trap on_error ERR
+else
+  trap 'exit_code=$?; if [ "$exit_code" -ne 0 ] && [ -z "${_error_handled:-}" ]; then _error_handled=1; on_error; fi; exit "$exit_code"' EXIT
+fi
+
+echo "${BOLD}${CYAN}════════════════════════════════════════════════════════════${RESET}"
+echo "${BOLD}🔍 Pre-commit · Quality checks${RESET}  $(stamp)"
+echo "${BOLD}${CYAN}════════════════════════════════════════════════════════════${RESET}"
+echo "${BLUE}• Checklist:${RESET} Secret scan, lint-staged (Biome)"
+
+STAGED_FILES=$(git diff --name-only --cached || true)
+STAGED_COUNT=$(printf "%s" "$STAGED_FILES" | grep -c . || true)
+echo "${BLUE}• Staged files:${RESET} $STAGED_COUNT"
+if [ "$STAGED_COUNT" -eq 0 ]; then
+  echo "${YELLOW}No staged files. Skipping lint-staged.${RESET}"
+  echo "${GREEN}✔ Pre-commit checks passed (nothing to do).${RESET}"
+  exit 0
+fi
+
+echo "${BLUE}• Step:${RESET} Secret scan"
+node scripts/hooks/secret-scan.cjs
+
+step_ts=$(date +%s)
+echo "${BLUE}• Step:${RESET} Lint-staged"
+if command -v pnpm >/dev/null 2>&1; then
+  LINT_STAGED_EXIT=0
+  pnpm exec lint-staged > .git/lint-staged.log 2>&1 || LINT_STAGED_EXIT=$?
+  cat .git/lint-staged.log
+  HAS_ERRORS=0
+  if [ "$LINT_STAGED_EXIT" -ne 0 ]; then
+    HAS_ERRORS=1
+  elif grep -qE "\[FAILED\]|Found [0-9]+ error|✖|ERROR" .git/lint-staged.log; then
+    HAS_ERRORS=1
+  fi
+  if [ "$HAS_ERRORS" -eq 1 ]; then
+    on_error
+    exit 1
+  fi
+else
+  echo "${YELLOW}pnpm not found; run ${BOLD}pnpm run lint${RESET} and ${BOLD}pnpm run format:check${RESET} manually.${RESET}"
+  if ! npm run lint || ! npm run format:check; then
+    on_error
+    exit 1
+  fi
+fi
+elapsed=$(( $(date +%s) - step_ts ))
+echo "${GREEN}✔ Lint-staged completed${RESET} (${elapsed}s)"
+
+total=$(( $(date +%s) - start_ts ))
+echo "${BOLD}${GREEN}✅ Pre-commit passed${RESET} · ${total}s"
+
+rm -f .git/lint-staged.log
+
+if ! (trap '' ERR 2>/dev/null); then
+  trap - EXIT
+fi

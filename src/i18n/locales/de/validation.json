@@ -1,0 +1,8 @@
+{
+  "required": "Dieses Feld ist erforderlich",
+  "email": "Ungültige E-Mail-Adresse",
+  "minLength": "Muss mindestens {{min}} Zeichen haben",
+  "maxLength": "Darf {{max}} Zeichen nicht überschreiten",
+  "pattern": "Ungültiges Format",
+  "numeric": "Nur Zahlen sind erlaubt"
+}

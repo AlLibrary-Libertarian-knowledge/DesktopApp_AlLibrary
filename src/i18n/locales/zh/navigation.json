@@ -1,0 +1,53 @@
+{
+  "main": {
+    "home": "首页",
+    "library": "图书馆",
+    "documents": "文档",
+    "collections": "收藏",
+    "search": "搜索",
+    "browse": "浏览",
+    "recent": "最近",
+    "trending": "趋势",
+    "favorites": "收藏夹",
+    "peers": "节点",
+    "network": "网络",
+    "settings": "设置",
+    "profile": "个人资料",
+    "cultural": "文化",
+    "traditional": "传统",
+    "community": "社区",
+    "preservation": "保存",
+    "about": "关于"
+  },
+  "sections": {
+    "personal": "个人",
+    "community": "社区",
+    "network": "网络",
+    "tools": "工具",
+    "preferences": "偏好"
+  },
+  "items": {
+    "myDocuments": "我的文档",
+    "recentDocuments": "最近文档",
+    "sharedDocuments": "共享文档",
+    "myCollections": "我的收藏",
+    "browseCategories": "浏览分类",
+    "localSearch": "本地搜索",
+    "networkSearch": "网络搜索",
+    "peers": "节点",
+    "communities": "社区",
+    "networkHealth": "网络健康",
+    "downloadManager": "下载管理器",
+    "fileOrganizer": "文件管理器",
+    "culturalSettings": "文化设置",
+    "appearance": "外观",
+    "privacy": "隐私",
+    "advanced": "高级",
+    "notifications": "通知"
+  },
+  "breadcrumbs": {
+    "home": "首页",
+    "back": "返回",
+    "separator": "/"
+  }
+}

@@ -1,0 +1,275 @@
+{
+  "home": {
+    "title": "Nau mai ki AlLibrary",
+    "subtitle": "Whatunga Whakapono Taonga Ahurea Kāore e Whakahaerehia",
+    "networkStatus": {
+      "online": "Ipurangi I runga",
+      "offline": "Ipurangi Kāore i runga",
+      "connecting": "Hono ana",
+      "health": "98% Hauora",
+      "peers": "hoa",
+      "nodes": "pou",
+      "connections": "hononga",
+      "latency": "roa",
+      "bandwidth": "te whānui"
+    },
+    "dataFlow": {
+      "download": "Tikiake",
+      "upload": "Tuku",
+      "incoming": "E haere mai ana",
+      "outgoing": "E haere atu ana",
+      "totalTransfer": "Tuku Katoa",
+      "activeTransfers": "Tuku Mahi"
+    },
+    "activityIndicators": {
+      "downloads": "Tikiake",
+      "seeding": "Whakatō",
+      "discovering": "Kimi ana",
+      "active": "mahi",
+      "idle": "takarepa",
+      "paused": "tūturi"
+    },
+    "tabs": {
+      "overview": "Tirohanga",
+      "network": "Ipurangi",
+      "downloads": "Tikiake",
+      "analytics": "Tātari"
+    },
+    "stats": {
+      "documentsShared": "Tuhinga Kua Tiria",
+      "connectedPeers": "Hoa Kua Hono",
+      "culturalInstitutions": "Whare Ahurea",
+      "networkHealth": "Hauora Ipurangi",
+      "totalStorage": "Pūrua Katoa",
+      "availableStorage": "Pūrua Wātea",
+      "uploadSpeed": "Tere Tuku",
+      "downloadSpeed": "Tere Tikiake",
+      "today": "āianei",
+      "thisWeek": "tēnei wiki",
+      "thisMonth": "tēnei marama",
+      "online": "i runga ipurangi",
+      "offline": "kāore i runga ipurangi",
+      "stable": "pūmau",
+      "excellent": "tino pai",
+      "good": "pai",
+      "fair": "āhua pai",
+      "poor": "kino",
+      "trendPositive": "e piki ana",
+      "trendNegative": "e heke ana",
+      "trendNeutral": "pūmau"
+    },
+    "networkTopology": {
+      "title": "Mātāmua Ipurangi",
+      "subtitle": "Kitenga hono hoa ora",
+      "expandView": "Whakawhānui Tirohanga",
+      "viewDetails": "Tirohia ngā Taipitopito",
+      "refreshData": "Whakahou Raraunga",
+      "exportData": "Kawe Raraunga",
+      "legend": "Kōrero",
+      "nodeTypes": {
+        "library": "Pou Whare Pukapuka",
+        "institution": "Whare",
+        "peer": "Hoa",
+        "bridge": "Pou Arawhata",
+        "relay": "Pou Tuku"
+      }
+    },
+    "networkActivity": {
+      "title": "Mahi Ipurangi",
+      "subtitle": "Tikiake ora me hononga ipurangi",
+      "recentDownloads": "Tikiake Ināianei",
+      "recentDownloadsSubtitle": "Tikiake mahi me tuku",
+      "networkActivitySubtitle": "Hono hoa me kimihanga",
+      "recentUploads": "Tuku Ināianei",
+      "networkConnections": "Hono Ipurangi",
+      "peerDiscovery": "Kimi Hoa",
+      "institutionSharing": "Tiri Whare",
+      "culturalExchange": "Whakawhitiwhiti Ahurea"
+    },
+    "quickActions": {
+      "title": "Mahi Wiki",
+      "shareDocument": "Tiri Tuhinga",
+      "searchNetwork": "Rapu Ipurangi",
+      "analytics": "Tātari",
+      "settings": "Tautuhinga",
+      "uploadFile": "Tuku Kōnae",
+      "createCollection": "Hanga Kohinga",
+      "browseLibrary": "Tirotiro Whare Pukapuka",
+      "viewHistory": "Tirohia Hītori",
+      "manageConnections": "Whakahaere Hononga",
+      "culturalContext": "Horopaki Ahurea",
+      "securityAudit": "Arotake Haumaru",
+      "communityGuidelines": "Arataki Hapori"
+    },
+    "networkSection": {
+      "title": "Mātāmua Ipurangi & Tātari",
+      "subtitle": "Tūhura hononga ipurangi me te mahi",
+      "refresh": "Whakahou",
+      "statistics": "Tātai",
+      "configure": "Whakarite",
+      "export": "Kawe",
+      "fullscreen": "Mata Katoa",
+      "filters": "Tātari",
+      "layout": "Hoahoa",
+      "controls": {
+        "zoomIn": "Whakarahi",
+        "zoomOut": "Whakaiti",
+        "resetView": "Whakahoki Tirohanga",
+        "centerView": "Pokapū Tirohanga",
+        "fitToScreen": "Whakauru ki Mata"
+      },
+      "metrics": {
+        "totalNodes": "Pou Katoa",
+        "activeConnections": "Hono Mahi",
+        "avgLatency": "Roa Toharite",
+        "networkDensity": "Kikī Ipurangi",
+        "clusteringCoeff": "Tāruarua Kōpae"
+      }
+    },
+    "downloadsSection": {
+      "title": "Kaiwhakahaere Tikiake",
+      "subtitle": "Whakahaere āu tikiake me tuku",
+      "addDownload": "Tāpiri Tikiake",
+      "queue": "Rārangi",
+      "preferences": "Mōhiohio",
+      "pauseAll": "Tūturi Katoa",
+      "resumeAll": "Hāpai Katoa",
+      "clearCompleted": "Mā Kua Oti",
+      "bandwidth": "Te Whānui",
+      "filters": {
+        "all": "Katoa",
+        "downloading": "Tikiake ana",
+        "seeding": "Whakatō ana",
+        "completed": "Kua oti",
+        "paused": "Tūturi",
+        "failed": "Kua rahua"
+      },
+      "sortBy": {
+        "name": "Ingoa",
+        "size": "Rahi",
+        "progress": "Haere",
+        "speed": "Tere",
+        "eta": "Wā",
+        "priority": "Tiketike"
+      }
+    },
+    "welcomeModal": {
+      "title": "Nau mai ki AlLibrary",
+      "description": "Ko AlLibrary he pae matatau whakahaere kāore e whakahaerehia mō te tiaki me te tiri i ngā tuhinga taonga ahurea. I hangaia ki runga i te hangarau P2P matatau me te hono TOR, e whakarite ana mātou kia tiakina te mātauranga tuku iho i te haumaru.",
+      "features": {
+        "encryption": "Whakamuna ā-taua me te TOR kāore e mōhiotia",
+        "globalNetwork": "Ipurangi P2P ā-ao me 156+ whare",
+        "performance": "Libp2p tere me te ara DHT",
+        "culturalProtection": "Ngā tikanga tiaki ahurea & ngā whakaaetanga",
+        "advancedSearch": "Rapu matatau me te tātari horopaki ahurea",
+        "realTimeAnalytics": "Tātari ipurangi ora & aroturuki",
+        "decentralized": "Hanga kāore e whakahaerehia katoa",
+        "preservation": "Tiaki rorohiko roa",
+        "collaboration": "Tiri mātauranga mahi tahi",
+        "accessibility": "Tautoko wātea ā-ao"
+      },
+      "takeTour": "Mauria Hāereere",
+      "enterLibrary": "Urunga AlLibrary",
+      "learnMore": "Ako Ake",
+      "skipIntro": "Pepeke Whakataki",
+      "gettingStarted": "Arataki Tīmata"
+    },
+    "recentActivity": "Mahi Ināianei",
+    "culturalHighlights": "Mātauranga Ahurea Whakatairanga",
+    "dashboard": {
+      "lastUpdated": "Whakahou whakamutunga",
+      "autoRefresh": "Whakahou aunoa",
+      "dataSource": "Puna raraunga",
+      "exportData": "Kawe raraunga",
+      "shareView": "Tiri tirohanga",
+      "customizeLayout": "Whakarite hoahoa"
+    },
+    "accessibility": {
+      "networkStatusAria": "Tūnga ipurangi: {{status}}, {{peers}} hoa kua hono, {{health}} hauora",
+      "statCardAria": "{{label}}: {{value}}, {{trend}} aronga",
+      "activityItemAria": "{{type}} mahi: {{title}}, {{status}}",
+      "downloadProgressAria": "Haere tikiake: {{progress}} ōrau kua oti",
+      "networkGraphAria": "Kitenga mātāmua ipurangi e whakaatu ana {{nodes}} pou me {{connections}} hononga",
+      "skipToContent": "Pepeke ki ngā ihirangi matua",
+      "skipToNavigation": "Pepeke ki te haere"
+    },
+    "errors": {
+      "networkConnectionFailed": "Kua rahua te hono ki te ipurangi",
+      "dataLoadFailed": "Kua rahua te uta raraunga dashboard",
+      "statUpdateFailed": "Kua rahua te whakahou tātai",
+      "downloadStartFailed": "Kua rahua te tīmata tikiake",
+      "uploadStartFailed": "Kua rahua te tīmata tuku",
+      "retryAction": "Nāwai",
+      "reportIssue": "Pūrongo Take"
+    },
+    "loading": {
+      "dashboard": "Uta ana dashboard...",
+      "networkData": "Uta ana raraunga ipurangi...",
+      "statistics": "Uta ana tātai...",
+      "activities": "Uta ana mahi...",
+      "connecting": "Hono ana ki te ipurangi...",
+      "initializing": "Tīmata ana..."
+    }
+  },
+  "search": {
+    "title": "Rapu",
+    "subtitle": "Kimi tuhinga me ihirangi",
+    "searchPlaceholder": "Rapu tuhinga, kohinga, me ihirangi ahurea...",
+    "advancedFilters": "Tātari Matatau",
+    "culturalFilters": "Tātari Horopaki Ahurea",
+    "searchResults": "Hua Rapu",
+    "noResults": "Kāore he hua i kitea",
+    "searching": "Rapu ana...",
+    "clearSearch": "Mā Rapu",
+    "showFilters": "Whakaatu Tātari",
+    "hideFilters": "Huna Tātari",
+    "sortBy": "Rārangi mā",
+    "viewMode": "Momo Tirohanga",
+    "gridView": "Tirohanga Rārangi",
+    "listView": "Tirohanga Rārangi"
+  },
+  "documents": {
+    "title": "Āku Tuhinga",
+    "subtitle": "Whakahaere tō kohinga tuhinga",
+    "uploadNew": "Tuku Tuhinga Hou",
+    "organizeLibrary": "Whakarite Whare Pukapuka",
+    "culturalContext": "Horopaki Ahurea",
+    "sensitivityLevel": "Taumata Māharahara",
+    "searchPlaceholder": "Rapu āu tuhinga..."
+  },
+  "collections": {
+    "title": "Kohinga",
+    "subtitle": "Kohinga tuhinga whakaritea",
+    "createNew": "Hanga Kohinga Hou",
+    "manageExisting": "Whakahaere Kohinga",
+    "collaborativeCollections": "Kohinga Mahi Tahi",
+    "culturalCollections": "Kohinga Taonga Ahurea"
+  },
+  "network": {
+    "title": "Ipurangi",
+    "subtitle": "Hono ki ngā hoa",
+    "connectionStatus": "Tūnga Hono",
+    "activePeers": "Hoa Mahi",
+    "networkHealth": "Hauora Ipurangi",
+    "p2pSearch": "Rapu P2P"
+  },
+  "settings": {
+    "title": "Tautuhinga",
+    "subtitle": "Whakarite āu mōhiohio",
+    "general": "Ā-āhuatanga",
+    "privacy": "Tūmataiti",
+    "security": "Haumaru",
+    "cultural": "Mōhiohio Ahurea",
+    "network": "Tautuhinga Ipurangi",
+    "language": "Reo"
+  },
+  "cultural": {
+    "title": "Horopaki Ahurea",
+    "subtitle": "Mōhiohio ahurea mātauranga",
+    "traditionalKnowledge": "Mātauranga Tuku Iho",
+    "communityGuidelines": "Arataki Hapori",
+    "educationalResources": "Rauemi Mātauranga",
+    "culturalOrigins": "Take Ahurea",
+    "sensitivityLevels": "Taumata Māharahara"
+  }
+}

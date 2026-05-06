@@ -228,8 +228,7 @@ DesktopApp_AlLibrary/
 ├── 📄 tsconfig.json               # TypeScript configuration
 ├── 📄 vite.config.ts              # Vite build configuration
 ├── 📄 .gitignore                  # Git ignore rules
-├── 📄 .eslintrc.js                # ESLint configuration
-├── 📄 .prettierrc                 # Prettier configuration
+├── 📄 biome.json                  # Biome (format + lint) configuration
 └── 📄 README.md                   # This file
 ```
 
@@ -286,9 +285,32 @@ pnpm build            # Build frontend
 pnpm tauri build      # Build complete application
 
 # Testing
-pnpm test             # Run frontend tests
+
+## E2E Testing Strategy (Tauri v2 Optimized)
+
+AlLibrary uses **cross-platform e2e testing** aligned with Tauri v2 webview architecture:
+
+| Test Suite | Command | Coverage | Duration |
+|------------|---------|----------|----------|
+| **Development** | `yarn test:e2e:windows` | Windows WebView2 | ~1 min |
+| **Cross-Platform** | `yarn test:e2e` | Windows + macOS + Linux | ~2-3 min |
+| **Interactive** | `yarn test:e2e:ui` | Debug mode | Interactive |
+
+### Platform Coverage
+- **🖥️ Windows**: Chromium (WebView2 simulation)
+- **🍎 macOS**: WebKit (WKWebView simulation)
+- **🐧 Linux**: WebKit (WebKitGTK simulation)
+- **🚫 Firefox**: Removed (not used by any Tauri platform)
+
+### All Testing Commands
+pnpm test             # Run frontend unit tests
 cargo test            # Run Rust tests
-pnpm test:e2e         # Run end-to-end tests
+pnpm test:e2e         # Cross-platform e2e tests
+pnpm test:e2e:windows # Fast Windows-only e2e tests
+pnpm test:e2e:ui      # Interactive test runner
+pnpm test:e2e:debug   # Debug mode testing
+
+📖 **See [E2E Testing Strategy](./docs/E2E_TESTING_STRATEGY.md) for detailed documentation.**
 
 # Code Quality
 pnpm lint             # Lint TypeScript/JavaScript
@@ -344,7 +366,7 @@ pnpm format           # Format all code
 - Use strict TypeScript configuration
 - Implement proper type definitions
 - Write component tests with Vitest
-- Use ESLint and Prettier for code quality
+- Use [Biome](https://biomejs.dev/) for formatting and linting (`pnpm run lint`, `pnpm run format`)
 - Follow SolidJS reactive patterns
 - Implement proper error boundaries
 ```
@@ -422,24 +444,74 @@ We welcome contributions from developers, cultural experts, and community member
 
 ---
 
-## 📊 Project Status
+## 📊 Project Status & Roadmap
 
-### Current Phase: Foundation Development
+### Development Timeline: 8 Weeks + 4 Week Buffer (3 Months Total)
 
-- ✅ Project structure and architecture
-- ✅ Core Tauri + SolidJS setup
-- 🔄 Document management system
-- 🔄 Basic P2P networking
+#### **Phase 1: Foundation** (Week 1) ✅
+
+- ✅ Tauri v2 + SolidJS project setup
+- ✅ SQLite database foundation
+- ✅ Basic document import (PDF/EPUB)
+- ✅ Development environment configuration
+
+#### **Phase 2: Local Functionality** (Week 2) 🔄
+
+- 🔄 Document preview system (PDF.js, EPUB)
+- 🔄 Local search implementation (SQLite FTS)
+- 🔄 Collections and organization features
+- 🔄 Basic UI framework and navigation
+
+#### **Phase 3: P2P Foundation** (Week 3) ⏳
+
+- ⏳ libp2p network setup and peer discovery
+- ⏳ Content distribution system
+- ⏳ Network search capabilities
+- ⏳ Content addressing and verification
+
+#### **Phase 4: Enhanced Features** (Week 4) ⏳
+
+- ⏳ Advanced document features (versions, annotations)
 - ⏳ Cultural protection framework
-- ⏳ Search and discovery
-- ⏳ Advanced features
+- ⏳ Advanced search with filters and history
+- ⏳ Document relationship mapping
 
-### Roadmap
+#### **Phase 5: Performance & Security** (Week 5) ⏳
 
-- **Phase 1**: Core functionality (Month 1)
-- **Phase 2**: P2P networking (Month 2)
-- **Phase 3**: Cultural protection (Month 3)
-- **Phase 4**: Advanced features (Future)
+- ⏳ Performance optimization and caching
+- ⏳ Security implementation and monitoring
+- ⏳ Offline support and synchronization
+- ⏳ Content security and access control
+
+#### **Phase 6: Optimization** (Week 6) ⏳
+
+- ⏳ UI enhancement and accessibility
+- ⏳ User preferences and history
+- ⏳ Feedback systems and analytics
+- ⏳ Cross-platform optimization
+
+#### **Phase 7: Testing & Documentation** (Week 7) ⏳
+
+- ⏳ Comprehensive testing framework
+- ⏳ User and technical documentation
+- ⏳ Final polish and issue resolution
+- ⏳ Performance tuning and optimization
+
+#### **Phase 8: Release & Maintenance** (Week 8) ⏳
+
+- ⏳ Final testing and validation
+- ⏳ Release preparation and builds
+- ⏳ Community launch preparation
+- ⏳ Documentation finalization
+
+#### **Buffer Period** (Weeks 9-12) ⏳
+
+- ⏳ Debugging and issue resolution
+- ⏳ Polish and user experience improvements
+- ⏳ Community feedback integration
+- ⏳ Final release preparation
+
+### Current Status: **Phase 1 Complete, Phase 2 In Progress**
 
 ---
 

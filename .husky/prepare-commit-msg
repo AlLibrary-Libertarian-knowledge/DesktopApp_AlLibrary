@@ -1,0 +1,48 @@
+#!/usr/bin/env sh
+# Auto-suggest commit message based on branch/changes
+COMMIT_EDITMSG=$1
+COMMIT_SOURCE=$2
+
+# Extract branch name
+BRANCH_NAME=$(git symbolic-ref --short HEAD 2>/dev/null || echo "main")
+
+# Extract ticket/issue number from branch name (e.g., feature/ALB-123 -> ALB-123)
+TICKET=$(echo "$BRANCH_NAME" | grep -o '[A-Z]\{2,\}-[0-9]\+' || echo "")
+
+# Determine commit type based on branch prefix or changes
+COMMIT_TYPE=""
+case "$BRANCH_NAME" in
+  feature/*) COMMIT_TYPE="feat" ;;
+  bugfix/*|fix/*) COMMIT_TYPE="fix" ;;
+  hotfix/*) COMMIT_TYPE="hotfix" ;;
+  release/*) COMMIT_TYPE="release" ;;
+  *) COMMIT_TYPE="chore" ;;
+esac
+
+# Only add suggestions for new commits (not amends, merges, etc.)
+if [ "$COMMIT_SOURCE" = "" ] || [ "$COMMIT_SOURCE" = "template" ]; then
+  # Check if commit message is empty or default
+  if [ ! -s "$COMMIT_EDITMSG" ] || grep -q "^#" "$COMMIT_EDITMSG"; then
+    
+    # Generate suggested commit message
+    SUGGESTED_PREFIX="$COMMIT_TYPE"
+    if [ -n "$TICKET" ]; then
+      SUGGESTED_PREFIX="$COMMIT_TYPE($TICKET)"
+    fi
+    
+    # Add suggestion as comment
+    echo "" >> "$COMMIT_EDITMSG"
+    echo "# Suggested format: $SUGGESTED_PREFIX: <description>" >> "$COMMIT_EDITMSG"
+    echo "# Branch: $BRANCH_NAME" >> "$COMMIT_EDITMSG"
+    if [ -n "$TICKET" ]; then
+      echo "# Ticket: $TICKET" >> "$COMMIT_EDITMSG"
+    fi
+    echo "#" >> "$COMMIT_EDITMSG"
+    echo "# Examples:" >> "$COMMIT_EDITMSG"
+    echo "#   feat: add user authentication system" >> "$COMMIT_EDITMSG"
+    echo "#   fix: resolve memory leak in network graph" >> "$COMMIT_EDITMSG"
+    echo "#   feat(ALB-123): implement cultural context search" >> "$COMMIT_EDITMSG"
+    echo "#   (use pnpm for scripts: pnpm run lint · pnpm run test)" >> "$COMMIT_EDITMSG"
+    
+  fi
+fi 

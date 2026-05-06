@@ -1,0 +1,313 @@
+import { createSignal, createEffect, onCleanup, onMount } from 'solid-js';
+import { enableTorAndP2P } from '@/services/network/bootstrap';
+import { settingsService } from '@/services/storage/settingsService';
+import { invoke } from '@tauri-apps/api/core';
+
+// Declare global timer functions for TypeScript
+declare global {
+  function setTimeout(callback: () => void, delay: number): number;
+  function setInterval(callback: () => void, delay: number): number;
+  function clearInterval(id: number): void;
+}
+
+export interface PeerInfo {
+  id: string;
+  address: string;
+  location?: string;
+  reputation: number;
+  culturalAffinity?: string[];
+  isOnline: boolean;
+  latency: number;
+  bandwidth: number;
+  sharedDocuments: number;
+  lastSeen: Date;
+  isAnonymous: boolean;
+  trustScore: number;
+}
+
+export interface NetworkStats {
+  totalPeers: number;
+  onlinePeers: number;
+  totalSharedDocuments: number;
+  networkBandwidth: number;
+  myReputation: number;
+  connectionQuality: 'excellent' | 'good' | 'fair' | 'poor';
+  anonymityLevel: 'high' | 'medium' | 'low' | 'none';
+  torStatus: 'connected' | 'connecting' | 'disconnected' | 'error';
+}
+
+export interface NetworkSettings {
+  maxPeers: number;
+  enableAnonymousMode: boolean;
+  enableTorRouting: boolean;
+  bandwidthLimit: number;
+  shareMyDocuments: boolean;
+  culturalPreferences: string[];
+  trustThreshold: number;
+  autoConnect: boolean;
+}
+
+export const usePeerNetwork = () => {
+  const [peers, setPeers] = createSignal<PeerInfo[]>([]);
+  const [networkStats, setNetworkStats] = createSignal<NetworkStats>({
+    totalPeers: 0,
+    onlinePeers: 0,
+    totalSharedDocuments: 0,
+    networkBandwidth: 0,
+    myReputation: 50,
+    connectionQuality: 'good',
+    anonymityLevel: 'medium',
+    torStatus: 'disconnected',
+  });
+  const [isConnected, setIsConnected] = createSignal(false);
+  const [isConnecting, setIsConnecting] = createSignal(false);
+  const [error, setError] = createSignal<string | null>(null);
+  const [networkSettings, setNetworkSettings] = createSignal<NetworkSettings>({
+    maxPeers: 50,
+    enableAnonymousMode: false,
+    enableTorRouting: false,
+    bandwidthLimit: 1000,
+    shareMyDocuments: true,
+    culturalPreferences: [],
+    trustThreshold: 30,
+    autoConnect: true,
+  });
+
+  // Bootstrap Tor + P2P over Tor on mount; auto-share user folder by default
+  onMount(async () => {
+    try {
+      await enableTorAndP2P();
+      const base = (await settingsService.getProjectFolder()) || '';
+      if (base) {
+        try {
+          await invoke('scan_documents_folder', { folderPath: base });
+        } catch {
+          /* no-op */
+        }
+      }
+      // Reflect Tor state in local stats
+      setNetworkSettings(prev => ({ ...prev, enableTorRouting: true }));
+    } catch {
+      /* ignore bootstrap errors here; UI may retry */
+    }
+  });
+
+  const generateMockPeers = (): PeerInfo[] => {
+    const locations = ['USA', 'Canada', 'Germany', 'Japan', 'Brazil', 'India', 'Australia', 'UK'];
+    const culturalAffinities = [
+      ['Academic', 'Scientific'],
+      ['Traditional', 'Indigenous'],
+      ['Historical', 'Archaeological'],
+      ['Literary', 'Philosophical'],
+      ['Technical', 'Engineering'],
+      ['Cultural', 'Anthropological'],
+    ];
+
+    return Array.from({ length: Math.floor(Math.random() * 30) + 10 }, (_, i) => {
+      const peer: PeerInfo = {
+        id: `peer-${i}-${Math.random().toString(36).substring(2, 11)}`,
+        address: `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
+        reputation: Math.floor(Math.random() * 100),
+        isOnline: Math.random() > 0.3,
+        latency: Math.floor(Math.random() * 500) + 50,
+        bandwidth: Math.floor(Math.random() * 1000) + 100,
+        sharedDocuments: Math.floor(Math.random() * 1000),
+        lastSeen: new Date(Date.now() - Math.random() * 86400000),
+        isAnonymous: Math.random() > 0.7,
+        trustScore: Math.floor(Math.random() * 100),
+      };
+
+      if (Math.random() > 0.3) {
+        (peer as any).location = locations[Math.floor(Math.random() * locations.length)];
+      }
+
+      if (Math.random() > 0.5) {
+        (peer as any).culturalAffinity =
+          culturalAffinities[Math.floor(Math.random() * culturalAffinities.length)];
+      }
+
+      return peer;
+    });
+  };
+
+  const connect = async () => {
+    try {
+      setIsConnecting(true);
+      setError(null);
+
+      await new Promise(resolve => window.setTimeout(resolve, 2000));
+
+      const mockPeers = generateMockPeers();
+      setPeers(mockPeers);
+
+      const onlinePeers = mockPeers.filter(p => p.isOnline);
+      setNetworkStats({
+        totalPeers: mockPeers.length,
+        onlinePeers: onlinePeers.length,
+        totalSharedDocuments: mockPeers.reduce((sum, p) => sum + p.sharedDocuments, 0),
+        networkBandwidth: onlinePeers.reduce((sum, p) => sum + p.bandwidth, 0),
+        myReputation: 75,
+        connectionQuality: 'good',
+        anonymityLevel: networkSettings().enableAnonymousMode ? 'high' : 'medium',
+        torStatus: networkSettings().enableTorRouting ? 'connected' : 'disconnected',
+      });
+
+      setIsConnected(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Connection failed');
+    } finally {
+      setIsConnecting(false);
+    }
+  };
+
+  const disconnect = async () => {
+    try {
+      setIsConnecting(true);
+
+      await new Promise(resolve => window.setTimeout(resolve, 1000));
+
+      setPeers([]);
+      setNetworkStats(prev => ({
+        ...prev,
+        totalPeers: 0,
+        onlinePeers: 0,
+        totalSharedDocuments: 0,
+        networkBandwidth: 0,
+        connectionQuality: 'poor',
+        torStatus: 'disconnected',
+      }));
+
+      setIsConnected(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Disconnection failed');
+    } finally {
+      setIsConnecting(false);
+    }
+  };
+
+  const connectToPeer = async (peerId: string) => {
+    try {
+      const peer = peers().find(p => p.id === peerId);
+      if (!peer) {
+        throw new Error('Peer not found');
+      }
+
+      await new Promise(resolve => window.setTimeout(resolve, 1000));
+
+      setPeers(prev =>
+        prev.map(p => (p.id === peerId ? { ...p, isOnline: true, lastSeen: new Date() } : p))
+      );
+
+      // connected (telemetry removed)
+    } catch (err) {
+      throw err instanceof Error ? err : new Error('Failed to connect to peer');
+    }
+  };
+
+  const disconnectFromPeer = async (peerId: string) => {
+    try {
+      await new Promise(resolve => window.setTimeout(resolve, 500));
+
+      setPeers(prev =>
+        prev.map(p => (p.id === peerId ? { ...p, isOnline: false, lastSeen: new Date() } : p))
+      );
+
+      // disconnected (telemetry removed)
+    } catch (err) {
+      throw err instanceof Error ? err : new Error('Failed to disconnect from peer');
+    }
+  };
+
+  const updateSettings = async (newSettings: Partial<NetworkSettings>) => {
+    try {
+      const updatedSettings = { ...networkSettings(), ...newSettings };
+      setNetworkSettings(updatedSettings);
+
+      if (isConnected()) {
+        setNetworkStats(prev => ({
+          ...prev,
+          anonymityLevel: updatedSettings.enableAnonymousMode ? 'high' : 'medium',
+          torStatus: updatedSettings.enableTorRouting ? 'connected' : 'disconnected',
+        }));
+
+        if (newSettings.trustThreshold !== undefined) {
+          setPeers(prev => prev.filter(p => p.trustScore >= updatedSettings.trustThreshold));
+        }
+      }
+
+      // settings updated (telemetry removed)
+    } catch (err) {
+      throw err instanceof Error ? err : new Error('Failed to update settings');
+    }
+  };
+
+  const getPeerRecommendations = () => {
+    const culturalPrefs = networkSettings().culturalPreferences;
+    if (culturalPrefs.length === 0) return [];
+
+    return peers()
+      .filter(peer =>
+        peer.culturalAffinity?.some(affinity =>
+          culturalPrefs.some(pref => affinity.toLowerCase().includes(pref.toLowerCase()))
+        )
+      )
+      .sort((a, b) => b.reputation - a.reputation)
+      .slice(0, 5);
+  };
+
+  const monitorNetworkHealth = () => {
+    if (!isConnected()) return;
+
+    const onlinePeers = peers().filter(p => p.isOnline);
+    const avgLatency =
+      onlinePeers.length > 0
+        ? onlinePeers.reduce((sum, p) => sum + p.latency, 0) / onlinePeers.length
+        : 1000;
+
+    let quality: NetworkStats['connectionQuality'] = 'poor';
+    if (avgLatency < 100) quality = 'excellent';
+    else if (avgLatency < 200) quality = 'good';
+    else if (avgLatency < 400) quality = 'fair';
+
+    setNetworkStats(prev => ({
+      ...prev,
+      connectionQuality: quality,
+    }));
+  };
+
+  createEffect(() => {
+    const settings = networkSettings();
+    if (settings.autoConnect && !isConnected() && !isConnecting()) {
+      connect();
+    }
+  });
+
+  createEffect(() => {
+    if (isConnected()) {
+      const interval = window.setInterval(monitorNetworkHealth, 5000);
+      onCleanup(() => window.clearInterval(interval));
+    }
+  });
+
+  onCleanup(() => {
+    if (isConnected()) {
+      disconnect();
+    }
+  });
+
+  return {
+    peers,
+    networkStats,
+    isConnected,
+    isConnecting,
+    error,
+    networkSettings,
+    connect,
+    disconnect,
+    connectToPeer,
+    disconnectFromPeer,
+    updateSettings,
+    getPeerRecommendations,
+    monitorNetworkHealth,
+  };
+};

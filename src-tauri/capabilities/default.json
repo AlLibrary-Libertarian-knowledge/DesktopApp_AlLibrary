@@ -5,6 +5,9 @@
   "windows": ["main"],
   "permissions": [
     "core:default",
-    "opener:default"
+    "core:app:default",
+    "core:window:default",
+    "core:webview:default",
+    "core:path:default"
   ]
 }

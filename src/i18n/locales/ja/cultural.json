@@ -1,0 +1,17 @@
+{
+  "sensitivity": {
+    "public": "公開",
+    "educational": "教育",
+    "community": "コミュニティ",
+    "traditional": "伝統的",
+    "guardian": "守護者",
+    "sacred": "神聖",
+    "ceremonial": "儀式的"
+  },
+  "context": {
+    "informationOnly": "情報のみ",
+    "educationalPurpose": "教育目的",
+    "noAccessRestrictions": "アクセス制限なし",
+    "multiplePerspectives": "複数の視点"
+  }
+}

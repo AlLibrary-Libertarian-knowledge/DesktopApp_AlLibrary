@@ -1,0 +1,347 @@
+/* TimeFilter Component Styles */
+
+.timeFilter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+}
+
+/* Size Variants */
+.timeFilter-sm {
+  padding: var(--space-sm);
+  gap: var(--space-sm);
+}
+
+.timeFilter-md {
+  padding: var(--space-md);
+  gap: var(--space-md);
+}
+
+.timeFilter-lg {
+  padding: var(--space-lg);
+  gap: var(--space-lg);
+}
+
+/* Filter Group */
+.filterGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.filterOptions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  align-items: center;
+}
+
+/* Filter Option Button */
+.filterOption {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  min-height: 36px;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.filterOption:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.filterOption.selected {
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+  border-color: var(--color-primary);
+}
+
+.optionIcon {
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.optionLabel {
+  font-weight: 500;
+  font-size: var(--font-size-sm);
+}
+
+.countBadge {
+  margin-left: var(--space-xs);
+  font-size: var(--font-size-xs);
+  min-width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.culturalIndicator {
+  margin-left: var(--space-xs);
+}
+
+/* Cultural Grouping */
+.culturalGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-border);
+}
+
+.culturalHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.culturalTitle {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.culturalInfo {
+  color: var(--color-cultural-traditional);
+  cursor: help;
+}
+
+.culturalOption {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.culturalContext {
+  padding: var(--space-sm);
+  background: var(--color-cultural-background);
+  border: 1px solid var(--color-cultural-border);
+  border-radius: var(--radius-sm);
+  margin-top: var(--space-xs);
+}
+
+.culturalDescription {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-xs) 0;
+  line-height: 1.4;
+}
+
+.traditionalName {
+  font-size: var(--font-size-xs);
+  color: var(--color-cultural-traditional);
+  font-style: italic;
+  margin: 0;
+}
+
+/* Custom Range Modal */
+.customRangeModal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  min-width: 320px;
+  max-width: 400px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-lg);
+  border-radius: var(--radius-md);
+}
+
+.customRangeHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-md);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.customRangeHeader h3 {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  margin: 0;
+  color: var(--color-text-primary);
+}
+
+.customRangeContent {
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.dateInput {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.dateInput label {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.dateField {
+  padding: var(--space-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  transition: border-color 0.2s ease;
+}
+
+.dateField:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary-alpha);
+}
+
+.customRangeActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  border-top: 1px solid var(--color-border);
+}
+
+/* Disabled State */
+.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.disabled .filterOption {
+  cursor: not-allowed;
+}
+
+/* Cultural Theme Variants */
+.cultural-traditional {
+  border-color: var(--color-cultural-traditional);
+}
+
+.cultural-traditional .culturalContext {
+  background: var(--color-cultural-traditional-alpha);
+  border-color: var(--color-cultural-traditional);
+}
+
+.cultural-indigenous {
+  border-color: var(--color-cultural-indigenous);
+}
+
+.cultural-indigenous .culturalContext {
+  background: var(--color-cultural-indigenous-alpha);
+  border-color: var(--color-cultural-indigenous);
+}
+
+.cultural-ceremonial {
+  border-color: var(--color-cultural-sacred);
+}
+
+.cultural-ceremonial .culturalContext {
+  background: var(--color-cultural-sacred-alpha);
+  border-color: var(--color-cultural-sacred);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .timeFilter {
+    padding: var(--space-sm);
+  }
+
+  .filterOptions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filterOption {
+    justify-content: center;
+    min-height: 44px;
+  }
+
+  .customRangeModal {
+    min-width: 280px;
+    margin: var(--space-md);
+    max-width: calc(100vw - var(--space-xl));
+  }
+}
+
+@media (max-width: 480px) {
+  .culturalGroup {
+    padding-top: var(--space-sm);
+  }
+
+  .culturalHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-xs);
+  }
+
+  .customRangeContent {
+    padding: var(--space-sm);
+  }
+
+  .customRangeActions {
+    padding: var(--space-sm);
+    flex-direction: column;
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .timeFilter {
+    border-width: 2px;
+  }
+
+  .filterOption.selected {
+    border-width: 2px;
+    font-weight: 700;
+  }
+
+  .culturalContext {
+    border-width: 2px;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .filterOption {
+    transition: none;
+  }
+
+  .filterOption:hover {
+    transform: none;
+  }
+
+  .timeFilter {
+    transition: none;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .customRangeModal {
+    display: none;
+  }
+
+  .timeFilter {
+    border: 1px solid #000;
+    background: #fff;
+  }
+
+  .filterOption.selected {
+    background: #000;
+    color: #fff;
+  }
+}

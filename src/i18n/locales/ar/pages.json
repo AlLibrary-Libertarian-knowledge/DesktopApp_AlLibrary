@@ -1,0 +1,134 @@
+{
+  "home": {
+    "title": "مرحباً بك في AlLibrary",
+    "subtitle": "مكتبة لامركزية للمعرفة الثقافية",
+    "welcome": "مرحباً بك في مكتبة المعرفة الثقافية",
+    "description": "اكتشف المعرفة التقليدية والمحتوى التعليمي من جميع أنحاء العالم",
+    "getStarted": "ابدأ",
+    "learnMore": "اعرف المزيد",
+    "features": {
+      "title": "الميزات",
+      "decentralized": "مكتبة لامركزية",
+      "cultural": "معرفة ثقافية",
+      "secure": "آمن ومحمي",
+      "accessible": "سهل الوصول"
+    }
+  },
+  "documents": {
+    "title": "مستنداتي",
+    "subtitle": "إدارة مستنداتك المحلية",
+    "upload": "رفع مستند",
+    "recent": "المستندات الحديثة",
+    "all": "جميع المستندات",
+    "search": "البحث في المستندات",
+    "filter": "تصفية المستندات",
+    "sort": "ترتيب المستندات"
+  },
+  "collections": {
+    "title": "المجموعات",
+    "subtitle": "تنظيم معرفتك",
+    "create": "إنشاء مجموعة",
+    "myCollections": "مجموعاتي",
+    "shared": "المجموعات المشتركة",
+    "organize": "تنظيم المستندات"
+  },
+  "search": {
+    "title": "البحث",
+    "subtitle": "اكتشف المعرفة",
+    "placeholder": "ابحث في المستندات والمجموعات...",
+    "filters": "المرشحات",
+    "results": "النتائج",
+    "advanced": "البحث المتقدم"
+  },
+  "browse": {
+    "title": "استعراض",
+    "subtitle": "اكتشف المحتوى",
+    "categories": "الفئات",
+    "trending": "الرائج",
+    "new": "الجديد",
+    "featured": "المميز"
+  },
+  "recent": {
+    "title": "الأحدث",
+    "subtitle": "المستندات المضافة حديثاً",
+    "today": "اليوم",
+    "thisWeek": "هذا الأسبوع",
+    "thisMonth": "هذا الشهر"
+  },
+  "trending": {
+    "title": "الرائج",
+    "subtitle": "المحتوى الشائع",
+    "popular": "الشائع",
+    "trending": "الرائج",
+    "featured": "المميز"
+  },
+  "favorites": {
+    "title": "المفضلة",
+    "subtitle": "مستنداتك المفضلة",
+    "addToFavorites": "إضافة إلى المفضلة",
+    "removeFromFavorites": "إزالة من المفضلة"
+  },
+  "peers": {
+    "title": "الأقران",
+    "subtitle": "شبكة المعرفة",
+    "connected": "متصل",
+    "disconnected": "غير متصل",
+    "connect": "اتصال",
+    "disconnect": "فصل الاتصال"
+  },
+  "network": {
+    "title": "الشبكة",
+    "subtitle": "حالة الشبكة",
+    "status": "الحالة",
+    "peers": "الأقران",
+    "bandwidth": "عرض النطاق الترددي",
+    "latency": "الاستجابة"
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "subtitle": "تخصيص تجربتك",
+    "general": "عام",
+    "privacy": "الخصوصية",
+    "security": "الأمان",
+    "cultural": "الثقافي",
+    "network": "الشبكة",
+    "about": "حول"
+  },
+  "about": {
+    "title": "حول",
+    "subtitle": "معلومات حول AlLibrary",
+    "version": "الإصدار",
+    "description": "مكتبة لامركزية للمعرفة الثقافية",
+    "mission": "مهمتنا",
+    "values": "قيمنا",
+    "team": "الفريق"
+  },
+  "cultural": {
+    "title": "الثقافي",
+    "subtitle": "المعرفة التقليدية",
+    "context": "السياق الثقافي",
+    "education": "التعليم الثقافي",
+    "protocols": "البروتوكولات التقليدية"
+  },
+  "traditional": {
+    "title": "التقليدي",
+    "subtitle": "المعرفة التقليدية",
+    "knowledge": "المعرفة",
+    "protocols": "البروتوكولات",
+    "guardians": "الأوصياء"
+  },
+  "community": {
+    "title": "المجتمع",
+    "subtitle": "مجتمع المعرفة",
+    "members": "الأعضاء",
+    "discussions": "المناقشات",
+    "collaboration": "التعاون"
+  },
+  "preservation": {
+    "title": "الحفظ",
+    "subtitle": "حفظ المعرفة",
+    "backup": "النسخ الاحتياطي",
+    "restore": "الاستعادة",
+    "archive": "الأرشيف"
+  }
+}

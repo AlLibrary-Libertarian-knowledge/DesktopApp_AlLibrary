@@ -1,0 +1,44 @@
+{
+  "main": {
+    "home": "Wasi",
+    "library": "Biblioteca",
+    "documents": "Documentos",
+    "collections": "Colecciones",
+    "search": "Maskay",
+    "network": "Network",
+    "settings": "Configuración",
+    "profile": "Perfil",
+    "cultural": "Cultural"
+  },
+  "sections": {
+    "personal": "Personal",
+    "community": "Comunidad",
+    "network": "Network",
+    "tools": "Herramientas",
+    "preferences": "Preferencias"
+  },
+  "items": {
+    "myDocuments": "Ñoqap Documentos",
+    "recentDocuments": "Recientes Documentos",
+    "sharedDocuments": "Compartidos Documentos",
+    "myCollections": "Ñoqap Colecciones",
+    "browseCategories": "Navegar Categorías",
+    "localSearch": "Local Búsqueda",
+    "networkSearch": "Network Búsqueda",
+    "peers": "Peers",
+    "communities": "Comunidades",
+    "networkHealth": "Network Salud",
+    "downloadManager": "Descarga Gestor",
+    "fileOrganizer": "Archivo Organizador",
+    "culturalSettings": "Cultural Configuración",
+    "appearance": "Apariencia",
+    "privacy": "Privacidad",
+    "advanced": "Avanzado",
+    "notifications": "Notificaciones"
+  },
+  "breadcrumbs": {
+    "home": "Wasi",
+    "back": "Qhipa",
+    "separator": "/"
+  }
+}

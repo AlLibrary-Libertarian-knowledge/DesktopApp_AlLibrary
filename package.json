@@ -1,25 +1,103 @@
 {
-  "name": "desktopapp_allibrary",
+  "name": "desktopapp-allibrary",
   "version": "0.1.0",
-  "description": "",
+  "description": "AlLibrary - Decentralized Knowledge Sharing Platform",
+  "packageManager": "pnpm@9.15.9",
   "type": "module",
-  "scripts": {
-    "start": "vite",
-    "dev": "vite",
-    "build": "vite build",
-    "serve": "vite preview",
-    "tauri": "tauri"
-  },
+  "author": "AlLibrary Community",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/allibrary.git"
+  },
+  "scripts": {
+    "dev": "npx tauri dev",
+    "dev:frontend": "vite",
+    "build": "npx tauri build",
+    "build:frontend": "vite build",
+    "test": "vitest",
+    "test:ci": "vitest run",
+    "quality": "pnpm run lint && pnpm run typecheck && pnpm run test",
+    "quality:ci": "pnpm run lint && pnpm run typecheck:ci && vitest run",
+    "typecheck:ci": "tsc --noEmit",
+    "verify:cultural": "node ./scripts/verify-cultural-info-only.js",
+    "test:ui": "vitest --ui",
+    "test:e2e": "npx playwright test",
+    "test:e2e:windows": "npx playwright test --config=playwright-windows-only.config.ts",
+    "test:e2e:ui": "npx playwright test --ui",
+    "test:e2e:headed": "npx playwright test --headed",
+    "test:e2e:debug": "npx playwright test --debug",
+    "preview": "vite preview",
+    "tauri": "npx tauri",
+    "tauri:dev": "npx tauri dev",
+    "tauri:dev-clean": "yarn cache clean && yarn clean:win && yarn clean:appdata && cd src-tauri && cargo clean && cd .. && npx tauri dev",
+    "tauri:build": "npx tauri build",
+    "test:e2e:report": "npx playwright show-report",
+    "test:e2e:ci": "npx playwright test --reporter=junit",
+    "test:coverage": "vitest --coverage",
+    "test:watch": "vitest --watch",
+    "lint": "biome check src tests",
+    "lint:fix": "biome check --write src tests",
+    "format": "biome format --write src tests",
+    "format:check": "biome format src tests",
+    "typecheck": "tsc --noEmit",
+    "typecheck:watch": "tsc --noEmit --watch",
+    "audit:fix": "npm audit fix",
+    "clean": "rm -rf dist build .vite node_modules/.cache",
+    "clean:win": "if exist dist rmdir /s /q dist && if exist build rmdir /s /q build && if exist .vite rmdir /s /q .vite && if exist node_modules\\.cache rmdir /s /q node_modules\\.cache",
+    "clean:appdata": "if exist \"%APPDATA%\\desktopapp-allibrary\" rmdir /s /q \"%APPDATA%\\desktopapp-allibrary\" && if exist \"%APPDATA%\\com.desktopapp-allibrary.dev\" rmdir /s /q \"%APPDATA%\\com.desktopapp-allibrary.dev\"",
+    "prepare": "husky",
+    "validate": "pnpm run typecheck:ci && pnpm run lint && pnpm run test:ci && pnpm run build:frontend",
+    "husky:analyze:changes": "node scripts/hooks/changed-files.cjs --detailed",
+    "husky:check": "sh .husky/health-check.sh"
+  },
   "dependencies": {
-    "solid-js": "^1.9.3",
+    "@solidjs/router": "^0.14.1",
     "@tauri-apps/api": "^2",
-    "@tauri-apps/plugin-opener": "^2"
+    "@tauri-apps/plugin-fs": "^2",
+    "@tauri-apps/plugin-opener": "^2",
+    "cargo": "^0.8.0",
+    "epubjs": "^0.3.93",
+    "lucide-solid": "^0.513.0",
+    "pdfjs-dist": "^5.4.54",
+    "solid-js": "^1.9.3"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.4.14",
+    "@fullhuman/postcss-purgecss": "^7.0.2",
+    "@playwright/test": "^1.53.1",
+    "@solidjs/testing-library": "^0.8.10",
+    "@tauri-apps/cli": "^2.5.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@types/pdfjs-dist": "^2.10.377",
+    "@vitest/coverage-v8": "^3.2.4",
+    "autoprefixer": "^10.4.21",
+    "cssnano": "^7.0.7",
+    "husky": "^9.1.7",
+    "jsdom": "^26.1.0",
+    "lint-staged": "^16.1.0",
+    "postcss": "^8.5.10",
+    "terser": "^5.42.0",
     "typescript": "~5.6.2",
-    "vite": "^6.0.3",
+    "vite": "^6.4.2",
     "vite-plugin-solid": "^2.11.0",
-    "@tauri-apps/cli": "^2"
+    "vitest": "^3.2.3"
+  },
+  "lint-staged": {
+    "*.{js,mjs,cjs,ts,tsx,json,css}": [
+      "biome check --write --no-errors-on-unmatched"
+    ],
+    "package.json": [
+      "biome check --write package.json --no-errors-on-unmatched",
+      "pnpm audit --audit-level=moderate"
+    ]
+  },
+  "pnpm": {
+    "overrides": {
+      "lodash": ">=4.18.0",
+      "@xmldom/xmldom": ">=0.8.13",
+      "postcss": ">=8.5.10",
+      "vite": ">=6.4.2"
+    }
   }
 }

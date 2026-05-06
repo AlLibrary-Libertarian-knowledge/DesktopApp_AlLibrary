@@ -1,0 +1,203 @@
+/* Footer.css - Application footer styles */
+
+.app-footer {
+  height: 2.5rem;
+  background: var(--bg-primary);
+  border-top: 1px solid var(--border-color);
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.footer-content {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.footer-left,
+.footer-center,
+.footer-right {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+/* Network information */
+.network-info,
+.sync-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.network-label,
+.sync-label {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.peer-count {
+  color: var(--success-color);
+  font-weight: 600;
+}
+
+.network-type {
+  padding: 0.125rem 0.5rem;
+  background: var(--bg-tertiary);
+  border-radius: 0.25rem;
+  font-size: 0.625rem;
+  font-weight: 500;
+}
+
+.sync-time {
+  color: var(--text-primary);
+}
+
+/* Cultural notice */
+.cultural-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  background: var(--bg-tertiary);
+  border-radius: 1rem;
+  border: 1px solid var(--border-color);
+}
+
+.respect-icon {
+  font-size: 0.875rem;
+}
+
+.respect-text {
+  font-size: 0.75rem;
+  color: var(--text-primary);
+  font-style: italic;
+}
+
+/* Version and status */
+.version-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.125rem;
+}
+
+.app-version {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.build-info {
+  font-size: 0.625rem;
+  color: var(--text-secondary);
+}
+
+.status-indicators {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.status-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-dot.security-good {
+  background: var(--success-color);
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
+}
+
+.status-dot.privacy-protected {
+  background: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.status-dot.cultural-aware {
+  background: var(--accent-color);
+  box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.2);
+}
+
+.status-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+  .footer-content {
+    gap: 1rem;
+  }
+
+  .footer-left,
+  .footer-center,
+  .footer-right {
+    gap: 1rem;
+  }
+
+  .respect-text {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-footer {
+    padding: 0 1rem;
+  }
+
+  .footer-center {
+    display: none;
+  }
+
+  .network-type,
+  .build-info {
+    display: none;
+  }
+
+  .status-indicators {
+    gap: 0.5rem;
+  }
+
+  .status-label {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-footer {
+    padding: 0 0.75rem;
+  }
+
+  .sync-info {
+    display: none;
+  }
+
+  .version-info {
+    align-items: center;
+  }
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .network-type {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .cultural-notice {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+}

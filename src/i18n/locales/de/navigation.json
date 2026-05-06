@@ -1,0 +1,20 @@
+{
+  "main": {
+    "home": "Startseite",
+    "search": "Suche",
+    "documents": "Dokumente",
+    "collections": "Sammlungen",
+    "browse": "Durchsuchen",
+    "recent": "Kürzlich",
+    "trending": "Trending",
+    "favorites": "Favoriten",
+    "peers": "Peers",
+    "network": "Netzwerk",
+    "settings": "Einstellungen",
+    "about": "Über",
+    "cultural": "Kulturell",
+    "traditional": "Traditionell",
+    "community": "Gemeinschaft",
+    "preservation": "Bewahrung"
+  }
+}

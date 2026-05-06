@@ -1,0 +1,7 @@
+# Issue template chooser for AlLibrary desktop app (3-devs workflow).
+# Template order in "New issue" = alphabetical by filename. Use prefixes (e.g. 01_, 02_) to reorder.
+blank_issues_enabled: true
+contact_links:
+  - name: Milestones & roadmap
+    url: https://github.com/YOUR_ORG/AlLibrary/blob/main/DocsAndResearch_AlLibrary/Milestones/detailed_milestones.md
+    about: Phase overview and milestone references for Task/Feature issues

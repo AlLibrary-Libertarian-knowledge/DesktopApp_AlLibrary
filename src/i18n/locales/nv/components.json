@@ -1,0 +1,602 @@
+{
+  "button": {
+    "save": "Yishłééh",
+    "cancel": "Níyá",
+    "submit": "Yishłééh",
+    "delete": "Yishbįįh",
+    "edit": "Yishłééh",
+    "create": "Yishłééh",
+    "update": "Yishłééh",
+    "upload": "Upload",
+    "download": "Download",
+    "share": "Share",
+    "copy": "Copy",
+    "move": "Move",
+    "loading": "Loading...",
+    "defaultAriaLabel": "Button",
+    "defaultTitle": "Click to perform action",
+    "validationFailed": "Security validation failed - please check your input",
+    "validationError": "Security validation error occurred",
+    "validationRequired": "Please complete security validation",
+    "securityValidated": "Security validated",
+    "securityValidationRequired": "Security validation required",
+    "culturalTheme": "Cultural theme: {{theme}}"
+  },
+  "modal": {
+    "close": "Close",
+    "defaultTitle": "Modal Dialog",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "closeModal": "Close modal"
+  },
+  "input": {
+    "required": "This field is required",
+    "invalid": "Invalid input",
+    "placeholder": "Enter value...",
+    "search": "Search...",
+    "filter": "Filter results..."
+  },
+  "card": {
+    "viewDetails": "View Details",
+    "showMore": "Show More",
+    "showLess": "Show Less",
+    "actions": "Actions"
+  },
+  "badge": {
+    "new": "New",
+    "updated": "Updated",
+    "featured": "Featured",
+    "trending": "Trending",
+    "popular": "Popular"
+  },
+  "loading": {
+    "general": "Loading...",
+    "documents": "Loading documents...",
+    "collections": "Loading collections...",
+    "network": "Connecting to network...",
+    "search": "Searching..."
+  },
+  "errorBoundary": {
+    "title": "Something went wrong",
+    "message": "An unexpected error occurred. Please try refreshing the page.",
+    "refresh": "Refresh Page",
+    "reportIssue": "Report Issue"
+  },
+  "culturalIndicator": {
+    "informationOnly": "Information Only",
+    "educationalPurpose": "Educational Purpose",
+    "culturalContext": "Cultural Context",
+    "learnMore": "Learn More"
+  },
+  "networkStatus": {
+    "online": "Online",
+    "offline": "Offline",
+    "connecting": "Connecting",
+    "connected": "Connected",
+    "disconnected": "Disconnected",
+    "peers": "Peers",
+    "networkHealth": "Network Health",
+    "latency": "Latency",
+    "bandwidth": "Bandwidth",
+    "uptime": "Uptime",
+    "lastSeen": "Last seen",
+    "status": "Status"
+  },
+  "statCard": {
+    "ariaLabel": "{{label}}: {{value}}. {{trendType}} trend: {{trendValue}}",
+    "trends": {
+      "positive": "Positive trend",
+      "negative": "Negative trend",
+      "neutral": "Stable trend"
+    },
+    "types": {
+      "documents": "Documents",
+      "peers": "Peers",
+      "institutions": "Institutions",
+      "health": "Health",
+      "storage": "Storage",
+      "bandwidth": "Bandwidth"
+    },
+    "accessibility": {
+      "trendUp": "Trend going up",
+      "trendDown": "Trend going down",
+      "trendStable": "Trend stable"
+    }
+  },
+  "documentCard": {
+    "title": "Document",
+    "subtitle": "Document information",
+    "actions": {
+      "view": "View",
+      "download": "Download",
+      "share": "Share",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "metadata": {
+      "size": "Size",
+      "type": "Type",
+      "date": "Date",
+      "author": "Author",
+      "language": "Language"
+    },
+    "culturalContext": {
+      "sensitivity": "Sensitivity",
+      "origin": "Origin",
+      "community": "Community",
+      "protocols": "Protocols"
+    },
+    "accessibility": {
+      "documentInfo": "Document information: {{title}}, {{size}}, {{type}}",
+      "culturalInfo": "Cultural information: {{sensitivity}} level, {{origin}} origin",
+      "actionsAvailable": "Actions available: {{actions}}"
+    }
+  },
+  "collectionCard": {
+    "title": "Collection",
+    "subtitle": "Collection information",
+    "actions": {
+      "view": "View",
+      "edit": "Edit",
+      "share": "Share",
+      "delete": "Delete"
+    },
+    "metadata": {
+      "documents": "Documents",
+      "size": "Size",
+      "created": "Created",
+      "updated": "Updated"
+    },
+    "accessibility": {
+      "collectionInfo": "Collection information: {{title}}, {{documents}} documents",
+      "actionsAvailable": "Actions available: {{actions}}"
+    }
+  },
+  "searchBar": {
+    "placeholder": "Search documents, collections...",
+    "search": "Search",
+    "clear": "Clear",
+    "filters": "Filters",
+    "advanced": "Advanced",
+    "accessibility": {
+      "searchInput": "Search input: {{placeholder}}",
+      "searchButton": "Search button",
+      "clearButton": "Clear search button"
+    }
+  },
+  "filterPanel": {
+    "title": "Filters",
+    "apply": "Apply",
+    "clear": "Clear",
+    "reset": "Reset",
+    "accessibility": {
+      "filterPanel": "Filter panel: {{title}}",
+      "filterOption": "Filter option: {{option}}"
+    }
+  },
+  "pagination": {
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page",
+    "of": "of",
+    "showing": "Showing",
+    "to": "to",
+    "of": "of",
+    "results": "results",
+    "accessibility": {
+      "pagination": "Pagination: page {{current}} of {{total}}",
+      "previousPage": "Previous page",
+      "nextPage": "Next page"
+    }
+  },
+  "breadcrumb": {
+    "home": "Home",
+    "separator": "/",
+    "accessibility": {
+      "breadcrumb": "Breadcrumb navigation: {{path}}",
+      "currentPage": "Current page: {{page}}"
+    }
+  },
+  "tooltip": {
+    "defaultTitle": "Additional information",
+    "accessibility": {
+      "tooltip": "Tooltip: {{content}}"
+    }
+  },
+  "dropdown": {
+    "select": "Select",
+    "noOptions": "No options",
+    "loading": "Loading...",
+    "accessibility": {
+      "dropdown": "Dropdown: {{label}}",
+      "option": "Option: {{option}}",
+      "selected": "Selected: {{selected}}"
+    }
+  },
+  "tabs": {
+    "accessibility": {
+      "tabList": "Tab list: {{tabs}}",
+      "tab": "Tab: {{tab}}",
+      "selectedTab": "Selected tab: {{tab}}"
+    }
+  },
+  "accordion": {
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "accessibility": {
+      "accordion": "Accordion: {{sections}} sections",
+      "section": "Section: {{title}}",
+      "expanded": "Expanded: {{title}}",
+      "collapsed": "Collapsed: {{title}}"
+    }
+  },
+  "progressBar": {
+    "progress": "Progress",
+    "complete": "Complete",
+    "accessibility": {
+      "progress": "Progress: {{percent}} percent complete",
+      "indeterminate": "Progress indeterminate"
+    }
+  },
+  "alert": {
+    "success": "Success",
+    "error": "Error",
+    "warning": "Warning",
+    "info": "Information",
+    "dismiss": "Dismiss",
+    "accessibility": {
+      "alert": "Alert: {{type}} - {{message}}",
+      "dismiss": "Dismiss alert"
+    }
+  },
+  "notification": {
+    "title": "Notification",
+    "dismiss": "Dismiss",
+    "accessibility": {
+      "notification": "Notification: {{title}} - {{message}}",
+      "dismiss": "Dismiss notification"
+    }
+  },
+  "form": {
+    "submit": "Submit",
+    "reset": "Reset",
+    "save": "Save",
+    "cancel": "Cancel",
+    "validation": {
+      "required": "Field required",
+      "invalid": "Invalid value",
+      "minLength": "Minimum {{min}} characters",
+      "maxLength": "Maximum {{max}} characters",
+      "pattern": "Invalid format",
+      "email": "Invalid email",
+      "url": "Invalid URL"
+    },
+    "accessibility": {
+      "form": "Form: {{title}}",
+      "field": "Field: {{label}}",
+      "error": "Error in field: {{field}} - {{error}}"
+    }
+  },
+  "table": {
+    "empty": "No data",
+    "loading": "Loading...",
+    "noResults": "No results",
+    "sort": {
+      "asc": "Sort ascending",
+      "desc": "Sort descending",
+      "none": "No sort"
+    },
+    "accessibility": {
+      "table": "Table: {{rows}} rows, {{columns}} columns",
+      "header": "Header: {{column}}",
+      "row": "Row {{row}}",
+      "cell": "Cell: {{value}}"
+    }
+  },
+  "list": {
+    "empty": "Empty list",
+    "loading": "Loading list...",
+    "accessibility": {
+      "list": "List: {{items}} items",
+      "item": "Item: {{item}}"
+    }
+  },
+  "grid": {
+    "empty": "Empty grid",
+    "loading": "Loading grid...",
+    "accessibility": {
+      "grid": "Grid: {{rows}} rows, {{columns}} columns",
+      "cell": "Cell: {{value}}"
+    }
+  },
+  "chart": {
+    "title": "Chart",
+    "legend": "Legend",
+    "accessibility": {
+      "chart": "Chart: {{title}}",
+      "dataPoint": "Data point: {{value}}",
+      "series": "Series: {{name}}"
+    }
+  },
+  "map": {
+    "title": "Map",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "accessibility": {
+      "map": "Map: {{title}}",
+      "location": "Location: {{location}}"
+    }
+  },
+  "fileUpload": {
+    "title": "Upload File",
+    "dragDrop": "Drag and drop files here",
+    "browse": "Browse files",
+    "uploading": "Uploading...",
+    "success": "File uploaded successfully",
+    "error": "Error uploading file",
+    "validation": {
+      "fileTooLarge": "File too large",
+      "invalidType": "Invalid file type",
+      "tooManyFiles": "Too many files"
+    },
+    "accessibility": {
+      "uploadArea": "File upload area",
+      "fileInput": "File input",
+      "uploadProgress": "Upload progress: {{percent}} percent"
+    }
+  },
+  "image": {
+    "alt": "Image",
+    "loading": "Loading image...",
+    "error": "Error loading image",
+    "accessibility": {
+      "image": "Image: {{alt}}",
+      "loading": "Loading image",
+      "error": "Error loading image"
+    }
+  },
+  "video": {
+    "play": "Play",
+    "pause": "Pause",
+    "stop": "Stop",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "fullscreen": "Fullscreen",
+    "accessibility": {
+      "video": "Video: {{title}}",
+      "controls": "Video controls",
+      "playButton": "Play button",
+      "pauseButton": "Pause button"
+    }
+  },
+  "audio": {
+    "play": "Play",
+    "pause": "Pause",
+    "stop": "Stop",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "accessibility": {
+      "audio": "Audio: {{title}}",
+      "controls": "Audio controls",
+      "playButton": "Play button",
+      "pauseButton": "Pause button"
+    }
+  },
+  "calendar": {
+    "previous": "Previous",
+    "next": "Next",
+    "today": "Today",
+    "accessibility": {
+      "calendar": "Calendar: {{month}} {{year}}",
+      "date": "Date: {{date}}",
+      "selected": "Selected date: {{date}}"
+    }
+  },
+  "timePicker": {
+    "hour": "Hour",
+    "minute": "Minute",
+    "second": "Second",
+    "am": "AM",
+    "pm": "PM",
+    "accessibility": {
+      "timePicker": "Time picker",
+      "hour": "Hour: {{hour}}",
+      "minute": "Minute: {{minute}}"
+    }
+  },
+  "colorPicker": {
+    "title": "Color Picker",
+    "accessibility": {
+      "colorPicker": "Color picker",
+      "selectedColor": "Selected color: {{color}}"
+    }
+  },
+  "slider": {
+    "min": "Minimum",
+    "max": "Maximum",
+    "value": "Value",
+    "accessibility": {
+      "slider": "Slider: {{min}} to {{max}}",
+      "currentValue": "Current value: {{value}}"
+    }
+  },
+  "switch": {
+    "on": "On",
+    "off": "Off",
+    "accessibility": {
+      "switch": "Switch: {{state}}",
+      "toggle": "Toggle switch"
+    }
+  },
+  "checkbox": {
+    "checked": "Checked",
+    "unchecked": "Unchecked",
+    "accessibility": {
+      "checkbox": "Checkbox: {{state}}",
+      "toggle": "Toggle checkbox"
+    }
+  },
+  "radio": {
+    "selected": "Selected",
+    "accessibility": {
+      "radio": "Radio button: {{label}}",
+      "select": "Select radio button"
+    }
+  },
+  "textarea": {
+    "placeholder": "Enter text here...",
+    "accessibility": {
+      "textarea": "Text area: {{placeholder}}"
+    }
+  },
+  "select": {
+    "placeholder": "Select option...",
+    "noOptions": "No options available",
+    "accessibility": {
+      "select": "Select: {{label}}",
+      "option": "Option: {{option}}"
+    }
+  },
+  "autocomplete": {
+    "placeholder": "Type to search...",
+    "noResults": "No results",
+    "accessibility": {
+      "autocomplete": "Autocomplete: {{placeholder}}",
+      "suggestion": "Suggestion: {{suggestion}}"
+    }
+  },
+  "tag": {
+    "remove": "Remove",
+    "accessibility": {
+      "tag": "Tag: {{label}}",
+      "remove": "Remove tag"
+    }
+  },
+  "chip": {
+    "remove": "Remove",
+    "accessibility": {
+      "chip": "Chip: {{label}}",
+      "remove": "Remove chip"
+    }
+  },
+  "avatar": {
+    "alt": "Avatar",
+    "accessibility": {
+      "avatar": "Avatar: {{name}}"
+    }
+  },
+  "menu": {
+    "open": "Open menu",
+    "close": "Close menu",
+    "accessibility": {
+      "menu": "Menu: {{title}}",
+      "menuItem": "Menu item: {{item}}",
+      "submenu": "Submenu: {{title}}"
+    }
+  },
+  "toolbar": {
+    "accessibility": {
+      "toolbar": "Toolbar: {{tools}} tools"
+    }
+  },
+  "sidebar": {
+    "toggle": "Toggle sidebar",
+    "accessibility": {
+      "sidebar": "Sidebar: {{sections}} sections",
+      "section": "Section: {{title}}"
+    }
+  },
+  "header": {
+    "accessibility": {
+      "header": "Header: {{title}}",
+      "navigation": "Main navigation"
+    }
+  },
+  "footer": {
+    "accessibility": {
+      "footer": "Footer: {{content}}"
+    }
+  },
+  "main": {
+    "accessibility": {
+      "main": "Main content: {{title}}"
+    }
+  },
+  "aside": {
+    "accessibility": {
+      "aside": "Secondary content: {{title}}"
+    }
+  },
+  "section": {
+    "accessibility": {
+      "section": "Section: {{title}}"
+    }
+  },
+  "article": {
+    "accessibility": {
+      "article": "Article: {{title}}"
+    }
+  },
+  "nav": {
+    "accessibility": {
+      "nav": "Navigation: {{title}}"
+    }
+  },
+  "dialog": {
+    "title": "Dialog",
+    "close": "Close",
+    "accessibility": {
+      "dialog": "Dialog: {{title}}",
+      "close": "Close dialog"
+    }
+  },
+  "drawer": {
+    "title": "Drawer",
+    "close": "Close",
+    "accessibility": {
+      "drawer": "Drawer: {{title}}",
+      "close": "Close drawer"
+    }
+  },
+  "popover": {
+    "close": "Close",
+    "accessibility": {
+      "popover": "Popover: {{title}}",
+      "close": "Close popover"
+    }
+  },
+  "tooltip": {
+    "accessibility": {
+      "tooltip": "Tooltip: {{content}}"
+    }
+  },
+  "toast": {
+    "close": "Close",
+    "accessibility": {
+      "toast": "Toast: {{message}}",
+      "close": "Close toast"
+    }
+  },
+  "skeleton": {
+    "loading": "Loading...",
+    "accessibility": {
+      "skeleton": "Loading skeleton"
+    }
+  },
+  "spinner": {
+    "loading": "Loading...",
+    "accessibility": {
+      "spinner": "Loading spinner"
+    }
+  },
+  "divider": {
+    "accessibility": {
+      "divider": "Separator"
+    }
+  },
+  "separator": {
+    "accessibility": {
+      "separator": "Separator"
+    }
+  }
+}

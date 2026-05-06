@@ -1,0 +1,1328 @@
+/**
+ * SearchNetworkPage Enhanced Styles
+ *
+ * Redesigned to match HomePage and DocumentManagement sophisticated design patterns
+ * with glassmorphism effects, neural network backgrounds, and professional visual appeal.
+ */
+
+/* === COHERENT SPACING SYSTEM === */
+:root {
+  --section-spacing: 2rem;
+  --section-spacing-sm: 1.5rem;
+  --section-spacing-xs: 1rem;
+  --element-spacing: 1rem;
+  --element-spacing-sm: 0.75rem;
+}
+
+/* ==========================================================================
+   Layout Foundation with Neural Network Background
+   ========================================================================== */
+
+.searchNetworkPage,
+.search-network-page {
+  min-height: 100vh;
+  padding: var(--space-lg);
+  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+  position: relative;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: var(--section-spacing);
+}
+
+/* Neural network pattern background */
+.searchNetworkPage::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.04) 0%, transparent 70%),
+    radial-gradient(circle at 80% 70%, rgba(168, 85, 247, 0.04) 0%, transparent 70%),
+    radial-gradient(circle at 40% 80%, rgba(34, 197, 94, 0.03) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Animated geometric grid */
+.searchNetworkPage::after {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.02) 1px, transparent 1px);
+  background-size: 100px 100px;
+  animation: grid-flow 20s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes grid-flow {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(100px, 100px);
+  }
+}
+
+/* ==========================================================================
+   Enhanced Page Header - Matching HomePage Pattern
+   ========================================================================== */
+
+.pageHeader,
+.page-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2rem 2.5rem;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(
+    135deg,
+    rgba(30, 41, 59, 0.95) 0%,
+    rgba(51, 65, 85, 0.9) 50%,
+    rgba(30, 41, 59, 0.95) 100%
+  );
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 24px;
+  backdrop-filter: blur(20px);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    0 2px 16px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.8s cubic-bezier(0.25, 0.1, 0.25, 1);
+  z-index: 2;
+}
+
+.pageHeader::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.1) 0%, transparent 70%),
+    radial-gradient(circle at 80% 20%, rgba(168, 85, 247, 0.1) 0%, transparent 70%),
+    radial-gradient(circle at 40% 80%, rgba(34, 197, 94, 0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.pageHeader::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.03), transparent);
+  animation: header-shimmer 12s infinite;
+  pointer-events: none;
+}
+
+@keyframes header-shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+.pageHeader:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.15),
+    0 4px 20px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  border-color: rgba(148, 163, 184, 0.15);
+}
+
+.headerContent,
+.header-content {
+  text-align: left;
+  position: relative;
+  z-index: 1;
+}
+
+.pageTitle,
+.page-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 30%, #cbd5e1 60%, #94a3b8 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.pageSubtitle,
+.page-subtitle {
+  font-size: 1.1rem;
+  color: rgba(203, 213, 225, 0.8);
+  margin: 0;
+  max-width: 600px;
+  line-height: 1.6;
+  font-weight: 400;
+  letter-spacing: 0.015em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 1;
+}
+
+.networkStatusEnhanced,
+.network-status-enhanced {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.4) 0%, rgba(30, 41, 59, 0.3) 100%);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+  min-width: 320px;
+  max-width: 400px;
+}
+
+/* Tor circuit banner inside header */
+.tor-banner {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  color: rgba(203, 213, 225, 0.9);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(168, 85, 247, 0.12) 100%);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  padding: 0.5rem 0.75rem;
+  border-radius: 10px;
+  display: inline-block;
+}
+
+/* Compact Tor pill next to network status */
+.tor-pill {
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.5) 0%, rgba(30, 41, 59, 0.45) 100%);
+  color: rgba(226, 232, 240, 0.9);
+}
+
+.tor-pill[data-on="1"] {
+  border-color: rgba(34, 197, 94, 0.4);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(34, 197, 94, 0.25) 100%);
+  color: rgba(240, 253, 244, 0.95);
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.15) inset;
+}
+
+.networkStatusMain {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.statusRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.statusText {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: 0.025em;
+}
+
+.statusIndicator {
+  position: relative;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(34, 197, 94, 0.8) 0%, rgba(34, 197, 94, 0.6) 70%);
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.3);
+}
+
+.statusIndicator.online {
+  background: radial-gradient(circle, rgba(34, 197, 94, 0.9) 0%, rgba(34, 197, 94, 0.7) 70%);
+  box-shadow:
+    0 0 0 2px rgba(34, 197, 94, 0.4),
+    0 0 12px rgba(34, 197, 94, 0.3);
+}
+
+.statusPulse {
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: 50%;
+  background: rgba(34, 197, 94, 0.4);
+  animation: status-pulse 2s ease-in-out infinite;
+}
+
+@keyframes status-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+.healthRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.networkHealth {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.healthBar {
+  flex: 1;
+  height: 6px;
+  background: rgba(148, 163, 184, 0.2);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+
+.healthFill {
+  height: 100%;
+  background: linear-gradient(90deg, rgba(34, 197, 94, 0.8) 0%, rgba(34, 197, 94, 1) 100%);
+  border-radius: 3px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.healthFill::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  animation: health-shimmer 2s infinite;
+}
+
+@keyframes health-shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+.healthText {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(34, 197, 94, 0.9);
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   Enhanced Search Controls - Professional Interface
+   ========================================================================== */
+
+.searchControls {
+  position: relative;
+  z-index: 2;
+  padding: 2rem 2.5rem;
+  background: linear-gradient(
+    135deg,
+    rgba(15, 23, 42, 0.95) 0%,
+    rgba(30, 41, 59, 0.9) 25%,
+    rgba(51, 65, 85, 0.85) 50%,
+    rgba(30, 41, 59, 0.9) 75%,
+    rgba(15, 23, 42, 0.95) 100%
+  );
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 20px;
+  backdrop-filter: blur(20px);
+  transition: all 0.6s cubic-bezier(0.25, 0.1, 0.25, 1);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+.searchControls::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    radial-gradient(circle at 20% 50%, rgba(168, 85, 247, 0.08) 0%, transparent 70%),
+    radial-gradient(circle at 80% 20%, rgba(124, 58, 237, 0.06) 0%, transparent 70%),
+    radial-gradient(circle at 40% 80%, rgba(147, 51, 234, 0.05) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.searchControls::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.03), transparent);
+  animation: header-shimmer 12s infinite;
+  pointer-events: none;
+}
+
+.searchControls:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.15),
+    0 4px 20px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  border-color: rgba(124, 58, 237, 0.3);
+}
+
+.searchBar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.searchInputContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(148, 163, 184, 0.1);
+  border-radius: 16px;
+  padding: 1rem 1.5rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(12px);
+}
+
+.searchInputContainer:focus-within {
+  border-color: rgba(124, 58, 237, 0.6);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 0 0 4px rgba(124, 58, 237, 0.1),
+    0 8px 32px rgba(124, 58, 237, 0.15);
+  transform: translateY(-1px);
+}
+
+.searchInputContainer svg {
+  color: rgba(124, 58, 237, 0.8);
+  margin-right: 1rem;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.searchInput {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.95);
+  outline: none;
+  padding: 0.5rem 0;
+  font-family: var(--font-family-sans);
+}
+
+.searchInput::placeholder {
+  color: rgba(203, 213, 225, 0.6);
+  font-weight: 400;
+}
+
+.searchLoading {
+  margin-left: 1rem;
+  color: rgba(124, 58, 237, 0.8);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.searchActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.searchActions button {
+  min-width: 160px;
+  height: 48px;
+  font-weight: 600;
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+  letter-spacing: 0.025em;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.8) 0%, rgba(79, 70, 229, 0.8) 100%);
+  color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
+}
+
+.searchActions button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.searchActions button:hover::before {
+  left: 100%;
+}
+
+.searchActions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.searchActions button:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(124, 58, 237, 0.4);
+}
+
+.searchActions button:not(:disabled):active {
+  transform: translateY(0);
+}
+
+/* ==========================================================================
+   Search Options & Filters - Enhanced Professional Design
+   ========================================================================== */
+
+.searchOptions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.4) 0%, rgba(30, 41, 59, 0.3) 100%);
+  backdrop-filter: blur(15px);
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 2;
+}
+
+.searchOptionsLeft,
+.searchOptionsRight {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.viewModeToggle {
+  display: flex;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 4px;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.viewModeToggle button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: rgba(148, 163, 184, 0.7);
+  overflow: hidden;
+  min-width: 48px;
+}
+
+.viewModeToggle button:hover {
+  color: rgba(255, 255, 255, 0.8);
+  transform: scale(1.05);
+}
+
+.viewModeToggle button.active {
+  color: rgba(255, 255, 255, 0.95);
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.3) 0%, rgba(79, 70, 229, 0.2) 100%);
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
+}
+
+.sortControls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.sortControls label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(203, 213, 225, 0.8);
+}
+
+.sortControls select {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.sortControls select:hover {
+  border-color: rgba(124, 58, 237, 0.4);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.sortControls select:focus {
+  border-color: rgba(124, 58, 237, 0.6);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+/* ==========================================================================
+   Results Container - Professional Card Design
+   ========================================================================== */
+
+.resultsContainer {
+  position: relative;
+  z-index: 2;
+  min-height: 400px;
+}
+
+.resultsGrid {
+  display: grid;
+  gap: 1.5rem;
+  padding: 1rem 0;
+}
+
+.resultsGrid.grid {
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+}
+
+.resultsGrid.list {
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.resultCard {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(
+    135deg,
+    rgba(15, 23, 42, 0.95) 0%,
+    rgba(30, 41, 59, 0.9) 25%,
+    rgba(51, 65, 85, 0.85) 50%,
+    rgba(30, 41, 59, 0.9) 75%,
+    rgba(15, 23, 42, 0.95) 100%
+  );
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 16px;
+  backdrop-filter: blur(20px);
+  transition: all 0.6s cubic-bezier(0.25, 0.1, 0.25, 1);
+  cursor: pointer;
+}
+
+.resultCard::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    radial-gradient(circle at 20% 50%, rgba(168, 85, 247, 0.05) 0%, transparent 70%),
+    radial-gradient(circle at 80% 20%, rgba(124, 58, 237, 0.03) 0%, transparent 70%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.resultCard:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.15),
+    0 4px 20px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  border-color: rgba(124, 58, 237, 0.3);
+}
+
+.resultCard:hover::before {
+  opacity: 1;
+}
+
+.resultHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem 0.5rem;
+}
+
+.resultTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.resultBadges {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.resultContent {
+  padding: 0 1.25rem 1.25rem;
+}
+
+.resultDescription {
+  font-size: 0.875rem;
+  color: rgba(203, 213, 225, 0.8);
+  margin: 0 0 1rem 0;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.resultMeta {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  font-size: 0.75rem;
+  color: rgba(148, 163, 184, 0.8);
+}
+
+.resultActions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.resultActions button {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.resultActions button:hover {
+  background: rgba(124, 58, 237, 0.2);
+  border-color: rgba(124, 58, 237, 0.4);
+  color: rgba(255, 255, 255, 0.95);
+}
+
+/* ==========================================================================
+   Enhanced Empty State
+   ========================================================================== */
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  min-height: 400px;
+  position: relative;
+}
+
+.emptyIcon {
+  font-size: 4rem;
+  color: rgba(148, 163, 184, 0.4);
+  margin-bottom: 1.5rem;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.emptyTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 0 1rem 0;
+}
+
+.emptyDescription {
+  font-size: 1rem;
+  color: rgba(203, 213, 225, 0.6);
+  margin: 0;
+  max-width: 400px;
+  line-height: 1.6;
+}
+
+/* ==========================================================================
+   Cultural Resources Section - Enhanced Design
+   ========================================================================== */
+
+.culturalResources {
+  position: relative;
+  z-index: 2;
+  padding: 2rem;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.4) 0%, rgba(30, 41, 59, 0.3) 100%);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 16px;
+  backdrop-filter: blur(15px);
+  margin-bottom: 1.5rem;
+}
+
+.culturalResourcesHeader {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.culturalResourcesTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.95);
+  margin: 0;
+  position: relative;
+  display: inline-block;
+}
+
+.culturalResourcesTitle::before {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, rgba(124, 58, 237, 0.8) 0%, rgba(79, 70, 229, 0.8) 100%);
+  border-radius: 2px;
+}
+
+.resourceGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.resourceCard {
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.resourceCard:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(124, 58, 237, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(124, 58, 237, 0.15);
+}
+
+/* ==========================================================================
+   Content Tabs - Enhanced Design
+   ========================================================================== */
+
+.contentTabs {
+  position: relative;
+  z-index: 2;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.4) 0%, rgba(30, 41, 59, 0.3) 100%);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 16px;
+  backdrop-filter: blur(15px);
+  overflow: hidden;
+}
+
+.tabButtons {
+  display: flex;
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.tabButtons button {
+  flex: 1;
+  padding: 1rem 1.5rem;
+  background: transparent;
+  border: none;
+  color: rgba(203, 213, 225, 0.7);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.tabButtons button:hover {
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.tabButtons button.active {
+  color: rgba(255, 255, 255, 0.95);
+  background: rgba(124, 58, 237, 0.1);
+}
+
+.tabButtons button.active::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(124, 58, 237, 0.8) 0%, rgba(79, 70, 229, 0.8) 100%);
+}
+
+/* ========================================================================
+   Results Section & Layout not previously styled
+   ======================================================================== */
+.dashboard-content {
+  position: relative;
+  z-index: 1;
+  display: block;
+}
+
+.results-section {
+  margin-top: 1.25rem;
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.45) 0%, rgba(30, 41, 59, 0.35) 100%);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 18px;
+  backdrop-filter: blur(16px);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+.section-header h2 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: rgba(241, 245, 249, 0.95);
+}
+
+.result-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.search-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 0.5rem;
+  color: rgba(203, 213, 225, 0.9);
+}
+
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem 1rem;
+  color: rgba(226, 232, 240, 0.92);
+}
+
+/* ==========================================================================
+   Responsive Design - Mobile-First Approach
+   ========================================================================== */
+
+@media (max-width: 1024px) {
+  .pageHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+    text-align: center;
+  }
+
+  .networkStatusEnhanced {
+    align-items: center;
+    width: 100%;
+    max-width: none;
+  }
+
+  .searchControls {
+    padding: 1.5rem;
+  }
+
+  .resultsGrid.grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .searchNetworkPage {
+    padding: var(--space-md);
+  }
+
+  .pageHeader {
+    padding: 1.5rem;
+  }
+
+  .pageTitle {
+    font-size: 2rem;
+  }
+
+  .pageSubtitle {
+    font-size: 1rem;
+  }
+
+  .searchControls {
+    padding: 1.25rem;
+  }
+
+  .searchOptions {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .searchOptionsLeft,
+  .searchOptionsRight {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .viewModeToggle {
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .resultsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .culturalResources {
+    padding: 1.5rem;
+  }
+
+  .resourceGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .tabButtons {
+    flex-direction: column;
+  }
+
+  .tabButtons button {
+    padding: 0.75rem 1rem;
+    text-align: left;
+  }
+}
+
+@media (max-width: 480px) {
+  .searchNetworkPage {
+    padding: var(--space-sm);
+  }
+
+  .pageHeader {
+    padding: 1rem;
+  }
+
+  .pageTitle {
+    font-size: 1.75rem;
+  }
+
+  .searchControls {
+    padding: 1rem;
+  }
+
+  .searchInputContainer {
+    padding: 0.75rem 1rem;
+  }
+
+  .searchInput {
+    font-size: 1rem;
+  }
+
+  .searchActions button {
+    min-width: 120px;
+    width: 100%;
+  }
+
+  .emptyState {
+    padding: 2rem 1rem;
+  }
+
+  .emptyIcon {
+    font-size: 3rem;
+  }
+
+  .networkStatusEnhanced {
+    min-width: auto;
+    padding: 0.75rem 1rem;
+  }
+
+  .networkStatusMain {
+    gap: 0.5rem;
+  }
+
+  .statusRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .healthRow {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: stretch;
+  }
+}
+
+/* ==========================================================================
+   Accessibility & Theme Support
+   ========================================================================== */
+
+@media (prefers-contrast: high) {
+  .pageHeader {
+    border: 2px solid rgba(148, 163, 184, 0.3);
+  }
+
+  .searchControls {
+    border: 2px solid rgba(148, 163, 184, 0.3);
+  }
+
+  .resultCard {
+    border: 2px solid rgba(148, 163, 184, 0.3);
+  }
+
+  .resultCard:hover {
+    border-color: rgba(124, 58, 237, 0.6);
+  }
+
+  .searchInputContainer:focus-within {
+    border-width: 3px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .searchNetworkPage::before,
+  .searchNetworkPage::after {
+    animation: none;
+  }
+
+  .emptyIcon {
+    animation: none;
+  }
+
+  .searchLoading {
+    animation: none;
+  }
+
+  .pageHeader::after,
+  .searchControls::after,
+  .healthFill::after {
+    animation: none;
+  }
+
+  .statusPulse {
+    animation: none;
+  }
+
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* Dark Mode Adjustments */
+@media (prefers-color-scheme: dark) {
+  .searchInputContainer {
+    background: rgba(0, 0, 0, 0.2);
+  }
+
+  .searchOptions {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(15, 23, 42, 0.3) 100%);
+  }
+
+  .culturalResources {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(15, 23, 42, 0.3) 100%);
+  }
+
+  .contentTabs {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(15, 23, 42, 0.3) 100%);
+  }
+}
+
+/* Cultural Theme Support */
+.searchNetworkPage[data-cultural-theme="traditional"] {
+  --color-primary: rgba(34, 197, 94, 0.8);
+  --color-accent: rgba(168, 85, 247, 0.8);
+}
+
+.searchNetworkPage[data-cultural-theme="traditional"] .pageHeader::before {
+  background:
+    radial-gradient(circle at 20% 50%, rgba(34, 197, 94, 0.1) 0%, transparent 70%),
+    radial-gradient(circle at 80% 20%, rgba(168, 85, 247, 0.1) 0%, transparent 70%);
+}
+
+.searchNetworkPage[data-cultural-theme="traditional"] .searchControls::before {
+  background:
+    radial-gradient(circle at 20% 50%, rgba(34, 197, 94, 0.08) 0%, transparent 70%),
+    radial-gradient(circle at 80% 20%, rgba(168, 85, 247, 0.06) 0%, transparent 70%);
+}
+
+/* Print Styles */
+@media print {
+  .searchNetworkPage {
+    background: white !important;
+    color: black !important;
+  }
+
+  .searchNetworkPage::before,
+  .searchNetworkPage::after {
+    display: none !important;
+  }
+
+  .searchControls {
+    background: white !important;
+    border: 1px solid #ccc !important;
+    box-shadow: none !important;
+  }
+
+  .pageHeader {
+    background: white !important;
+    border: 1px solid #ccc !important;
+    box-shadow: none !important;
+  }
+
+  .searchActions {
+    display: none !important;
+  }
+
+  .tabButtons {
+    display: none !important;
+  }
+
+  .resultCard {
+    background: white !important;
+    border: 1px solid #ccc !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+  }
+}
+
+/* Smooth filter panel expand/collapse */
+.filtersPanel {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition:
+    max-height 400ms cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 300ms ease,
+    transform 300ms ease;
+}
+.filtersPanel[data-open="1"] {
+  max-height: 260px;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Skeletons for results */
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+@media (min-width: 768px) {
+  .results-grid,
+  .skeleton-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1024px) {
+  .results-grid,
+  .skeleton-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.skeleton-card {
+  height: 180px;
+  border-radius: 14px;
+  background: linear-gradient(
+    90deg,
+    rgba(148, 163, 184, 0.08),
+    rgba(148, 163, 184, 0.14),
+    rgba(148, 163, 184, 0.08)
+  );
+  background-size: 300% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+}
+@keyframes shimmer {
+  0% {
+    background-position: 0% 0;
+  }
+  100% {
+    background-position: 100% 0;
+  }
+}

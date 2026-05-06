@@ -1,0 +1,23 @@
+#!/usr/bin/env sh
+
+# -----------------------------
+# AlLibrary — post-checkout: refresh deps hint + clear Vite cache on branch switch
+# -----------------------------
+
+PRE_HEAD=$1
+NEW_HEAD=$2
+FLAG=$3
+
+if [ "$FLAG" = "1" ]; then
+  echo "🔄 Branch/checkout updated — clearing frontend caches..."
+  rm -rf dist build .vite 2>/dev/null || true
+
+  if git diff --name-only "$PRE_HEAD" "$NEW_HEAD" 2>/dev/null | grep -qE '(pnpm-lock\.yaml|package\.json)'; then
+    echo "📦 Lockfile or package.json changed — installing dependencies..."
+    if command -v pnpm >/dev/null 2>&1; then
+      pnpm install
+    else
+      npm install
+    fi
+  fi
+fi

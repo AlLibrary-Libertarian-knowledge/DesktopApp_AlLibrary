@@ -1,0 +1,602 @@
+{
+  "button": {
+    "save": "Tiaki",
+    "cancel": "Whakakore",
+    "submit": "Tuku",
+    "delete": "Muku",
+    "edit": "Whakatika",
+    "create": "Hanga",
+    "update": "Whakahou",
+    "upload": "Tuku",
+    "download": "Tikiake",
+    "share": "Tiri",
+    "copy": "Kape",
+    "move": "Neke",
+    "loading": "Tāuta ana...",
+    "defaultAriaLabel": "Pātene",
+    "defaultTitle": "Pāwhiri ki te mahi",
+    "validationFailed": "Kua rahua te whakamana haumaru - tirohia tō urunga",
+    "validationError": "Kua puta he hapa whakamana haumaru",
+    "validationRequired": "Whakamana haumaru e hiahiatia ana",
+    "securityValidated": "Kua whakamana haumaru",
+    "securityValidationRequired": "Whakamana haumaru e hiahiatia ana",
+    "culturalTheme": "Kaupapa ahurea: {{theme}}"
+  },
+  "modal": {
+    "close": "Katia",
+    "defaultTitle": "Kōrero Pouaka",
+    "confirm": "Whakapono",
+    "cancel": "Whakakore",
+    "closeModal": "Katia pouaka"
+  },
+  "input": {
+    "required": "E hiahiatia ana tēnei wāhi",
+    "invalid": "Urunga kāore e tika",
+    "placeholder": "Kuhua te uara...",
+    "search": "Rapu...",
+    "filter": "Tātari hua..."
+  },
+  "card": {
+    "viewDetails": "Tirohia ngā Taipitopito",
+    "showMore": "Whakaatuhia te Nuinga",
+    "showLess": "Whakaatuhia te Iti",
+    "actions": "Mahi"
+  },
+  "badge": {
+    "new": "Hou",
+    "updated": "Kua Whakahou",
+    "featured": "Whakatairanga",
+    "trending": "Aronga",
+    "popular": "Rongonui"
+  },
+  "loading": {
+    "general": "Tāuta ana...",
+    "documents": "Tāuta ana ngā tuhinga...",
+    "collections": "Tāuta ana ngā kohinga...",
+    "network": "Hono ana ki te ipurangi...",
+    "search": "Rapu ana..."
+  },
+  "errorBoundary": {
+    "title": "Kua puta he mea hē",
+    "message": "Kua puta he hapa kāore i tūmanakohia. Nāwai te whakahou i te whārangi.",
+    "refresh": "Whakahou Whārangi",
+    "reportIssue": "Pūrongo Take"
+  },
+  "culturalIndicator": {
+    "informationOnly": "Mōhiohio Anake",
+    "educationalPurpose": "Kaupapa Mātauranga",
+    "culturalContext": "Horopaki Ahurea",
+    "learnMore": "Ako Ake"
+  },
+  "networkStatus": {
+    "online": "I runga ipurangi",
+    "offline": "Kāore i runga ipurangi",
+    "connecting": "Hono ana",
+    "connected": "Kua hono",
+    "disconnected": "Kāore i hono",
+    "peers": "Hoa",
+    "networkHealth": "Hauora Ipurangi",
+    "latency": "Roa",
+    "bandwidth": "Te Whānui",
+    "uptime": "Wā Mahi",
+    "lastSeen": "Kitenga whakamutunga",
+    "status": "Tūnga"
+  },
+  "statCard": {
+    "ariaLabel": "{{label}}: {{value}}. {{trendType}} aronga: {{trendValue}}",
+    "trends": {
+      "positive": "Aronga pai",
+      "negative": "Aronga kino",
+      "neutral": "Aronga pūmau"
+    },
+    "types": {
+      "documents": "Tuhinga",
+      "peers": "Hoa",
+      "institutions": "Whare",
+      "health": "Hauora",
+      "storage": "Pūrua",
+      "bandwidth": "Te Whānui"
+    },
+    "accessibility": {
+      "trendUp": "Aronga e piki ana",
+      "trendDown": "Aronga e heke ana",
+      "trendStable": "Aronga pūmau"
+    }
+  },
+  "documentCard": {
+    "title": "Tuhinga",
+    "subtitle": "Mōhiohio tuhinga",
+    "actions": {
+      "view": "Tiro",
+      "download": "Tikiake",
+      "share": "Tiri",
+      "edit": "Whakatika",
+      "delete": "Muku"
+    },
+    "metadata": {
+      "size": "Rahi",
+      "type": "Momo",
+      "date": "Rā",
+      "author": "Kaituhi",
+      "language": "Reo"
+    },
+    "culturalContext": {
+      "sensitivity": "Māharahara",
+      "origin": "Take",
+      "community": "Hapori",
+      "protocols": "Tikanga"
+    },
+    "accessibility": {
+      "documentInfo": "Mōhiohio tuhinga: {{title}}, {{size}}, {{type}}",
+      "culturalInfo": "Mōhiohio ahurea: {{sensitivity}} taumata, {{origin}} take",
+      "actionsAvailable": "Mahi wātea: {{actions}}"
+    }
+  },
+  "collectionCard": {
+    "title": "Kohinga",
+    "subtitle": "Mōhiohio kohinga",
+    "actions": {
+      "view": "Tiro",
+      "edit": "Whakatika",
+      "share": "Tiri",
+      "delete": "Muku"
+    },
+    "metadata": {
+      "documents": "Tuhinga",
+      "size": "Rahi",
+      "created": "I hangaia",
+      "updated": "Kua whakahou"
+    },
+    "accessibility": {
+      "collectionInfo": "Mōhiohio kohinga: {{title}}, {{documents}} tuhinga",
+      "actionsAvailable": "Mahi wātea: {{actions}}"
+    }
+  },
+  "searchBar": {
+    "placeholder": "Rapu tuhinga, kohinga...",
+    "search": "Rapu",
+    "clear": "Mā",
+    "filters": "Tātari",
+    "advanced": "Matatau",
+    "accessibility": {
+      "searchInput": "Urunga rapu: {{placeholder}}",
+      "searchButton": "Pātene rapu",
+      "clearButton": "Pātene mā rapu"
+    }
+  },
+  "filterPanel": {
+    "title": "Tātari",
+    "apply": "Whakamahi",
+    "clear": "Mā",
+    "reset": "Whakahoki",
+    "accessibility": {
+      "filterPanel": "Papa tātari: {{title}}",
+      "filterOption": "Kōwhiringa tātari: {{option}}"
+    }
+  },
+  "pagination": {
+    "previous": "O mua",
+    "next": "Panuku",
+    "page": "Whārangi",
+    "of": "o",
+    "showing": "E whakaatu ana",
+    "to": "ki",
+    "of": "o",
+    "results": "hua",
+    "accessibility": {
+      "pagination": "Whārangi: whārangi {{current}} o {{total}}",
+      "previousPage": "Whārangi o mua",
+      "nextPage": "Whārangi panuku"
+    }
+  },
+  "breadcrumb": {
+    "home": "Kāinga",
+    "separator": "/",
+    "accessibility": {
+      "breadcrumb": "Haere breadcrumb: {{path}}",
+      "currentPage": "Whārangi o nāianei: {{page}}"
+    }
+  },
+  "tooltip": {
+    "defaultTitle": "Mōhiohio taapiri",
+    "accessibility": {
+      "tooltip": "Kupu ārahi: {{content}}"
+    }
+  },
+  "dropdown": {
+    "select": "Tīpako",
+    "noOptions": "Kāore he kōwhiringa",
+    "loading": "Tāuta ana...",
+    "accessibility": {
+      "dropdown": "Dropdown: {{label}}",
+      "option": "Kōwhiringa: {{option}}",
+      "selected": "Kua tīpakohia: {{selected}}"
+    }
+  },
+  "tabs": {
+    "accessibility": {
+      "tabList": "Rārangi tapanga: {{tabs}}",
+      "tab": "Tapanga: {{tab}}",
+      "selectedTab": "Tapanga kua tīpakohia: {{tab}}"
+    }
+  },
+  "accordion": {
+    "expand": "Whakawhānui",
+    "collapse": "Whakaiti",
+    "accessibility": {
+      "accordion": "Kōpae: {{sections}} wāhanga",
+      "section": "Wāhanga: {{title}}",
+      "expanded": "Kua whakawhānui: {{title}}",
+      "collapsed": "Kua whakaiti: {{title}}"
+    }
+  },
+  "progressBar": {
+    "progress": "Haere",
+    "complete": "Kua oti",
+    "accessibility": {
+      "progress": "Haere: {{percent}} ōrau kua oti",
+      "indeterminate": "Haere kāore e mōhiotia"
+    }
+  },
+  "alert": {
+    "success": "Angitu",
+    "error": "Hapa",
+    "warning": "Whakatūpato",
+    "info": "Mōhiohio",
+    "dismiss": "Whakakore",
+    "accessibility": {
+      "alert": "Whakatūpato: {{type}} - {{message}}",
+      "dismiss": "Whakakore whakatūpato"
+    }
+  },
+  "notification": {
+    "title": "Pānui",
+    "dismiss": "Whakakore",
+    "accessibility": {
+      "notification": "Pānui: {{title}} - {{message}}",
+      "dismiss": "Whakakore pānui"
+    }
+  },
+  "form": {
+    "submit": "Tuku",
+    "reset": "Whakahoki",
+    "save": "Tiaki",
+    "cancel": "Whakakore",
+    "validation": {
+      "required": "Wāhi e hiahiatia ana",
+      "invalid": "Uara kāore e tika",
+      "minLength": "Iti rawa {{min}} pū",
+      "maxLength": "Nui rawa {{max}} pū",
+      "pattern": "Hanga kāore e tika",
+      "email": "Īmēra kāore e tika",
+      "url": "URL kāore e tika"
+    },
+    "accessibility": {
+      "form": "Puka: {{title}}",
+      "field": "Wāhi: {{label}}",
+      "error": "Hapa i te wāhi: {{field}} - {{error}}"
+    }
+  },
+  "table": {
+    "empty": "Kāore he raraunga",
+    "loading": "Tāuta ana...",
+    "noResults": "Kāore he hua",
+    "sort": {
+      "asc": "Rārangi piki",
+      "desc": "Rārangi heke",
+      "none": "Kāore e rārangi"
+    },
+    "accessibility": {
+      "table": "Ripanga: {{rows}} rārangi, {{columns}} pou",
+      "header": "Upoko: {{column}}",
+      "row": "Rārangi {{row}}",
+      "cell": "Pouaka: {{value}}"
+    }
+  },
+  "list": {
+    "empty": "Rārangi kāore",
+    "loading": "Tāuta ana rārangi...",
+    "accessibility": {
+      "list": "Rārangi: {{items}} mea",
+      "item": "Mea: {{item}}"
+    }
+  },
+  "grid": {
+    "empty": "Rārangi kāore",
+    "loading": "Tāuta ana rārangi...",
+    "accessibility": {
+      "grid": "Rārangi: {{rows}} rārangi, {{columns}} pou",
+      "cell": "Pouaka: {{value}}"
+    }
+  },
+  "chart": {
+    "title": "Kauwhata",
+    "legend": "Kōrero",
+    "accessibility": {
+      "chart": "Kauwhata: {{title}}",
+      "dataPoint": "Pouaka raraunga: {{value}}",
+      "series": "Rārangi: {{name}}"
+    }
+  },
+  "map": {
+    "title": "Mahere",
+    "zoomIn": "Whakarahi",
+    "zoomOut": "Whakaiti",
+    "accessibility": {
+      "map": "Mahere: {{title}}",
+      "location": "Wāhi: {{location}}"
+    }
+  },
+  "fileUpload": {
+    "title": "Tuku Kōnae",
+    "dragDrop": "Tō mai me te tuku ngā kōnae ki konei",
+    "browse": "Tirotiro kōnae",
+    "uploading": "Tuku ana...",
+    "success": "Kua tuku pai te kōnae",
+    "error": "Hapa i te tuku kōnae",
+    "validation": {
+      "fileTooLarge": "Kōnae nui rawa",
+      "invalidType": "Momo kōnae kāore e tika",
+      "tooManyFiles": "Nui rawa ngā kōnae"
+    },
+    "accessibility": {
+      "uploadArea": "Wāhi tuku kōnae",
+      "fileInput": "Urunga kōnae",
+      "uploadProgress": "Haere tuku: {{percent}} ōrau"
+    }
+  },
+  "image": {
+    "alt": "Whakaahua",
+    "loading": "Tāuta ana whakaahua...",
+    "error": "Hapa i te tāuta whakaahua",
+    "accessibility": {
+      "image": "Whakaahua: {{alt}}",
+      "loading": "Tāuta ana whakaahua",
+      "error": "Hapa i te tāuta whakaahua"
+    }
+  },
+  "video": {
+    "play": "Tākaro",
+    "pause": "Tūturi",
+    "stop": "Mutu",
+    "mute": "Whakamū",
+    "unmute": "Whakawā",
+    "fullscreen": "Mata katoa",
+    "accessibility": {
+      "video": "Ataata: {{title}}",
+      "controls": "Whakahaere ataata",
+      "playButton": "Pātene tākaro",
+      "pauseButton": "Pātene tūturi"
+    }
+  },
+  "audio": {
+    "play": "Tākaro",
+    "pause": "Tūturi",
+    "stop": "Mutu",
+    "mute": "Whakamū",
+    "unmute": "Whakawā",
+    "accessibility": {
+      "audio": "Oropuare: {{title}}",
+      "controls": "Whakahaere oropuare",
+      "playButton": "Pātene tākaro",
+      "pauseButton": "Pātene tūturi"
+    }
+  },
+  "calendar": {
+    "previous": "O mua",
+    "next": "Panuku",
+    "today": "Āianei",
+    "accessibility": {
+      "calendar": "Maramataka: {{month}} {{year}}",
+      "date": "Rā: {{date}}",
+      "selected": "Rā kua tīpakohia: {{date}}"
+    }
+  },
+  "timePicker": {
+    "hour": "Hāora",
+    "minute": "Meneti",
+    "second": "Hēkona",
+    "am": "AM",
+    "pm": "PM",
+    "accessibility": {
+      "timePicker": "Tīpako wā",
+      "hour": "Hāora: {{hour}}",
+      "minute": "Meneti: {{minute}}"
+    }
+  },
+  "colorPicker": {
+    "title": "Tīpako Tae",
+    "accessibility": {
+      "colorPicker": "Tīpako tae",
+      "selectedColor": "Tae kua tīpakohia: {{color}}"
+    }
+  },
+  "slider": {
+    "min": "Iti rawa",
+    "max": "Nui rawa",
+    "value": "Uara",
+    "accessibility": {
+      "slider": "Slider: {{min}} ki {{max}}",
+      "currentValue": "Uara o nāianei: {{value}}"
+    }
+  },
+  "switch": {
+    "on": "Kua wā",
+    "off": "Kua mutu",
+    "accessibility": {
+      "switch": "Switch: {{state}}",
+      "toggle": "Huri switch"
+    }
+  },
+  "checkbox": {
+    "checked": "Kua tīpakohia",
+    "unchecked": "Kāore i tīpakohia",
+    "accessibility": {
+      "checkbox": "Checkbox: {{state}}",
+      "toggle": "Huri checkbox"
+    }
+  },
+  "radio": {
+    "selected": "Kua tīpakohia",
+    "accessibility": {
+      "radio": "Pātene reitiō: {{label}}",
+      "select": "Tīpako pātene reitiō"
+    }
+  },
+  "textarea": {
+    "placeholder": "Tuhia te kupu ki konei...",
+    "accessibility": {
+      "textarea": "Wāhi kupu: {{placeholder}}"
+    }
+  },
+  "select": {
+    "placeholder": "Tīpako kōwhiringa...",
+    "noOptions": "Kāore he kōwhiringa wātea",
+    "accessibility": {
+      "select": "Tīpako: {{label}}",
+      "option": "Kōwhiringa: {{option}}"
+    }
+  },
+  "autocomplete": {
+    "placeholder": "Tuhia ki te rapu...",
+    "noResults": "Kāore he hua",
+    "accessibility": {
+      "autocomplete": "Aunoa whakaoti: {{placeholder}}",
+      "suggestion": "Tohutohu: {{suggestion}}"
+    }
+  },
+  "tag": {
+    "remove": "Tangohia",
+    "accessibility": {
+      "tag": "Tohu: {{label}}",
+      "remove": "Tangohia tohu"
+    }
+  },
+  "chip": {
+    "remove": "Tangohia",
+    "accessibility": {
+      "chip": "Māngai: {{label}}",
+      "remove": "Tangohia māngai"
+    }
+  },
+  "avatar": {
+    "alt": "Ahua",
+    "accessibility": {
+      "avatar": "Ahua: {{name}}"
+    }
+  },
+  "menu": {
+    "open": "Huakina rārangi",
+    "close": "Katia rārangi",
+    "accessibility": {
+      "menu": "Rārangi: {{title}}",
+      "menuItem": "Mea rārangi: {{item}}",
+      "submenu": "Rārangi iti: {{title}}"
+    }
+  },
+  "toolbar": {
+    "accessibility": {
+      "toolbar": "Rārangi taputapu: {{tools}} taputapu"
+    }
+  },
+  "sidebar": {
+    "toggle": "Huri taha",
+    "accessibility": {
+      "sidebar": "Taha: {{sections}} wāhanga",
+      "section": "Wāhanga: {{title}}"
+    }
+  },
+  "header": {
+    "accessibility": {
+      "header": "Upoko: {{title}}",
+      "navigation": "Haere matua"
+    }
+  },
+  "footer": {
+    "accessibility": {
+      "footer": "Waewae: {{content}}"
+    }
+  },
+  "main": {
+    "accessibility": {
+      "main": "Ihirangi matua: {{title}}"
+    }
+  },
+  "aside": {
+    "accessibility": {
+      "aside": "Ihirangi tuarua: {{title}}"
+    }
+  },
+  "section": {
+    "accessibility": {
+      "section": "Wāhanga: {{title}}"
+    }
+  },
+  "article": {
+    "accessibility": {
+      "article": "Tuhinga: {{title}}"
+    }
+  },
+  "nav": {
+    "accessibility": {
+      "nav": "Haere: {{title}}"
+    }
+  },
+  "dialog": {
+    "title": "Kōrero",
+    "close": "Katia",
+    "accessibility": {
+      "dialog": "Kōrero: {{title}}",
+      "close": "Katia kōrero"
+    }
+  },
+  "drawer": {
+    "title": "Kāti",
+    "close": "Katia",
+    "accessibility": {
+      "drawer": "Kāti: {{title}}",
+      "close": "Katia kāti"
+    }
+  },
+  "popover": {
+    "close": "Katia",
+    "accessibility": {
+      "popover": "Popover: {{title}}",
+      "close": "Katia popover"
+    }
+  },
+  "tooltip": {
+    "accessibility": {
+      "tooltip": "Kupu ārahi: {{content}}"
+    }
+  },
+  "toast": {
+    "close": "Katia",
+    "accessibility": {
+      "toast": "Toheti: {{message}}",
+      "close": "Katia toheti"
+    }
+  },
+  "skeleton": {
+    "loading": "Tāuta ana...",
+    "accessibility": {
+      "skeleton": "Ira tāuta"
+    }
+  },
+  "spinner": {
+    "loading": "Tāuta ana...",
+    "accessibility": {
+      "spinner": "Huri tāuta"
+    }
+  },
+  "divider": {
+    "accessibility": {
+      "divider": "Wehewehe"
+    }
+  },
+  "separator": {
+    "accessibility": {
+      "separator": "Wehewehe"
+    }
+  }
+}

@@ -1,0 +1,602 @@
+{
+  "button": {
+    "save": "Waqaychay",
+    "cancel": "Qichuy",
+    "submit": "Apachiy",
+    "delete": "Qulluy",
+    "edit": "Llamk'apuy",
+    "create": "Ruway",
+    "update": "Musuqyay",
+    "upload": "Wichay",
+    "download": "Chaqrusqay",
+    "share": "Rakiy",
+    "copy": "Kutichiy",
+    "move": "Astay",
+    "loading": "Chaskisqa...",
+    "defaultAriaLabel": "Butón",
+    "defaultTitle": "Ñit'iy llamk'ayta ruwanaykipaq",
+    "validationFailed": "Seguridad validación falló - allichay input",
+    "validationError": "Seguridad validación error pasasqa",
+    "validationRequired": "Allichay seguridad validación",
+    "securityValidated": "Seguridad validado",
+    "securityValidationRequired": "Seguridad validación necesaria",
+    "culturalTheme": "Cultural tema: {{theme}}"
+  },
+  "modal": {
+    "close": "Wichqay",
+    "defaultTitle": "Modal Dialog",
+    "confirm": "Yanapay",
+    "cancel": "Qichuy",
+    "closeModal": "Wichqay modal"
+  },
+  "input": {
+    "required": "Kay pata necesaria",
+    "invalid": "Mana allin input",
+    "placeholder": "Yaykuchiy valor...",
+    "search": "Maskay...",
+    "filter": "Filtro resultados..."
+  },
+  "card": {
+    "viewDetails": "Ver Detalles",
+    "showMore": "Achka Rikuchiy",
+    "showLess": "Pisi Rikuchiy",
+    "actions": "Acciones"
+  },
+  "badge": {
+    "new": "Musuq",
+    "updated": "Musuqyay",
+    "featured": "Destacado",
+    "trending": "Tendencia",
+    "popular": "Popular"
+  },
+  "loading": {
+    "general": "Chaskisqa...",
+    "documents": "Chaskisqa documentos...",
+    "collections": "Chaskisqa colecciones...",
+    "network": "Tinkisqa network...",
+    "search": "Maskasqa..."
+  },
+  "errorBoundary": {
+    "title": "Imatapas pantay",
+    "message": "Manan yachasqa error pasasqa. Allichay página refrescar.",
+    "refresh": "Refrescar Página",
+    "reportIssue": "Reportar Problema"
+  },
+  "culturalIndicator": {
+    "informationOnly": "Solo Información",
+    "educationalPurpose": "Educacional Propósito",
+    "culturalContext": "Cultural Contexto",
+    "learnMore": "Aprender Más"
+  },
+  "networkStatus": {
+    "online": "Online",
+    "offline": "Offline",
+    "connecting": "Tinkisqa",
+    "connected": "Tinkisqa",
+    "disconnected": "Manan tinkisqa",
+    "peers": "Peers",
+    "networkHealth": "Network Salud",
+    "latency": "Latencia",
+    "bandwidth": "Ancho de Banda",
+    "uptime": "Tiempo Activo",
+    "lastSeen": "Último visto",
+    "status": "Estado"
+  },
+  "statCard": {
+    "ariaLabel": "{{label}}: {{value}}. {{trendType}} tendencia: {{trendValue}}",
+    "trends": {
+      "positive": "Positiva tendencia",
+      "negative": "Negativa tendencia",
+      "neutral": "Estable tendencia"
+    },
+    "types": {
+      "documents": "Documentos",
+      "peers": "Peers",
+      "institutions": "Instituciones",
+      "health": "Salud",
+      "storage": "Almacenamiento",
+      "bandwidth": "Ancho de Banda"
+    },
+    "accessibility": {
+      "trendUp": "Tendencia subiendo",
+      "trendDown": "Tendencia bajando",
+      "trendStable": "Tendencia estable"
+    }
+  },
+  "documentCard": {
+    "title": "Documento",
+    "subtitle": "Documento información",
+    "actions": {
+      "view": "Ver",
+      "download": "Descargar",
+      "share": "Compartir",
+      "edit": "Editar",
+      "delete": "Eliminar"
+    },
+    "metadata": {
+      "size": "Tamaño",
+      "type": "Tipo",
+      "date": "Fecha",
+      "author": "Autor",
+      "language": "Idioma"
+    },
+    "culturalContext": {
+      "sensitivity": "Sensibilidad",
+      "origin": "Origen",
+      "community": "Comunidad",
+      "protocols": "Protocolos"
+    },
+    "accessibility": {
+      "documentInfo": "Documento información: {{title}}, {{size}}, {{type}}",
+      "culturalInfo": "Cultural información: {{sensitivity}} nivel, {{origin}} origen",
+      "actionsAvailable": "Acciones disponibles: {{actions}}"
+    }
+  },
+  "collectionCard": {
+    "title": "Colección",
+    "subtitle": "Colección información",
+    "actions": {
+      "view": "Ver",
+      "edit": "Editar",
+      "share": "Compartir",
+      "delete": "Eliminar"
+    },
+    "metadata": {
+      "documents": "Documentos",
+      "size": "Tamaño",
+      "created": "Creado",
+      "updated": "Actualizado"
+    },
+    "accessibility": {
+      "collectionInfo": "Colección información: {{title}}, {{documents}} documentos",
+      "actionsAvailable": "Acciones disponibles: {{actions}}"
+    }
+  },
+  "searchBar": {
+    "placeholder": "Maskay documentos, colecciones...",
+    "search": "Buscar",
+    "clear": "Limpiar",
+    "filters": "Filtros",
+    "advanced": "Avanzado",
+    "accessibility": {
+      "searchInput": "Búsqueda input: {{placeholder}}",
+      "searchButton": "Buscar botón",
+      "clearButton": "Limpiar búsqueda botón"
+    }
+  },
+  "filterPanel": {
+    "title": "Filtros",
+    "apply": "Aplicar",
+    "clear": "Limpiar",
+    "reset": "Resetear",
+    "accessibility": {
+      "filterPanel": "Filtro panel: {{title}}",
+      "filterOption": "Filtro opción: {{option}}"
+    }
+  },
+  "pagination": {
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "page": "Página",
+    "of": "de",
+    "showing": "Mostrando",
+    "to": "a",
+    "of": "de",
+    "results": "resultados",
+    "accessibility": {
+      "pagination": "Paginación: página {{current}} de {{total}}",
+      "previousPage": "Página anterior",
+      "nextPage": "Página siguiente"
+    }
+  },
+  "breadcrumb": {
+    "home": "Inicio",
+    "separator": "/",
+    "accessibility": {
+      "breadcrumb": "Breadcrumb navegación: {{path}}",
+      "currentPage": "Página actual: {{page}}"
+    }
+  },
+  "tooltip": {
+    "defaultTitle": "Información adicional",
+    "accessibility": {
+      "tooltip": "Tooltip: {{content}}"
+    }
+  },
+  "dropdown": {
+    "select": "Seleccionar",
+    "noOptions": "Sin opciones",
+    "loading": "Cargando...",
+    "accessibility": {
+      "dropdown": "Dropdown: {{label}}",
+      "option": "Opción: {{option}}",
+      "selected": "Seleccionado: {{selected}}"
+    }
+  },
+  "tabs": {
+    "accessibility": {
+      "tabList": "Tab lista: {{tabs}}",
+      "tab": "Tab: {{tab}}",
+      "selectedTab": "Seleccionado tab: {{tab}}"
+    }
+  },
+  "accordion": {
+    "expand": "Expandir",
+    "collapse": "Colapsar",
+    "accessibility": {
+      "accordion": "Acordeón: {{sections}} secciones",
+      "section": "Sección: {{title}}",
+      "expanded": "Expandido: {{title}}",
+      "collapsed": "Colapsado: {{title}}"
+    }
+  },
+  "progressBar": {
+    "progress": "Progreso",
+    "complete": "Completo",
+    "accessibility": {
+      "progress": "Progreso: {{percent}} por ciento completo",
+      "indeterminate": "Progreso indeterminado"
+    }
+  },
+  "alert": {
+    "success": "Éxito",
+    "error": "Error",
+    "warning": "Advertencia",
+    "info": "Información",
+    "dismiss": "Descartar",
+    "accessibility": {
+      "alert": "Alerta: {{type}} - {{message}}",
+      "dismiss": "Descartar alerta"
+    }
+  },
+  "notification": {
+    "title": "Notificación",
+    "dismiss": "Descartar",
+    "accessibility": {
+      "notification": "Notificación: {{title}} - {{message}}",
+      "dismiss": "Descartar notificación"
+    }
+  },
+  "form": {
+    "submit": "Enviar",
+    "reset": "Resetear",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "validation": {
+      "required": "Campo requerido",
+      "invalid": "Valor inválido",
+      "minLength": "Mínimo {{min}} caracteres",
+      "maxLength": "Máximo {{max}} caracteres",
+      "pattern": "Formato inválido",
+      "email": "Email inválido",
+      "url": "URL inválida"
+    },
+    "accessibility": {
+      "form": "Formulario: {{title}}",
+      "field": "Campo: {{label}}",
+      "error": "Error en campo: {{field}} - {{error}}"
+    }
+  },
+  "table": {
+    "empty": "Sin datos",
+    "loading": "Cargando...",
+    "noResults": "Sin resultados",
+    "sort": {
+      "asc": "Ordenar ascendente",
+      "desc": "Ordenar descendente",
+      "none": "Sin ordenar"
+    },
+    "accessibility": {
+      "table": "Tabla: {{rows}} filas, {{columns}} columnas",
+      "header": "Encabezado: {{column}}",
+      "row": "Fila {{row}}",
+      "cell": "Celda: {{value}}"
+    }
+  },
+  "list": {
+    "empty": "Lista vacía",
+    "loading": "Cargando lista...",
+    "accessibility": {
+      "list": "Lista: {{items}} elementos",
+      "item": "Elemento: {{item}}"
+    }
+  },
+  "grid": {
+    "empty": "Cuadrícula vacía",
+    "loading": "Cargando cuadrícula...",
+    "accessibility": {
+      "grid": "Cuadrícula: {{rows}} filas, {{columns}} columnas",
+      "cell": "Celda: {{value}}"
+    }
+  },
+  "chart": {
+    "title": "Gráfico",
+    "legend": "Leyenda",
+    "accessibility": {
+      "chart": "Gráfico: {{title}}",
+      "dataPoint": "Punto de datos: {{value}}",
+      "series": "Serie: {{name}}"
+    }
+  },
+  "map": {
+    "title": "Mapa",
+    "zoomIn": "Acercar",
+    "zoomOut": "Alejar",
+    "accessibility": {
+      "map": "Mapa: {{title}}",
+      "location": "Ubicación: {{location}}"
+    }
+  },
+  "fileUpload": {
+    "title": "Subir Archivo",
+    "dragDrop": "Arrastrar y soltar archivos aquí",
+    "browse": "Navegar archivos",
+    "uploading": "Subiendo...",
+    "success": "Archivo subido exitosamente",
+    "error": "Error al subir archivo",
+    "validation": {
+      "fileTooLarge": "Archivo muy grande",
+      "invalidType": "Tipo de archivo inválido",
+      "tooManyFiles": "Demasiados archivos"
+    },
+    "accessibility": {
+      "uploadArea": "Área de subida de archivos",
+      "fileInput": "Input de archivo",
+      "uploadProgress": "Progreso de subida: {{percent}} por ciento"
+    }
+  },
+  "image": {
+    "alt": "Imagen",
+    "loading": "Cargando imagen...",
+    "error": "Error al cargar imagen",
+    "accessibility": {
+      "image": "Imagen: {{alt}}",
+      "loading": "Cargando imagen",
+      "error": "Error al cargar imagen"
+    }
+  },
+  "video": {
+    "play": "Reproducir",
+    "pause": "Pausar",
+    "stop": "Detener",
+    "mute": "Silenciar",
+    "unmute": "Activar sonido",
+    "fullscreen": "Pantalla completa",
+    "accessibility": {
+      "video": "Video: {{title}}",
+      "controls": "Controles de video",
+      "playButton": "Botón reproducir",
+      "pauseButton": "Botón pausar"
+    }
+  },
+  "audio": {
+    "play": "Reproducir",
+    "pause": "Pausar",
+    "stop": "Detener",
+    "mute": "Silenciar",
+    "unmute": "Activar sonido",
+    "accessibility": {
+      "audio": "Audio: {{title}}",
+      "controls": "Controles de audio",
+      "playButton": "Botón reproducir",
+      "pauseButton": "Botón pausar"
+    }
+  },
+  "calendar": {
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "today": "Hoy",
+    "accessibility": {
+      "calendar": "Calendario: {{month}} {{year}}",
+      "date": "Fecha: {{date}}",
+      "selected": "Fecha seleccionada: {{date}}"
+    }
+  },
+  "timePicker": {
+    "hour": "Hora",
+    "minute": "Minuto",
+    "second": "Segundo",
+    "am": "AM",
+    "pm": "PM",
+    "accessibility": {
+      "timePicker": "Selector de tiempo",
+      "hour": "Hora: {{hour}}",
+      "minute": "Minuto: {{minute}}"
+    }
+  },
+  "colorPicker": {
+    "title": "Selector de Color",
+    "accessibility": {
+      "colorPicker": "Selector de color",
+      "selectedColor": "Color seleccionado: {{color}}"
+    }
+  },
+  "slider": {
+    "min": "Mínimo",
+    "max": "Máximo",
+    "value": "Valor",
+    "accessibility": {
+      "slider": "Slider: {{min}} a {{max}}",
+      "currentValue": "Valor actual: {{value}}"
+    }
+  },
+  "switch": {
+    "on": "Encendido",
+    "off": "Apagado",
+    "accessibility": {
+      "switch": "Switch: {{state}}",
+      "toggle": "Cambiar switch"
+    }
+  },
+  "checkbox": {
+    "checked": "Marcado",
+    "unchecked": "Desmarcado",
+    "accessibility": {
+      "checkbox": "Checkbox: {{state}}",
+      "toggle": "Cambiar checkbox"
+    }
+  },
+  "radio": {
+    "selected": "Seleccionado",
+    "accessibility": {
+      "radio": "Radio button: {{label}}",
+      "select": "Seleccionar radio button"
+    }
+  },
+  "textarea": {
+    "placeholder": "Escribir texto aquí...",
+    "accessibility": {
+      "textarea": "Área de texto: {{placeholder}}"
+    }
+  },
+  "select": {
+    "placeholder": "Seleccionar opción...",
+    "noOptions": "Sin opciones disponibles",
+    "accessibility": {
+      "select": "Selector: {{label}}",
+      "option": "Opción: {{option}}"
+    }
+  },
+  "autocomplete": {
+    "placeholder": "Escribir para buscar...",
+    "noResults": "Sin resultados",
+    "accessibility": {
+      "autocomplete": "Autocompletado: {{placeholder}}",
+      "suggestion": "Sugerencia: {{suggestion}}"
+    }
+  },
+  "tag": {
+    "remove": "Eliminar",
+    "accessibility": {
+      "tag": "Etiqueta: {{label}}",
+      "remove": "Eliminar etiqueta"
+    }
+  },
+  "chip": {
+    "remove": "Eliminar",
+    "accessibility": {
+      "chip": "Chip: {{label}}",
+      "remove": "Eliminar chip"
+    }
+  },
+  "avatar": {
+    "alt": "Avatar",
+    "accessibility": {
+      "avatar": "Avatar: {{name}}"
+    }
+  },
+  "menu": {
+    "open": "Abrir menú",
+    "close": "Cerrar menú",
+    "accessibility": {
+      "menu": "Menú: {{title}}",
+      "menuItem": "Elemento de menú: {{item}}",
+      "submenu": "Submenú: {{title}}"
+    }
+  },
+  "toolbar": {
+    "accessibility": {
+      "toolbar": "Barra de herramientas: {{tools}} herramientas"
+    }
+  },
+  "sidebar": {
+    "toggle": "Cambiar sidebar",
+    "accessibility": {
+      "sidebar": "Barra lateral: {{sections}} secciones",
+      "section": "Sección: {{title}}"
+    }
+  },
+  "header": {
+    "accessibility": {
+      "header": "Encabezado: {{title}}",
+      "navigation": "Navegación principal"
+    }
+  },
+  "footer": {
+    "accessibility": {
+      "footer": "Pie de página: {{content}}"
+    }
+  },
+  "main": {
+    "accessibility": {
+      "main": "Contenido principal: {{title}}"
+    }
+  },
+  "aside": {
+    "accessibility": {
+      "aside": "Contenido secundario: {{title}}"
+    }
+  },
+  "section": {
+    "accessibility": {
+      "section": "Sección: {{title}}"
+    }
+  },
+  "article": {
+    "accessibility": {
+      "article": "Artículo: {{title}}"
+    }
+  },
+  "nav": {
+    "accessibility": {
+      "nav": "Navegación: {{title}}"
+    }
+  },
+  "dialog": {
+    "title": "Diálogo",
+    "close": "Cerrar",
+    "accessibility": {
+      "dialog": "Diálogo: {{title}}",
+      "close": "Cerrar diálogo"
+    }
+  },
+  "drawer": {
+    "title": "Cajón",
+    "close": "Cerrar",
+    "accessibility": {
+      "drawer": "Cajón: {{title}}",
+      "close": "Cerrar cajón"
+    }
+  },
+  "popover": {
+    "close": "Cerrar",
+    "accessibility": {
+      "popover": "Popover: {{title}}",
+      "close": "Cerrar popover"
+    }
+  },
+  "tooltip": {
+    "accessibility": {
+      "tooltip": "Tooltip: {{content}}"
+    }
+  },
+  "toast": {
+    "close": "Cerrar",
+    "accessibility": {
+      "toast": "Toast: {{message}}",
+      "close": "Cerrar toast"
+    }
+  },
+  "skeleton": {
+    "loading": "Cargando...",
+    "accessibility": {
+      "skeleton": "Esqueleto de carga"
+    }
+  },
+  "spinner": {
+    "loading": "Cargando...",
+    "accessibility": {
+      "spinner": "Spinner de carga"
+    }
+  },
+  "divider": {
+    "accessibility": {
+      "divider": "Separador"
+    }
+  },
+  "separator": {
+    "accessibility": {
+      "separator": "Separador"
+    }
+  }
+}

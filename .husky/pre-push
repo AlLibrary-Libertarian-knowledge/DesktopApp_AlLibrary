@@ -1,0 +1,44 @@
+#!/usr/bin/env sh
+
+# -----------------------------
+# AlLibrary Pre-push router — OS-specific tiered checks
+# -----------------------------
+
+detect_os() {
+  case "$(uname -s 2>/dev/null || echo Unknown)" in
+    Linux*) echo "linux" ;;
+    Darwin*) echo "macos" ;;
+    MINGW*|MSYS*|CYGWIN*) echo "windows" ;;
+    *) echo "unknown" ;;
+  esac
+}
+
+OS=$(detect_os)
+
+case "$OS" in
+  linux|macos)
+    if [ -f ".husky/pre-push.linux.sh" ]; then
+      exec sh ".husky/pre-push.linux.sh"
+    else
+      echo "Error: .husky/pre-push.linux.sh not found" >&2
+      exit 1
+    fi
+    ;;
+  windows)
+    if [ -f ".husky/pre-push.windows.sh" ]; then
+      exec sh ".husky/pre-push.windows.sh"
+    else
+      echo "Error: .husky/pre-push.windows.sh not found" >&2
+      exit 1
+    fi
+    ;;
+  *)
+    echo "Warning: Unknown OS. Falling back to Linux script." >&2
+    if [ -f ".husky/pre-push.linux.sh" ]; then
+      exec sh ".husky/pre-push.linux.sh"
+    else
+      echo "Error: No compatible pre-push script found" >&2
+      exit 1
+    fi
+    ;;
+esac
