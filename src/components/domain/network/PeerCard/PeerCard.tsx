@@ -27,6 +27,7 @@ import styles from './PeerCard.module.css';
  */
 export const PeerCard: Component<PeerCardProps> = props => {
   const peer = () => props.peer;
+  const cardVariant = () => (props.variant === 'detailed' ? 'elevated' : 'default');
 
   // Computed values
   const connectionStatusVariant = createMemo(() => {
@@ -86,7 +87,7 @@ export const PeerCard: Component<PeerCardProps> = props => {
   };
 
   return (
-    <Card class={`${styles.peerCard} ${props.class || ''}`} variant={props.variant}>
+    <Card class={`${styles.peerCard} ${props.class || ''}`} variant={cardVariant()}>
       {/* Header */}
       <div class={styles.header}>
         <div class={styles.peerInfo}>

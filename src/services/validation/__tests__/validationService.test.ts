@@ -193,10 +193,10 @@ describe('ValidationService Integration', () => {
       const result = await validationService.scanFileForThreats(filePath);
 
       expect(result).toBeDefined();
-      expect(result.clean).toBeDefined();
+      expect(result.safe).toBeDefined();
       expect(result.threats).toBeDefined();
       expect(Array.isArray(result.threats)).toBe(true);
-      expect(result.scanDate).toBeInstanceOf(Date);
+      expect(result.scanTime).toBeInstanceOf(Date);
     });
 
     it('should handle scan failures gracefully', async () => {
@@ -205,7 +205,7 @@ describe('ValidationService Integration', () => {
       const result = await validationService.scanFileForThreats(invalidPath);
 
       expect(result).toBeDefined();
-      expect(result.clean).toBe(false); // Fail-safe
+      expect(result.safe).toBe(false); // Fail-safe
     });
   });
 

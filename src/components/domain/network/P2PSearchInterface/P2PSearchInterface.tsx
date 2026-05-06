@@ -145,7 +145,7 @@ export const P2PSearchInterface: Component<P2PSearchInterfaceProps> = props => {
           <div class={styles.networkInfo}>
             <Show when={networkStatus()}>
               <Badge
-                variant={networkStatus()?.connectedPeers > 0 ? 'success' : 'warning'}
+                variant={(networkStatus()?.connectedPeers ?? 0) > 0 ? 'success' : 'warning'}
                 class={styles.networkBadge}
               >
                 {networkStatus()?.connectedPeers || 0} peers connected
@@ -165,8 +165,7 @@ export const P2PSearchInterface: Component<P2PSearchInterfaceProps> = props => {
         <div class={styles.searchBar}>
           <Input
             value={searchQuery()}
-            onInput={e => setSearchQuery(e.target.value)}
-            onKeyPress={handleKeyPress}
+            onInput={setSearchQuery}
             placeholder="Search across P2P network..."
             class={styles.searchInput}
             disabled={isSearching()}
@@ -237,7 +236,7 @@ export const P2PSearchInterface: Component<P2PSearchInterfaceProps> = props => {
       </Card>
 
       {/* Search Results */}
-      <Show when={searchResults()?.length > 0}>
+      <Show when={(searchResults()?.length ?? 0) > 0}>
         <Card class={styles.resultsContainer}>
           <div class={styles.resultsHeader}>
             <h4 class={styles.resultsTitle}>Search Results ({searchResults()?.length || 0})</h4>
@@ -300,7 +299,7 @@ export const P2PSearchInterface: Component<P2PSearchInterfaceProps> = props => {
                       </span>
                       <Show when={result.lastUpdated}>
                         <span class={styles.lastUpdated}>
-                          Updated: {new Date(result.lastUpdated).toLocaleDateString()}
+                          Updated: {new Date(result.lastUpdated || '').toLocaleDateString()}
                         </span>
                       </Show>
                     </div>
@@ -311,13 +310,13 @@ export const P2PSearchInterface: Component<P2PSearchInterfaceProps> = props => {
                         <div class={styles.culturalInfo}>
                           <span class={styles.culturalLabel}>Cultural Context:</span>
                           <span class={styles.culturalDescription}>
-                            {result.culturalContext.description}
+                            {result.culturalContext?.description}
                           </span>
                         </div>
-                        <Show when={result.culturalContext.educationalResources?.length}>
+                        <Show when={result.culturalContext?.educationalResources?.length}>
                           <div class={styles.educationalResources}>
                             <span class={styles.resourcesLabel}>Educational Resources:</span>
-                            <For each={result.culturalContext.educationalResources || []}>
+                            <For each={result.culturalContext?.educationalResources || []}>
                               {resource => (
                                 <Badge variant="info" class={styles.resourceBadge}>
                                   {resource}

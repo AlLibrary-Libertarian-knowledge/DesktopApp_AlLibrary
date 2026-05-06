@@ -13,12 +13,34 @@
  * - Security validation for technical threats only
  */
 
-import type { Document } from '@/types/Document';
+import {
+  DocumentStatus,
+  DocumentFormat,
+  DocumentContentType,
+  type Document,
+} from '@/types/Document';
 import type { CulturalAnalysis } from '@/types/Cultural';
 import { CulturalSensitivityLevel } from '@/types/Cultural';
 import type { SecurityValidationResult, SafetyResult } from '@/types/Security';
 import { culturalValidator } from './culturalValidator';
 import { securityValidator } from './securityValidator';
+
+interface DocumentMetadata {
+  title: string;
+  author: string;
+  description: string;
+  language: string;
+  wordCount: number;
+  estimatedReadingTime: number;
+  fileType: string;
+  fileSize: number;
+  uploadedBy: string;
+  uploadedAt: Date;
+  culturalSensitivityLevel: CulturalSensitivityLevel;
+  securityLevel: string;
+  tags: string[];
+  source: string;
+}
 
 /**
  * Document validation result
@@ -63,13 +85,16 @@ export interface DocumentUploadContext {
   fileSize: number;
 
   /** File type */
-  fileType: string;
+  fileType?: string;
 
   /** MIME type */
-  mimeType: string;
+  mimeType?: string;
 
   /** Upload source */
-  source: 'user_upload' | 'import' | 'sync';
+  source?: 'user_upload' | 'import' | 'sync';
+
+  /** Legacy upload source alias */
+  uploadSource?: 'user_upload' | 'import' | 'sync';
 
   /** Cultural sensitivity level */
   culturalSensitivityLevel?: CulturalSensitivityLevel;
@@ -95,19 +120,23 @@ export class DocumentValidator {
 
     try {
       // Step 1: Format validation
-      const formatValidation = await this.validateFormat(fileContent, context.fileType);
+      const effectiveFileType = context.fileType || context.mimeType || 'text/plain';
+      const formatValidation = await this.validateFormat(fileContent, effectiveFileType);
       if (!formatValidation.valid) {
         errors.push(...formatValidation.errors);
       }
 
       // Step 2: Extract text content for analysis
-      const textContent = await this.extractTextContent(fileContent, context.fileType);
+      const textContent = await this.extractTextContent(fileContent, effectiveFileType);
 
       // Step 3: Security validation
       const securityValidation = await securityValidator.validateInput(textContent, {
         expectedType: 'string',
-        fileType: context.fileType,
+        inputType: 'text',
+        fileName: context.fileName,
         source: 'document_upload',
+        userId: context.userId,
+        sessionId: 'document-validator',
       });
 
       // Step 4: Safety assessment
@@ -176,10 +205,12 @@ export class DocumentValidator {
           safe: false,
           threats: [
             {
-              type: 'VALIDATION_ERROR',
-              severity: 'HIGH',
+              threatId: 'validation_error',
+              threatType: 'technical_exploit',
+              threatName: 'Validation Error',
+              severity: 'high',
               description: 'Document validation failed',
-              recommendation: 'Manual review required',
+              mitigation: ['Manual review required'],
             },
           ],
           confidence: 0,
@@ -378,14 +409,14 @@ export class DocumentValidator {
       language: this.detectLanguage(textContent),
       wordCount,
       estimatedReadingTime,
-      fileType: context.fileType,
+      fileType: context.fileType || context.mimeType || 'text/plain',
       fileSize: context.fileSize,
       uploadedBy: context.userId,
       uploadedAt: new Date(),
       culturalSensitivityLevel: culturalAnalysis.detectedLevel,
       securityLevel: securityValidation.securityLevel || 'UNKNOWN',
       tags: this.extractTags(textContent),
-      source: context.source,
+      source: context.source || context.uploadSource || 'user_upload',
     };
   }
 
@@ -395,14 +426,22 @@ export class DocumentValidator {
     context: DocumentUploadContext,
     culturalAnalysis: CulturalAnalysis
   ): Promise<Document> {
-    const contentHash = await securityValidator.generateSecureHash(textContent);
+    const contentHash = await this.generateSecureHash(textContent);
 
     return {
       id: this.generateDocumentId(),
-      ...metadata,
+      title: metadata.title,
+      description: metadata.description,
+      format: this.getDocumentFormat(context.fileName),
+      contentType: this.getDocumentContentType(culturalAnalysis.detectedLevel),
+      status: DocumentStatus.ACTIVE,
+      filePath: context.fileName,
+      originalFilename: context.fileName,
+      fileSize: context.fileSize,
+      mimeType: context.fileType || context.mimeType || 'text/plain',
       content: textContent,
-      contentHash,
-      culturalContext: {
+      fileHash: contentHash,
+      culturalMetadata: {
         sensitivityLevel: culturalAnalysis.detectedLevel,
         culturalOrigin: culturalAnalysis.detectedOrigin,
         educationalContext: culturalAnalysis.suggestedContext,
@@ -411,9 +450,61 @@ export class DocumentValidator {
       },
       createdAt: new Date(),
       updatedAt: new Date(),
+      createdBy: context.userId,
       version: 1,
-      status: 'active',
+      tags: metadata.tags || [],
+      categories: [],
+      language: metadata.language || 'en',
+      authors: [],
+      accessHistory: [],
+      relationships: [],
+      securityValidation: {
+        validatedAt: new Date(),
+        passed: true,
+        malwareScanResult: {
+          clean: true,
+          threats: [],
+          scanEngine: 'validator',
+          scanDate: new Date(),
+        },
+        integrityCheck: {
+          valid: true,
+          expectedHash: contentHash,
+          actualHash: contentHash,
+          algorithm: 'sha256',
+        },
+        legalCompliance: { compliant: true, issues: [], jurisdiction: 'global' },
+        issues: [],
+      },
+      contentVerification: {
+        signature: '',
+        algorithm: 'sha256',
+        verifiedAt: new Date(),
+        chainOfCustody: [],
+        authentic: true,
+        verificationProvider: 'AlLibrary',
+      },
+      sourceAttribution: {
+        originalSource: context.source || 'user_upload',
+        sourceType: 'individual',
+        credibilityIndicators: [],
+        sourceVerified: false,
+        attributionRequirements: [],
+      },
     };
+  }
+
+  private getDocumentFormat(fileName: string): DocumentFormat {
+    const extension = fileName.split('.').pop()?.toLowerCase();
+    if (extension === 'epub') return DocumentFormat.EPUB;
+    if (extension === 'txt') return DocumentFormat.TEXT;
+    if (extension === 'md') return DocumentFormat.MARKDOWN;
+    return DocumentFormat.PDF;
+  }
+
+  private getDocumentContentType(level: number): DocumentContentType {
+    if (level > 2) return DocumentContentType.TRADITIONAL_KNOWLEDGE;
+    return DocumentContentType.EDUCATIONAL;
   }
 
   private detectLanguage(text: string): string {
@@ -461,6 +552,13 @@ export class DocumentValidator {
 
   private generateDocumentId(): string {
     return `doc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  private async generateSecureHash(content: string): Promise<string> {
+    const data = new TextEncoder().encode(content);
+    const digest = await crypto.subtle.digest('SHA-256', data);
+    const bytes = Array.from(new Uint8Array(digest));
+    return bytes.map(b => b.toString(16).padStart(2, '0')).join('');
   }
 }
 

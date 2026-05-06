@@ -10,7 +10,7 @@
  */
 
 import { type Component, createSignal, createEffect, Show, For, onMount } from 'solid-js';
-import { Card, Button, Badge, ProgressBar, Modal } from '../../foundation';
+import { Card, Button, Badge, Progress, Modal } from '../../foundation';
 import {
   Shield,
   CheckCircle,
@@ -27,7 +27,6 @@ import {
   Zap,
   Brain,
 } from 'lucide-solid';
-import { formatDate, formatDuration } from '../../../utils/formatting/dateFormatter';
 import type {
   InformationIntegrityVerificationProps,
   VerificationState,

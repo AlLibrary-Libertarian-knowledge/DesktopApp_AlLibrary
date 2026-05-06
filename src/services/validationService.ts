@@ -15,7 +15,10 @@ import type { CulturalAnalysis, CulturalInformation } from '@/types/Cultural';
 import { CulturalSensitivityLevel } from '@/types/Cultural';
 import type { SecurityValidationResult, SafetyResult, ValidationContext } from '@/types/Security';
 import { culturalValidator, securityValidator, documentValidator } from './validation';
-import type { DocumentValidationResult, DocumentUploadContext } from './validation';
+import type {
+  DocumentValidationResult,
+  DocumentUploadContext,
+} from './validation/documentValidator';
 
 /**
  * Complete validation result combining all validation types
@@ -212,7 +215,7 @@ export class ValidationService {
         threats: [
           {
             type: 'SCAN_ERROR',
-            severity: 'HIGH',
+            severity: 'high',
             description: 'Unable to scan file for security threats',
             recommendation: 'File blocked due to scan failure',
           },
@@ -298,7 +301,7 @@ export class ValidationService {
     }
 
     // File format recommendations
-    if (documentResult.errors.some(e => e.includes('format'))) {
+    if (documentResult.errors.some((e: string) => e.includes('format'))) {
       recommendations.push('Ensure file format is PDF or EPUB');
     }
 
@@ -341,10 +344,12 @@ export class ValidationService {
         safe: false,
         threats: [
           {
-            type: 'VALIDATION_ERROR',
-            severity: 'HIGH',
+            threatId: 'validation_error',
+            threatType: 'technical_exploit',
+            threatName: 'Validation Error',
+            severity: 'high',
             description: 'Validation service encountered an error',
-            recommendation: 'Contact support if problem persists',
+            mitigation: ['Contact support if problem persists'],
           },
         ],
         confidence: 0,
@@ -368,4 +373,4 @@ export class ValidationService {
 export const validationService = new ValidationService();
 
 // Export types for external use
-export type { CompleteValidationResult, DocumentUploadContext, DocumentValidationResult };
+export type { DocumentUploadContext, DocumentValidationResult };

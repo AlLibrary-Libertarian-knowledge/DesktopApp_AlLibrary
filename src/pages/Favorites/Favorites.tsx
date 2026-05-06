@@ -376,13 +376,13 @@ const FavoritesPage: Component = () => {
                     </div>
 
                     <div class={styles.cardActions}>
-                      <Button variant="primary" size="small">
+                      <Button variant="primary" size="sm">
                         Open Document
                       </Button>
-                      <Button variant="secondary" size="small">
+                      <Button variant="secondary" size="sm">
                         View Details
                       </Button>
-                      <Button variant="ghost" size="small">
+                      <Button variant="ghost" size="sm">
                         Remove
                       </Button>
                     </div>

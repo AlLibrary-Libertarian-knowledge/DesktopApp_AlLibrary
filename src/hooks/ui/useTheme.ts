@@ -195,6 +195,7 @@ export const useTheme = (): UseThemeReturn => {
 
   // Load preferences from localStorage on mount
   onMount(() => {
+    let cleanup: (() => void) | undefined;
     const savedPreferences = loadThemePreferences();
     setPreferences(savedPreferences);
     applyTheme(savedPreferences);
@@ -227,12 +228,13 @@ export const useTheme = (): UseThemeReturn => {
       highContrastQuery.addEventListener('change', handleHighContrastChange);
 
       // Cleanup listeners
-      return () => {
+      cleanup = () => {
         darkModeQuery.removeEventListener('change', handleDarkModeChange);
         reducedMotionQuery.removeEventListener('change', handleReducedMotionChange);
         highContrastQuery.removeEventListener('change', handleHighContrastChange);
       };
     }
+    return () => cleanup?.();
   });
 
   // Apply theme when preferences change

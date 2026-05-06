@@ -134,10 +134,12 @@ export const ThemeSwitcher: Component<ThemeSwitcherProps> = props => {
   };
 
   createEffect(() => {
+    let cleanup: (() => void) | undefined;
     if (isOpen()) {
       document.addEventListener('click', handleClickOutside);
-      return () => document.removeEventListener('click', handleClickOutside);
+      cleanup = () => document.removeEventListener('click', handleClickOutside);
     }
+    return () => cleanup?.();
   });
 
   // CSS classes for styling

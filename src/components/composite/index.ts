@@ -8,7 +8,7 @@ export { OrganizationTools } from './OrganizationTools';
 export { BatchActionsToolbar } from './BatchActionsToolbar';
 export { CategoryCard } from './CategoryCard';
 export { FilterPanel } from './FilterPanel';
-export { ActivityListCard } from './ActivityListCard';
+export { ActivityListCard, type ActivityItemProps } from './ActivityListCard';
 export { StatCard } from './StatCard';
 export { TaggingSystem } from './TaggingSystem';
 export { TopCard } from './TopCard';

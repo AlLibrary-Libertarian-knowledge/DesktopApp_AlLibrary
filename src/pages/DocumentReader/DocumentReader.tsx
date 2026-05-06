@@ -24,10 +24,12 @@ const detectType = (pathOrExt: string): 'pdf' | 'epub' | 'text' | 'markdown' => 
 
 export const DocumentReader: Component = () => {
   const [params] = useSearchParams();
+  const paramValue = (value: string | string[] | undefined): string =>
+    Array.isArray(value) ? (value[0] ?? '') : (value ?? '');
 
-  const filePath = () => decodeURIComponent(params.path || '');
-  const providedType = () => params.type || '';
-  const title = () => (params.title ? decodeURIComponent(params.title) : '');
+  const filePath = () => decodeURIComponent(paramValue(params.path));
+  const providedType = () => paramValue(params.type);
+  const title = () => decodeURIComponent(paramValue(params.title));
   const type = createMemo(() => detectType(providedType() || filePath()));
   const url = createMemo(() => (filePath() ? convertFileSrc(filePath()) : undefined));
   const [bytes, setBytes] = createSignal<Uint8Array | undefined>();

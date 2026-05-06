@@ -510,10 +510,13 @@ export const NetworkResilienceTools: Component<NetworkResilienceToolsProps> = pr
   });
 
   createEffect(() => {
+    let interval: ReturnType<typeof setInterval> | undefined;
     if (resilienceState().isMonitoring && props.monitoringInterval) {
-      const interval = setInterval(performNetworkHealthCheck, props.monitoringInterval);
-      return () => clearInterval(interval);
+      interval = setInterval(performNetworkHealthCheck, props.monitoringInterval);
     }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   });
 
   // ============================================================================

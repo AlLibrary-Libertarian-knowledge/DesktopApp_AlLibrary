@@ -57,7 +57,7 @@ export interface CardProps extends ParentProps {
   ariaDescribedBy?: string;
   ariaExpanded?: boolean;
   ariaPressed?: boolean;
-  role?: string;
+  role?: JSX.HTMLAttributes<HTMLDivElement>['role'];
 
   // Security Properties
   requiresVerification?: boolean;

@@ -126,11 +126,11 @@ const DocumentUpload: Component<DocumentUploadProps> = props => {
           const arrayBuffer = await file.arrayBuffer();
           const result = await validationService.validateDocument(arrayBuffer, {
             userId: 'current-user',
-            sessionId: 'current-session',
-            inputType: 'file_upload',
-            source: 'user_input',
+            source: 'user_upload',
             fileName: file.name,
             fileSize: file.size,
+            fileType: file.type,
+            mimeType: file.type,
           });
           return { file, result };
         })

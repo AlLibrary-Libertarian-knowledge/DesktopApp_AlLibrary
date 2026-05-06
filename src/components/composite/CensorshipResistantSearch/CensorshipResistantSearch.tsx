@@ -190,11 +190,15 @@ export const CensorshipResistantSearch: Component<CensorshipResistantSearchProps
     if (props.enableTorRouting !== false) {
       const torProtocol = availableProtocols[0];
       const hybridProtocol = availableProtocols[4];
-      setSelectedProtocols([torProtocol, hybridProtocol]);
+      if (torProtocol && hybridProtocol) {
+        setSelectedProtocols([torProtocol, hybridProtocol]);
+      }
     } else {
       const ipfsProtocol = availableProtocols[1];
       const p2pProtocol = availableProtocols[2];
-      setSelectedProtocols([ipfsProtocol, p2pProtocol]);
+      if (ipfsProtocol && p2pProtocol) {
+        setSelectedProtocols([ipfsProtocol, p2pProtocol]);
+      }
     }
   });
 
@@ -206,21 +210,17 @@ export const CensorshipResistantSearch: Component<CensorshipResistantSearchProps
         const torStatus = await torAdapter.status();
         const p2pStatus = await p2pNetworkService.getNodeStatus();
         const ipfsStatus = await ipfsService.getNodeInfo();
+        const ipfsConnected = Boolean(ipfsStatus?.id);
+        const torScore = torStatus.bootstrapped ? 90 : 0;
+        const p2pScore = p2pStatus.nodeStatus === 'online' ? 85 : 0;
+        const ipfsScore = ipfsConnected ? 80 : 0;
 
         return {
-          overall: Math.round(
-            (torStatus.bootstrapped
-              ? 90
-              : 0 + p2pStatus.nodeStatus === 'online'
-                ? 85
-                : 0 + ipfsStatus.connected
-                  ? 80
-                  : 0) / 3
-          ),
+          overall: Math.round((torScore + p2pScore + ipfsScore) / 3),
           connectivity: torStatus.bootstrapped ? 90 : 0,
           diversityScore: p2pStatus.connectedPeers > 10 ? 85 : 50,
           censorshipResistance: torStatus.bootstrapped ? 95 : 0,
-          informationIntegrity: ipfsStatus.connected ? 80 : 0,
+          informationIntegrity: ipfsConnected ? 80 : 0,
         };
       } catch (error) {
         console.error('Failed to get network health:', error);
@@ -240,6 +240,7 @@ export const CensorshipResistantSearch: Component<CensorshipResistantSearchProps
     () => searchState().censorshipStatus,
     async () => {
       try {
+        const torStatus = await torAdapter.status();
         const resistanceTest = torStatus.circuitEstablished;
         const attempts: string[] = [];
 
@@ -366,6 +367,7 @@ export const CensorshipResistantSearch: Component<CensorshipResistantSearchProps
           case 'tor-onion':
             try {
               // Search through TOR network
+              const torStatus = await torAdapter.status();
               const torConnection = torStatus.circuitEstablished;
               // Simulate TOR search results
               protocolResults = [
@@ -942,9 +944,9 @@ export const CensorshipResistantSearch: Component<CensorshipResistantSearchProps
                   <Show when={props.showEducationalInfo !== false && result.culturalContext}>
                     <div class={styles.culturalContext}>
                       <h5>Cultural Context</h5>
-                      <p>{result.culturalContext.culturalSignificance}</p>
+                      <p>{result.culturalContext?.culturalSignificance}</p>
                       <div class={styles.sensitivityLevel}>
-                        Sensitivity Level: {result.culturalContext.sensitivityLevel}
+                        Sensitivity Level: {result.culturalContext?.sensitivityLevel}
                       </div>
                     </div>
                   </Show>

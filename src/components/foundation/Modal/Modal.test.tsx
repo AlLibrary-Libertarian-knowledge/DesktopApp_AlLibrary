@@ -1,5 +1,6 @@
 import { render, screen, fireEvent } from '@solidjs/testing-library';
 import { createSignal } from 'solid-js';
+import { describe, it, expect } from 'vitest';
 import { Modal } from './Modal';
 
 const Wrapper = (props: any) => {

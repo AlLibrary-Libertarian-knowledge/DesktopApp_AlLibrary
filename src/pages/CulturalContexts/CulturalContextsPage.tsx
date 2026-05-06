@@ -15,15 +15,24 @@ import {
   type CulturalEducationContent,
 } from '../../services/api';
 import { SearchBar } from '../../components/foundation/SearchBar/SearchBar';
-import { FilterPanel } from '../../components/composite/FilterPanel/FilterPanel';
-import { LoadingSpinner } from '../../components/foundation/LoadingSpinner/LoadingSpinner';
+import FilterPanel from '../../components/composite/FilterPanel/FilterPanel';
+import LoadingSpinner from '../../components/foundation/LoadingSpinner/LoadingSpinner';
 import ErrorMessage from '../../components/foundation/ErrorMessage/ErrorMessage';
-import { CulturalContextDisplay } from '../../components/cultural/CulturalContextDisplay/CulturalContextDisplay';
+import CulturalContextDisplay from '../../components/cultural/CulturalContextDisplay/CulturalContextDisplay';
 import { TraditionalClassificationView } from '../../components/cultural/TraditionalClassificationView/TraditionalClassificationView';
 import { CulturalLearningPath } from '../../components/cultural/CulturalLearningPath/CulturalLearningPath';
 import { CommunityContributions } from '../../components/cultural/CommunityContributions/CommunityContributions';
 import { ElderAcknowledgments } from '../../components/cultural/ElderAcknowledgments/ElderAcknowledgments';
 import styles from './CulturalContextsPage.module.css';
+
+type ContextFilters = {
+  culturalOrigins: string[];
+  sensitivityLevels: string[];
+  knowledgeTypes: string[];
+  regions: string[];
+  hasEducationalContent: boolean;
+  elderApproved: boolean;
+};
 
 /**
  * Cultural Contexts Page Component
@@ -36,7 +45,7 @@ export const CulturalContextsPage: Component = () => {
   const [viewMode, setViewMode] = createSignal<
     'contexts' | 'learning' | 'communities' | 'acknowledgments'
   >('contexts');
-  const [selectedFilters, setSelectedFilters] = createSignal({
+  const [selectedFilters, setSelectedFilters] = createSignal<ContextFilters>({
     culturalOrigins: [] as string[],
     sensitivityLevels: [] as string[],
     knowledgeTypes: [] as string[],
@@ -100,7 +109,10 @@ export const CulturalContextsPage: Component = () => {
 
     try {
       setIsLoading(true);
-      const response = await culturalApi.searchCulturalContexts(query, filters);
+      const response = await culturalApi.searchCulturalContexts(query, {
+        ...filters,
+        sensitivityLevels: filters.sensitivityLevels as any,
+      });
       return response.success ? response.data : [];
     } catch (err) {
       console.error('Cultural context search failed:', err);
@@ -173,11 +185,13 @@ export const CulturalContextsPage: Component = () => {
     setSelectedContextId(undefined);
   };
 
-  const handleFilterChange = (filters: typeof selectedFilters) => {
-    setSelectedFilters(filters);
+  const handleFilterChange = (filters: Record<string, any>) => {
+    setSelectedFilters(filters as ContextFilters);
   };
 
-  const handleViewModeChange = (mode: typeof viewMode) => {
+  const handleViewModeChange = (
+    mode: 'contexts' | 'learning' | 'communities' | 'acknowledgments'
+  ) => {
     setViewMode(mode);
     setSelectedContextId(undefined);
   };
@@ -192,8 +206,8 @@ export const CulturalContextsPage: Component = () => {
     const results = searchResults();
     const all = allCulturalContexts();
 
-    if (query || results.length > 0) {
-      return results;
+    if (query || (results?.length ?? 0) > 0) {
+      return results || [];
     }
 
     return all || [];
@@ -215,7 +229,6 @@ export const CulturalContextsPage: Component = () => {
       fallback={err => (
         <ErrorMessage
           message="Failed to load cultural contexts page"
-          details={err.message}
           onRetry={() => window.location.reload()}
         />
       )}
@@ -303,7 +316,7 @@ export const CulturalContextsPage: Component = () => {
                 ],
                 regions: [], // Will be populated from backend
               }}
-              class={styles.filterPanel}
+              className={styles.filterPanel}
             />
           </div>
         </Show>
@@ -311,7 +324,7 @@ export const CulturalContextsPage: Component = () => {
         {/* Loading State */}
         <Show when={isLoading()}>
           <div class={styles.loadingContainer}>
-            <LoadingSpinner size="large" message="Loading cultural contexts..." />
+            <LoadingSpinner size="lg" message="Loading cultural contexts..." />
           </div>
         </Show>
 
@@ -356,15 +369,15 @@ export const CulturalContextsPage: Component = () => {
 
                 {/* Cultural Context Display */}
                 <CulturalContextDisplay
-                  context={selectedContext()!}
+                  context={selectedContext() as any}
                   expanded={true}
                   showEducationalContent={true}
                   showCommunityInfo={true}
-                  class={styles.contextDisplay}
+                  className={styles.contextDisplay}
                 />
 
                 {/* Educational Content */}
-                <Show when={educationalContent().length > 0}>
+                <Show when={(educationalContent() || []).length > 0}>
                   <div class={styles.educationalSection}>
                     <h3 class={styles.sectionTitle}>Educational Content</h3>
                     <div class={styles.educationalGrid}>
@@ -474,7 +487,7 @@ export const CulturalContextsPage: Component = () => {
                 </h2>
 
                 <Show
-                  when={contextsToDisplay().length > 0}
+                  when={(contextsToDisplay() || []).length > 0}
                   fallback={
                     <div class={styles.emptyState}>
                       <h3>No cultural contexts found</h3>
@@ -533,10 +546,10 @@ export const CulturalContextsPage: Component = () => {
           {/* Learning Pathways View */}
           <Show when={viewMode() === 'learning' && learningPathways()}>
             <CulturalLearningPath
-              pathways={learningPathways()!}
-              onPathwaySelect={pathwayId => {
+              learningPaths={(learningPathways()?.recommendedPathways as any) || []}
+              onPathSelect={pathway => {
                 // Handle pathway selection
-                console.log('Selected pathway:', pathwayId);
+                console.log('Selected pathway:', pathway.id);
               }}
               class={styles.learningSection}
             />
@@ -589,7 +602,7 @@ export const CulturalContextsPage: Component = () => {
           {/* Elder Acknowledgments View */}
           <Show when={viewMode() === 'acknowledgments' && elderAcknowledgments()}>
             <ElderAcknowledgments
-              acknowledgments={elderAcknowledgments()!}
+              acknowledgments={(elderAcknowledgments()?.acknowledgments as any) || []}
               class={styles.acknowledgementsSection}
             />
           </Show>

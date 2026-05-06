@@ -27,25 +27,19 @@
  * - Local storage integration
  */
 
-import { type Component, createSignal, createEffect, onMount, Show, For } from 'solid-js';
+import { type Component, createSignal, Show, For } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
 import {
   Settings,
   User,
-  Globe,
   Shield,
   Palette,
   Eye,
   Network,
   BookOpen,
   Download,
-  Upload,
-  Database,
   Lock,
-  Unlock,
   Bell,
-  Volume2,
-  VolumeX,
   Moon,
   Sun,
   Monitor,
@@ -63,26 +57,14 @@ import { Input } from '../../components/foundation/Input';
 import { Select } from '../../components/foundation/Select';
 import { Badge } from '../../components/foundation/Badge';
 import { Switch } from '../../components/foundation/Switch';
-import { Slider } from '../../components/foundation/Slider';
+import MainLayout from '../../components/layout/MainLayout';
+import { PageHeader } from '../../components/layout/PageHeader/PageHeader';
 
-// Domain Components
-import { CulturalIndicator } from '../../components/domain/cultural/CulturalIndicator';
 import { NetworkStatus } from '../../components/domain/network/NetworkStatus';
-
-// Layout Components
-import { MainLayout } from '../../components/layout/MainLayout';
-import { PageHeader } from '../../components/layout/PageHeader';
 
 // Hooks and Services
 import { useSettings } from '../../hooks/data/useSettings';
-import { useCulturalContext } from '../../hooks/cultural/useCulturalContext';
 import { useTheme } from '../../hooks/ui/useTheme';
-import { useNetwork } from '../../hooks/network/useNetwork';
-
-// Types
-import type { UserSettings } from '../../types/Settings';
-import type { CulturalPreferences } from '../../types/Cultural';
-import type { NetworkConfig } from '../../types/Network';
 
 // Styles
 import styles from './SettingsPage.module.css';
@@ -99,18 +81,18 @@ export const SettingsPage: Component<SettingsPageProps> = props => {
 
   // State Management
   const [activeSection, setActiveSection] = createSignal(props.initialSection || 'general');
-  const [hasUnsavedChanges, setHasUnsavedChanges] = createSignal(false);
-  const [showCulturalInfo, setShowCulturalInfo] = createSignal(props.showCulturalSettings || false);
 
   // Hooks
-  const { settings, updateSettings, resetSettings, saveSettings, isLoading, error } = useSettings();
-
-  const { culturalPreferences, updateCulturalPreferences, culturalEducationResources } =
-    useCulturalContext();
-
-  const { currentTheme, setTheme, availableThemes } = useTheme();
-
-  const { networkConfig, updateNetworkConfig, networkStatus } = useNetwork();
+  const {
+    settings,
+    updateSettings,
+    resetToDefaults,
+    saveSettings,
+    isLoading,
+    error,
+    hasUnsavedChanges,
+  } = useSettings();
+  const { currentTheme, setMode } = useTheme();
 
   // Settings sections
   const settingsSections = [
@@ -120,7 +102,6 @@ export const SettingsPage: Component<SettingsPageProps> = props => {
     { id: 'privacy', label: 'Privacy & Security', icon: <Shield size={20} /> },
     { id: 'appearance', label: 'Appearance', icon: <Palette size={20} /> },
     { id: 'accessibility', label: 'Accessibility', icon: <Accessibility size={20} /> },
-    { id: 'storage', label: 'Storage & Data', icon: <Database size={20} /> },
     { id: 'notifications', label: 'Notifications', icon: <Bell size={20} /> },
   ];
 
@@ -128,7 +109,7 @@ export const SettingsPage: Component<SettingsPageProps> = props => {
   const themeOptions = [
     { value: 'light', label: 'Light Theme', icon: <Sun size={16} /> },
     { value: 'dark', label: 'Dark Theme', icon: <Moon size={16} /> },
-    { value: 'system', label: 'System Default', icon: <Monitor size={16} /> },
+    { value: 'auto', label: 'System Default', icon: <Monitor size={16} /> },
   ];
 
   // Language options
@@ -142,35 +123,27 @@ export const SettingsPage: Component<SettingsPageProps> = props => {
 
   // Cultural information levels
   const culturalInfoLevels = [
-    { value: 0, label: 'No Cultural Information' },
-    { value: 1, label: 'Basic Cultural Context' },
-    { value: 2, label: 'Detailed Cultural Information' },
-    { value: 3, label: 'Educational Resources Included' },
-    { value: 4, label: 'Comprehensive Cultural Context' },
-    { value: 5, label: 'Full Educational Integration' },
+    { value: 'hidden', label: 'No Cultural Information' },
+    { value: 'minimal', label: 'Basic Cultural Context' },
+    { value: 'full', label: 'Full Educational Integration' },
+  ];
+
+  const fontSizeOptions = [
+    { value: 'small', label: 'Small' },
+    { value: 'medium', label: 'Medium' },
+    { value: 'large', label: 'Large' },
+    { value: 'extra-large', label: 'Extra Large' },
   ];
 
   // Handle settings changes
   const handleSettingChange = (key: string, value: any) => {
     updateSettings({ [key]: value });
-    setHasUnsavedChanges(true);
-  };
-
-  const handleCulturalPreferenceChange = (key: string, value: any) => {
-    updateCulturalPreferences({ [key]: value });
-    setHasUnsavedChanges(true);
-  };
-
-  const handleNetworkConfigChange = (key: string, value: any) => {
-    updateNetworkConfig({ [key]: value });
-    setHasUnsavedChanges(true);
   };
 
   // Handle save and reset
   const handleSaveSettings = async () => {
     try {
       await saveSettings();
-      setHasUnsavedChanges(false);
     } catch (error) {
       console.error('Failed to save settings:', error);
     }
@@ -178,8 +151,7 @@ export const SettingsPage: Component<SettingsPageProps> = props => {
 
   const handleResetSettings = async () => {
     try {
-      await resetSettings();
-      setHasUnsavedChanges(false);
+      resetToDefaults();
     } catch (error) {
       console.error('Failed to reset settings:', error);
     }
@@ -201,11 +173,11 @@ export const SettingsPage: Component<SettingsPageProps> = props => {
         <PageHeader
           title="Settings"
           subtitle="Configure your AlLibrary preferences and options"
-          icon={<Settings size={24} />}
           breadcrumbs={[
-            { label: 'Home', href: '/' },
-            { label: 'Settings', href: '/settings' },
+            { label: 'Home', path: '/' },
+            { label: 'Settings', path: '/settings', current: true },
           ]}
+          onBreadcrumbClick={path => navigate(path)}
         />
 
         {/* Settings Container */}
@@ -284,11 +256,7 @@ export const SettingsPage: Component<SettingsPageProps> = props => {
                       <User size={16} />
                       Display Name
                     </label>
-                    <Input
-                      value={settings().displayName || ''}
-                      onChange={value => handleSettingChange('displayName', value)}
-                      placeholder="Enter your display name"
-                    />
+                    <Input value="AlLibrary User" readonly />
                   </div>
 
                   <div class={styles.settingGroup}>
@@ -309,12 +277,7 @@ export const SettingsPage: Component<SettingsPageProps> = props => {
                       Default Download Location
                     </label>
                     <div class={styles.pathSetting}>
-                      <Input
-                        value={settings().downloadPath || ''}
-                        onChange={value => handleSettingChange('downloadPath', value)}
-                        placeholder="Select download folder"
-                        readonly
-                      />
+                      <Input value="./downloads" readonly />
                       <Button variant="outline" size="sm">
                         Browse
                       </Button>
@@ -330,8 +293,8 @@ export const SettingsPage: Component<SettingsPageProps> = props => {
                         </p>
                       </div>
                       <Switch
-                        checked={settings().autoUpdate || false}
-                        onChange={checked => handleSettingChange('autoUpdate', checked)}
+                        checked={settings().autoSaveDocuments || false}
+                        onChange={checked => handleSettingChange('autoSaveDocuments', checked)}
                       />
                     </div>
                   </div>
@@ -360,8 +323,13 @@ export const SettingsPage: Component<SettingsPageProps> = props => {
                   <div class={styles.settingGroup}>
                     <label class={styles.settingLabel}>Cultural Information Level</label>
                     <Select
-                      value={culturalPreferences().informationLevel || 3}
-                      onChange={value => handleCulturalPreferenceChange('informationLevel', value)}
+                      value={settings().culturalDisplayMode}
+                      onChange={value =>
+                        handleSettingChange(
+                          'culturalDisplayMode',
+                          String(value) as 'full' | 'minimal' | 'hidden'
+                        )
+                      }
                       options={culturalInfoLevels}
                     />
                     <p class={styles.settingHelp}>
@@ -378,10 +346,8 @@ export const SettingsPage: Component<SettingsPageProps> = props => {
                         </p>
                       </div>
                       <Switch
-                        checked={culturalPreferences().showByDefault || true}
-                        onChange={checked =>
-                          handleCulturalPreferenceChange('showByDefault', checked)
-                        }
+                        checked={settings().showCulturalContext || true}
+                        onChange={checked => handleSettingChange('showCulturalContext', checked)}
                       />
                     </div>
                   </div>
@@ -395,9 +361,9 @@ export const SettingsPage: Component<SettingsPageProps> = props => {
                         </p>
                       </div>
                       <Switch
-                        checked={culturalPreferences().includeEducationalResources || true}
+                        checked={settings().enableEducationalResources || true}
                         onChange={checked =>
-                          handleCulturalPreferenceChange('includeEducationalResources', checked)
+                          handleSettingChange('enableEducationalResources', checked)
                         }
                       />
                     </div>
@@ -412,9 +378,9 @@ export const SettingsPage: Component<SettingsPageProps> = props => {
                         </p>
                       </div>
                       <Switch
-                        checked={culturalPreferences().showCommunityInfo || true}
+                        checked={(settings().culturalPreferences?.length || 0) > 0}
                         onChange={checked =>
-                          handleCulturalPreferenceChange('showCommunityInfo', checked)
+                          handleSettingChange('culturalPreferences', checked ? ['community'] : [])
                         }
                       />
                     </div>
@@ -429,10 +395,8 @@ export const SettingsPage: Component<SettingsPageProps> = props => {
                         </p>
                       </div>
                       <Switch
-                        checked={culturalPreferences().showAttribution || true}
-                        onChange={checked =>
-                          handleCulturalPreferenceChange('showAttribution', checked)
-                        }
+                        checked={settings().enableDocumentPreview || true}
+                        onChange={checked => handleSettingChange('enableDocumentPreview', checked)}
                       />
                     </div>
                   </div>
@@ -456,11 +420,7 @@ export const SettingsPage: Component<SettingsPageProps> = props => {
 
                 <Card class={styles.settingsCard}>
                   <div class={styles.networkStatus}>
-                    <NetworkStatus
-                      status={networkStatus().status}
-                      connectedPeers={networkStatus().connectedPeers}
-                      connectionQuality={networkStatus().connectionQuality}
-                    />
+                    <NetworkStatus variant="compact" autoRefresh refreshInterval={15} />
                   </div>
 
                   <div class={styles.settingGroup}>
@@ -475,8 +435,8 @@ export const SettingsPage: Component<SettingsPageProps> = props => {
                         </p>
                       </div>
                       <Switch
-                        checked={networkConfig().enabled || true}
-                        onChange={checked => handleNetworkConfigChange('enabled', checked)}
+                        checked={settings().enableNetworkSearch || true}
+                        onChange={checked => handleSettingChange('enableNetworkSearch', checked)}
                       />
                     </div>
                   </div>
@@ -493,20 +453,24 @@ export const SettingsPage: Component<SettingsPageProps> = props => {
                         </p>
                       </div>
                       <Switch
-                        checked={networkConfig().anonymousMode || false}
-                        onChange={checked => handleNetworkConfigChange('anonymousMode', checked)}
+                        checked={settings().enableAnonymousMode || false}
+                        onChange={checked => handleSettingChange('enableAnonymousMode', checked)}
                       />
                     </div>
                   </div>
 
                   <div class={styles.settingGroup}>
                     <label class={styles.settingLabel}>Maximum Connections</label>
-                    <Slider
-                      value={networkConfig().maxConnections || 50}
-                      min={10}
-                      max={200}
-                      step={10}
-                      onChange={value => handleNetworkConfigChange('maxConnections', value)}
+                    <Select
+                      value={settings().maxPeerConnections}
+                      onChange={value => handleSettingChange('maxPeerConnections', Number(value))}
+                      options={[
+                        { value: 10, label: '10' },
+                        { value: 25, label: '25' },
+                        { value: 50, label: '50' },
+                        { value: 100, label: '100' },
+                        { value: 200, label: '200' },
+                      ]}
                     />
                     <p class={styles.settingHelp}>
                       Higher values allow more peer connections but use more resources
@@ -517,10 +481,10 @@ export const SettingsPage: Component<SettingsPageProps> = props => {
                     <label class={styles.settingLabel}>Network Port</label>
                     <Input
                       type="number"
-                      value={networkConfig().port || 4001}
-                      onChange={value => handleNetworkConfigChange('port', parseInt(value))}
-                      min={1024}
-                      max={65535}
+                      value={String(settings().bandwidthLimit || 1000)}
+                      onChange={value =>
+                        handleSettingChange('bandwidthLimit', parseInt(value || '1000', 10))
+                      }
                     />
                   </div>
                 </Card>
@@ -545,8 +509,8 @@ export const SettingsPage: Component<SettingsPageProps> = props => {
                         </p>
                       </div>
                       <Switch
-                        checked={settings().encryptDatabase || false}
-                        onChange={checked => handleSettingChange('encryptDatabase', checked)}
+                        checked={settings().errorReporting || false}
+                        onChange={checked => handleSettingChange('errorReporting', checked)}
                       />
                     </div>
                   </div>
@@ -563,8 +527,8 @@ export const SettingsPage: Component<SettingsPageProps> = props => {
                         </p>
                       </div>
                       <Switch
-                        checked={settings().malwareScanning || true}
-                        onChange={checked => handleSettingChange('malwareScanning', checked)}
+                        checked={settings().performanceMonitoring || true}
+                        onChange={checked => handleSettingChange('performanceMonitoring', checked)}
                       />
                     </div>
                   </div>
@@ -578,24 +542,26 @@ export const SettingsPage: Component<SettingsPageProps> = props => {
                         </p>
                       </div>
                       <Switch
-                        checked={settings().autoLock || false}
-                        onChange={checked => handleSettingChange('autoLock', checked)}
+                        checked={settings().debugMode || false}
+                        onChange={checked => handleSettingChange('debugMode', checked)}
                       />
                     </div>
                   </div>
 
-                  <Show when={settings().autoLock}>
-                    <div class={styles.settingGroup}>
-                      <label class={styles.settingLabel}>Auto-Lock Timeout (minutes)</label>
-                      <Slider
-                        value={settings().autoLockTimeout || 15}
-                        min={5}
-                        max={120}
-                        step={5}
-                        onChange={value => handleSettingChange('autoLockTimeout', value)}
+                  <div class={styles.settingGroup}>
+                    <div class={styles.toggleSetting}>
+                      <div class={styles.toggleInfo}>
+                        <label class={styles.settingLabel}>Beta Features</label>
+                        <p class={styles.settingDescription}>
+                          Enable preview features and experimental improvements
+                        </p>
+                      </div>
+                      <Switch
+                        checked={settings().betaFeatures || false}
+                        onChange={checked => handleSettingChange('betaFeatures', checked)}
                       />
                     </div>
-                  </Show>
+                  </div>
                 </Card>
               </div>
             </Show>
@@ -616,9 +582,9 @@ export const SettingsPage: Component<SettingsPageProps> = props => {
                         {theme => (
                           <button
                             class={`${styles.themeOption} ${
-                              currentTheme() === theme.value ? styles.selected : ''
+                              currentTheme().mode === theme.value ? styles.selected : ''
                             }`}
-                            onClick={() => setTheme(theme.value)}
+                            onClick={() => setMode(theme.value as 'light' | 'dark' | 'auto')}
                           >
                             {theme.icon}
                             <span>{theme.label}</span>
@@ -630,12 +596,15 @@ export const SettingsPage: Component<SettingsPageProps> = props => {
 
                   <div class={styles.settingGroup}>
                     <label class={styles.settingLabel}>Font Size</label>
-                    <Slider
-                      value={settings().fontSize || 16}
-                      min={12}
-                      max={24}
-                      step={1}
-                      onChange={value => handleSettingChange('fontSize', value)}
+                    <Select
+                      value={settings().fontSize}
+                      onChange={value =>
+                        handleSettingChange(
+                          'fontSize',
+                          String(value) as 'small' | 'medium' | 'large' | 'extra-large'
+                        )
+                      }
+                      options={fontSizeOptions}
                     />
                     <p class={styles.settingHelp}>
                       Adjust the base font size for better readability
@@ -651,8 +620,8 @@ export const SettingsPage: Component<SettingsPageProps> = props => {
                         </p>
                       </div>
                       <Switch
-                        checked={settings().reduceMotion || false}
-                        onChange={checked => handleSettingChange('reduceMotion', checked)}
+                        checked={settings().reducedMotion || false}
+                        onChange={checked => handleSettingChange('reducedMotion', checked)}
                       />
                     </div>
                   </div>
@@ -666,8 +635,8 @@ export const SettingsPage: Component<SettingsPageProps> = props => {
                         </p>
                       </div>
                       <Switch
-                        checked={settings().highContrast || false}
-                        onChange={checked => handleSettingChange('highContrast', checked)}
+                        checked={settings().highContrastMode || false}
+                        onChange={checked => handleSettingChange('highContrastMode', checked)}
                       />
                     </div>
                   </div>
@@ -693,8 +662,8 @@ export const SettingsPage: Component<SettingsPageProps> = props => {
                         </p>
                       </div>
                       <Switch
-                        checked={settings().screenReaderSupport || true}
-                        onChange={checked => handleSettingChange('screenReaderSupport', checked)}
+                        checked={settings().screenReaderOptimized || true}
+                        onChange={checked => handleSettingChange('screenReaderOptimized', checked)}
                       />
                     </div>
                   </div>
@@ -708,8 +677,8 @@ export const SettingsPage: Component<SettingsPageProps> = props => {
                         </p>
                       </div>
                       <Switch
-                        checked={settings().keyboardNavigation || true}
-                        onChange={checked => handleSettingChange('keyboardNavigation', checked)}
+                        checked={settings().keyboardNavigationOnly || true}
+                        onChange={checked => handleSettingChange('keyboardNavigationOnly', checked)}
                       />
                     </div>
                   </div>
@@ -717,96 +686,29 @@ export const SettingsPage: Component<SettingsPageProps> = props => {
                   <div class={styles.settingGroup}>
                     <div class={styles.toggleSetting}>
                       <div class={styles.toggleInfo}>
-                        <label class={styles.settingLabel}>Focus Indicators</label>
+                        <label class={styles.settingLabel}>Enable Offline Mode</label>
                         <p class={styles.settingDescription}>
-                          Enhanced focus indicators for keyboard navigation
+                          Keep core features available without active network access
                         </p>
                       </div>
                       <Switch
-                        checked={settings().focusIndicators || true}
-                        onChange={checked => handleSettingChange('focusIndicators', checked)}
+                        checked={settings().enableOfflineMode || true}
+                        onChange={checked => handleSettingChange('enableOfflineMode', checked)}
                       />
                     </div>
                   </div>
 
                   <div class={styles.settingGroup}>
-                    <label class={styles.settingLabel}>Text Scaling</label>
-                    <Slider
-                      value={settings().textScaling || 100}
-                      min={75}
-                      max={200}
-                      step={25}
-                      onChange={value => handleSettingChange('textScaling', value)}
+                    <label class={styles.settingLabel}>Search Timeout (seconds)</label>
+                    <Select
+                      value={Math.floor((settings().searchTimeout || 30000) / 1000)}
+                      onChange={value => handleSettingChange('searchTimeout', Number(value) * 1000)}
+                      options={[
+                        { value: 10, label: '10s' },
+                        { value: 30, label: '30s' },
+                        { value: 60, label: '60s' },
+                      ]}
                     />
-                    <p class={styles.settingHelp}>Scale text size as a percentage of the default</p>
-                  </div>
-                </Card>
-              </div>
-            </Show>
-
-            {/* Storage & Data Settings */}
-            <Show when={activeSection() === 'storage'}>
-              <div class={styles.settingsSection}>
-                <h2 class={styles.sectionTitle}>Storage & Data Settings</h2>
-
-                <Card class={styles.settingsCard}>
-                  <div class={styles.settingGroup}>
-                    <label class={styles.settingLabel}>
-                      <Database size={16} />
-                      Database Location
-                    </label>
-                    <div class={styles.pathSetting}>
-                      <Input
-                        value={settings().databasePath || ''}
-                        onChange={value => handleSettingChange('databasePath', value)}
-                        placeholder="Database folder path"
-                        readonly
-                      />
-                      <Button variant="outline" size="sm">
-                        Change
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div class={styles.settingGroup}>
-                    <label class={styles.settingLabel}>Cache Size Limit (GB)</label>
-                    <Slider
-                      value={settings().cacheSize || 5}
-                      min={1}
-                      max={50}
-                      step={1}
-                      onChange={value => handleSettingChange('cacheSize', value)}
-                    />
-                  </div>
-
-                  <div class={styles.settingGroup}>
-                    <div class={styles.toggleSetting}>
-                      <div class={styles.toggleInfo}>
-                        <label class={styles.settingLabel}>Auto-Cleanup Cache</label>
-                        <p class={styles.settingDescription}>
-                          Automatically clean old cache files to save space
-                        </p>
-                      </div>
-                      <Switch
-                        checked={settings().autoCleanup || true}
-                        onChange={checked => handleSettingChange('autoCleanup', checked)}
-                      />
-                    </div>
-                  </div>
-
-                  <div class={styles.storageActions}>
-                    <Button variant="outline" size="sm">
-                      <Database size={16} />
-                      Clear Cache
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      <Upload size={16} />
-                      Export Data
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      <Download size={16} />
-                      Import Data
-                    </Button>
                   </div>
                 </Card>
               </div>
@@ -830,13 +732,13 @@ export const SettingsPage: Component<SettingsPageProps> = props => {
                         </p>
                       </div>
                       <Switch
-                        checked={settings().notifications || true}
-                        onChange={checked => handleSettingChange('notifications', checked)}
+                        checked={settings().searchHistoryEnabled || true}
+                        onChange={checked => handleSettingChange('searchHistoryEnabled', checked)}
                       />
                     </div>
                   </div>
 
-                  <Show when={settings().notifications}>
+                  <Show when={settings().searchHistoryEnabled}>
                     <div class={styles.settingGroup}>
                       <div class={styles.toggleSetting}>
                         <div class={styles.toggleInfo}>
@@ -846,8 +748,8 @@ export const SettingsPage: Component<SettingsPageProps> = props => {
                           </p>
                         </div>
                         <Switch
-                          checked={settings().notifyNewDocuments || true}
-                          onChange={checked => handleSettingChange('notifyNewDocuments', checked)}
+                          checked={settings().peerDiscoveryEnabled || true}
+                          onChange={checked => handleSettingChange('peerDiscoveryEnabled', checked)}
                         />
                       </div>
                     </div>
@@ -861,8 +763,8 @@ export const SettingsPage: Component<SettingsPageProps> = props => {
                           </p>
                         </div>
                         <Switch
-                          checked={settings().notifyNetworkStatus || false}
-                          onChange={checked => handleSettingChange('notifyNetworkStatus', checked)}
+                          checked={settings().enableTorRouting || false}
+                          onChange={checked => handleSettingChange('enableTorRouting', checked)}
                         />
                       </div>
                     </div>
@@ -870,15 +772,16 @@ export const SettingsPage: Component<SettingsPageProps> = props => {
                     <div class={styles.settingGroup}>
                       <div class={styles.toggleSetting}>
                         <div class={styles.toggleInfo}>
-                          <label class={styles.settingLabel}>
-                            <Volume2 size={16} />
-                            Sound Notifications
-                          </label>
-                          <p class={styles.settingDescription}>Play sounds with notifications</p>
+                          <label class={styles.settingLabel}>Share Documents With Peers</label>
+                          <p class={styles.settingDescription}>
+                            Allow shared availability in the distributed network
+                          </p>
                         </div>
                         <Switch
-                          checked={settings().notificationSounds || false}
-                          onChange={checked => handleSettingChange('notificationSounds', checked)}
+                          checked={settings().shareDocumentsWithPeers || false}
+                          onChange={checked =>
+                            handleSettingChange('shareDocumentsWithPeers', checked)
+                          }
                         />
                       </div>
                     </div>

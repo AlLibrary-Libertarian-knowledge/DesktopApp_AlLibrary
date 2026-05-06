@@ -310,7 +310,7 @@ const LibrarySection: Component<LibrarySectionProps> = props => {
       const allIds = filteredAndSortedDocuments().map(doc => doc.id);
       setSelectedDocuments(new Set(allIds));
     } else {
-      setSelectedDocuments(new Set());
+      setSelectedDocuments(new Set<string>());
     }
   };
 
@@ -375,8 +375,8 @@ const LibrarySection: Component<LibrarySectionProps> = props => {
             type="search"
             placeholder="Search documents, cultural context, tags..."
             value={filters().searchQuery}
-            onChange={handleSearchChange}
-            leftIcon={<Search size={18} />}
+            onInput={handleSearchChange}
+            icon={<Search size={18} />}
             class={styles.searchInput}
             ariaLabel="Search documents and cultural content"
           />
@@ -628,7 +628,7 @@ const LibrarySection: Component<LibrarySectionProps> = props => {
                       <div class={styles.culturalInfo}>
                         <Info size={14} />
                         <span class={styles.culturalContext}>
-                          {document.culturalContext.educationalContext}
+                          {document.culturalContext?.educationalContext}
                         </span>
                         <span class={styles.infoNote}>(Educational context)</span>
                       </div>

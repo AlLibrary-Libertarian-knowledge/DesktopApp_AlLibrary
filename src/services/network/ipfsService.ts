@@ -213,11 +213,9 @@ class IPFSServiceImpl implements IPFSService {
       });
 
       // Automatically pin important content
-      if (
-        metadata?.sensitivityLevel ||
-        content.title?.includes('sacred') ||
-        content.title?.includes('traditional')
-      ) {
+      const title =
+        'title' in content && typeof content.title === 'string' ? content.title.toLowerCase() : '';
+      if (metadata?.sensitivityLevel || title.includes('sacred') || title.includes('traditional')) {
         await this.pinContent(contentHash.ipfsHash, {
           priority: 'high',
           redundancy: 5, // Extra redundancy for cultural content

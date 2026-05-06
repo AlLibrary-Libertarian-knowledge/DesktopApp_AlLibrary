@@ -218,7 +218,7 @@ export const I18N_CONFIG: I18nConfig = {
 
   // Missing translation handling
   missing: {
-    logMissing: process.env.NODE_ENV === 'development',
+    logMissing: import.meta.env.DEV,
     fallbackValue: '{{key}}', // Show key in development
   },
 };

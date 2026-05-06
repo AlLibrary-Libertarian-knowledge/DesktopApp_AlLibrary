@@ -51,28 +51,30 @@ export const CommunityNetworks: Component<CommunityNetworksProps> = props => {
   );
 
   // Load available community networks
-  createEffect(async () => {
-    try {
-      setIsLoading(true);
+  createEffect(() => {
+    void (async () => {
+      try {
+        setIsLoading(true);
 
-      // Discover available cultural community networks
-      const networks = await p2pNetworkService.discoverCommunityNetworks();
-      setAvailableNetworks(networks);
+        // Discover available cultural community networks
+        const networks = await p2pNetworkService.discoverCommunityNetworks();
+        setAvailableNetworks(networks as any);
 
-      // Get current participation status
-      const participation = await p2pNetworkService.getNetworkParticipation();
-      setNetworkParticipation(participation);
+        // Get current participation status
+        const participation = await p2pNetworkService.getNetworkParticipation();
+        setNetworkParticipation(participation as any);
 
-      // Filter joined networks
-      const joined = networks.filter(network =>
-        participation.some(p => p.networkId === network.id && p.isActive)
-      );
-      setJoinedNetworks(joined);
-    } catch (error) {
-      console.error('Failed to load community networks:', error);
-    } finally {
-      setIsLoading(false);
-    }
+        // Filter joined networks
+        const joined = (networks as any[]).filter(network =>
+          participation.some(p => p.networkId === network.id && p.isActive)
+        );
+        setJoinedNetworks(joined as any);
+      } catch (error) {
+        console.error('Failed to load community networks:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    })();
   });
 
   // Handle network joining (information and voluntary participation only)
@@ -179,10 +181,8 @@ export const CommunityNetworks: Component<CommunityNetworksProps> = props => {
       {/* Educational Context Panel */}
       <Show when={showEducationalPanel()}>
         <Card class={styles.educationalPanel}>
-          <Card.Header>
-            <Card.Title>Cultural Community Networks - Educational Context</Card.Title>
-          </Card.Header>
-          <Card.Content>
+          <h3>Cultural Community Networks - Educational Context</h3>
+          <div>
             <div class={styles.educationalContent}>
               <div class={styles.principleSection}>
                 <h4>Information Sharing Principles</h4>
@@ -204,7 +204,7 @@ export const CommunityNetworks: Component<CommunityNetworksProps> = props => {
                 </ul>
               </div>
             </div>
-          </Card.Content>
+          </div>
         </Card>
       </Show>
 
@@ -218,18 +218,16 @@ export const CommunityNetworks: Component<CommunityNetworksProps> = props => {
                 const participation = getParticipationStatus(network.id);
                 return (
                   <Card class={`${styles.networkCard} ${styles.joinedCard}`}>
-                    <Card.Header>
-                      <div class={styles.networkHeader}>
-                        <Card.Title class={styles.networkName}>{network.name}</Card.Title>
-                        <Badge
-                          variant="success"
-                          class={getCulturalSensitivityClass(network.culturalSensitivityLevel)}
-                        >
-                          Active
-                        </Badge>
-                      </div>
-                    </Card.Header>
-                    <Card.Content>
+                    <div class={styles.networkHeader}>
+                      <h4 class={styles.networkName}>{network.name}</h4>
+                      <Badge
+                        variant="success"
+                        class={getCulturalSensitivityClass(network.culturalSensitivityLevel)}
+                      >
+                        Active
+                      </Badge>
+                    </div>
+                    <div>
                       <div class={styles.networkInfo}>
                         <p class={styles.networkDescription}>{network.description}</p>
 
@@ -261,8 +259,8 @@ export const CommunityNetworks: Component<CommunityNetworksProps> = props => {
                           <p>{network.culturalContext}</p>
                         </div>
                       </div>
-                    </Card.Content>
-                    <Card.Actions>
+                    </div>
+                    <div class={styles.cardActions}>
                       <Button
                         variant="outline"
                         size="sm"
@@ -271,14 +269,14 @@ export const CommunityNetworks: Component<CommunityNetworksProps> = props => {
                         View Details
                       </Button>
                       <Button
-                        variant="destructive"
+                        variant="danger"
                         size="sm"
                         onClick={() => handleLeaveNetwork(network)}
                         disabled={isLoading()}
                       >
                         Leave Network
                       </Button>
-                    </Card.Actions>
+                    </div>
                   </Card>
                 );
               }}
@@ -294,18 +292,16 @@ export const CommunityNetworks: Component<CommunityNetworksProps> = props => {
           <For each={availableNetworks().filter(network => !isJoinedToNetwork(network.id))}>
             {network => (
               <Card class={styles.networkCard}>
-                <Card.Header>
-                  <div class={styles.networkHeader}>
-                    <Card.Title class={styles.networkName}>{network.name}</Card.Title>
-                    <Badge
-                      variant="outline"
-                      class={getCulturalSensitivityClass(network.culturalSensitivityLevel)}
-                    >
-                      Level {network.culturalSensitivityLevel}
-                    </Badge>
-                  </div>
-                </Card.Header>
-                <Card.Content>
+                <div class={styles.networkHeader}>
+                  <h4 class={styles.networkName}>{network.name}</h4>
+                  <Badge
+                    variant="outline"
+                    class={getCulturalSensitivityClass(network.culturalSensitivityLevel)}
+                  >
+                    Level {network.culturalSensitivityLevel}
+                  </Badge>
+                </div>
+                <div>
                   <div class={styles.networkInfo}>
                     <p class={styles.networkDescription}>{network.description}</p>
 
@@ -328,7 +324,7 @@ export const CommunityNetworks: Component<CommunityNetworksProps> = props => {
                       <h4>Cultural Educational Context</h4>
                       <p>{network.culturalContext}</p>
 
-                      <Show when={network.educationalResources?.length > 0}>
+                      <Show when={(network.educationalResources?.length || 0) > 0}>
                         <div class={styles.educationalResources}>
                           <h5>Educational Resources Available:</h5>
                           <ul>
@@ -340,8 +336,8 @@ export const CommunityNetworks: Component<CommunityNetworksProps> = props => {
                       </Show>
                     </div>
                   </div>
-                </Card.Content>
-                <Card.Actions>
+                </div>
+                <div class={styles.cardActions}>
                   <Button variant="outline" size="sm" onClick={() => setSelectedNetwork(network)}>
                     Learn More
                   </Button>
@@ -353,7 +349,7 @@ export const CommunityNetworks: Component<CommunityNetworksProps> = props => {
                   >
                     Join for Learning
                   </Button>
-                </Card.Actions>
+                </div>
               </Card>
             )}
           </For>
@@ -371,7 +367,7 @@ export const CommunityNetworks: Component<CommunityNetworksProps> = props => {
       {/* Empty State */}
       <Show when={availableNetworks().length === 0 && !isLoading()}>
         <Card class={styles.emptyState}>
-          <Card.Content>
+          <div>
             <div class={styles.emptyContent}>
               <h3>No Community Networks Found</h3>
               <p>
@@ -382,7 +378,7 @@ export const CommunityNetworks: Component<CommunityNetworksProps> = props => {
                 Refresh Networks
               </Button>
             </div>
-          </Card.Content>
+          </div>
         </Card>
       </Show>
     </div>

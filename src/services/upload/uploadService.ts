@@ -283,10 +283,9 @@ export class UploadService {
         sensitivityLevel: metadata.culturalSensitivityLevel || 1,
         culturalOrigin: metadata.culturalOrigin,
         traditionalProtocols: metadata.traditionalProtocols || [],
-        educationalResources:
-          session.validationResult?.culturalAnalysis.recommendedInformation || [],
-        informationOnly: true,
-        educationalPurpose: true,
+        educationalContext:
+          session.validationResult?.culturalAnalysis.recommendedInformation?.join(', ') ||
+          'Educational context available',
       },
       tags: metadata.tags || [],
       categories: metadata.categories || [],
@@ -411,7 +410,7 @@ export class UploadService {
     }
 
     // Analyze content based on validation result
-    if (validationResult?.culturalAnalysis.detectedLevel > 2) {
+    if ((validationResult?.culturalAnalysis.detectedLevel || 0) > 2) {
       return DocumentContentType.TRADITIONAL_KNOWLEDGE;
     }
 

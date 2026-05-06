@@ -4,6 +4,8 @@ import { createSignal } from 'solid-js';
 import Button from './Button';
 import styles from './Button.module.css';
 
+const cls = (name: string) => (styles as Record<string, string>)[name] ?? '';
+
 describe('Button Component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -14,25 +16,25 @@ describe('Button Component', () => {
       render(() => <Button>Click me</Button>);
       const button = screen.getByRole('button', { name: 'Click me' });
       expect(button).toBeInTheDocument();
-      expect(button).toHaveClass(styles.btn, styles['btn-primary'], styles['btn-md']);
+      expect(button).toHaveClass(cls('btn'), cls('btn-primary'), cls('btn-md'));
     });
 
     it('renders with custom variant', () => {
       render(() => <Button variant="secondary">Secondary Button</Button>);
       const button = screen.getByRole('button');
-      expect(button).toHaveClass(styles['btn-secondary']);
+      expect(button).toHaveClass(cls('btn-secondary'));
     });
 
     it('renders with custom size', () => {
       render(() => <Button size="lg">Large Button</Button>);
       const button = screen.getByRole('button');
-      expect(button).toHaveClass(styles['btn-lg']);
+      expect(button).toHaveClass(cls('btn-lg'));
     });
 
     it('renders with custom color', () => {
       render(() => <Button color="purple">Purple Button</Button>);
       const button = screen.getByRole('button');
-      expect(button).toHaveClass(styles['btn-color-purple']);
+      expect(button).toHaveClass(cls('btn-color-purple'));
     });
 
     it('handles click events', () => {
@@ -55,7 +57,7 @@ describe('Button Component', () => {
 
       const button = screen.getByRole('button');
       expect(button).toBeDisabled();
-      expect(button).toHaveClass(styles['btn-disabled']);
+      expect(button).toHaveClass(cls('btn-disabled'));
 
       fireEvent.click(button);
       expect(handleClick).not.toHaveBeenCalled();
@@ -66,10 +68,10 @@ describe('Button Component', () => {
 
       const button = screen.getByRole('button');
       expect(button).toBeDisabled();
-      expect(button).toHaveClass(styles['btn-loading']);
+      expect(button).toHaveClass(cls('btn-loading'));
       expect(button).toHaveAttribute('aria-busy', 'true');
 
-      const spinner = button.querySelector(`.${styles['btn-spinner']}`);
+      const spinner = button.querySelector(`.${cls('btn-spinner')}`);
       expect(spinner).toBeInTheDocument();
     });
   });
@@ -83,9 +85,9 @@ describe('Button Component', () => {
       ));
 
       const button = screen.getByRole('button');
-      expect(button).toHaveClass(styles['btn-cultural-indigenous']);
+      expect(button).toHaveClass(cls('btn-cultural-indigenous'));
 
-      const indicator = button.querySelector(`.${styles['btn-cultural-indicator']}`);
+      const indicator = button.querySelector(`.${cls('btn-cultural-indicator')}`);
       expect(indicator).toBeInTheDocument();
       expect(indicator).toHaveTextContent('🌿');
     });
@@ -94,28 +96,28 @@ describe('Button Component', () => {
       render(() => <Button culturalTheme="traditional">Traditional Knowledge</Button>);
 
       const button = screen.getByRole('button');
-      expect(button).toHaveClass(styles['btn-cultural-traditional']);
+      expect(button).toHaveClass(cls('btn-cultural-traditional'));
     });
 
     it('renders with ceremonial cultural theme', () => {
       render(() => <Button culturalTheme="ceremonial">Ceremonial Content</Button>);
 
       const button = screen.getByRole('button');
-      expect(button).toHaveClass(styles['btn-cultural-ceremonial']);
+      expect(button).toHaveClass(cls('btn-cultural-ceremonial'));
     });
 
     it('renders with community cultural theme', () => {
       render(() => <Button culturalTheme="community">Community Knowledge</Button>);
 
       const button = screen.getByRole('button');
-      expect(button).toHaveClass(styles['btn-cultural-community']);
+      expect(button).toHaveClass(cls('btn-cultural-community'));
     });
 
     it('renders with modern cultural theme', () => {
       render(() => <Button culturalTheme="modern">Modern Knowledge</Button>);
 
       const button = screen.getByRole('button');
-      expect(button).toHaveClass(styles['btn-cultural-modern']);
+      expect(button).toHaveClass(cls('btn-cultural-modern'));
     });
 
     it('shows cultural tooltip on hover', async () => {
@@ -246,7 +248,7 @@ describe('Button Component', () => {
 
       fireEvent.focus(button);
 
-      expect(button).toHaveClass(styles['btn-focused']);
+      expect(button).toHaveClass(cls('btn-focused'));
     });
   });
 
@@ -255,7 +257,7 @@ describe('Button Component', () => {
       render(() => <Button requiresValidation={true}>Validation Button</Button>);
 
       const button = screen.getByRole('button');
-      const indicator = button.querySelector(`.${styles['btn-security-indicator']}`);
+      const indicator = button.querySelector(`.${cls('btn-security-indicator')}`);
       expect(indicator).toBeInTheDocument();
       expect(indicator).toHaveTextContent('⚠️');
     });
@@ -270,7 +272,7 @@ describe('Button Component', () => {
       const button = screen.getByRole('button');
 
       await waitFor(() => {
-        const indicator = button.querySelector(`.${styles['btn-security-indicator']}`);
+        const indicator = button.querySelector(`.${cls('btn-security-indicator')}`);
         expect(indicator).toHaveTextContent('✅');
       });
     });
@@ -315,7 +317,7 @@ describe('Button Component', () => {
       render(() => <Button requiresValidation={true}>Unvalidated Button</Button>);
 
       const button = screen.getByRole('button');
-      expect(button).toHaveClass(styles['btn-unvalidated']);
+      expect(button).toHaveClass(cls('btn-unvalidated'));
     });
 
     it('applies error styling when validation fails', async () => {
@@ -329,7 +331,7 @@ describe('Button Component', () => {
       fireEvent.click(button);
 
       await waitFor(() => {
-        expect(button).toHaveClass(styles['btn-error']);
+        expect(button).toHaveClass(cls('btn-error'));
       });
     });
   });
@@ -376,9 +378,9 @@ describe('Button Component', () => {
       ));
 
       const button = screen.getByRole('button', { name: 'Share indigenous knowledge' });
-      expect(button).toHaveClass(styles['btn-cultural-indigenous']);
+      expect(button).toHaveClass(cls('btn-cultural-indigenous'));
 
-      const indicator = button.querySelector(`.${styles['btn-cultural-indicator']}`);
+      const indicator = button.querySelector(`.${cls('btn-cultural-indicator')}`);
       expect(indicator).toBeInTheDocument();
     });
 
@@ -390,12 +392,12 @@ describe('Button Component', () => {
       ));
 
       const button = screen.getByRole('button');
-      expect(button).toHaveClass(styles['btn-cultural-traditional'], styles['btn-unvalidated']);
+      expect(button).toHaveClass(cls('btn-cultural-traditional'), cls('btn-unvalidated'));
 
-      const securityIndicator = button.querySelector(`.${styles['btn-security-indicator']}`);
+      const securityIndicator = button.querySelector(`.${cls('btn-security-indicator')}`);
       expect(securityIndicator).toBeInTheDocument();
 
-      const culturalIndicator = button.querySelector(`.${styles['btn-cultural-indicator']}`);
+      const culturalIndicator = button.querySelector(`.${cls('btn-cultural-indicator')}`);
       expect(culturalIndicator).toBeInTheDocument();
     });
 
@@ -416,12 +418,12 @@ describe('Button Component', () => {
 
       const button = screen.getByRole('button', { name: 'Complete ceremonial button' });
       expect(button).toHaveClass(
-        styles.btn,
-        styles['btn-primary'],
-        styles['btn-lg'],
-        styles['btn-color-purple'],
-        styles['btn-cultural-ceremonial'],
-        styles['btn-unvalidated']
+        cls('btn'),
+        cls('btn-primary'),
+        cls('btn-lg'),
+        cls('btn-color-purple'),
+        cls('btn-cultural-ceremonial'),
+        cls('btn-unvalidated')
       );
     });
   });
@@ -440,7 +442,7 @@ describe('Button Component', () => {
 
       const button = screen.getByRole('button');
       expect(button).toBeInTheDocument();
-      expect(button).toHaveClass(styles.btn, styles['btn-primary'], styles['btn-md']);
+      expect(button).toHaveClass(cls('btn'), cls('btn-primary'), cls('btn-md'));
     });
 
     it('handles rapid state changes', () => {

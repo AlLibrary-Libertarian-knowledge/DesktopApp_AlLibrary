@@ -53,7 +53,7 @@ import {
   Tag,
 } from 'lucide-solid';
 import type { Document } from '@/types/Document';
-import type { CulturalSensitivityLevel } from '@/types/Cultural';
+import { CulturalSensitivityLevel } from '@/types/Cultural';
 import styles from './Trending.module.css';
 
 interface TrendingDocument {
@@ -179,7 +179,7 @@ export const Trending: Component = () => {
         createdBy: 'pacific-council',
         version: 2,
         culturalMetadata: {
-          sensitivityLevel: 'educational' as CulturalSensitivityLevel,
+          sensitivityLevel: CulturalSensitivityLevel.EDUCATIONAL,
           culturalOrigin: 'Pacific Island Communities',
         } as any,
         tags: ['climate', 'adaptation', 'indigenous-knowledge', 'sustainability', 'environment'],
@@ -226,7 +226,7 @@ export const Trending: Component = () => {
         createdBy: 'quantum-collective',
         version: 1,
         culturalMetadata: {
-          sensitivityLevel: 'public' as CulturalSensitivityLevel,
+          sensitivityLevel: CulturalSensitivityLevel.PUBLIC,
           culturalOrigin: 'Global Research Community',
         } as any,
         tags: ['quantum', 'computing', 'open-source', 'research', 'algorithms'],
@@ -273,7 +273,7 @@ export const Trending: Component = () => {
         createdBy: 'cultural-council',
         version: 3,
         culturalMetadata: {
-          sensitivityLevel: 'community-restricted' as CulturalSensitivityLevel,
+          sensitivityLevel: CulturalSensitivityLevel.COMMUNITY,
           culturalOrigin: 'Global Indigenous Communities',
         } as any,
         tags: ['healing', 'traditional', 'medicine', 'cultural-heritage', 'documentation'],
@@ -426,16 +426,18 @@ export const Trending: Component = () => {
 
   const getSensitivityColor = (level: CulturalSensitivityLevel) => {
     switch (level) {
-      case 'public':
+      case CulturalSensitivityLevel.PUBLIC:
         return '#27ae60';
-      case 'educational':
+      case CulturalSensitivityLevel.EDUCATIONAL:
         return '#3498db';
-      case 'community-restricted':
+      case CulturalSensitivityLevel.COMMUNITY:
         return '#f39c12';
-      case 'guardian-approval':
+      case CulturalSensitivityLevel.GUARDIAN:
         return '#e67e22';
-      case 'sacred-protected':
+      case CulturalSensitivityLevel.SACRED:
         return '#e74c3c';
+      default:
+        return '#95a5a6';
     }
   };
 
@@ -582,7 +584,7 @@ export const Trending: Component = () => {
             type="search"
             placeholder="Search trending content, topics, or cultural themes..."
             value={searchQuery()}
-            onInput={e => setSearchQuery(e.currentTarget.value)}
+            onInput={setSearchQuery}
             class={styles['search-input']}
             aria-label="Search trending documents"
           />
@@ -656,11 +658,11 @@ export const Trending: Component = () => {
               class={styles['filter-select']}
             >
               <option value="all">All Levels</option>
-              <option value="public">🌍 Public</option>
-              <option value="educational">📚 Educational</option>
-              <option value="community-restricted">🏘️ Community</option>
-              <option value="guardian-approval">👥 Guardian</option>
-              <option value="sacred-protected">🔒 Sacred</option>
+              <option value={CulturalSensitivityLevel.PUBLIC}>🌍 Public</option>
+              <option value={CulturalSensitivityLevel.EDUCATIONAL}>📚 Educational</option>
+              <option value={CulturalSensitivityLevel.COMMUNITY}>🏘️ Community</option>
+              <option value={CulturalSensitivityLevel.GUARDIAN}>👥 Guardian</option>
+              <option value={CulturalSensitivityLevel.SACRED}>🔒 Sacred</option>
             </select>
           </div>
 

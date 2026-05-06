@@ -43,7 +43,7 @@ describe('commentService', () => {
   it('lists comments for a document', async () => {
     const result = await commentService.list(docId);
     expect(Array.isArray(result)).toBe(true);
-    expect(result[0].documentId).toBe(docId);
+    expect(result[0]?.documentId).toBe(docId);
   });
 
   it('adds a comment', async () => {

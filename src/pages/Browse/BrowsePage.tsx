@@ -10,7 +10,7 @@ import { Card } from '../../components/foundation/Card';
 import { Button } from '../../components/foundation/Button';
 import { Input } from '../../components/foundation/Input';
 import { BookOpen, Search, Grid, List, FolderOpen, Users, Globe } from 'lucide-solid';
-import type { CulturalSensitivityLevel } from '../../types/Cultural';
+import { CulturalSensitivityLevel } from '../../types/Cultural';
 import styles from './BrowsePage.module.css';
 
 interface Category {
@@ -55,7 +55,7 @@ export const BrowsePage: Component = () => {
           icon: '🌿',
           documentCount: 234,
           culturalOrigin: 'Global Indigenous Communities',
-          sensitivityLevel: 'community-restricted',
+          sensitivityLevel: CulturalSensitivityLevel.COMMUNITY,
           color: '#00ff88',
           subcategories: [
             { id: 'medicine', name: 'Traditional Medicine', documentCount: 67 },
@@ -71,7 +71,7 @@ export const BrowsePage: Component = () => {
           icon: '🔬',
           documentCount: 1847,
           culturalOrigin: 'Global Scientific Community',
-          sensitivityLevel: 'public',
+          sensitivityLevel: CulturalSensitivityLevel.PUBLIC,
           color: '#00cc66',
           subcategories: [
             { id: 'physics', name: 'Physics', documentCount: 423 },
@@ -87,7 +87,7 @@ export const BrowsePage: Component = () => {
           icon: '📚',
           documentCount: 892,
           culturalOrigin: 'Global Cultural Communities',
-          sensitivityLevel: 'educational',
+          sensitivityLevel: CulturalSensitivityLevel.EDUCATIONAL,
           color: '#44ff99',
           subcategories: [
             { id: 'poetry', name: 'Poetry', documentCount: 234 },
@@ -103,7 +103,7 @@ export const BrowsePage: Component = () => {
           icon: '🏛️',
           documentCount: 1203,
           culturalOrigin: 'Various Cultural Communities',
-          sensitivityLevel: 'educational',
+          sensitivityLevel: CulturalSensitivityLevel.EDUCATIONAL,
           color: '#aa44ff',
           subcategories: [
             { id: 'ancient-history', name: 'Ancient History', documentCount: 312 },
@@ -119,7 +119,7 @@ export const BrowsePage: Component = () => {
           icon: '🎓',
           documentCount: 756,
           culturalOrigin: 'Educational Communities',
-          sensitivityLevel: 'public',
+          sensitivityLevel: CulturalSensitivityLevel.PUBLIC,
           color: '#ffaa00',
           subcategories: [
             { id: 'textbooks', name: 'Textbooks', documentCount: 234 },
@@ -135,7 +135,7 @@ export const BrowsePage: Component = () => {
           icon: '🏘️',
           documentCount: 445,
           culturalOrigin: 'Local Communities',
-          sensitivityLevel: 'community-restricted',
+          sensitivityLevel: CulturalSensitivityLevel.COMMUNITY,
           color: '#ff4466',
           subcategories: [
             { id: 'governance', name: 'Community Governance', documentCount: 89 },
@@ -167,16 +167,18 @@ export const BrowsePage: Component = () => {
 
   const getSensitivityColor = (level: CulturalSensitivityLevel) => {
     switch (level) {
-      case 'public':
+      case CulturalSensitivityLevel.PUBLIC:
         return '#00ff88';
-      case 'educational':
+      case CulturalSensitivityLevel.EDUCATIONAL:
         return '#00cc66';
-      case 'community-restricted':
+      case CulturalSensitivityLevel.COMMUNITY:
         return '#ffaa00';
-      case 'guardian-approval':
+      case CulturalSensitivityLevel.GUARDIAN:
         return '#aa44ff';
-      case 'sacred-protected':
+      case CulturalSensitivityLevel.SACRED:
         return '#ff4466';
+      default:
+        return '#00ff88';
     }
   };
 
@@ -226,7 +228,7 @@ export const BrowsePage: Component = () => {
               type="search"
               placeholder="Search categories and topics..."
               value={searchQuery()}
-              onInput={e => setSearchQuery(e.target.value)}
+              onInput={setSearchQuery}
               class={styles.searchInput}
             />
           </div>
@@ -239,11 +241,11 @@ export const BrowsePage: Component = () => {
             class={styles.filterSelect}
           >
             <option value="all">All Sensitivity Levels</option>
-            <option value="public">🌍 Public</option>
-            <option value="educational">📚 Educational</option>
-            <option value="community-restricted">🏘️ Community</option>
-            <option value="guardian-approval">👥 Guardian</option>
-            <option value="sacred-protected">🔒 Sacred</option>
+            <option value={CulturalSensitivityLevel.PUBLIC}>🌍 Public</option>
+            <option value={CulturalSensitivityLevel.EDUCATIONAL}>📚 Educational</option>
+            <option value={CulturalSensitivityLevel.COMMUNITY}>🏘️ Community</option>
+            <option value={CulturalSensitivityLevel.GUARDIAN}>👥 Guardian</option>
+            <option value={CulturalSensitivityLevel.SACRED}>🔒 Sacred</option>
           </select>
         </div>
       </div>
@@ -268,7 +270,10 @@ export const BrowsePage: Component = () => {
           <Users class={styles.statIcon} />
           <div>
             <h3>
-              {categories().filter(c => c.sensitivityLevel === 'community-restricted').length}
+              {
+                categories().filter(c => c.sensitivityLevel === CulturalSensitivityLevel.COMMUNITY)
+                  .length
+              }
             </h3>
             <p>Community Categories</p>
           </div>
@@ -276,7 +281,12 @@ export const BrowsePage: Component = () => {
         <div class={styles.statCard}>
           <Globe class={styles.statIcon} />
           <div>
-            <h3>{categories().filter(c => c.sensitivityLevel === 'public').length}</h3>
+            <h3>
+              {
+                categories().filter(c => c.sensitivityLevel === CulturalSensitivityLevel.PUBLIC)
+                  .length
+              }
+            </h3>
             <p>Public Categories</p>
           </div>
         </div>
@@ -362,10 +372,10 @@ export const BrowsePage: Component = () => {
                       </div>
 
                       <div class={styles.cardActions}>
-                        <Button variant="primary" size="small">
+                        <Button variant="primary" size="sm">
                           Explore Category
                         </Button>
-                        <Button variant="secondary" size="small">
+                        <Button variant="secondary" size="sm">
                           View Subcategories
                         </Button>
                       </div>

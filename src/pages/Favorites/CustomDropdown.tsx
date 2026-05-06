@@ -46,8 +46,11 @@ export const CustomDropdown = (props: CustomDropdownProps) => {
       setHighlighted(h => Math.max(h - 1, 0));
       e.preventDefault();
     } else if (e.key === 'Enter' && highlighted() >= 0) {
-      props.onChange(props.options[highlighted()].value);
-      setOpen(false);
+      const selected = props.options[highlighted()];
+      if (selected) {
+        props.onChange(selected.value);
+        setOpen(false);
+      }
       e.preventDefault();
     } else if (e.key === 'Escape') {
       setOpen(false);

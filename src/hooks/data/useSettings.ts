@@ -204,13 +204,15 @@ export const useSettings = () => {
   };
 
   createEffect(() => {
+    let timeoutId: number | undefined;
     if (hasUnsavedChanges()) {
-      const timeoutId = window.setTimeout(() => {
+      timeoutId = window.setTimeout(() => {
         saveSettings().catch(console.error);
       }, 1000);
-
-      return () => window.clearTimeout(timeoutId);
     }
+    return () => {
+      if (timeoutId !== undefined) window.clearTimeout(timeoutId);
+    };
   });
 
   createEffect(() => {

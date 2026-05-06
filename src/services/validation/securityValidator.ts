@@ -20,7 +20,7 @@ import type {
   SecurityValidationResult,
   SafetyResult,
   ScanResult,
-  LegalComplianceResult,
+  LegalComplianceValidation,
 } from '../../types/Security';
 
 /**
@@ -45,7 +45,7 @@ export class SecurityValidator {
    * Validates input for technical security threats only
    */
   async validateInput(
-    input: string | null | undefined,
+    input: string | ArrayBuffer | null | undefined,
     context: ValidationContext
   ): Promise<SecurityValidationResult> {
     const validationId = this.generateValidationId();
@@ -58,13 +58,14 @@ export class SecurityValidator {
         securityLevel: 'BLOCKED',
         validationId,
         validatedAt,
-        threats: ['Input is required'],
         sanitizedInput: '',
         error: 'Input cannot be null or undefined',
       };
     }
 
-    if (typeof input !== 'string') {
+    if (input instanceof ArrayBuffer) {
+      input = `[binary:${input.byteLength}]`;
+    } else if (typeof input !== 'string') {
       input = String(input);
     }
 
@@ -75,33 +76,35 @@ export class SecurityValidator {
       return { ...cached, validationId, validatedAt };
     }
 
-    const threats: string[] = [];
+    const threatMessages: string[] = [];
 
     // Technical Security Checks Only - Much more conservative
     if (this.detectXSS(input)) {
-      threats.push('Potential XSS script injection detected');
+      threatMessages.push('Potential XSS script injection detected');
     }
 
     if (this.detectSQLInjection(input)) {
-      threats.push('Potential SQL injection attempt detected');
+      threatMessages.push('Potential SQL injection attempt detected');
     }
 
     if (this.detectCommandInjection(input)) {
-      threats.push('Potential command injection detected');
+      threatMessages.push('Potential command injection detected');
     }
 
     if (this.detectPathTraversal(input)) {
-      threats.push('Potential path traversal attack detected');
+      threatMessages.push('Potential path traversal attack detected');
     }
 
     const result: SecurityValidationResult = {
-      valid: threats.length === 0,
-      securityLevel: threats.length === 0 ? 'SAFE' : 'BLOCKED',
+      valid: threatMessages.length === 0,
+      securityLevel: threatMessages.length === 0 ? 'SAFE' : 'BLOCKED',
       validationId,
       validatedAt,
-      threats: threats as any, // Type assertion for now
       sanitizedInput: await this.sanitizeInput(input),
-      error: threats.length > 0 ? `Security threats detected: ${threats.join(', ')}` : undefined,
+      error:
+        threatMessages.length > 0
+          ? `Security threats detected: ${threatMessages.join(', ')}`
+          : undefined,
     };
 
     // Cache result
@@ -115,51 +118,55 @@ export class SecurityValidator {
    * Scans files for malware threats
    */
   async scanFile(filePath: string): Promise<ScanResult> {
+    const toThreat = (
+      description: string,
+      severity: SecurityThreat['severity'] = 'high'
+    ): SecurityThreat => ({
+      threatId: this.generateValidationId(),
+      threatType: 'technical_exploit',
+      threatName: 'Security Threat',
+      description,
+      severity,
+      mitigation: ['Review and remove unsafe input'],
+    });
     try {
       // Check for suspicious file paths (fail-safe approach)
       if (filePath.includes('/nonexistent/') || filePath.includes('\\nonexistent\\')) {
         return {
-          clean: false,
-          threats: ['File not found - treating as potentially unsafe'],
+          safe: false,
+          threats: [toThreat('File not found - treating as potentially unsafe')],
           scanTime: new Date(),
-          scanDate: new Date(),
-          scanEngine: 'AlLibrary-Security-Scanner-v1.0',
-          filePath,
+          scanVersion: 'AlLibrary-Security-Scanner-v1.0',
         };
       }
 
       // Simulate malware scanning
-      const threats: string[] = [];
+      const threats: SecurityThreat[] = [];
 
       // Basic file extension checks
       const dangerousExtensions = ['.exe', '.bat', '.cmd', '.scr', '.vbs', '.js'];
       const extension = filePath.toLowerCase().split('.').pop();
 
       if (extension && dangerousExtensions.includes(`.${extension}`)) {
-        threats.push(`Potentially dangerous file type: .${extension}`);
+        threats.push(toThreat(`Potentially dangerous file type: .${extension}`, 'medium'));
       }
 
       // Simulate scan completion
       await new Promise(resolve => setTimeout(resolve, 100));
 
       return {
-        clean: threats.length === 0,
+        safe: threats.length === 0,
         threats,
         scanTime: new Date(),
-        scanDate: new Date(),
-        scanEngine: 'AlLibrary-Security-Scanner-v1.0',
-        filePath,
+        scanVersion: 'AlLibrary-Security-Scanner-v1.0',
       };
     } catch (error) {
       // Fail-safe approach: return clean=false on scan failures
       return {
-        clean: false,
-        threats: ['Scan failed - treating as potentially unsafe'],
+        safe: false,
+        threats: [toThreat('Scan failed - treating as potentially unsafe')],
         scanTime: new Date(),
-        scanDate: new Date(),
-        scanEngine: 'AlLibrary-Security-Scanner-v1.0',
-        filePath,
-        error: error instanceof Error ? error.message : 'Unknown scan error',
+        scanVersion: 'AlLibrary-Security-Scanner-v1.0',
       };
     }
   }
@@ -222,7 +229,7 @@ export class SecurityValidator {
   async validateLegalCompliance(
     content: string,
     jurisdiction: string
-  ): Promise<LegalComplianceResult> {
+  ): Promise<LegalComplianceValidation> {
     const issues: string[] = [];
 
     // Technical legal compliance only - no content censorship
@@ -233,10 +240,11 @@ export class SecurityValidator {
 
     // For now, return compliant (anti-censorship principle)
     return {
-      compliant: true,
-      issues,
       jurisdiction,
-      checkedAt: new Date(),
+      complianceChecks: [],
+      compliant: true,
+      issues: [],
+      validatedAt: new Date(),
     };
   }
 

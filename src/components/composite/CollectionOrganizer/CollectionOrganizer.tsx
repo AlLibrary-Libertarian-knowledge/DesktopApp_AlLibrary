@@ -364,35 +364,29 @@ export function CollectionOrganizer(props: CollectionOrganizerProps) {
         <div class={styles.analysisOverview}>
           <TopCard
             title="Organization Analysis"
-            value={`${Math.round((state.analysis?.overallConfidence || 0) * 100)}%`}
             subtitle="Confidence Score"
-            trend="up"
-            color="purple"
+            rightContent={
+              <span>{`${Math.round((state.analysis?.overallConfidence || 0) * 100)}%`}</span>
+            }
           />
 
           <TopCard
             title="Tag Suggestions"
-            value={state.tagSuggestions.length.toString()}
             subtitle="Recommendations"
-            trend="neutral"
-            color="blue"
+            rightContent={<span>{state.tagSuggestions.length.toString()}</span>}
           />
 
           <TopCard
             title="Relationships"
-            value={state.relationshipSuggestions.length.toString()}
             subtitle="Potential Connections"
-            trend="up"
-            color="green"
+            rightContent={<span>{state.relationshipSuggestions.length.toString()}</span>}
           />
 
           <Show when={props.enableP2P}>
             <TopCard
               title="Sync Status"
-              value={state.syncConflicts.length > 0 ? 'Conflicts' : 'Clean'}
               subtitle="P2P Network"
-              trend={state.syncConflicts.length > 0 ? 'down' : 'up'}
-              color={state.syncConflicts.length > 0 ? 'red' : 'green'}
+              rightContent={<span>{state.syncConflicts.length > 0 ? 'Conflicts' : 'Clean'}</span>}
             />
           </Show>
         </div>
@@ -447,7 +441,7 @@ export function CollectionOrganizer(props: CollectionOrganizerProps) {
             <Button
               variant="futuristic"
               color="purple"
-              size="small"
+              size="sm"
               onClick={() => setState('showTagModal', true)}
             >
               View All
@@ -512,7 +506,7 @@ export function CollectionOrganizer(props: CollectionOrganizerProps) {
             <Button
               variant="futuristic"
               color="blue"
-              size="small"
+              size="sm"
               onClick={() => setState('showRelationshipModal', true)}
             >
               Manage
@@ -575,7 +569,7 @@ export function CollectionOrganizer(props: CollectionOrganizerProps) {
           <Button
             variant="futuristic"
             color="red"
-            size="small"
+            size="sm"
             onClick={() => setState('showConflictModal', true)}
           >
             Resolve Conflicts
@@ -591,7 +585,7 @@ export function CollectionOrganizer(props: CollectionOrganizerProps) {
           <Button
             variant="futuristic"
             color="orange"
-            size="small"
+            size="sm"
             onClick={() => setState('showValidationModal', true)}
           >
             Review Requests

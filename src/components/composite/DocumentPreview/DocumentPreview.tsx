@@ -328,7 +328,7 @@ const DocumentPreview: Component<DocumentPreviewProps> = props => {
         }
         props.onClose?.();
       }}
-      size="large"
+      size="lg"
       class={`${styles.documentPreview} ${props.class || ''}`}
       ariaLabel={props.ariaLabel || `Preview of ${currentDoc().title}`}
     >

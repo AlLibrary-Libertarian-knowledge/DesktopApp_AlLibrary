@@ -1,6 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { SearchService } from '../searchService';
-import type { Book, SearchFilters, PaginationOptions, SearchResult } from '../../types/core';
+import type { SearchResult } from '../../types/core';
+
+type SearchFilters = Record<string, unknown>;
+type PaginationOptions = { page: number; per_page: number };
 
 // Mock Tauri
 vi.mock('@tauri-apps/api/core', () => ({
@@ -22,16 +25,16 @@ describe('SearchService', () => {
   describe('Anti-Censorship Search Principles', () => {
     it('never filters search results based on cultural sensitivity', async () => {
       const query = 'sacred traditional knowledge';
-      const culturalResults: SearchResult[] = [
+      const culturalResults = [
         {
-          id: 1,
+          id: '1',
           title: 'Sacred Texts of Indigenous Peoples',
           cultural_sensitivity: 'high',
           content_type: 'book',
           relevance_score: 0.95,
         },
         {
-          id: 2,
+          id: '2',
           title: 'Traditional Healing Practices',
           cultural_sensitivity: 'medium',
           content_type: 'book',
@@ -57,9 +60,9 @@ describe('SearchService', () => {
 
     it('includes controversial and alternative perspective content', async () => {
       const query = 'alternative history';
-      const controversialResults: SearchResult[] = [
+      const controversialResults = [
         {
-          id: 1,
+          id: '1',
           title: 'Challenging Historical Narratives',
           controversial: true,
           alternative_perspective: true,
@@ -83,10 +86,10 @@ describe('SearchService', () => {
       };
 
       mockInvoke.mockResolvedValue([
-        { id: 1, perspective: 'western', relevance_score: 0.9 },
-        { id: 2, perspective: 'indigenous', relevance_score: 0.85 },
-        { id: 3, perspective: 'eastern', relevance_score: 0.88 },
-        { id: 4, perspective: 'african', relevance_score: 0.87 },
+        { id: '1', perspective: 'western', relevance_score: 0.9 },
+        { id: '2', perspective: 'indigenous', relevance_score: 0.85 },
+        { id: '3', perspective: 'eastern', relevance_score: 0.88 },
+        { id: '4', perspective: 'african', relevance_score: 0.87 },
       ]);
 
       const results = await service.searchBooks('history', filters);
@@ -103,7 +106,7 @@ describe('SearchService', () => {
       const query = 'banned books';
       const uncensoredResults = [
         {
-          id: 1,
+          id: '1',
           title: 'Historically Banned Literature',
           banned_status: 'previously_banned',
           educational_context: 'Important for understanding censorship history',
@@ -124,16 +127,16 @@ describe('SearchService', () => {
   describe('Core Search Functionality', () => {
     it('performs full-text search across books', async () => {
       const query = 'machine learning artificial intelligence';
-      const expectedResults: SearchResult[] = [
+      const expectedResults = [
         {
-          id: 1,
+          id: '1',
           title: 'Introduction to Machine Learning',
           author: 'AI Expert',
           content_type: 'book',
           relevance_score: 0.95,
         },
         {
-          id: 2,
+          id: '2',
           title: 'Artificial Intelligence Fundamentals',
           author: 'Tech Author',
           content_type: 'book',
@@ -408,7 +411,9 @@ describe('SearchService', () => {
       const searchMethods = methodNames.filter(name => name.includes('search'));
 
       expect(searchMethods.length).toBeGreaterThan(0);
-      expect(searchMethods.every(method => typeof service[method] === 'function')).toBe(true);
+      expect(searchMethods.every(method => typeof (service as any)[method] === 'function')).toBe(
+        true
+      );
     });
   });
 

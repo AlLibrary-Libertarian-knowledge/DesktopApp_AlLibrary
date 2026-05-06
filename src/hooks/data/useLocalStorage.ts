@@ -1,28 +1,5 @@
 import { createSignal, createEffect } from 'solid-js';
 
-// Declare browser APIs for TypeScript
-declare global {
-  interface Window {
-    localStorage: Storage;
-    addEventListener(type: 'storage', listener: (e: StorageEvent) => void): void;
-    removeEventListener(type: 'storage', listener: (e: StorageEvent) => void): void;
-  }
-
-  interface Storage {
-    getItem(key: string): string | null;
-    setItem(key: string, value: string): void;
-    removeItem(key: string): void;
-  }
-
-  interface StorageEvent extends Event {
-    key: string | null;
-    newValue: string | null;
-    oldValue: string | null;
-  }
-
-  const localStorage: Storage;
-}
-
 export interface LocalStorageOptions {
   /** Default value if key doesn't exist */
   defaultValue?: any;

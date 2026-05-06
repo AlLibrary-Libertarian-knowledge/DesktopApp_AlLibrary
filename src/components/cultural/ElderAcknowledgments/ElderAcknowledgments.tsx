@@ -84,10 +84,11 @@ export const ElderAcknowledgments: Component<ElderAcknowledgmentsProps> = props 
   const getAcknowledmentsByCommunity = () => {
     const grouped = props.acknowledgments.reduce(
       (acc, ack) => {
-        if (!acc[ack.community]) {
-          acc[ack.community] = [];
+        const key = ack.community;
+        if (!acc[key]) {
+          acc[key] = [];
         }
-        acc[ack.community].push(ack);
+        acc[key]!.push(ack);
         return acc;
       },
       {} as Record<string, ElderAcknowledgment[]>

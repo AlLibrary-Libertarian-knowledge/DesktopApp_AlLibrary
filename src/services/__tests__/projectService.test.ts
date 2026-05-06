@@ -286,7 +286,7 @@ describe('ProjectService', () => {
       const result = await service.setProjectConfig(projectId, config);
 
       expect(result).toEqual(config);
-      expect(result.cultural_settings.restrict_access).toBe(false);
+      expect(result.cultural_settings?.restrict_access).toBe(false);
       expect(mockInvoke).toHaveBeenCalledWith('set_project_config', {
         project_id: projectId,
         config,

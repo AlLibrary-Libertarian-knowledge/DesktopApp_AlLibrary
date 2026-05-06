@@ -2,7 +2,7 @@ import { type Component, createSignal } from 'solid-js';
 import { Calendar, Clock, Filter } from 'lucide-solid';
 import { Button } from '../../../foundation/Button';
 import { Select } from '../../../foundation/Select';
-import { useTranslation } from '../../../i18n/hooks';
+import { useTranslation } from '@/i18n/hooks';
 import styles from './TimeFilter.module.css';
 
 export interface TimeFilterProps {
@@ -31,7 +31,10 @@ export const TimeFilter: Component<TimeFilterProps> = props => {
     { value: 'custom', label: t('timeFilter.options.customRange') },
   ];
 
-  const handlePeriodChange = (period: string) => {
+  const handlePeriodChange = (periodValue: string | number | (string | number)[]) => {
+    const period = Array.isArray(periodValue)
+      ? String(periodValue[0] ?? 'all')
+      : String(periodValue);
     setSelectedPeriod(period);
 
     const filter: TimeFilterValue = { period };
@@ -96,7 +99,7 @@ export const TimeFilter: Component<TimeFilterProps> = props => {
               <input
                 type="date"
                 value={customStart()}
-                onInput={e => setCustomStart(e.target.value)}
+                onInput={e => setCustomStart(e.currentTarget.value)}
                 onChange={handleCustomDateChange}
                 class={styles.dateField}
               />
@@ -107,7 +110,7 @@ export const TimeFilter: Component<TimeFilterProps> = props => {
               <input
                 type="date"
                 value={customEnd()}
-                onInput={e => setCustomEnd(e.target.value)}
+                onInput={e => setCustomEnd(e.currentTarget.value)}
                 onChange={handleCustomDateChange}
                 class={styles.dateField}
               />

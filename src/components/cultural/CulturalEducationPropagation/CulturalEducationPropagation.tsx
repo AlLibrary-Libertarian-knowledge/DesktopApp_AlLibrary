@@ -4,15 +4,10 @@ import { Button } from '@/components/foundation/Button';
 import { Badge } from '@/components/foundation/Badge';
 import { Modal } from '@/components/foundation/Modal';
 import { Input } from '@/components/foundation/Input';
-import { Select } from '@/components/foundation/Select';
+import { Select, type SelectOption } from '@/components/foundation/Select';
 import { Textarea } from '@/components/foundation/Textarea';
-import { Tabs } from '@/components/foundation/Tabs';
-import { ProgressBar } from '@/components/foundation/ProgressBar';
-import { IconButton } from '@/components/foundation/IconButton';
-import { Toast } from '@/components/foundation/Toast';
-import { Tooltip } from '@/components/foundation/Tooltip';
-import { Spinner } from '@/components/foundation/Spinner';
-import { Checkbox } from '@/components/foundation/Checkbox';
+import { Progress } from '@/components/foundation/Progress';
+import { LoadingSpinner } from '@/components/foundation/LoadingSpinner';
 import type {
   CulturalEducationPropagationProps,
   EducationalContent,
@@ -27,6 +22,25 @@ import type {
   PathwayType,
 } from './types/CulturalEducationPropagationTypes';
 import styles from './CulturalEducationPropagation.module.css';
+
+const CONTENT_TYPE_FILTER_OPTIONS: SelectOption[] = [
+  { value: 'all', label: 'All Types' },
+  { value: 'lesson', label: 'Lesson' },
+  { value: 'course', label: 'Course' },
+  { value: 'tutorial', label: 'Tutorial' },
+  { value: 'workshop', label: 'Workshop' },
+  { value: 'cultural-story', label: 'Cultural Story' },
+  { value: 'traditional-practice', label: 'Traditional Practice' },
+];
+
+const DIFFICULTY_FILTER_OPTIONS: SelectOption[] = [
+  { value: 'all', label: 'All Levels' },
+  { value: 'beginner', label: 'Beginner' },
+  { value: 'intermediate', label: 'Intermediate' },
+  { value: 'advanced', label: 'Advanced' },
+  { value: 'expert', label: 'Expert' },
+  { value: 'community-specific', label: 'Community Specific' },
+];
 
 /**
  * CulturalEducationPropagation component for managing learning resource distribution
@@ -370,144 +384,161 @@ export const CulturalEducationPropagation: Component<CulturalEducationPropagatio
       </div>
 
       {/* Educational Context Panel */}
-      <Card class={styles.educationalContext}>
-        <Card.Header>
-          <Card.Title>Educational Principles</Card.Title>
-        </Card.Header>
-        <Card.Content>
-          <div class={styles.principlesList}>
-            <div class={styles.principle}>
-              <strong>Cultural Respect:</strong> All content maintains cultural authenticity and
-              appropriate context
-            </div>
-            <div class={styles.principle}>
-              <strong>Open Access:</strong> Educational resources are shared freely without
-              restrictions
-            </div>
-            <div class={styles.principle}>
-              <strong>Community Validation:</strong> Content is verified by relevant cultural
-              communities
-            </div>
-            <div class={styles.principle}>
-              <strong>Quality Assurance:</strong> All materials meet educational and cultural
-              standards
-            </div>
-            <div class={styles.principle}>
-              <strong>Inclusive Learning:</strong> Supports diverse learning styles and
-              accessibility needs
-            </div>
+      <Card class={styles.educationalContext} title="Educational Principles">
+        <div class={styles.principlesList}>
+          <div class={styles.principle}>
+            <strong>Cultural Respect:</strong> All content maintains cultural authenticity and
+            appropriate context
           </div>
-        </Card.Content>
+          <div class={styles.principle}>
+            <strong>Open Access:</strong> Educational resources are shared freely without
+            restrictions
+          </div>
+          <div class={styles.principle}>
+            <strong>Community Validation:</strong> Content is verified by relevant cultural
+            communities
+          </div>
+          <div class={styles.principle}>
+            <strong>Quality Assurance:</strong> All materials meet educational and cultural
+            standards
+          </div>
+          <div class={styles.principle}>
+            <strong>Inclusive Learning:</strong> Supports diverse learning styles and accessibility
+            needs
+          </div>
+        </div>
       </Card>
 
       {/* Main Interface */}
       <div class={styles.mainInterface}>
-        <Tabs value={activeTab()} onValueChange={setActiveTab} class={styles.mainTabs}>
-          <Tabs.List>
-            <Tabs.Trigger value="content">Content Distribution</Tabs.Trigger>
-            <Tabs.Trigger value="pathways">Learning Pathways</Tabs.Trigger>
-            <Tabs.Trigger value="initiatives">Community Initiatives</Tabs.Trigger>
+        <div class={styles.mainTabs}>
+          <div class={styles.tabBar} role="tablist" aria-label="Educational propagation sections">
+            <Button
+              role="tab"
+              type="button"
+              variant={activeTab() === 'content' ? 'primary' : 'outline'}
+              size="sm"
+              aria-selected={activeTab() === 'content'}
+              onClick={() => setActiveTab('content')}
+            >
+              Content Distribution
+            </Button>
+            <Button
+              role="tab"
+              type="button"
+              variant={activeTab() === 'pathways' ? 'primary' : 'outline'}
+              size="sm"
+              aria-selected={activeTab() === 'pathways'}
+              onClick={() => setActiveTab('pathways')}
+            >
+              Learning Pathways
+            </Button>
+            <Button
+              role="tab"
+              type="button"
+              variant={activeTab() === 'initiatives' ? 'primary' : 'outline'}
+              size="sm"
+              aria-selected={activeTab() === 'initiatives'}
+              onClick={() => setActiveTab('initiatives')}
+            >
+              Community Initiatives
+            </Button>
             <Show when={props.showProgress}>
-              <Tabs.Trigger value="progress">Propagation Progress</Tabs.Trigger>
+              <Button
+                role="tab"
+                type="button"
+                variant={activeTab() === 'progress' ? 'primary' : 'outline'}
+                size="sm"
+                aria-selected={activeTab() === 'progress'}
+                onClick={() => setActiveTab('progress')}
+              >
+                Propagation Progress
+              </Button>
             </Show>
-          </Tabs.List>
+          </div>
 
           {/* Content Distribution Tab */}
-          <Tabs.Content value="content" class={styles.tabContent}>
-            {/* Filters and Search */}
-            <div class={styles.filtersSection}>
-              <Input
-                type="text"
-                placeholder="Search educational content..."
-                value={searchFilter()}
-                onInput={e => setSearchFilter(e.currentTarget.value)}
-                class={styles.searchInput}
-              />
+          <Show when={activeTab() === 'content'}>
+            <div class={styles.tabContent} role="tabpanel">
+              {/* Filters and Search */}
+              <div class={styles.filtersSection}>
+                <Input
+                  type="text"
+                  placeholder="Search educational content..."
+                  value={searchFilter()}
+                  onInput={value => setSearchFilter(value)}
+                  class={styles.searchInput}
+                />
 
-              <Select
-                value={contentTypeFilter()}
-                onValueChange={value =>
-                  setContentTypeFilter(value as EducationalContentType | 'all')
-                }
-                placeholder="Content Type"
-              >
-                <Select.Item value="all">All Types</Select.Item>
-                <Select.Item value="lesson">Lesson</Select.Item>
-                <Select.Item value="course">Course</Select.Item>
-                <Select.Item value="tutorial">Tutorial</Select.Item>
-                <Select.Item value="workshop">Workshop</Select.Item>
-                <Select.Item value="cultural-story">Cultural Story</Select.Item>
-                <Select.Item value="traditional-practice">Traditional Practice</Select.Item>
-              </Select>
+                <Select
+                  value={contentTypeFilter()}
+                  options={CONTENT_TYPE_FILTER_OPTIONS}
+                  placeholder="Content Type"
+                  onChange={value => setContentTypeFilter(value as EducationalContentType | 'all')}
+                />
 
-              <Select
-                value={difficultyFilter()}
-                onValueChange={value => setDifficultyFilter(value as DifficultyLevel | 'all')}
-                placeholder="Difficulty"
-              >
-                <Select.Item value="all">All Levels</Select.Item>
-                <Select.Item value="beginner">Beginner</Select.Item>
-                <Select.Item value="intermediate">Intermediate</Select.Item>
-                <Select.Item value="advanced">Advanced</Select.Item>
-                <Select.Item value="expert">Expert</Select.Item>
-                <Select.Item value="community-specific">Community Specific</Select.Item>
-              </Select>
+                <Select
+                  value={difficultyFilter()}
+                  options={DIFFICULTY_FILTER_OPTIONS}
+                  placeholder="Difficulty"
+                  onChange={value => setDifficultyFilter(value as DifficultyLevel | 'all')}
+                />
 
-              <Select
-                value={networkFilter()}
-                onValueChange={setNetworkFilter}
-                placeholder="Network"
-              >
-                <Select.Item value="all">All Networks</Select.Item>
-                <For each={props.educationalNetworks}>
-                  {network => <Select.Item value={network.id}>{network.name}</Select.Item>}
-                </For>
-              </Select>
-            </div>
+                <Select
+                  value={networkFilter()}
+                  options={[
+                    { value: 'all', label: 'All Networks' },
+                    ...props.educationalNetworks.map(n => ({
+                      value: n.id,
+                      label: n.name,
+                    })),
+                  ]}
+                  placeholder="Network"
+                  onChange={value => setNetworkFilter(String(value))}
+                />
+              </div>
 
-            {/* Action Buttons */}
-            <div class={styles.actions}>
-              <Button
-                onClick={() => setShowPropagationModal(true)}
-                disabled={selectedContent().length === 0}
-                class={styles.propagateButton}
-              >
-                Propagate Selected Content ({selectedContent().length})
-              </Button>
-
-              <Show when={props.allowContentCreation}>
-                <Button variant="outline" onClick={() => setShowCreateContentModal(true)}>
-                  Create Educational Content
+              {/* Action Buttons */}
+              <div class={styles.actions}>
+                <Button
+                  onClick={() => setShowPropagationModal(true)}
+                  disabled={selectedContent().length === 0}
+                  class={styles.propagateButton}
+                >
+                  Propagate Selected Content ({selectedContent().length})
                 </Button>
-              </Show>
-            </div>
 
-            {/* Content Grid */}
-            <div class={styles.contentGrid}>
-              <For each={filteredContent()}>
-                {content => (
-                  <Card
-                    class={`${styles.contentCard} ${
-                      selectedContent().some(c => c.id === content.id) ? styles.selected : ''
-                    }`}
-                    onClick={() => toggleContentSelection(content.id)}
-                  >
-                    <Card.Header>
-                      <div class={styles.contentHeader}>
-                        <Card.Title class={styles.contentTitle}>{content.title}</Card.Title>
-                        <div class={styles.contentMeta}>
-                          <Badge
-                            variant="outline"
-                            class={getDifficultyColorClass(content.difficultyLevel)}
-                          >
-                            {content.difficultyLevel}
-                          </Badge>
-                          <Badge variant="secondary">{getContentTypeDisplay(content.type)}</Badge>
+                <Show when={props.allowContentCreation}>
+                  <Button variant="outline" onClick={() => setShowCreateContentModal(true)}>
+                    Create Educational Content
+                  </Button>
+                </Show>
+              </div>
+
+              {/* Content Grid */}
+              <div class={styles.contentGrid}>
+                <For each={filteredContent()}>
+                  {content => (
+                    <Card
+                      class={`${styles.contentCard} ${
+                        selectedContent().some(c => c.id === content.id) ? styles.selected : ''
+                      }`}
+                      onClick={() => toggleContentSelection(content.id)}
+                      header={
+                        <div class={styles.contentHeader}>
+                          <h3 class={styles.contentTitle}>{content.title}</h3>
+                          <div class={styles.contentMeta}>
+                            <Badge
+                              variant="outline"
+                              class={getDifficultyColorClass(content.difficultyLevel)}
+                            >
+                              {content.difficultyLevel}
+                            </Badge>
+                            <Badge variant="secondary">{getContentTypeDisplay(content.type)}</Badge>
+                          </div>
                         </div>
-                      </div>
-                    </Card.Header>
-
-                    <Card.Content>
+                      }
+                    >
                       <p class={styles.contentDescription}>{content.description}</p>
 
                       <div class={styles.contentStats}>
@@ -537,33 +568,37 @@ export const CulturalEducationPropagation: Component<CulturalEducationPropagatio
                           {content.propagationStatus}
                         </Badge>
                       </div>
-                    </Card.Content>
-                  </Card>
-                )}
-              </For>
+                    </Card>
+                  )}
+                </For>
+              </div>
             </div>
-          </Tabs.Content>
+          </Show>
 
           {/* Learning Pathways Tab */}
-          <Tabs.Content value="pathways" class={styles.tabContent}>
-            <Show when={props.showPathways}>
-              <div class={styles.pathwaysSection}>
-                <div class={styles.sectionHeader}>
-                  <h3>Recommended Learning Pathways</h3>
-                  <Button variant="outline" onClick={() => setShowPathwayModal(true)}>
-                    Create Custom Pathway
-                  </Button>
-                </div>
+          <Show when={activeTab() === 'pathways'}>
+            <div class={styles.tabContent} role="tabpanel">
+              <Show when={props.showPathways}>
+                <div class={styles.pathwaysSection}>
+                  <div class={styles.sectionHeader}>
+                    <h3>Recommended Learning Pathways</h3>
+                    <Button variant="outline" onClick={() => setShowPathwayModal(true)}>
+                      Create Custom Pathway
+                    </Button>
+                  </div>
 
-                <div class={styles.pathwaysGrid}>
-                  <For each={recommendedPathways()}>
-                    {pathway => (
-                      <Card class={styles.pathwayCard}>
-                        <Card.Header>
-                          <Card.Title>{pathway.name}</Card.Title>
-                          <Badge variant="outline">{pathway.type}</Badge>
-                        </Card.Header>
-                        <Card.Content>
+                  <div class={styles.pathwaysGrid}>
+                    <For each={recommendedPathways()}>
+                      {pathway => (
+                        <Card
+                          class={styles.pathwayCard}
+                          header={
+                            <div class={styles.contentHeader}>
+                              <h3 class={styles.contentTitle}>{pathway.name}</h3>
+                              <Badge variant="outline">{pathway.type}</Badge>
+                            </div>
+                          }
+                        >
                           <p class={styles.pathwayDescription}>{pathway.description}</p>
 
                           <div class={styles.pathwayStats}>
@@ -585,34 +620,38 @@ export const CulturalEducationPropagation: Component<CulturalEducationPropagatio
                               Start Pathway
                             </Button>
                           </div>
-                        </Card.Content>
-                      </Card>
-                    )}
-                  </For>
+                        </Card>
+                      )}
+                    </For>
+                  </div>
                 </div>
-              </div>
-            </Show>
-          </Tabs.Content>
+              </Show>
+            </div>
+          </Show>
 
           {/* Community Initiatives Tab */}
-          <Tabs.Content value="initiatives" class={styles.tabContent}>
-            <Show when={props.showCommunityInitiatives}>
-              <div class={styles.initiativesSection}>
-                <div class={styles.sectionHeader}>
-                  <h3>Community Learning Initiatives</h3>
-                  <Button variant="outline" onClick={() => setShowInitiativeModal(true)}>
-                    Create Initiative
-                  </Button>
-                </div>
+          <Show when={activeTab() === 'initiatives'}>
+            <div class={styles.tabContent} role="tabpanel">
+              <Show when={props.showCommunityInitiatives}>
+                <div class={styles.initiativesSection}>
+                  <div class={styles.sectionHeader}>
+                    <h3>Community Learning Initiatives</h3>
+                    <Button variant="outline" onClick={() => setShowInitiativeModal(true)}>
+                      Create Initiative
+                    </Button>
+                  </div>
 
-                <div class={styles.initiativesGrid}>
-                  {/* Sample initiatives - would be props in real implementation */}
-                  <Card class={styles.initiativeCard}>
-                    <Card.Header>
-                      <Card.Title>Traditional Storytelling Circle</Card.Title>
-                      <Badge variant="outline">learning-circle</Badge>
-                    </Card.Header>
-                    <Card.Content>
+                  <div class={styles.initiativesGrid}>
+                    {/* Sample initiatives - would be props in real implementation */}
+                    <Card
+                      class={styles.initiativeCard}
+                      header={
+                        <div class={styles.contentHeader}>
+                          <h3 class={styles.contentTitle}>Traditional Storytelling Circle</h3>
+                          <Badge variant="outline">learning-circle</Badge>
+                        </div>
+                      }
+                    >
                       <p>
                         Weekly gathering to share and learn traditional stories from different
                         cultures
@@ -680,16 +719,16 @@ export const CulturalEducationPropagation: Component<CulturalEducationPropagatio
                             : 'Join Initiative'}
                         </Button>
                       </div>
-                    </Card.Content>
-                  </Card>
+                    </Card>
+                  </div>
                 </div>
-              </div>
-            </Show>
-          </Tabs.Content>
+              </Show>
+            </div>
+          </Show>
 
           {/* Propagation Progress Tab */}
-          <Show when={props.showProgress}>
-            <Tabs.Content value="progress" class={styles.tabContent}>
+          <Show when={props.showProgress && activeTab() === 'progress'}>
+            <div class={styles.tabContent} role="tabpanel">
               <div class={styles.progressSection}>
                 <h3>Active Propagations</h3>
 
@@ -704,45 +743,45 @@ export const CulturalEducationPropagation: Component<CulturalEducationPropagatio
                   <div class={styles.progressList}>
                     <For each={propagationProgress()}>
                       {distribution => (
-                        <Card class={styles.progressCard}>
-                          <Card.Header>
-                            <Card.Title>{distribution.networkName}</Card.Title>
-                            <Badge
-                              class={getPropagationStatusClass(distribution.status)}
-                              variant="outline"
-                            >
-                              {distribution.status}
-                            </Badge>
-                          </Card.Header>
-                          <Card.Content>
-                            <div class={styles.progressDetails}>
-                              <div class={styles.progressInfo}>
-                                <span>
-                                  Progress: {distribution.propagationProgress.toFixed(1)}%
-                                </span>
-                                <span>Peers Reached: {distribution.peersReached}</span>
-                                <span>Success Rate: {distribution.successRate.toFixed(1)}%</span>
-                              </div>
-
-                              <ProgressBar
-                                value={distribution.propagationProgress}
-                                max={100}
-                                class={styles.progressBar}
-                              />
-
-                              <div class={styles.progressMeta}>
-                                <span>
-                                  Last Update:{' '}
-                                  {new Date(distribution.lastUpdate).toLocaleTimeString()}
-                                </span>
-                                <Show when={distribution.errorCount > 0}>
-                                  <span class={styles.errorCount}>
-                                    Errors: {distribution.errorCount}
-                                  </span>
-                                </Show>
-                              </div>
+                        <Card
+                          class={styles.progressCard}
+                          header={
+                            <div class={styles.contentHeader}>
+                              <h3 class={styles.contentTitle}>{distribution.networkName}</h3>
+                              <Badge
+                                class={getPropagationStatusClass(distribution.status)}
+                                variant="outline"
+                              >
+                                {distribution.status}
+                              </Badge>
                             </div>
-                          </Card.Content>
+                          }
+                        >
+                          <div class={styles.progressDetails}>
+                            <div class={styles.progressInfo}>
+                              <span>Progress: {distribution.propagationProgress.toFixed(1)}%</span>
+                              <span>Peers Reached: {distribution.peersReached}</span>
+                              <span>Success Rate: {distribution.successRate.toFixed(1)}%</span>
+                            </div>
+
+                            <Progress
+                              value={distribution.propagationProgress}
+                              max={100}
+                              class={styles.progressBar}
+                            />
+
+                            <div class={styles.progressMeta}>
+                              <span>
+                                Last Update:{' '}
+                                {new Date(distribution.lastUpdate).toLocaleTimeString()}
+                              </span>
+                              <Show when={distribution.errorCount > 0}>
+                                <span class={styles.errorCount}>
+                                  Errors: {distribution.errorCount}
+                                </span>
+                              </Show>
+                            </div>
+                          </div>
                         </Card>
                       )}
                     </For>
@@ -757,34 +796,31 @@ export const CulturalEducationPropagation: Component<CulturalEducationPropagatio
                       <For each={propagationResults().slice(-5)}>
                         {result => (
                           <Card class={styles.resultCard}>
-                            <Card.Content>
-                              <div class={styles.resultHeader}>
-                                <Badge variant={result.success ? 'success' : 'destructive'}>
-                                  {result.success ? 'Successful' : 'Failed'}
-                                </Badge>
-                                <span class={styles.resultTime}>
-                                  {new Date(result.completionTime).toLocaleString()}
+                            <div class={styles.resultHeader}>
+                              <Badge variant={result.success ? 'success' : 'error'}>
+                                {result.success ? 'Successful' : 'Failed'}
+                              </Badge>
+                              <span class={styles.resultTime}>
+                                {new Date(result.completionTime).toLocaleString()}
+                              </span>
+                            </div>
+
+                            <div class={styles.resultMetrics}>
+                              <div class={styles.metric}>
+                                <span>Networks: {result.networksReached.length}</span>
+                              </div>
+                              <div class={styles.metric}>
+                                <span>Peers: {result.totalPeersReached}</span>
+                              </div>
+                              <div class={styles.metric}>
+                                <span>Quality: {result.qualityAssurance.overallScore}%</span>
+                              </div>
+                              <div class={styles.metric}>
+                                <span>
+                                  Cultural Integrity: {result.culturalValidation.culturalIntegrity}%
                                 </span>
                               </div>
-
-                              <div class={styles.resultMetrics}>
-                                <div class={styles.metric}>
-                                  <span>Networks: {result.networksReached.length}</span>
-                                </div>
-                                <div class={styles.metric}>
-                                  <span>Peers: {result.totalPeersReached}</span>
-                                </div>
-                                <div class={styles.metric}>
-                                  <span>Quality: {result.qualityAssurance.overallScore}%</span>
-                                </div>
-                                <div class={styles.metric}>
-                                  <span>
-                                    Cultural Integrity:{' '}
-                                    {result.culturalValidation.culturalIntegrity}%
-                                  </span>
-                                </div>
-                              </div>
-                            </Card.Content>
+                            </div>
                           </Card>
                         )}
                       </For>
@@ -792,9 +828,9 @@ export const CulturalEducationPropagation: Component<CulturalEducationPropagatio
                   </div>
                 </Show>
               </div>
-            </Tabs.Content>
+            </div>
           </Show>
-        </Tabs>
+        </div>
       </div>
 
       {/* Network Selection Modal */}
@@ -814,7 +850,7 @@ export const CulturalEducationPropagation: Component<CulturalEducationPropagatio
               class={styles.startPropagationButton}
             >
               <Show when={isPropagating()}>
-                <Spinner size="sm" class={styles.spinner} />
+                <LoadingSpinner size="sm" class={styles.spinner} inline ariaLabel="Loading" />
               </Show>
               Start Propagation
             </Button>

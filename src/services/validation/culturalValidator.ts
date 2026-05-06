@@ -82,10 +82,6 @@ export class CulturalValidator {
           analyzedAt: new Date(),
           analysisVersion: '1.0.0',
           reviewRequired: false, // Anti-censorship: no approval required
-          detectionMethod: existingLevel ? 'existing_metadata' : 'keyword_pattern_matching',
-          confidenceFactors: existingLevel
-            ? ['existing_metadata']
-            : ['keyword_density', 'context_analysis'],
         },
       };
     } catch (error) {

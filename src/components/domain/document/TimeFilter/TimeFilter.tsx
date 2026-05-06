@@ -235,7 +235,7 @@ export const TimeFilter: Component<TimeFilterProps> = props => {
 
           <Show when={option.culturalContext}>
             <CulturalIndicator
-              level={option.culturalContext!.level}
+              level={Math.max(1, Math.min(3, option.culturalContext!.level)) as 1 | 2 | 3}
               size="sm"
               informationOnly={true}
               class={styles.culturalIndicator}

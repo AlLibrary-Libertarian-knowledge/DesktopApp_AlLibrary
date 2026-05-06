@@ -557,7 +557,7 @@ export const DecentralizedContentDiscovery: Component<
                 <Shield size={14} />
                 Censorship Resistant
               </Badge>
-              <Badge variant="cultural">
+              <Badge variant="info">
                 <BookOpen size={14} />
                 Cultural Content
               </Badge>
@@ -578,7 +578,7 @@ export const DecentralizedContentDiscovery: Component<
                         Quality: {result.qualityScore}%
                       </Badge>
                       <Show when={result.culturalContext}>
-                        <Badge variant="cultural" size="sm">
+                        <Badge variant="info" size="sm">
                           <BookOpen size={12} />
                           Cultural Context
                         </Badge>

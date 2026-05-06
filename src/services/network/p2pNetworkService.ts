@@ -804,15 +804,28 @@ class P2PNetworkServiceImpl implements P2PNetworkService {
    * - Walks files (shallow) and invokes Tauri publish_content for each
    */
   async seedLibraryFolder(): Promise<{ seeded: number; errors: number }> {
+    const collectFiles = async (dir: string): Promise<string[]> => {
+      const entries = await readDir(dir);
+      const files: string[] = [];
+      for (const entry of entries as Array<{ name: string; isDirectory?: boolean }>) {
+        if (!entry?.name) continue;
+        const fullPath = `${dir.replace(/[\\/]$/, '')}/${entry.name}`;
+        if (entry.isDirectory) {
+          files.push(...(await collectFiles(fullPath)));
+        } else {
+          files.push(fullPath);
+        }
+      }
+      return files;
+    };
+
     try {
       const folder = await settingsService.getProjectFolder();
       if (!folder) return { seeded: 0, errors: 0 };
-      const entries = await readDir(folder, { recursive: true });
+      const entries = await collectFiles(folder);
       let seeded = 0;
       let errors = 0;
-      for (const entry of entries) {
-        if (entry.children) continue;
-        const p = entry.path || entry.name;
+      for (const p of entries) {
         if (!p) continue;
         const lower = p.toLowerCase();
         if (lower.endsWith('.pdf') || lower.endsWith('.epub')) {

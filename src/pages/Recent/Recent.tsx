@@ -189,14 +189,14 @@ const RecentPage: Component = () => {
           timestamp: new Date(Date.now() - 2 * 36e5),
           duration: 1200,
           deviceName: 'Desktop',
-          document: mockDocuments[0],
+          document: mockDocuments[0]!,
         },
         {
           id: 'act3',
           type: 'favorite',
           timestamp: new Date(Date.now() - 24 * 36e5),
           deviceName: 'Desktop',
-          document: mockDocuments[1],
+          document: mockDocuments[1]!,
         },
       ]);
       setLoading(false);

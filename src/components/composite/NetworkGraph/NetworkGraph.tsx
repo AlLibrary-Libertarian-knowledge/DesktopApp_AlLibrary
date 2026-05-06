@@ -683,7 +683,7 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
   };
 
   // Use capture phase to block clicks before they bubble
-  const handleClickCapture = (e: MouseEvent) => {
+  const handleClickCapture = (e: MouseEvent): void => {
     // Block in capture phase - this fires BEFORE the regular click handler
     if (
       hadDragOperation ||
@@ -695,11 +695,11 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
       e.preventDefault();
       e.stopImmediatePropagation();
       e.stopPropagation();
-      return false;
+      return;
     }
   };
 
-  const handleClick = (e: MouseEvent) => {
+  const handleClick = (e: MouseEvent): void => {
     // Additional check in regular click handler (though it should be blocked by capture)
     if (
       hadDragOperation ||
@@ -711,7 +711,7 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
       e.preventDefault();
       e.stopImmediatePropagation();
       e.stopPropagation();
-      return false;
+      return;
     }
 
     if (!canvasRef) return;

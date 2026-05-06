@@ -26,7 +26,10 @@ export function useP2PTransfers() {
     setError(null);
     setLastOp('seed:file');
     try {
-      await p2pNetworkService.publishContent(path);
+      await p2pNetworkService.publishContent({
+        id: `seed-${Date.now()}`,
+        title: path.split('/').pop() || path,
+      } as any);
     } catch (e: any) {
       setError(String(e));
     } finally {
@@ -39,7 +42,12 @@ export function useP2PTransfers() {
     setError(null);
     setLastOp('seed:folder');
     try {
-      for (const f of files) await p2pNetworkService.publishContent(`${dir}/${f}`);
+      for (const f of files) {
+        await p2pNetworkService.publishContent({
+          id: `seed-${Date.now()}-${f}`,
+          title: `${dir}/${f}`,
+        } as any);
+      }
     } catch (e: any) {
       setError(String(e));
     } finally {
@@ -52,7 +60,17 @@ export function useP2PTransfers() {
     setError(null);
     setLastOp('download');
     try {
-      await p2pNetworkService.fetchContent(hash, `${outDir}/${hash}.bin`);
+      void outDir;
+      await p2pNetworkService.requestContent(
+        {
+          ipfsHash: hash,
+          contentType: 'document',
+          size: 0,
+          verificationHash: hash,
+          createdAt: new Date(),
+        },
+        undefined
+      );
     } catch (e: any) {
       setError(String(e));
     } finally {

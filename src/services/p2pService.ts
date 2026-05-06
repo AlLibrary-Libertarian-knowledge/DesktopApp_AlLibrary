@@ -936,7 +936,7 @@ class P2PServiceImpl implements P2PService {
   private requiresCulturalValidation(collection: Collection): boolean {
     return (
       collection.culturalMetadata.sensitivityLevel >= CulturalSensitivityLevel.COMMUNITY ||
-      collection.culturalMetadata.traditionalProtocols.length > 0
+      (collection.culturalMetadata.traditionalProtocols?.length || 0) > 0
     );
   }
 

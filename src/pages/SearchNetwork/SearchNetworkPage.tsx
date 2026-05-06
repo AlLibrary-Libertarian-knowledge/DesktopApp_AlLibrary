@@ -25,7 +25,6 @@ import { NetworkInfo } from '../../components/domain/search';
 // Hooks and Services
 import { useNetworkSearch } from '../../hooks/api/useNetworkSearch';
 import { enableTorAndP2P } from '../../services/network/bootstrap';
-import { p2pNetworkService } from '@/services/network/p2pNetworkService';
 import { useP2PTransfers } from '@/hooks/api/useP2PTransfers';
 import { torAdapter } from '../../services/network/torAdapter';
 import { useNetworkStore } from '@/stores/network/networkStore';
@@ -73,11 +72,6 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
       setTorEstablishing(true);
       const result = await enableTorAndP2P();
       setTorReady(result.torConnected && result.p2pStarted);
-      if (result.torConnected && result.p2pStarted) {
-        // Auto seed existing files and start watching for changes
-        void p2pNetworkService.seedLibraryFolder();
-        void p2pNetworkService.watchAndSeedLibrary();
-      }
     } catch (e) {
       void e;
       setTorReady(false);

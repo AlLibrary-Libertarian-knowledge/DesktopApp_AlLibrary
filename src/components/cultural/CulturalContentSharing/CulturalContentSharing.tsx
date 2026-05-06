@@ -2,9 +2,8 @@ import { type Component, createSignal, createEffect, For, Show } from 'solid-js'
 import { Card } from '@/components/foundation/Card';
 import { Button } from '@/components/foundation/Button';
 import { Badge } from '@/components/foundation/Badge';
-import { Input } from '@/components/foundation/Input';
 import { Textarea } from '@/components/foundation/Textarea';
-import { Checkbox } from '@/components/foundation/Checkbox';
+import { Switch } from '@/components/foundation/Switch';
 import { p2pNetworkService } from '@/services/network/p2pNetworkService';
 import type {
   CulturalContentSharingProps,
@@ -78,15 +77,25 @@ export const CulturalContentSharing: Component<CulturalContentSharingProps> = pr
   );
 
   // Load available networks if not provided
-  createEffect(async () => {
-    if (!props.availableNetworks) {
+  createEffect(() => {
+    if (props.availableNetworks) return;
+    void (async () => {
       try {
         const networks = await p2pNetworkService.discoverCommunityNetworks();
-        setAvailableNetworks(networks);
+        const normalized: CommunityNetwork[] = networks.map(network => ({
+          id: network.id,
+          name: network.name,
+          description: network.description,
+          culturalFocus: [network.culturalContext || 'General'],
+          memberCount: network.memberCount,
+          activityLevel: 'medium',
+          educationalResources: Array.isArray(network.educationalResources),
+        }));
+        setAvailableNetworks(normalized);
       } catch (error) {
         console.error('Failed to load community networks:', error);
       }
-    }
+    })();
   });
 
   // Update sharing configuration when selections change
@@ -125,7 +134,9 @@ export const CulturalContentSharing: Component<CulturalContentSharingProps> = pr
 
     // Auto-select networks that match template target communities
     const matchingNetworks = availableNetworks()
-      .filter(network => template.targetCommunities.includes(network.culturalFocus[0]))
+      .filter(network =>
+        network.culturalFocus.some(focus => template.targetCommunities.includes(focus))
+      )
       .map(network => network.id);
 
     setSelectedNetworks(matchingNetworks);
@@ -156,7 +167,7 @@ export const CulturalContentSharing: Component<CulturalContentSharingProps> = pr
 
       // Share content with selected communities
       for (const communityId of config.selectedCommunities) {
-        await p2pNetworkService.shareWithCommunity(props.content, communityId);
+        await p2pNetworkService.shareWithCommunity(props.content as any, communityId);
       }
 
       // Create sharing result
@@ -238,10 +249,8 @@ export const CulturalContentSharing: Component<CulturalContentSharingProps> = pr
       {/* Educational Context Panel */}
       <Show when={showEducationalPanel()}>
         <Card class={styles.educationalPanel}>
-          <Card.Header>
-            <Card.Title>Cultural Content Sharing - Educational Context</Card.Title>
-          </Card.Header>
-          <Card.Content>
+          <h3>Cultural Content Sharing - Educational Context</h3>
+          <div>
             <div class={styles.educationalContent}>
               <div class={styles.principleSection}>
                 <h4>Information Sharing Principles</h4>
@@ -263,24 +272,22 @@ export const CulturalContentSharing: Component<CulturalContentSharingProps> = pr
                 </ul>
               </div>
             </div>
-          </Card.Content>
+          </div>
         </Card>
       </Show>
 
       {/* Content Information */}
       <Card class={styles.contentCard}>
-        <Card.Header>
-          <div class={styles.contentHeader}>
-            <Card.Title class={styles.contentTitle}>{props.content.title}</Card.Title>
-            <Badge
-              variant="outline"
-              class={getCulturalSensitivityClass(props.content.culturalMetadata?.sensitivityLevel)}
-            >
-              {props.content.type}
-            </Badge>
-          </div>
-        </Card.Header>
-        <Card.Content>
+        <div class={styles.contentHeader}>
+          <h3 class={styles.contentTitle}>{props.content.title}</h3>
+          <Badge
+            variant="outline"
+            class={getCulturalSensitivityClass(props.content.culturalMetadata?.sensitivityLevel)}
+          >
+            {props.content.type}
+          </Badge>
+        </div>
+        <div>
           <div class={styles.contentInfo}>
             <p class={styles.contentDescription}>{props.content.description}</p>
 
@@ -321,16 +328,14 @@ export const CulturalContentSharing: Component<CulturalContentSharingProps> = pr
               </div>
             </Show>
           </div>
-        </Card.Content>
+        </div>
       </Card>
 
       {/* Sharing Templates */}
       <Show when={props.sharingTemplates && props.sharingTemplates.length > 0}>
         <Card class={styles.templatesCard}>
-          <Card.Header>
-            <Card.Title>Sharing Templates</Card.Title>
-          </Card.Header>
-          <Card.Content>
+          <h3>Sharing Templates</h3>
+          <div>
             <div class={styles.templateGrid}>
               <For each={props.sharingTemplates}>
                 {template => (
@@ -353,26 +358,23 @@ export const CulturalContentSharing: Component<CulturalContentSharingProps> = pr
                 )}
               </For>
             </div>
-          </Card.Content>
+          </div>
         </Card>
       </Show>
 
       {/* Community Selection */}
       <Card class={styles.networkSelectionCard}>
-        <Card.Header>
-          <Card.Title>Select Communities to Share With</Card.Title>
-        </Card.Header>
-        <Card.Content>
+        <h3>Select Communities to Share With</h3>
+        <div>
           <div class={styles.networkGrid}>
             <For each={availableNetworks()}>
               {network => (
                 <div class={styles.networkOption}>
-                  <Checkbox
+                  <Switch
                     checked={selectedNetworks().includes(network.id)}
-                    onCheckedChange={checked => handleNetworkToggle(network.id, checked)}
-                    id={`network-${network.id}`}
+                    onChange={checked => handleNetworkToggle(network.id, checked)}
                   />
-                  <label for={`network-${network.id}`} class={styles.networkLabel}>
+                  <div class={styles.networkLabel}>
                     <div class={styles.networkName}>{network.name}</div>
                     <div class={styles.networkDescription}>{network.description}</div>
                     <div class={styles.networkStats}>
@@ -381,102 +383,87 @@ export const CulturalContentSharing: Component<CulturalContentSharingProps> = pr
                         {network.activityLevel} activity
                       </Badge>
                     </div>
-                  </label>
+                  </div>
                 </div>
               )}
             </For>
           </div>
-        </Card.Content>
+        </div>
       </Card>
 
       {/* Sharing Message */}
       <Card class={styles.messageCard}>
-        <Card.Header>
-          <Card.Title>Sharing Message</Card.Title>
-        </Card.Header>
-        <Card.Content>
+        <h3>Sharing Message</h3>
+        <div>
           <Textarea
             value={sharingMessage()}
-            onInput={e => setSharingMessage(e.currentTarget.value)}
+            onInput={setSharingMessage}
             placeholder="Add a message to accompany your shared content..."
             rows={4}
             class={styles.messageInput}
           />
-        </Card.Content>
+        </div>
       </Card>
 
       {/* Sharing Options */}
       <Card class={styles.optionsCard}>
-        <Card.Header>
-          <Card.Title>Sharing Options</Card.Title>
-        </Card.Header>
-        <Card.Content>
+        <h3>Sharing Options</h3>
+        <div>
           <div class={styles.optionsGrid}>
             <div class={styles.optionGroup}>
               <h4>Educational Context</h4>
-              <Checkbox
+              <Switch
                 checked={sharingConfig().includeEducationalContext}
-                onCheckedChange={checked =>
+                onChange={checked =>
                   setSharingConfig(prev => ({ ...prev, includeEducationalContext: checked }))
                 }
-                id="include-educational"
               />
-              <label for="include-educational">
-                Include educational context and learning resources
-              </label>
+              <label>Include educational context and learning resources</label>
             </div>
 
             <div class={styles.optionGroup}>
               <h4>Cultural Attribution</h4>
-              <Checkbox
+              <Switch
                 checked={sharingConfig().includeCulturalAttribution}
-                onCheckedChange={checked =>
+                onChange={checked =>
                   setSharingConfig(prev => ({ ...prev, includeCulturalAttribution: checked }))
                 }
-                id="include-attribution"
               />
-              <label for="include-attribution">
-                Include cultural attribution and source information
-              </label>
+              <label>Include cultural attribution and source information</label>
             </div>
 
             <div class={styles.optionGroup}>
               <h4>Community Engagement</h4>
-              <Checkbox
+              <Switch
                 checked={sharingConfig().additionalOptions?.enableCommunityDiscussion ?? true}
-                onCheckedChange={checked =>
+                onChange={checked =>
                   handleSharingOptionChange('enableCommunityDiscussion', checked)
                 }
-                id="enable-discussion"
               />
-              <label for="enable-discussion">Enable community discussion</label>
+              <label>Enable community discussion</label>
 
-              <Checkbox
+              <Switch
                 checked={sharingConfig().additionalOptions?.requestCommunityFeedback ?? true}
-                onCheckedChange={checked =>
-                  handleSharingOptionChange('requestCommunityFeedback', checked)
-                }
-                id="request-feedback"
+                onChange={checked => handleSharingOptionChange('requestCommunityFeedback', checked)}
               />
-              <label for="request-feedback">Request community feedback</label>
+              <label>Request community feedback</label>
 
-              <Checkbox
+              <Switch
                 checked={sharingConfig().additionalOptions?.supportMultiplePerspectives ?? true}
-                onCheckedChange={checked =>
+                onChange={checked =>
                   handleSharingOptionChange('supportMultiplePerspectives', checked)
                 }
-                id="multiple-perspectives"
               />
-              <label for="multiple-perspectives">Support multiple perspectives</label>
+              <label>Support multiple perspectives</label>
             </div>
           </div>
-        </Card.Content>
+        </div>
       </Card>
 
       {/* Sharing Progress */}
       <Show when={isSharing()}>
         <Card class={styles.progressCard}>
-          <Card.Content>
+          <div>
             <div class={styles.progressInfo}>
               <h4>Sharing Content...</h4>
               <div class={styles.progressBar}>
@@ -484,7 +471,7 @@ export const CulturalContentSharing: Component<CulturalContentSharingProps> = pr
               </div>
               <p>{sharingProgress()}% complete</p>
             </div>
-          </Card.Content>
+          </div>
         </Card>
       </Show>
 
@@ -493,12 +480,8 @@ export const CulturalContentSharing: Component<CulturalContentSharingProps> = pr
         <Card
           class={`${styles.resultCard} ${sharingResult()!.success ? styles.successCard : styles.errorCard}`}
         >
-          <Card.Header>
-            <Card.Title>
-              {sharingResult()!.success ? 'Content Shared Successfully!' : 'Sharing Failed'}
-            </Card.Title>
-          </Card.Header>
-          <Card.Content>
+          <h3>{sharingResult()!.success ? 'Content Shared Successfully!' : 'Sharing Failed'}</h3>
+          <div>
             <Show when={sharingResult()!.success}>
               <div class={styles.successInfo}>
                 <p>
@@ -529,7 +512,7 @@ export const CulturalContentSharing: Component<CulturalContentSharingProps> = pr
                 <p>Error: {sharingResult()!.errorMessage}</p>
               </div>
             </Show>
-          </Card.Content>
+          </div>
         </Card>
       </Show>
 

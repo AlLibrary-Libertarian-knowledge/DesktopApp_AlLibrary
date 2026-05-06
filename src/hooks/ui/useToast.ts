@@ -428,7 +428,7 @@ export const culturalToasts = {
     return toast.cultural(
       template.message,
       {
-        specific_community: community,
+        culturalOrigin: community,
         educationalContent: `This content was generously shared by the ${community} community as part of their commitment to preserving and sharing knowledge.`,
       },
       {

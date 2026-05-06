@@ -16,7 +16,7 @@ interface TorLogViewerProps {
 
 export const TorLogViewer: Component<TorLogViewerProps> = props => {
   const [lines, setLines] = createSignal(200);
-  const [log] = createResource(
+  const [log, { refetch }] = createResource(
     () => (props.isOpen ? lines() : null),
     async count => {
       if (!count) return '';
@@ -31,7 +31,7 @@ export const TorLogViewer: Component<TorLogViewerProps> = props => {
       if (props.isOpen && !id) {
         id = globalThis.setInterval(async () => {
           try {
-            await log.refetch?.();
+            await refetch();
           } catch {
             void 0;
           }

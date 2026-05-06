@@ -70,7 +70,7 @@ describe('CulturalValidator', () => {
       const levels: CulturalSensitivityLevel[] = [1, 2, 3, 4, 5];
 
       for (const level of levels) {
-        const mockDoc: Document = {
+        const mockDoc = {
           id: `doc-level-${level}`,
           title: `Document Level ${level}`,
           culturalMetadata: {
@@ -81,7 +81,7 @@ describe('CulturalValidator', () => {
             informationOnly: true,
             educationalPurpose: true,
           },
-        } as Document;
+        } as unknown as Document;
 
         const result = await culturalValidator.analyzeCulturalSensitivity(mockDoc);
 

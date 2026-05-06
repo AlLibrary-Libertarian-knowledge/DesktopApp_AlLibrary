@@ -17,20 +17,45 @@ import {
 import { Button } from '../../../foundation/Button';
 import { Badge } from '../../../foundation/Badge';
 import { CulturalIndicator } from '../../../cultural/CulturalIndicator';
-import type { Document } from '../../../../types/core';
 import styles from './DocumentCard.module.css';
 
+export interface DocumentCardDocument {
+  id: string;
+  title: string;
+  description?: string;
+  type?: string;
+  size?: number;
+  pages?: number;
+  isFavorite?: boolean;
+  culturalMetadata?: {
+    sensitivityLevel?: number;
+    origin?: string;
+  };
+  views?: number;
+  downloads?: number;
+  rating?: number;
+  addedDate?: string | Date;
+  author?: string;
+  source?: string;
+  isPublic?: boolean;
+  isLoading?: boolean;
+  createdAt?: string | Date;
+  fileSize?: number;
+  tags?: string[];
+  categories?: string[];
+}
+
 export interface DocumentCardProps {
-  document: Document;
+  document: DocumentCardDocument;
   variant?: 'default' | 'compact' | 'detailed' | 'grid';
   showCulturalContext?: boolean;
   showActions?: boolean;
   showMetadata?: boolean;
-  onOpen?: (document: Document) => void;
-  onDownload?: (document: Document) => void;
-  onShare?: (document: Document) => void;
-  onFavorite?: (document: Document) => void;
-  onMore?: (document: Document) => void;
+  onOpen?: (document: DocumentCardDocument) => void;
+  onDownload?: (document: DocumentCardDocument) => void;
+  onShare?: (document: DocumentCardDocument) => void;
+  onFavorite?: (document: DocumentCardDocument) => void;
+  onMore?: (document: DocumentCardDocument) => void;
   class?: string;
 }
 
@@ -43,6 +68,11 @@ export interface DocumentCardProps {
 export const DocumentCard: Component<DocumentCardProps> = props => {
   const document = () => props.document;
   const variant = () => props.variant || 'default';
+  const indicatorLevel = (): 1 | 2 | 3 => {
+    const level = document().culturalMetadata?.sensitivityLevel;
+    if (level === 2 || level === 3) return level;
+    return 1;
+  };
 
   const getFileIcon = () => {
     switch (document().type?.toLowerCase()) {
@@ -168,7 +198,7 @@ export const DocumentCard: Component<DocumentCardProps> = props => {
       <Show when={props.showCulturalContext !== false && document().culturalMetadata}>
         <div class={styles.culturalContext}>
           <CulturalIndicator
-            level={document().culturalMetadata?.sensitivityLevel || 1}
+            level={indicatorLevel()}
             size="sm"
             informationOnly={true}
             class={styles.culturalIndicator}
@@ -194,7 +224,7 @@ export const DocumentCard: Component<DocumentCardProps> = props => {
           </div>
           <div class={styles.statItem}>
             <Star size={14} />
-            <span>{document().rating ? document().rating.toFixed(1) : '0.0'}</span>
+            <span>{(document().rating ?? 0).toFixed(1)}</span>
           </div>
           <Show when={document().addedDate}>
             <div class={styles.statItem}>

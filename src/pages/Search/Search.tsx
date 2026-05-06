@@ -283,7 +283,6 @@ const SearchPage: Component = () => {
               value={searchQuery()}
               onInput={handleSearchInput}
               class={styles.searchInput}
-              autoFocus
             />
             <Show when={searchQuery()}>
               <Button

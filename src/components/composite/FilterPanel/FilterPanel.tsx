@@ -269,8 +269,13 @@ const FilterPanel: Component<FilterPanelProps> = props => {
 
   const isOptionSelected = (groupKey: string, value: FilterValue) => {
     const currentValue = pendingFilters()[groupKey];
-    if (Array.isArray(currentValue)) {
-      return currentValue.includes(value);
+    const isDateRangeTuple =
+      Array.isArray(currentValue) &&
+      currentValue.length === 2 &&
+      currentValue[0] instanceof Date &&
+      currentValue[1] instanceof Date;
+    if (Array.isArray(currentValue) && !isDateRangeTuple) {
+      return (currentValue as FilterValue[]).includes(value);
     }
     return currentValue === value;
   };

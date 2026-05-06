@@ -26,6 +26,14 @@ export interface UploadFile {
   };
 }
 
+interface CulturalInfo {
+  sensitivityLevel: number;
+  culturalOrigin: string;
+  educationalContext: string;
+  informationOnly: true;
+  educationalPurpose: true;
+}
+
 /**
  * Upload Section Props Interface
  * Follows SOLID principles with cultural theme support and anti-censorship compliance
@@ -103,6 +111,7 @@ const UploadSection: Component<UploadSectionProps> = props => {
 
     for (let i = 0; i < files.length && i < config.maxFiles; i++) {
       const file = files[i];
+      if (!file) continue;
 
       // Technical validation only (size, format) - NO CULTURAL RESTRICTIONS
       if (file.size > config.maxFileSize) {
@@ -164,7 +173,7 @@ const UploadSection: Component<UploadSectionProps> = props => {
       }
 
       // 2. Cultural Analysis (INFORMATION ONLY - NO ACCESS CONTROL)
-      let culturalInfo = null;
+      let culturalInfo: CulturalInfo | null = null;
       if (config.enableCulturalAnalysis) {
         culturalInfo = await analyzeCulturalContext(file.file);
 
@@ -197,11 +206,11 @@ const UploadSection: Component<UploadSectionProps> = props => {
    * Analyze Cultural Context (EDUCATIONAL PURPOSE ONLY)
    * This provides information for learning - NEVER restricts access
    */
-  const analyzeCulturalContext = async (file: File) => {
+  const analyzeCulturalContext = async (_file: File): Promise<CulturalInfo> => {
     try {
       // Analyze file content for cultural context (educational)
       // This is for providing educational information only
-      const culturalAnalysis = {
+      const culturalAnalysis: CulturalInfo = {
         sensitivityLevel: 1, // Default low sensitivity
         culturalOrigin: 'Unknown',
         educationalContext: 'No specific cultural context detected',
@@ -219,8 +228,8 @@ const UploadSection: Component<UploadSectionProps> = props => {
         sensitivityLevel: 1,
         culturalOrigin: 'Analysis failed',
         educationalContext: 'Cultural analysis could not be completed',
-        informationOnly: true,
-        educationalPurpose: true,
+        informationOnly: true as const,
+        educationalPurpose: true as const,
       };
     }
   };
@@ -378,7 +387,7 @@ const UploadSection: Component<UploadSectionProps> = props => {
           Educational documents will be analyzed for cultural context (information only)
         </p>
 
-        <Input
+        <input
           type="file"
           multiple
           accept={config.acceptedFormats.join(',')}
@@ -473,7 +482,7 @@ const UploadSection: Component<UploadSectionProps> = props => {
                   <Show when={file.culturalContext && file.culturalContext.educationalContext}>
                     <div class={styles.culturalInfo}>
                       <Info size={16} />
-                      <span>Cultural Context: {file.culturalContext.educationalContext}</span>
+                      <span>Cultural Context: {file.culturalContext?.educationalContext}</span>
                       <span class={styles.infoNote}>(Educational information only)</span>
                     </div>
                   </Show>

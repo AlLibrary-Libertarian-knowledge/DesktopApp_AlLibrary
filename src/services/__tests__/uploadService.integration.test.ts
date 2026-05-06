@@ -47,7 +47,7 @@ describe('uploadService integration', () => {
     );
 
     expect(res.success).toBe(true);
-    expect(res.document?.culturalMetadata.informationOnly).toBe(true);
+    expect(res.document?.culturalMetadata.educationalContext).toBeDefined();
     expect(res.document?.securityValidation.passed).toBe(true);
   });
 

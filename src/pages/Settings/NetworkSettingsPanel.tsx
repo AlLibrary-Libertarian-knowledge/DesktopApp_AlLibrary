@@ -26,7 +26,9 @@ export const NetworkSettingsPanel: Component = () => {
   };
 
   const handleRotate = async () => {
-    await window.__TAURI_INVOKE__?.('rotate_tor_circuit');
+    await (window as { __TAURI_INVOKE__?: (cmd: string) => Promise<unknown> }).__TAURI_INVOKE__?.(
+      'rotate_tor_circuit'
+    );
     const st = await torAdapter.status();
     setStatus(st);
   };

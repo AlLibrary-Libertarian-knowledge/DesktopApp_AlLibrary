@@ -310,11 +310,12 @@ export class NetworkApiService {
     educationalResources?: string[];
   }> {
     try {
-      const result = await invoke<{
+      const result: {
         success: boolean;
         filePath?: string;
         culturalContext?: any;
-      }>('download_from_peer', {
+        educationalResources?: string[];
+      } = await invoke('download_from_peer', {
         peerId,
         documentId,
         options,

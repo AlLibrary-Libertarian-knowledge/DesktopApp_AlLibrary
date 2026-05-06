@@ -45,6 +45,7 @@ const loadLocaleTranslations = async (locale: SupportedLocale): Promise<LocaleTr
       components,
       navigation,
       cultural,
+      accessibility: {},
       errors: {},
       validation: {},
     };
@@ -56,6 +57,7 @@ const loadLocaleTranslations = async (locale: SupportedLocale): Promise<LocaleTr
       components: {},
       navigation: {},
       cultural: {},
+      accessibility: {},
       errors: {},
       validation: {},
     };

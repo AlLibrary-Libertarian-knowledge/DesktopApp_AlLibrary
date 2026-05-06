@@ -235,7 +235,7 @@ export const CommunityNetworkPanel: Component<CommunityNetworkPanelProps> = prop
         shareEducationalContext: engagementSettings().shareEducationalContext,
       };
 
-      await p2pNetworkService.joinCommunityNetwork(community.id);
+      await p2pNetworkService.joinCommunityNetwork(joinRequest as any);
 
       // Show educational context
       setShowEducationalModal(true);
@@ -466,7 +466,7 @@ export const CommunityNetworkPanel: Component<CommunityNetworkPanelProps> = prop
                           <span class={styles.knowledgeLabel}>Traditional Knowledge Areas:</span>
                           <div class={styles.knowledgeList}>
                             <For each={community.culturalContext.traditionalKnowledge}>
-                              {knowledge => <Badge variant="neutral">{knowledge}</Badge>}
+                              {knowledge => <Badge variant="info">{knowledge}</Badge>}
                             </For>
                           </div>
                         </div>

@@ -125,6 +125,14 @@
   flex-direction: column;
 }
 
+.tabBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  padding-bottom: var(--space-md);
+  border-bottom: 1px solid var(--color-border);
+}
+
 .tabContent {
   flex: 1;
   display: flex;

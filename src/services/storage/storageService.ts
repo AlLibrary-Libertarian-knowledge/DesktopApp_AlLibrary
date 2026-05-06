@@ -175,6 +175,13 @@ export class StorageService {
       const updatedDocument: Document = {
         ...document,
         ...updates,
+        culturalMetadata: {
+          ...document.culturalMetadata,
+          ...(updates.culturalMetadata || {}),
+          sensitivityLevel:
+            updates.culturalMetadata?.sensitivityLevel ??
+            document.culturalMetadata.sensitivityLevel,
+        },
         updatedAt: new Date(),
         version: document.version + 1,
       };
@@ -448,11 +455,11 @@ export class StorageService {
       notes.push('Cultural protocols and community guidelines are available.');
     }
 
-    if (culturalMetadata.traditionalProtocols.length > 0) {
+    if ((culturalMetadata.traditionalProtocols?.length || 0) > 0) {
       notes.push('Traditional protocols are documented for this content.');
     }
 
-    if (culturalMetadata.educationalResources.length > 0) {
+    if (culturalMetadata.educationalContext) {
       notes.push('Educational resources are available for cultural learning.');
     }
 

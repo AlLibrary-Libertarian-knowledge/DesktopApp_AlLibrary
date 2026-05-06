@@ -1,5 +1,4 @@
 import { type Component, createSignal, For, Show, createMemo } from 'solid-js';
-import { createStore } from 'solid-js/store';
 import { useTranslation } from '../../../../i18n/hooks';
 import {
   Play,
@@ -181,19 +180,9 @@ const DownloadManager: Component<DownloadManagerProps> = props => {
 
   const handleAction = (action: string) => {
     const selected = liveDownloads().filter(d => selectedItems().includes(d.id));
-    selected.forEach(item => {
+    for (const item of selected) {
       props.onItemAction?.(action, item);
-
-      // Mock state changes - find the item index and update
-      const itemIndex = downloads.findIndex(d => d.id === item.id);
-      if (itemIndex !== -1) {
-        if (action === 'pause' && item.status === 'downloading') {
-          setDownloads(itemIndex, 'status', 'paused');
-        } else if (action === 'resume' && item.status === 'paused') {
-          setDownloads(itemIndex, 'status', 'downloading');
-        }
-      }
-    });
+    }
   };
 
   const getFileIcon = (type: string) => {
@@ -216,10 +205,7 @@ const DownloadManager: Component<DownloadManagerProps> = props => {
   };
 
   const handleBulkAction = (action: string) => {
-    const selected = downloads.filter(d => selectedItems().includes(d.id));
-    selected.forEach(item => {
-      handleAction(action);
-    });
+    handleAction(action);
   };
 
   const handleAddDownload = () => {
@@ -248,7 +234,7 @@ const DownloadManager: Component<DownloadManagerProps> = props => {
             onClick={handleSelectAll}
             class={styles['select-all-button'] || ''}
           >
-            {selectedItems().length === downloads.length && downloads.length > 0
+            {selectedItems().length === liveDownloads().length && liveDownloads().length > 0
               ? t('downloadManager.actions.deselectAll')
               : t('downloadManager.actions.selectAll')}
           </Button>
@@ -322,7 +308,9 @@ const DownloadManager: Component<DownloadManagerProps> = props => {
             <div class={`${styles['header-cell']} ${styles['checkbox-cell']}`}>
               <input
                 type="checkbox"
-                checked={downloads.length > 0 && selectedItems().length === downloads.length}
+                checked={
+                  liveDownloads().length > 0 && selectedItems().length === liveDownloads().length
+                }
                 onChange={handleSelectAll}
               />
             </div>

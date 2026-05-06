@@ -103,21 +103,21 @@ const Header: Component<HeaderProps> = props => {
           showFlags={true}
           showNativeName={false}
           size="sm"
-          class="header-language-switcher"
-          ariaLabel={t('common.actions.changeLanguage', 'Change language')}
+          className="header-language-switcher"
+          ariaLabel={t('common.actions.changeLanguage')}
         />
 
         <ThemeSwitcher
           variant="compact"
           size="sm"
           class="header-theme-switcher"
-          ariaLabel={t('components.themeSwitcher.buttonLabel', 'Open theme selection menu')}
+          ariaLabel={t('components.themeSwitcher.buttonLabel')}
         />
 
         <button
           class="header-action"
-          aria-label={t('navigation.items.notifications', 'Notifications')}
-          title={t('navigation.items.notifications', 'Notifications')}
+          aria-label={t('navigation.items.notifications')}
+          title={t('navigation.items.notifications')}
         >
           <Bell size={20} />
         </button>

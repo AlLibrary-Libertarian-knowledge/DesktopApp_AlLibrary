@@ -538,7 +538,7 @@ const AboutPage: Component = () => {
             type="text"
             placeholder="Search contributors, organizations, or content..."
             value={searchQuery()}
-            onInput={e => setSearchQuery(e.currentTarget.value)}
+            onInput={setSearchQuery}
             class={styles.searchInput}
           />
           <Search class={styles.searchIcon} />

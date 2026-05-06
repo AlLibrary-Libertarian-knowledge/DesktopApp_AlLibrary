@@ -8,10 +8,8 @@ export type {
   ThemeMode,
   CulturalTheme,
   AccessibilityTheme,
-  ThemeConfig,
   ThemePreferences,
   UseThemeReturn,
-  CulturalThemeInfo,
 } from './useTheme';
 
 // Toast notifications
@@ -19,7 +17,7 @@ export { useToast, culturalToasts } from './useToast';
 export type {
   ToastType,
   ToastPosition,
-  CulturalContext,
+  CulturalContext as ToastCulturalContext,
   ToastConfig,
   ToastState,
   ToastActions,

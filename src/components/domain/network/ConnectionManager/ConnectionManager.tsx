@@ -36,12 +36,42 @@ export const ConnectionManager: Component<ConnectionManagerProps> = props => {
   const [isAddPeerModalOpen, setIsAddPeerModalOpen] = createSignal(false);
   const [newPeerAddress, setNewPeerAddress] = createSignal('');
   const [selectedProtocol, setSelectedProtocol] = createSignal('tcp');
+  const [discoveredPeers, setDiscoveredPeers] = createSignal<Peer[]>([]);
 
   // Network configuration resource
   const [networkConfig, { refetch: refetchConfig }] = createResource(
     async (): Promise<NetworkConfig> => {
       try {
-        return await p2pNetworkService.getNetworkConfig();
+        const status = await p2pNetworkService.getNodeStatus();
+        return {
+          name: 'AlLibrary Node',
+          torSupport: Boolean(status.torStatus),
+          ipfsEnabled: Boolean(status.ipfsStatus),
+          maxConnections: 100,
+          ports: { p2p: 4001, http: 8080, tor: 9050 },
+          enableCulturalFiltering: false,
+          enableContentBlocking: false,
+          educationalMode: true,
+          communityInformationOnly: true,
+          resistCensorship: true,
+          preserveAlternatives: true,
+          communityNetworks: status.activeCommunityNetworks || [],
+          contentSharing: {
+            autoShare: true,
+            shareCulturalContext: true,
+            supportMultiplePerspectives: true,
+            enableEducationalSharing: true,
+            maxContentSize: 1024 * 1024 * 1024,
+            allowedContentTypes: ['pdf', 'epub', 'txt', 'json'],
+          },
+          security: {
+            encryption: true,
+            encryptionAlgorithm: 'xchacha20poly1305',
+            verifyContent: true,
+            verifyPeers: true,
+            keyRotationInterval: 24,
+          },
+        };
       } catch (error) {
         console.error('Failed to fetch network config:', error);
         throw error;
@@ -52,7 +82,7 @@ export const ConnectionManager: Component<ConnectionManagerProps> = props => {
   // Available peers resource
   const [availablePeers, { refetch: refetchPeers }] = createResource(async (): Promise<Peer[]> => {
     try {
-      return await p2pNetworkService.getAvailablePeers();
+      return discoveredPeers();
     } catch (error) {
       console.error('Failed to fetch available peers:', error);
       return [];
@@ -76,8 +106,8 @@ export const ConnectionManager: Component<ConnectionManagerProps> = props => {
 
   onMount(async () => {
     try {
-      const torStatus = await torService.getStatus();
-      setTorEnabled(torStatus.enabled);
+      const torStatus = await torService.getTorStatus();
+      setTorEnabled(Boolean(torStatus.circuitEstablished));
     } catch (error) {
       console.error('Failed to get TOR status:', error);
     }
@@ -140,12 +170,13 @@ export const ConnectionManager: Component<ConnectionManagerProps> = props => {
 
   const handleDiscoverPeers = async () => {
     try {
-      await p2pNetworkService.discoverPeers({
+      const peers = await p2pNetworkService.discoverPeers({
         includeTorPeers: torEnabled(),
         includeHiddenServices: torEnabled(),
         enableEducationalSharing: true,
         supportAlternativeNarratives: true,
       });
+      setDiscoveredPeers(peers);
       refetchPeers();
     } catch (error) {
       console.error('Failed to discover peers:', error);
@@ -155,9 +186,9 @@ export const ConnectionManager: Component<ConnectionManagerProps> = props => {
   const handleToggleTor = async (enabled: boolean) => {
     try {
       if (enabled) {
-        await torService.start();
+        await torService.startTor();
       } else {
-        await torService.stop();
+        await torService.stopTor();
       }
       setTorEnabled(enabled);
       refetchConfig();
@@ -171,7 +202,8 @@ export const ConnectionManager: Component<ConnectionManagerProps> = props => {
     if (!address) return;
 
     try {
-      await p2pNetworkService.addPeer(address, selectedProtocol());
+      void selectedProtocol();
+      await p2pNetworkService.connectToPeer(address);
       setNewPeerAddress('');
       setIsAddPeerModalOpen(false);
       refetchPeers();
@@ -181,7 +213,7 @@ export const ConnectionManager: Component<ConnectionManagerProps> = props => {
   };
 
   const isNetworkActive = () => {
-    return networkConfig()?.ports?.p2p && (connectedPeers()?.length || 0) > 0;
+    return (connectedPeers()?.length || 0) > 0 || networkConfig()?.torSupport === true;
   };
 
   return (
@@ -286,7 +318,7 @@ export const ConnectionManager: Component<ConnectionManagerProps> = props => {
               {peer => (
                 <PeerCard
                   peer={peer}
-                  variant="compact"
+                  variant="default"
                   showCulturalContext={props.showCulturalContext}
                   onDisconnect={handleDisconnectFromPeer}
                   class={styles.peerCard}
@@ -311,7 +343,7 @@ export const ConnectionManager: Component<ConnectionManagerProps> = props => {
               {peer => (
                 <PeerCard
                   peer={peer}
-                  variant="compact"
+                  variant="default"
                   showCulturalContext={props.showCulturalContext}
                   onConnect={handleConnectToPeer}
                   class={styles.peerCard}
@@ -383,7 +415,7 @@ export const ConnectionManager: Component<ConnectionManagerProps> = props => {
               <label>Peer Address</label>
               <Input
                 value={newPeerAddress()}
-                onInput={e => setNewPeerAddress(e.target.value)}
+                onInput={setNewPeerAddress}
                 placeholder="/ip4/192.168.1.100/tcp/4001/p2p/..."
               />
             </div>

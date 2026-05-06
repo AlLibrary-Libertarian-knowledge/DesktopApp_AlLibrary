@@ -233,11 +233,14 @@ const SearchBar: Component<SearchBarProps> = props => {
 
       case 'Enter':
         e.preventDefault();
-        if (selectedSuggestionIndex() >= 0 && suggestions[selectedSuggestionIndex()]) {
-          handleSuggestionSelect(suggestions[selectedSuggestionIndex()]);
-        } else {
-          handleSubmit(e);
+        if (selectedSuggestionIndex() >= 0) {
+          const selectedSuggestion = suggestions[selectedSuggestionIndex()];
+          if (selectedSuggestion) {
+            handleSuggestionSelect(selectedSuggestion);
+            break;
+          }
         }
+        handleSubmit(e);
         break;
 
       case 'Escape':
@@ -298,16 +301,6 @@ const SearchBar: Component<SearchBarProps> = props => {
   /**
    * Generate ARIA Attributes
    */
-  const ariaAttributes = () => ({
-    'aria-label': props.ariaLabel || 'Search input',
-    'aria-describedby': props.ariaDescribedBy,
-    'aria-expanded': showSuggestionList(),
-    'aria-autocomplete': 'list' as const,
-    'aria-activedescendant':
-      selectedSuggestionIndex() >= 0 ? `suggestion-${selectedSuggestionIndex()}` : undefined,
-    role: props.role || 'searchbox',
-  });
-
   const culturalTooltip = getCulturalTooltip();
   const filteredSuggestions = getFilteredSuggestions();
 
@@ -339,9 +332,16 @@ const SearchBar: Component<SearchBarProps> = props => {
           placeholder={props.placeholder || 'Search...'}
           value={internalValue()}
           disabled={props.disabled}
-          autoFocus={props.autoFocus}
+          autofocus={props.autoFocus}
           id={props.id}
-          {...ariaAttributes()}
+          role="searchbox"
+          aria-label={props.ariaLabel || 'Search input'}
+          aria-describedby={props.ariaDescribedBy}
+          aria-expanded={showSuggestionList()}
+          aria-autocomplete="list"
+          aria-activedescendant={
+            selectedSuggestionIndex() >= 0 ? `suggestion-${selectedSuggestionIndex()}` : undefined
+          }
           onInput={handleInput}
           onFocus={handleFocus}
           onBlur={handleBlur}

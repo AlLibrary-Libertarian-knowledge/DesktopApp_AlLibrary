@@ -11,6 +11,7 @@ export { Breadcrumb } from './Navigation';
 export { default as AppRouter } from './Router/AppRouter';
 export { Progress } from './Progress';
 export { Select } from './Select';
+export { Textarea } from './Textarea';
 export { Badge } from './Badge';
 export { Switch } from './Switch';
 export { Slider } from './Slider';

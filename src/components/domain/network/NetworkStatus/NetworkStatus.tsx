@@ -99,7 +99,7 @@ export const NetworkStatus: Component<NetworkStatusProps> = props => {
   });
 
   // Helper functions
-  const getStatusColor = (status: NodeStatus): 'success' | 'warning' | 'error' | 'neutral' => {
+  const getStatusColor = (status: NodeStatus): 'success' | 'warning' | 'error' | 'info' => {
     switch (status) {
       case NodeStatus.ONLINE:
         return 'success';
@@ -112,7 +112,7 @@ export const NetworkStatus: Component<NetworkStatusProps> = props => {
       case NodeStatus.ERROR:
         return 'error';
       default:
-        return 'neutral';
+        return 'info';
     }
   };
 
@@ -316,7 +316,7 @@ export const NetworkStatus: Component<NetworkStatusProps> = props => {
               <div class={styles.communityNetworks}>
                 <For each={currentStatus()?.activeCommunityNetworks || []}>
                   {network => (
-                    <Badge variant="neutral" class={styles.networkBadge}>
+                    <Badge variant="info" class={styles.networkBadge}>
                       {network}
                     </Badge>
                   )}

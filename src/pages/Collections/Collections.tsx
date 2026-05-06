@@ -122,7 +122,7 @@ const Collections: Component = () => {
   );
 
   // Data resources
-  const [collections] = createResource(
+  const [collections, { refetch: refetchCollections }] = createResource(
     () => ({ filters: searchFilters(), options: searchOptions() }),
     async ({ filters, options }) => {
       try {
@@ -193,7 +193,7 @@ const Collections: Component = () => {
       });
 
       // Refresh collections
-      collections.refetch();
+      refetchCollections();
     } catch (error) {
       console.error('Failed to create collection:', error);
       alert('Failed to create collection');
@@ -207,7 +207,7 @@ const Collections: Component = () => {
 
     try {
       await collectionService.deleteCollection(collectionId);
-      collections.refetch();
+      refetchCollections();
     } catch (error) {
       console.error('Failed to delete collection:', error);
       alert('Failed to delete collection');
@@ -232,7 +232,7 @@ const Collections: Component = () => {
   };
 
   const clearSelection = () => {
-    setSelectedCollections(new Set());
+    setSelectedCollections(new Set<string>());
     setShowBatchActions(false);
   };
 
@@ -244,7 +244,7 @@ const Collections: Component = () => {
         case 'delete':
           if (confirm(`Delete ${selectedIds.length} collections?`)) {
             await Promise.all(selectedIds.map(id => collectionService.deleteCollection(id)));
-            collections.refetch();
+            refetchCollections();
           }
           break;
         case 'export':
@@ -327,31 +327,50 @@ const Collections: Component = () => {
         <div class={styles['stats-grid']}>
           <TopCard
             title="Total Collections"
-            value={collections()?.length || 0}
-            icon={<Folder size={20} />}
-            trend="+12%"
-            color="purple"
+            subtitle="+12%"
+            rightContent={
+              <div>
+                <Folder size={20} />
+                <strong>{collections()?.length || 0}</strong>
+              </div>
+            }
           />
           <TopCard
             title="Cultural Collections"
-            value={collections()?.filter(c => c.type === 'CULTURAL').length || 0}
-            icon={<Globe size={20} />}
-            trend="+8%"
-            color="blue"
+            subtitle="+8%"
+            rightContent={
+              <div>
+                <Globe size={20} />
+                <strong>
+                  {collections()?.filter(c => c.type === CollectionType.CULTURAL).length || 0}
+                </strong>
+              </div>
+            }
           />
           <TopCard
             title="Shared Collections"
-            value={collections()?.filter(c => c.visibility !== 'PRIVATE').length || 0}
-            icon={<Share size={20} />}
-            trend="+15%"
-            color="green"
+            subtitle="+15%"
+            rightContent={
+              <div>
+                <Share size={20} />
+                <strong>
+                  {collections()?.filter(c => c.visibility !== CollectionVisibility.PRIVATE)
+                    .length || 0}
+                </strong>
+              </div>
+            }
           />
           <TopCard
             title="Total Documents"
-            value={collections()?.reduce((sum, c) => sum + c.statistics.documentCount, 0) || 0}
-            icon={<BookOpen size={20} />}
-            trend="+25%"
-            color="orange"
+            subtitle="+25%"
+            rightContent={
+              <div>
+                <BookOpen size={20} />
+                <strong>
+                  {collections()?.reduce((sum, c) => sum + c.statistics.documentCount, 0) || 0}
+                </strong>
+              </div>
+            }
           />
         </div>
       </div>

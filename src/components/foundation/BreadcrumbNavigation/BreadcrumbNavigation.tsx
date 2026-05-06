@@ -64,7 +64,7 @@ export const BreadcrumbNavigation: Component<BreadcrumbNavigationProps> = props 
   };
 
   // Get items to display (with collapsing logic)
-  const getDisplayItems = () => {
+  const getDisplayItems = (): BreadcrumbItem[] => {
     const items = props.items;
     const max = maxItems();
 
@@ -75,6 +75,7 @@ export const BreadcrumbNavigation: Component<BreadcrumbNavigationProps> = props 
     // Always show first and last items, collapse middle
     const first = items[0];
     const last = items[items.length - 1];
+    if (!first || !last) return [];
     const beforeLast = items.slice(-2, -1);
 
     return [first, { id: 'ellipsis', label: '...', clickable: false }, ...beforeLast, last];

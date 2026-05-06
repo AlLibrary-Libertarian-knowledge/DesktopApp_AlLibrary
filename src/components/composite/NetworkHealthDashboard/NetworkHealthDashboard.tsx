@@ -131,7 +131,7 @@ export const NetworkHealthDashboard: Component<NetworkHealthDashboardProps> = pr
           communityParticipation: Number(culturalSharing.communityInteractions || 0),
 
           // Anti-Censorship Metrics
-          torConnectionActive: Boolean(torStatus.connected),
+          torConnectionActive: Boolean(torStatus.circuitEstablished),
           alternativeRoutesAvailable: Number(
             rawMetrics.censorshipResistance?.alternativeRoutes || 0
           ),
@@ -423,10 +423,10 @@ export const NetworkHealthDashboard: Component<NetworkHealthDashboardProps> = pr
         <h2 class={styles.title}>Network Health Dashboard</h2>
         <div class={styles.headerActions}>
           <Badge
-            variant={networkMetrics()?.connectedPeers > 0 ? 'success' : 'error'}
+            variant={(networkMetrics()?.connectedPeers ?? 0) > 0 ? 'success' : 'error'}
             class={styles.statusBadge}
           >
-            {networkMetrics()?.connectedPeers > 0 ? 'Online' : 'Offline'}
+            {(networkMetrics()?.connectedPeers ?? 0) > 0 ? 'Online' : 'Offline'}
           </Badge>
           <Button
             onClick={() => {

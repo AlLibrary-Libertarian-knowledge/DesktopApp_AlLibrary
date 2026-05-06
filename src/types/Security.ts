@@ -53,6 +53,12 @@ export interface ValidationContext {
   /** File size (for file uploads) */
   fileSize?: number;
 
+  /** File type (legacy compatibility) */
+  fileType?: string;
+
+  /** MIME type (legacy compatibility) */
+  mimeType?: string;
+
   /** Jurisdiction for legal compliance */
   jurisdiction?: string;
 }
@@ -516,6 +522,9 @@ export interface SecurityValidationResult {
 
   /** Error message if validation failed */
   error?: string;
+
+  /** Legacy compatibility field */
+  threats?: Array<SecurityThreat | string>;
 }
 
 /**
@@ -551,9 +560,24 @@ export interface ScanResult {
   /** Scanner version */
   scanVersion: string;
 
+  /** Legacy compatibility fields */
+  clean?: boolean;
+  scanDate?: Date;
+  scanEngine?: string;
+
   /** File information */
   fileInfo?: {
     type: string;
     size: number;
   };
 }
+
+/**
+ * Legacy alias kept for compatibility
+ */
+export type LegalComplianceResult = {
+  compliant: boolean;
+  issues: string[];
+  jurisdiction: string;
+  checkedAt: Date;
+};
