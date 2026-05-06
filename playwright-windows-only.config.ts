@@ -46,7 +46,7 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'yarn tauri dev',
+    command: 'pnpm tauri dev',
     url: 'http://localhost:1420',
     reuseExistingServer: !process.env.CI,
     timeout: 120000,

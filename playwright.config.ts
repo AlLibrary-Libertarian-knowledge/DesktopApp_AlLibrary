@@ -54,7 +54,7 @@ export default defineConfig({
   /* Run your local dev server before starting the tests */
   webServer: [
     {
-      command: 'yarn tauri:dev',
+      command: 'pnpm tauri:dev',
       port: 1420,
       reuseExistingServer: !process.env.CI,
       timeout: 120000, // Increased timeout for Tauri startup
