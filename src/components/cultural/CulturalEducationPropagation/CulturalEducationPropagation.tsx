@@ -799,75 +799,12 @@ export const CulturalEducationPropagation: Component<CulturalEducationPropagatio
 
       {/* Network Selection Modal */}
       <Modal
-        open={showPropagationModal()}
-        onOpenChange={setShowPropagationModal}
+        isOpen={showPropagationModal()}
+        onClose={() => setShowPropagationModal(false)}
+        title="Select Educational Networks"
         class={styles.propagationModal}
-      >
-        <Modal.Content>
-          <Modal.Header>
-            <Modal.Title>Select Educational Networks</Modal.Title>
-          </Modal.Header>
-
-          <div class={styles.modalBody}>
-            <p class={styles.modalDescription}>
-              Choose networks to propagate your selected educational content. Content will be
-              distributed with cultural context preserved.
-            </p>
-
-            <div class={styles.networksList}>
-              <For each={filteredNetworks()}>
-                {network => (
-                  <Card
-                    class={`${styles.networkCard} ${
-                      selectedNetworks().includes(network.id) ? styles.selected : ''
-                    }`}
-                    onClick={() => toggleNetworkSelection(network.id)}
-                  >
-                    <Card.Content>
-                      <div class={styles.networkHeader}>
-                        <div class={styles.networkInfo}>
-                          <h4 class={styles.networkName}>{network.name}</h4>
-                          <Badge variant="outline">{network.type}</Badge>
-                        </div>
-                        <div class={styles.networkHealth}>
-                          <span
-                            class={getNetworkHealthColorClass(network.networkHealth.overallHealth)}
-                          >
-                            {network.networkHealth.overallHealth}% health
-                          </span>
-                        </div>
-                      </div>
-
-                      <p class={styles.networkDescription}>{network.description}</p>
-
-                      <div class={styles.networkStats}>
-                        <span>Members: {network.memberCount}</span>
-                        <span>Content: {network.contentCount}</span>
-                        <span>Languages: {network.supportedLanguages.length}</span>
-                      </div>
-
-                      <Show when={network.culturalSpecialization}>
-                        <div class={styles.culturalSpecialization}>
-                          <strong>Cultural Focus:</strong>
-                          <div class={styles.specializationTags}>
-                            <For each={network.culturalSpecialization}>
-                              {specialization => (
-                                <Badge variant="outline" size="sm">
-                                  {specialization}
-                                </Badge>
-                              )}
-                            </For>
-                          </div>
-                        </div>
-                      </Show>
-                    </Card.Content>
-                  </Card>
-                )}
-              </For>
-            </div>
-          </div>
-
-          <Modal.Footer>
+        footer={
+          <>
             <Button variant="outline" onClick={() => setShowPropagationModal(false)}>
               Cancel
             </Button>
@@ -881,8 +818,63 @@ export const CulturalEducationPropagation: Component<CulturalEducationPropagatio
               </Show>
               Start Propagation
             </Button>
-          </Modal.Footer>
-        </Modal.Content>
+          </>
+        }
+      >
+        <div class={styles.modalBody}>
+          <p class={styles.modalDescription}>
+            Choose networks to propagate your selected educational content. Content will be
+            distributed with cultural context preserved.
+          </p>
+
+          <div class={styles.networksList}>
+            <For each={filteredNetworks()}>
+              {network => (
+                <Card
+                  class={`${styles.networkCard} ${
+                    selectedNetworks().includes(network.id) ? styles.selected : ''
+                  }`}
+                  onClick={() => toggleNetworkSelection(network.id)}
+                >
+                  <div class={styles.networkHeader}>
+                    <div class={styles.networkInfo}>
+                      <h4 class={styles.networkName}>{network.name}</h4>
+                      <Badge variant="outline">{network.type}</Badge>
+                    </div>
+                    <div class={styles.networkHealth}>
+                      <span class={getNetworkHealthColorClass(network.networkHealth.overallHealth)}>
+                        {network.networkHealth.overallHealth}% health
+                      </span>
+                    </div>
+                  </div>
+
+                  <p class={styles.networkDescription}>{network.description}</p>
+
+                  <div class={styles.networkStats}>
+                    <span>Members: {network.memberCount}</span>
+                    <span>Content: {network.contentCount}</span>
+                    <span>Languages: {network.supportedLanguages.length}</span>
+                  </div>
+
+                  <Show when={network.culturalSpecialization}>
+                    <div class={styles.culturalSpecialization}>
+                      <strong>Cultural Focus:</strong>
+                      <div class={styles.specializationTags}>
+                        <For each={network.culturalSpecialization}>
+                          {specialization => (
+                            <Badge variant="outline" size="sm">
+                              {specialization}
+                            </Badge>
+                          )}
+                        </For>
+                      </div>
+                    </div>
+                  </Show>
+                </Card>
+              )}
+            </For>
+          </div>
+        </div>
       </Modal>
 
       {/* Additional modals would be implemented here for pathway creation, initiative creation, etc. */}

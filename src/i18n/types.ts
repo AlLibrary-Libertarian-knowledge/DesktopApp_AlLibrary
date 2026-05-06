@@ -46,95 +46,12 @@ export interface TranslationParams {
   [key: string]: string | number | boolean;
 }
 
-// Translation key paths (auto-generated based on JSON structure)
-export type TranslationKey =
-  // Common translations
-  | 'common.actions.save'
-  | 'common.actions.cancel'
-  | 'common.actions.delete'
-  | 'common.actions.edit'
-  | 'common.actions.share'
-  | 'common.actions.upload'
-  | 'common.actions.download'
-  | 'common.actions.search'
-  | 'common.actions.filter'
-  | 'common.actions.sort'
-  | 'common.actions.refresh'
-  | 'common.actions.goBack'
-  | 'common.actions.viewDetails'
-  | 'common.actions.showMore'
-  | 'common.actions.showLess'
-  | 'common.status.loading'
-  | 'common.status.saving'
-  | 'common.status.uploading'
-  | 'common.status.connecting'
-  | 'common.status.syncing'
-  | 'common.status.completed'
-  | 'common.status.failed'
-  | 'common.status.success'
-  | 'common.status.error'
-  | 'common.status.warning'
-  | 'common.status.info'
-
-  // Navigation translations
-  | 'navigation.home'
-  | 'navigation.documents'
-  | 'navigation.collections'
-  | 'navigation.search'
-  | 'navigation.browse'
-  | 'navigation.recent'
-  | 'navigation.trending'
-  | 'navigation.favorites'
-  | 'navigation.peers'
-  | 'navigation.network'
-  | 'navigation.settings'
-  | 'navigation.about'
-  | 'navigation.cultural'
-  | 'navigation.traditional'
-  | 'navigation.community'
-  | 'navigation.preservation'
-
-  // Page translations
-  | 'pages.home.title'
-  | 'pages.home.subtitle'
-  | 'pages.documents.title'
-  | 'pages.documents.subtitle'
-  | 'pages.collections.title'
-  | 'pages.collections.subtitle'
-  | 'pages.search.title'
-  | 'pages.search.subtitle'
-  | 'pages.settings.title'
-  | 'pages.settings.subtitle'
-
-  // Cultural translations (information only)
-  | 'cultural.sensitivity.public'
-  | 'cultural.sensitivity.educational'
-  | 'cultural.sensitivity.community'
-  | 'cultural.sensitivity.traditional'
-  | 'cultural.sensitivity.guardian'
-  | 'cultural.sensitivity.sacred'
-  | 'cultural.sensitivity.ceremonial'
-  | 'cultural.context.informationOnly'
-  | 'cultural.context.educationalPurpose'
-  | 'cultural.context.noAccessRestrictions'
-  | 'cultural.context.multiplePerspectives'
-
-  // Error translations
-  | 'errors.documentNotFound'
-  | 'errors.networkConnectionFailed'
-  | 'errors.uploadFailed'
-  | 'errors.searchFailed'
-  | 'errors.accessDenied'
-  | 'errors.validationFailed'
-
-  // Component translations
-  | 'components.button.loading'
-  | 'components.modal.close'
-  | 'components.modal.confirm'
-  | 'components.input.required'
-  | 'components.input.invalid'
-  | 'components.search.placeholder'
-  | 'components.languageSwitch.selectLanguage';
+/**
+ * Translation lookup keys (resolved from locale JSON at runtime).
+ * Typed as string so feature pages can add keys without updating a giant union;
+ * prefer matching keys under `src/i18n/locales`.
+ */
+export type TranslationKey = string;
 
 // Pluralization rules
 export interface PluralRules {

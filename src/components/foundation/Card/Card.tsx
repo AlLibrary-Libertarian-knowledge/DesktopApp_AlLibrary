@@ -75,6 +75,9 @@ export interface CardProps extends ParentProps {
   // Metadata Properties
   id?: string;
   dataTestId?: string;
+
+  /** Explicit tab order (overrides clickable default tabindex when set, including 0/-1). */
+  tabIndex?: number;
 }
 
 /**
@@ -155,7 +158,12 @@ const Card: Component<CardProps> = props => {
     'aria-busy': props.loading,
     'aria-disabled': props.disabled,
     role: props.role || (props.clickable ? 'button' : undefined),
-    tabindex: props.clickable && !props.disabled ? 0 : undefined,
+    tabindex:
+      props.tabIndex !== undefined
+        ? props.tabIndex
+        : props.clickable && !props.disabled
+          ? 0
+          : undefined,
   });
 
   /**

@@ -2,4 +2,4 @@
  * NetworkHealth Page Exports
  */
 
-export { NetworkHealth } from './NetworkHealth';
+export { NetworkHealth, NetworkHealth as default } from './NetworkHealth';

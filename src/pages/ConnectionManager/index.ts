@@ -2,4 +2,4 @@
  * ConnectionManager Page Exports
  */
 
-export { ConnectionManager } from './ConnectionManager';
+export { ConnectionManager, ConnectionManager as default } from './ConnectionManager';

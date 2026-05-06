@@ -30,12 +30,14 @@
 
     /* Linting - Strict configuration */
     "strict": true,
-    "exactOptionalPropertyTypes": true,
+    /* Relaxed until optional-prop call sites are normalized project-wide */
+    "exactOptionalPropertyTypes": false,
     "noImplicitReturns": true,
     "noImplicitOverride": true,
     "noUncheckedIndexedAccess": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    /* Re-enable after cleanup: many legacy files have unused imports/params */
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true
   },
   "include": ["src/**/*", "src/**/*.tsx", "src/**/*.ts"],

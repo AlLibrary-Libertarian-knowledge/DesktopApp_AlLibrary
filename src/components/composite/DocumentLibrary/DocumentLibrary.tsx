@@ -542,7 +542,7 @@ const DocumentLibrary: Component<DocumentLibraryProps> = props => {
 
       {/* Filters Modal */}
       <Modal
-        open={showFilters()}
+        isOpen={showFilters()}
         onClose={() => setShowFilters(false)}
         title="Document Filters"
         subtitle="Filter documents by cultural context and other criteria"
@@ -551,6 +551,16 @@ const DocumentLibrary: Component<DocumentLibraryProps> = props => {
         culturalContext="Document filtering options"
         contentType="general"
         ariaLabel="Document filters modal"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setShowFilters(false)}>
+              Cancel
+            </Button>
+            <Button variant="primary" onClick={() => setShowFilters(false)}>
+              Apply Filters
+            </Button>
+          </>
+        }
       >
         <div class={styles['filters-content']}>
           <h4>Cultural Sensitivity Levels</h4>
@@ -579,20 +589,11 @@ const DocumentLibrary: Component<DocumentLibraryProps> = props => {
             </For>
           </div>
         </div>
-
-        <div slot="footer" class={styles['modal-footer']}>
-          <Button variant="ghost" onClick={() => setShowFilters(false)}>
-            Cancel
-          </Button>
-          <Button variant="primary" onClick={() => setShowFilters(false)}>
-            Apply Filters
-          </Button>
-        </div>
       </Modal>
 
       {/* Sort Options Modal */}
       <Modal
-        open={showSortOptions()}
+        isOpen={showSortOptions()}
         onClose={() => setShowSortOptions(false)}
         title="Sort Options"
         subtitle="Choose how to sort your documents"
@@ -601,6 +602,16 @@ const DocumentLibrary: Component<DocumentLibraryProps> = props => {
         culturalContext="Document sorting options"
         contentType="general"
         ariaLabel="Sort options modal"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setShowSortOptions(false)}>
+              Cancel
+            </Button>
+            <Button variant="primary" onClick={() => setShowSortOptions(false)}>
+              Apply Sort
+            </Button>
+          </>
+        }
       >
         <div class={styles['sort-content']}>
           <h4>Sort By</h4>
@@ -652,20 +663,11 @@ const DocumentLibrary: Component<DocumentLibraryProps> = props => {
             </label>
           </div>
         </div>
-
-        <div slot="footer" class={styles['modal-footer']}>
-          <Button variant="ghost" onClick={() => setShowSortOptions(false)}>
-            Cancel
-          </Button>
-          <Button variant="primary" onClick={() => setShowSortOptions(false)}>
-            Apply Sort
-          </Button>
-        </div>
       </Modal>
 
       {/* Document Preview Modal */}
       <Modal
-        open={showDocumentPreview()}
+        isOpen={showDocumentPreview()}
         onClose={() => setShowDocumentPreview(false)}
         title={previewDocument()?.title || 'Document Preview'}
         subtitle={previewDocument()?.description || 'Document details'}
@@ -674,6 +676,24 @@ const DocumentLibrary: Component<DocumentLibraryProps> = props => {
         culturalContext={previewDocument()?.culturalMetadata?.culturalOrigin}
         contentType="document"
         ariaLabel="Document preview modal"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setShowDocumentPreview(false)}>
+              Close
+            </Button>
+            <Button
+              variant="primary"
+              onClick={() => {
+                if (previewDocument()) {
+                  handleDocumentSelect(previewDocument()!);
+                  setShowDocumentPreview(false);
+                }
+              }}
+            >
+              Open Document
+            </Button>
+          </>
+        }
       >
         <Show when={previewDocument()}>
           <div class={styles['preview-content']}>
@@ -713,23 +733,6 @@ const DocumentLibrary: Component<DocumentLibraryProps> = props => {
             </div>
           </div>
         </Show>
-
-        <div slot="footer" class={styles['modal-footer']}>
-          <Button variant="ghost" onClick={() => setShowDocumentPreview(false)}>
-            Close
-          </Button>
-          <Button
-            variant="primary"
-            onClick={() => {
-              if (previewDocument()) {
-                handleDocumentSelect(previewDocument()!);
-                setShowDocumentPreview(false);
-              }
-            }}
-          >
-            Open Document
-          </Button>
-        </div>
       </Modal>
     </div>
   );

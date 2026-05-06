@@ -6,5 +6,6 @@
  * All content remains searchable with appropriate cultural information.
  */
 
+export { default } from './Search';
 export { default as SearchPage } from './Search';
 export type { SearchViewMode, SearchSortBy, SearchSortOrder } from './Search';

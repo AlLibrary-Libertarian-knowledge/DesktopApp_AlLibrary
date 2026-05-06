@@ -370,7 +370,7 @@ const DocumentUpload: Component<DocumentUploadProps> = props => {
 
       {/* Upload Modal */}
       <Modal
-        open={showUploadModal()}
+        isOpen={showUploadModal()}
         onClose={() => setShowUploadModal(false)}
         title="Upload Documents"
         subtitle="Configure cultural context and upload settings"
@@ -379,6 +379,29 @@ const DocumentUpload: Component<DocumentUploadProps> = props => {
         culturalContext="Document upload configuration"
         contentType="general"
         ariaLabel="Upload configuration modal"
+        footer={
+          <>
+            <Button
+              variant="ghost"
+              onClick={() => setShowUploadModal(false)}
+              disabled={isUploading()}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={uploadFiles}
+              disabled={isUploading() || uploadedFiles().length === 0}
+              loading={isUploading()}
+            >
+              <Show when={!isUploading()}>
+                <Upload size={16} />
+                Upload Documents
+              </Show>
+              <Show when={isUploading()}>Uploading...</Show>
+            </Button>
+          </>
+        }
       >
         <div class={styles['upload-modal-content']}>
           {/* Cultural Context Configuration */}
@@ -429,33 +452,11 @@ const DocumentUpload: Component<DocumentUploadProps> = props => {
             </For>
           </div>
         </div>
-
-        <div slot="footer" class={styles['modal-footer']}>
-          <Button
-            variant="ghost"
-            onClick={() => setShowUploadModal(false)}
-            disabled={isUploading()}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="primary"
-            onClick={uploadFiles}
-            disabled={isUploading() || uploadedFiles().length === 0}
-            loading={isUploading()}
-          >
-            <Show when={!isUploading()}>
-              <Upload size={16} />
-              Upload Documents
-            </Show>
-            <Show when={isUploading()}>Uploading...</Show>
-          </Button>
-        </div>
       </Modal>
 
       {/* Validation Modal */}
       <Modal
-        open={showValidationModal()}
+        isOpen={showValidationModal()}
         onClose={() => setShowValidationModal(false)}
         title="Validation Results"
         subtitle="Review validation results for uploaded files"
@@ -463,6 +464,22 @@ const DocumentUpload: Component<DocumentUploadProps> = props => {
         culturalTheme={props.culturalTheme || 'default'}
         contentType="general"
         ariaLabel="Validation results modal"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setShowValidationModal(false)}>
+              Close
+            </Button>
+            <Button
+              variant="primary"
+              onClick={() => {
+                setShowValidationModal(false);
+                uploadFiles();
+              }}
+            >
+              Continue Upload
+            </Button>
+          </>
+        }
       >
         <div class={styles['validation-content']}>
           <For each={validationResults()}>
@@ -488,21 +505,6 @@ const DocumentUpload: Component<DocumentUploadProps> = props => {
               </div>
             )}
           </For>
-        </div>
-
-        <div slot="footer" class={styles['modal-footer']}>
-          <Button variant="ghost" onClick={() => setShowValidationModal(false)}>
-            Close
-          </Button>
-          <Button
-            variant="primary"
-            onClick={() => {
-              setShowValidationModal(false);
-              uploadFiles();
-            }}
-          >
-            Continue Upload
-          </Button>
         </div>
       </Modal>
     </div>

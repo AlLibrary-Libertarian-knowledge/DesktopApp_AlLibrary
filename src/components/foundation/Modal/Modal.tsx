@@ -29,7 +29,14 @@
  * - Optimized animations
  */
 
-import { type Component, type ParentProps, createEffect, onCleanup, Show } from 'solid-js';
+import {
+  type Component,
+  type JSX,
+  type ParentProps,
+  createEffect,
+  onCleanup,
+  Show,
+} from 'solid-js';
 import { Portal } from 'solid-js/web';
 import { X } from 'lucide-solid';
 import { Button } from '../Button';
@@ -43,6 +50,8 @@ export interface ModalProps extends ParentProps {
   onClose: () => void;
   /** Modal title */
   title?: string;
+  /** Optional subtitle shown below the title */
+  subtitle?: string;
   /** Modal size variant */
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
   /** Whether to show close button */
@@ -55,6 +64,14 @@ export interface ModalProps extends ParentProps {
   class?: string;
   /** Test ID for testing */
   'data-testid'?: string;
+  /** Optional footer actions below body content */
+  footer?: JSX.Element;
+  /** Hooks for cultural/document styling (data attributes on the modal panel) */
+  culturalTheme?: string;
+  culturalContext?: string;
+  contentType?: string;
+  /** Overrides automatic titling for assistive tech when set */
+  ariaLabel?: string;
 }
 
 export const Modal: Component<ModalProps> = props => {
@@ -110,17 +127,31 @@ export const Modal: Component<ModalProps> = props => {
           data-testid={props['data-testid']}
           role="dialog"
           aria-modal="true"
-          aria-labelledby={props.title ? 'modal-title' : undefined}
+          aria-label={props.ariaLabel}
+          aria-labelledby={props.ariaLabel ? undefined : props.title ? 'modal-title' : undefined}
         >
-          <div class={`${styles.modal} ${styles[size()]}`} onClick={e => e.stopPropagation()}>
+          <div
+            class={`${styles.modal} ${styles[size()]}`}
+            data-cultural-theme={props.culturalTheme}
+            data-cultural-context={props.culturalContext}
+            data-content-type={props.contentType}
+            onClick={e => e.stopPropagation()}
+          >
             {/* Modal Header */}
-            <Show when={props.title || showCloseButton()}>
+            <Show when={props.title || props.subtitle || showCloseButton()}>
               <header class={styles.header}>
-                <Show when={props.title}>
-                  <h2 id="modal-title" class={styles.title}>
-                    {props.title}
-                  </h2>
-                </Show>
+                <div class={styles.headerText}>
+                  <Show when={props.title}>
+                    <h2 id="modal-title" class={styles.title}>
+                      {props.title}
+                    </h2>
+                  </Show>
+                  <Show when={props.subtitle}>
+                    <p id="modal-subtitle" class={styles.subtitle}>
+                      {props.subtitle}
+                    </p>
+                  </Show>
+                </div>
 
                 <Show when={showCloseButton()}>
                   <Button
@@ -137,6 +168,10 @@ export const Modal: Component<ModalProps> = props => {
 
             {/* Modal Content */}
             <div class={styles.content}>{props.children}</div>
+
+            <Show when={props.footer}>
+              <footer class={styles.footer}>{props.footer}</footer>
+            </Show>
           </div>
         </div>
       </Portal>

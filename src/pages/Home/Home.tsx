@@ -584,7 +584,7 @@ const HomePage: Component = () => {
 
       {/* Enhanced Welcome Modal */}
       <Modal
-        open={showModal()}
+        isOpen={showModal()}
         onClose={handleModalClose}
         title={t('home.welcomeModal.title')}
         size="lg"

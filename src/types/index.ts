@@ -5,6 +5,14 @@
  * and cultural/security framework requirements.
  */
 
+import type {
+  CulturalMetadata,
+  CulturalEducationProgress,
+  CulturalInformation,
+  CulturalSensitivityLevel,
+} from './Cultural';
+import type { ContentVerification, Document, DocumentSearchFilters } from './Document';
+
 // Cultural Framework Types
 export type {
   CulturalMetadata,
