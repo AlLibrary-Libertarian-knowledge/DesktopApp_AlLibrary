@@ -290,7 +290,7 @@ describe('Button Component', () => {
 
       expect(handleClick).not.toHaveBeenCalled();
       const errorMessage = screen.getByRole('alert');
-      expect(errorMessage).toHaveTextContent('Please complete security validation');
+      expect(errorMessage).toHaveTextContent('components.button.validationRequired');
     });
 
     it('shows validation error message', async () => {
@@ -309,7 +309,7 @@ describe('Button Component', () => {
 
       await waitFor(() => {
         const errorMessage = screen.getByRole('alert');
-        expect(errorMessage).toHaveTextContent('Please complete security validation');
+        expect(errorMessage).toHaveTextContent('components.button.validationRequired');
       });
     });
 

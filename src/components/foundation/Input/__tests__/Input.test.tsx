@@ -445,7 +445,7 @@ describe('Input Component', () => {
       fireEvent.blur(input);
 
       await waitFor(() => {
-        expect(screen.getByText('Validation failed')).toBeInTheDocument();
+        expect(screen.getByText('components.input.validation.failed')).toBeInTheDocument();
       });
     });
   });

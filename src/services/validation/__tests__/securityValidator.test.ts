@@ -82,11 +82,11 @@ describe('SecurityValidator', () => {
       const result = await securityValidator.scanFile(filePath);
 
       expect(result).toBeDefined();
-      expect(result.clean).toBeDefined();
+      expect(result.safe).toBeDefined();
       expect(result.threats).toBeDefined();
       expect(Array.isArray(result.threats)).toBe(true);
-      expect(result.scanEngine).toBeDefined();
-      expect(result.scanDate).toBeInstanceOf(Date);
+      expect(result.scanVersion).toBeDefined();
+      expect(result.scanTime).toBeInstanceOf(Date);
     });
 
     it('should handle scan failures gracefully', async () => {
@@ -96,7 +96,7 @@ describe('SecurityValidator', () => {
 
       // Should return safe failure state
       expect(result).toBeDefined();
-      expect(result.clean).toBe(false); // Fail-safe approach
+      expect(result.safe).toBe(false); // Fail-safe approach
       expect(result.threats).toBeDefined();
     });
 
