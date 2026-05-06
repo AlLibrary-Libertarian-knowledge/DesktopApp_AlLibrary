@@ -195,11 +195,14 @@ test.describe('AlLibrary Home Page', () => {
   });
 
   test('should display dashboard content', async ({ page }) => {
-    // Check for main dashboard title by looking for the specific text
-    await expect(page.locator('text=AlLibrary Network Dashboard')).toBeVisible();
+    // Check for current dashboard header and subtitle
+    await expect(page.locator('h1:has-text("Welcome to AlLibrary")')).toBeVisible();
     await expect(
-      page.locator('text=Decentralized Cultural Heritage Preservation Network')
+      page
+        .getByRole('banner', { name: 'Welcome to AlLibrary' })
+        .getByText('Decentralized Cultural Heritage Preservation Network')
     ).toBeVisible();
+    await expect(page.locator('[data-testid="stats-section"]')).toBeVisible();
   });
 
   test('should have functional search bar', async ({ page }) => {
@@ -250,21 +253,14 @@ test.describe('AlLibrary Home Page', () => {
       await page.waitForTimeout(1000);
     }
 
-    // Test that navigation element is clickable
-    const browseButton = page.locator('[data-testid="main-navigation"] >> text=Browse Categories');
-    await expect(browseButton).toBeVisible({ timeout: isWebKit ? 30000 : 10000 });
-
-    // Click with enhanced handling for WebKit
-    if (isWebKit) {
-      await browseButton.scrollIntoViewIfNeeded();
-      await page.waitForTimeout(500);
-    }
-
-    await browseButton.click({ force: true, timeout: 15000 });
+    // Interact with top tabs, which are stable and always present
+    const networkTab = page.locator('#network-tab');
+    await expect(networkTab).toBeVisible({ timeout: isWebKit ? 30000 : 10000 });
+    await networkTab.click({ force: true, timeout: 15000 });
 
     // Verify the page is still responsive after the click
     await expect(page.locator('[data-testid="main-navigation"]')).toBeVisible();
-    await expect(page.locator('text=AlLibrary Network Dashboard')).toBeVisible();
+    await expect(page.locator('[data-testid="stats-section"]')).toBeVisible();
   });
 
   test('should be responsive and accessible', async ({ page }) => {
@@ -335,16 +331,17 @@ test.describe('AlLibrary Core Features', () => {
   test('should display trending section', async ({ page }) => {
     const isWebKit = getBrowserName(page) === 'webkit';
 
-    // Check for trending section (stats cards) with extended timeout for WebKit
-    await expect(page.locator('[data-testid="trending-section"]')).toBeVisible({
+    // Home now exposes a stats section instead of a dedicated trending test id
+    await expect(page.locator('[data-testid="stats-section"]')).toBeVisible({
       timeout: isWebKit ? 30000 : 10000,
     });
 
-    // Check for stat cards
-    await expect(page.locator('text=Documents Shared')).toBeVisible({
+    // Check for stat cards scoped to the stats section
+    const statsSection = page.locator('[data-testid="stats-section"]');
+    await expect(statsSection.getByText('Documents Shared').first()).toBeVisible({
       timeout: isWebKit ? 30000 : 10000,
     });
-    await expect(page.locator('text=Connected Peers')).toBeVisible({
+    await expect(statsSection.getByText('Connected Peers').first()).toBeVisible({
       timeout: isWebKit ? 30000 : 10000,
     });
   });
