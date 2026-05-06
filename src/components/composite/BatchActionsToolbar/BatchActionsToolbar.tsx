@@ -1,5 +1,6 @@
 import { type Component, JSX, createSignal, Show, For } from 'solid-js';
 import { Button, Card } from '../../foundation';
+import type { UICulturalTheme } from '@/types/core';
 import {
   Download,
   Heart,
@@ -76,7 +77,7 @@ export interface BatchActionsToolbarProps {
   isProcessing?: boolean;
 
   // Cultural Context Properties (INFORMATION ONLY - NO ACCESS CONTROL)
-  culturalTheme?: 'indigenous' | 'traditional' | 'modern' | 'ceremonial' | 'community' | 'default';
+  culturalTheme?: UICulturalTheme;
   showCulturalWarnings?: boolean; // Educational warnings only
   enableCulturalContextReview?: boolean; // For educational purposes
 
@@ -115,7 +116,7 @@ export interface BatchActionsToolbarProps {
  * <BatchActionsToolbar
  *   selectedDocuments={selectedDocs}
  *   isVisible={true}
- *   culturalTheme="indigenous"
+ *   culturalTheme="modern"
  *   showCulturalWarnings={true}
  *   onBatchAction={handleBatchAction}
  * />

@@ -2,13 +2,8 @@ import { createSignal, createEffect, onMount } from 'solid-js';
 
 // Theme types
 export type ThemeMode = 'light' | 'dark' | 'auto';
-export type CulturalTheme =
-  | 'default'
-  | 'indigenous'
-  | 'traditional'
-  | 'ceremonial'
-  | 'academic'
-  | 'community';
+/** Global app “cultural” palette variants removed — only default is supported. */
+export type CulturalTheme = 'default';
 export type AccessibilityTheme =
   | 'default'
   | 'high-contrast'
@@ -86,8 +81,9 @@ const loadThemePreferences = (): ThemePreferences => {
   try {
     const stored = localStorage.getItem(THEME_STORAGE_KEY);
     if (stored) {
-      const parsed = JSON.parse(stored);
-      return { ...DEFAULT_THEME, ...parsed };
+      const parsed = JSON.parse(stored) as Partial<ThemePreferences>;
+      // Drop legacy indigenous/traditional/ceremonial/academic/community theme keys
+      return { ...DEFAULT_THEME, ...parsed, culturalTheme: 'default' };
     }
   } catch (error) {
     console.warn('Failed to load theme preferences:', error);
@@ -249,8 +245,8 @@ export const useTheme = (): UseThemeReturn => {
     setPreferences(prev => ({ ...prev, mode }));
   };
 
-  const setCulturalTheme = (theme: CulturalTheme) => {
-    setPreferences(prev => ({ ...prev, culturalTheme: theme }));
+  const setCulturalTheme = (_theme: CulturalTheme) => {
+    setPreferences(prev => ({ ...prev, culturalTheme: 'default' }));
   };
 
   const setAccessibilityTheme = (theme: AccessibilityTheme) => {

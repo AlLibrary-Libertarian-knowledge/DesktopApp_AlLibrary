@@ -6,6 +6,7 @@
  */
 
 import { type Component, createSignal, For, Show } from 'solid-js';
+import type { UICulturalTheme } from '@/types/core';
 import styles from './CulturalLearningPath.module.css';
 
 export interface LearningResource {
@@ -45,7 +46,7 @@ export interface CulturalLearningPathProps {
   /** Show progress tracking */
   showProgress?: boolean;
   /** Cultural theme */
-  culturalTheme?: 'indigenous' | 'traditional' | 'ceremonial' | 'default';
+  culturalTheme?: UICulturalTheme;
   /** Custom CSS class */
   class?: string;
   /** Test ID for testing */
@@ -64,7 +65,7 @@ export const CulturalLearningPath: Component<CulturalLearningPathProps> = props 
 
   // Default props
   const showProgress = () => props.showProgress ?? true;
-  const culturalTheme = () => props.culturalTheme || 'traditional';
+  const culturalTheme = () => props.culturalTheme || 'default';
 
   // Handle path selection
   const handlePathSelect = (path: LearningPath) => {

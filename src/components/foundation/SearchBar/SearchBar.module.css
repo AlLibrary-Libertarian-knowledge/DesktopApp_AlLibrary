@@ -75,27 +75,6 @@
   border-color: var(--primary-color);
 }
 
-/* Cultural Theme Styles (INFORMATION ONLY - NO ACCESS RESTRICTION) */
-.search-bar-cultural-indigenous {
-  border-color: var(--cultural-indigenous);
-  background-color: var(--cultural-indigenous-bg);
-}
-
-.search-bar-cultural-indigenous:focus-within {
-  border-color: var(--cultural-indigenous-focus);
-  box-shadow: 0 0 0 3px var(--cultural-indigenous-alpha);
-}
-
-.search-bar-cultural-traditional {
-  border-color: var(--cultural-traditional);
-  background-color: var(--cultural-traditional-bg);
-}
-
-.search-bar-cultural-traditional:focus-within {
-  border-color: var(--cultural-traditional-focus);
-  box-shadow: 0 0 0 3px var(--cultural-traditional-alpha);
-}
-
 .search-bar-cultural-modern {
   border-color: var(--cultural-modern);
   background-color: var(--cultural-modern-bg);
@@ -104,26 +83,6 @@
 .search-bar-cultural-modern:focus-within {
   border-color: var(--cultural-modern-focus);
   box-shadow: 0 0 0 3px var(--cultural-modern-alpha);
-}
-
-.search-bar-cultural-ceremonial {
-  border-color: var(--cultural-ceremonial);
-  background-color: var(--cultural-ceremonial-bg);
-}
-
-.search-bar-cultural-ceremonial:focus-within {
-  border-color: var(--cultural-ceremonial-focus);
-  box-shadow: 0 0 0 3px var(--cultural-ceremonial-alpha);
-}
-
-.search-bar-cultural-community {
-  border-color: var(--cultural-community);
-  background-color: var(--cultural-community-bg);
-}
-
-.search-bar-cultural-community:focus-within {
-  border-color: var(--cultural-community-focus);
-  box-shadow: 0 0 0 3px var(--cultural-community-alpha);
 }
 
 /* Search Icon */

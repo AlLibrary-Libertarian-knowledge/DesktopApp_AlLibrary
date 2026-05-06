@@ -19,6 +19,7 @@ import type {
   UploadResult,
   UploadOptions,
 } from '../../../services/upload/uploadService';
+import type { UICulturalTheme } from '@/types/core';
 import styles from './DocumentUpload.module.css';
 
 /**
@@ -32,7 +33,7 @@ export interface DocumentUploadProps {
   allowedFormats?: string[];
 
   // Cultural Context Properties (INFORMATION ONLY - NO ACCESS CONTROL)
-  culturalTheme?: 'indigenous' | 'traditional' | 'modern' | 'ceremonial' | 'community' | 'default';
+  culturalTheme?: UICulturalTheme;
   culturalContext?: string;
   showCulturalIndicator?: boolean;
 

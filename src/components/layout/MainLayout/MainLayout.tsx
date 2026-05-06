@@ -6,6 +6,7 @@
  */
 
 import { type Component, type JSX, Show } from 'solid-js';
+import type { UICulturalTheme } from '@/types/core';
 import styles from './MainLayout.module.css';
 
 export interface MainLayoutProps {
@@ -18,7 +19,7 @@ export interface MainLayoutProps {
   /** Layout variant */
   variant?: 'default' | 'fullscreen' | 'minimal';
   /** Cultural theme */
-  culturalTheme?: 'indigenous' | 'traditional' | 'ceremonial' | 'default';
+  culturalTheme?: UICulturalTheme;
   /** Custom CSS class */
   class?: string;
   /** Test ID for testing */

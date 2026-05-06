@@ -6,6 +6,7 @@
  */
 
 import { type Component, Show, For } from 'solid-js';
+import type { UICulturalTheme } from '@/types/core';
 import styles from './CulturalContext.module.css';
 
 export interface CulturalContextInfo {
@@ -41,7 +42,7 @@ export interface CulturalContextProps {
   /** Show community information */
   showCommunityInfo?: boolean;
   /** Cultural theme */
-  culturalTheme?: 'indigenous' | 'traditional' | 'ceremonial' | 'default';
+  culturalTheme?: UICulturalTheme;
   /** Custom CSS class */
   class?: string;
   /** Test ID for testing */
@@ -55,7 +56,7 @@ export const CulturalContext: Component<CulturalContextProps> = props => {
   const displayMode = () => props.displayMode || 'full';
   const showEducationalResources = () => props.showEducationalResources ?? true;
   const showCommunityInfo = () => props.showCommunityInfo ?? true;
-  const culturalTheme = () => props.culturalTheme || 'traditional';
+  const culturalTheme = () => props.culturalTheme || 'default';
 
   // Get sensitivity level description
   const getSensitivityDescription = (level: number) => {

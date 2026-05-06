@@ -176,28 +176,21 @@ describe('Input Component', () => {
     });
   });
 
-  describe('Cultural Theme Support (INFORMATION ONLY)', () => {
-    it.each([
-      'indigenous',
-      'traditional',
-      'modern',
-      'ceremonial',
-      'community',
-      'default',
-    ])('renders with cultural theme %s', theme => {
+  describe('Optional visual variants', () => {
+    it.each(['modern', 'default'])('renders with variant %s', theme => {
       render(() => <Input culturalTheme={theme as CulturalTheme} />);
       const input = screen.getByRole('textbox');
-      if (theme !== 'default') {
-        expect(input).toHaveClass(getClassName(`input-cultural-${theme}`));
+      if (theme === 'modern') {
+        expect(input).toHaveClass(getClassName('input-cultural-modern'));
       }
     });
 
     it('shows cultural indicator when enabled', () => {
       render(() => (
-        <Input culturalTheme="indigenous" showCulturalIndicator={true} label="Test Label" />
+        <Input culturalTheme="modern" showCulturalIndicator={true} label="Test Label" />
       ));
 
-      const indicator = screen.getByLabelText('Cultural theme: indigenous');
+      const indicator = screen.getByLabelText('Cultural theme: modern');
       expect(indicator).toBeInTheDocument();
       expect(indicator).toHaveTextContent('🌿');
     });
@@ -205,7 +198,7 @@ describe('Input Component', () => {
     it('displays cultural tooltip on hover', async () => {
       render(() => (
         <Input
-          culturalTheme="traditional"
+          culturalTheme="modern"
           culturalContext="Traditional knowledge input"
           culturalSensitivityLevel={3}
         />
@@ -480,7 +473,7 @@ describe('Input Component', () => {
     it('supports complex cultural validation scenarios', async () => {
       render(() => (
         <Input
-          culturalTheme="traditional"
+          culturalTheme="modern"
           culturalSensitivityLevel={3}
           validationType="cultural"
           requiresValidation={true}
@@ -489,7 +482,7 @@ describe('Input Component', () => {
       ));
 
       const input = screen.getByRole('textbox');
-      expect(input).toHaveClass(getClassName('input-cultural-traditional'));
+      expect(input).toHaveClass(getClassName('input-cultural-modern'));
       expect(input).toHaveClass(getClassName('input-traditional'));
 
       // Cultural validation should not block any content

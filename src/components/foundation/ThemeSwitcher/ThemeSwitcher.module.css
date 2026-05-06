@@ -114,8 +114,16 @@
 }
 
 .themeIcon {
-  font-size: 1.2em;
-  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 0;
+  color: inherit;
+}
+
+.themeIcon :global(svg) {
+  display: block;
 }
 
 .themeLabel {
@@ -127,9 +135,16 @@
 }
 
 .dropdownIcon {
-  font-size: 0.75em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 0;
   transition: transform 0.2s ease;
-  line-height: 1;
+}
+
+.dropdownIcon :global(svg) {
+  display: block;
 }
 
 .dropdownIcon.rotated {
@@ -375,9 +390,16 @@
 }
 
 .themeOptionIcon {
-  font-size: 1.1em;
-  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  line-height: 0;
+  color: inherit;
+}
+
+.themeOptionIcon :global(svg) {
+  display: block;
 }
 
 .themeOptionLabel {
@@ -388,10 +410,16 @@
 }
 
 .checkmark {
-  color: var(--color-primary-600);
-  font-weight: 700;
-  font-size: 0.9em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  line-height: 0;
+  color: var(--color-primary-600);
+}
+
+.checkmark :global(svg) {
+  display: block;
 }
 
 .resetSection {
@@ -457,8 +485,12 @@
   }
 
   .themeOptionIcon {
-    font-size: 1.5em;
     margin-bottom: var(--space-xs);
+  }
+
+  .themeOptionIcon :global(svg) {
+    width: 22px;
+    height: 22px;
   }
 }
 

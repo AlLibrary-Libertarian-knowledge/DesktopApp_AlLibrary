@@ -6,6 +6,7 @@
  */
 
 import { type Component, createSignal, For, Show, type JSX } from 'solid-js';
+import type { UICulturalTheme } from '@/types/core';
 import styles from './CategoryHierarchy.module.css';
 
 export interface CategoryNode {
@@ -49,7 +50,7 @@ export interface CategoryHierarchyProps {
   /** Show cultural indicators */
   showCulturalIndicators?: boolean;
   /** Cultural theme */
-  culturalTheme?: 'default' | 'indigenous' | 'traditional' | 'ceremonial';
+  culturalTheme?: UICulturalTheme;
   /** Compact mode */
   compact?: boolean;
   /** Custom CSS class */

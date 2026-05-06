@@ -93,54 +93,26 @@ describe('Button Component', () => {
     });
   });
 
-  describe('Cultural Themes', () => {
-    it('renders with indigenous cultural theme', () => {
+  describe('Optional visual variants', () => {
+    it('renders with modern accent variant', () => {
       render(() => (
-        <Button culturalTheme="indigenous" showCulturalIndicator>
-          Indigenous Knowledge
+        <Button culturalTheme="modern" showCulturalIndicator>
+          Knowledge
         </Button>
       ));
 
       const button = screen.getByRole('button');
-      expect(button).toHaveClass(cls('btn-cultural-indigenous'));
+      expect(button).toHaveClass(cls('btn-cultural-modern'));
 
       const indicator = button.querySelector(`.${cls('btn-cultural-indicator')}`);
       expect(indicator).toBeInTheDocument();
       expect(indicator).toHaveTextContent('🌿');
     });
 
-    it('renders with traditional cultural theme', () => {
-      render(() => <Button culturalTheme="traditional">Traditional Knowledge</Button>);
-
-      const button = screen.getByRole('button');
-      expect(button).toHaveClass(cls('btn-cultural-traditional'));
-    });
-
-    it('renders with ceremonial cultural theme', () => {
-      render(() => <Button culturalTheme="ceremonial">Ceremonial Content</Button>);
-
-      const button = screen.getByRole('button');
-      expect(button).toHaveClass(cls('btn-cultural-ceremonial'));
-    });
-
-    it('renders with community cultural theme', () => {
-      render(() => <Button culturalTheme="community">Community Knowledge</Button>);
-
-      const button = screen.getByRole('button');
-      expect(button).toHaveClass(cls('btn-cultural-community'));
-    });
-
-    it('renders with modern cultural theme', () => {
-      render(() => <Button culturalTheme="modern">Modern Knowledge</Button>);
-
-      const button = screen.getByRole('button');
-      expect(button).toHaveClass(cls('btn-cultural-modern'));
-    });
-
     it('shows cultural tooltip on hover', async () => {
       render(() => (
         <Button
-          culturalTheme="indigenous"
+          culturalTheme="modern"
           culturalContext="Traditional knowledge sharing"
           culturalSensitivityLevel={3}
         >
@@ -164,7 +136,7 @@ describe('Button Component', () => {
 
     it('hides cultural tooltip on mouse leave', async () => {
       render(() => (
-        <Button culturalTheme="indigenous" culturalContext="Traditional knowledge sharing">
+        <Button culturalTheme="modern" culturalContext="Traditional knowledge sharing">
           Share Knowledge
         </Button>
       ));
@@ -383,33 +355,29 @@ describe('Button Component', () => {
   });
 
   describe('Combined Features', () => {
-    it('combines cultural theme with accessibility', () => {
+    it('combines accent variant with accessibility', () => {
       render(() => (
-        <Button
-          culturalTheme="indigenous"
-          showCulturalIndicator={true}
-          ariaLabel="Share indigenous knowledge"
-        >
-          Indigenous Button
+        <Button culturalTheme="modern" showCulturalIndicator={true} ariaLabel="Share knowledge">
+          Styled Button
         </Button>
       ));
 
-      const button = screen.getByRole('button', { name: 'Share indigenous knowledge' });
-      expect(button).toHaveClass(cls('btn-cultural-indigenous'));
+      const button = screen.getByRole('button', { name: 'Share knowledge' });
+      expect(button).toHaveClass(cls('btn-cultural-modern'));
 
       const indicator = button.querySelector(`.${cls('btn-cultural-indicator')}`);
       expect(indicator).toBeInTheDocument();
     });
 
-    it('combines security validation with cultural theme', () => {
+    it('combines security validation with accent variant', () => {
       render(() => (
-        <Button culturalTheme="traditional" requiresValidation={true} showCulturalIndicator={true}>
-          Traditional Secure Button
+        <Button culturalTheme="modern" requiresValidation={true} showCulturalIndicator={true}>
+          Secure Button
         </Button>
       ));
 
       const button = screen.getByRole('button');
-      expect(button).toHaveClass(cls('btn-cultural-traditional'), cls('btn-unvalidated'));
+      expect(button).toHaveClass(cls('btn-cultural-modern'), cls('btn-unvalidated'));
 
       const securityIndicator = button.querySelector(`.${cls('btn-security-indicator')}`);
       expect(securityIndicator).toBeInTheDocument();
@@ -424,22 +392,22 @@ describe('Button Component', () => {
           variant="primary"
           size="lg"
           color="purple"
-          culturalTheme="ceremonial"
+          culturalTheme="modern"
           requiresValidation={true}
-          ariaLabel="Complete ceremonial button"
+          ariaLabel="Complete styled button"
           disabled={false}
         >
           Complete Button
         </Button>
       ));
 
-      const button = screen.getByRole('button', { name: 'Complete ceremonial button' });
+      const button = screen.getByRole('button', { name: 'Complete styled button' });
       expect(button).toHaveClass(
         cls('btn'),
         cls('btn-primary'),
         cls('btn-lg'),
         cls('btn-color-purple'),
-        cls('btn-cultural-ceremonial'),
+        cls('btn-cultural-modern'),
         cls('btn-unvalidated')
       );
     });

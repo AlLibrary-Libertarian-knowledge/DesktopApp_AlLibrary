@@ -5,6 +5,9 @@
  * configurations, and system information.
  */
 
+/** Foundation component visual variant (light/dark is separate via useTheme). */
+export type UICulturalTheme = 'default' | 'modern';
+
 // Re-export commonly used types
 export type { Document } from './Document';
 export { DocumentFormat, DocumentStatus, DocumentContentType } from './Document';

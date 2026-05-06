@@ -6,6 +6,7 @@
  */
 
 import { type Component, createSignal, For, Show } from 'solid-js';
+import type { UICulturalTheme } from '@/types/core';
 import styles from './TraditionalClassificationView.module.css';
 
 export interface TraditionalClassification {
@@ -75,7 +76,7 @@ export interface TraditionalClassificationViewProps {
   /** Compact display mode */
   compact?: boolean;
   /** Cultural theme */
-  culturalTheme?: 'indigenous' | 'traditional' | 'ceremonial' | 'default';
+  culturalTheme?: UICulturalTheme;
   /** Custom CSS class */
   class?: string;
   /** Test ID for testing */
@@ -99,7 +100,7 @@ export const TraditionalClassificationView: Component<
   // Default props
   const showEducationalResources = () => props.showEducationalResources ?? true;
   const showCulturalContext = () => props.showCulturalContext ?? true;
-  const culturalTheme = () => props.culturalTheme || 'traditional';
+  const culturalTheme = () => props.culturalTheme || 'default';
 
   // Handle classification selection
   const handleClassificationSelect = (classification: TraditionalClassification) => {

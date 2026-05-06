@@ -121,27 +121,6 @@
   background-color: var(--bg-primary);
 }
 
-/* Cultural Theme Styles (INFORMATION ONLY - NO ACCESS RESTRICTION) */
-.input-cultural-indigenous {
-  border-color: var(--cultural-indigenous);
-  background-color: var(--cultural-indigenous-bg);
-}
-
-.input-cultural-indigenous:focus {
-  border-color: var(--cultural-indigenous-focus);
-  box-shadow: 0 0 0 3px var(--cultural-indigenous-alpha);
-}
-
-.input-cultural-traditional {
-  border-color: var(--cultural-traditional);
-  background-color: var(--cultural-traditional-bg);
-}
-
-.input-cultural-traditional:focus {
-  border-color: var(--cultural-traditional-focus);
-  box-shadow: 0 0 0 3px var(--cultural-traditional-alpha);
-}
-
 .input-cultural-modern {
   border-color: var(--cultural-modern);
   background-color: var(--cultural-modern-bg);
@@ -150,26 +129,6 @@
 .input-cultural-modern:focus {
   border-color: var(--cultural-modern-focus);
   box-shadow: 0 0 0 3px var(--cultural-modern-alpha);
-}
-
-.input-cultural-ceremonial {
-  border-color: var(--cultural-ceremonial);
-  background-color: var(--cultural-ceremonial-bg);
-}
-
-.input-cultural-ceremonial:focus {
-  border-color: var(--cultural-ceremonial-focus);
-  box-shadow: 0 0 0 3px var(--cultural-ceremonial-alpha);
-}
-
-.input-cultural-community {
-  border-color: var(--cultural-community);
-  background-color: var(--cultural-community-bg);
-}
-
-.input-cultural-community:focus {
-  border-color: var(--cultural-community-focus);
-  box-shadow: 0 0 0 3px var(--cultural-community-alpha);
 }
 
 /* Traditional Input Pattern */

@@ -157,19 +157,13 @@
   background: rgba(255, 255, 255, 0.3);
 }
 
-/* Cultural Theme Variants */
-.cultural-traditional {
-  background: var(--color-cultural-traditional);
+.cultural-default {
+  background: var(--color-secondary-600);
   color: var(--color-white);
 }
 
-.cultural-indigenous {
-  background: var(--color-cultural-indigenous);
-  color: var(--color-white);
-}
-
-.cultural-ceremonial {
-  background: var(--color-cultural-sacred);
+.cultural-modern {
+  background: var(--accent-color);
   color: var(--color-white);
 }
 

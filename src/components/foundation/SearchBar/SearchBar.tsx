@@ -2,19 +2,11 @@ import { type Component, createSignal, createEffect, Show, For } from 'solid-js'
 import { Search, X, Filter } from 'lucide-solid';
 import { useTranslation } from '../../../i18n/hooks';
 import { CULTURAL_SENSITIVITY_LEVELS, CULTURAL_LABELS } from '../../../constants/cultural';
+import type { UICulturalTheme } from '@/types/core';
 import styles from './SearchBar.module.css';
 
-/**
- * Cultural Theme Types for SearchBar Styling
- * Provides cultural context through visual design without access restriction
- */
-export type CulturalTheme =
-  | 'indigenous'
-  | 'traditional'
-  | 'modern'
-  | 'ceremonial'
-  | 'community'
-  | 'default';
+/** Optional visual variant for this component only. */
+export type CulturalTheme = UICulturalTheme;
 
 /**
  * Search Types for Different Content Categories
@@ -84,7 +76,7 @@ export interface SearchBarProps {
  * ```tsx
  * <SearchBar
  *   placeholder="Search cultural heritage..."
- *   culturalTheme="indigenous"
+ *   culturalTheme="modern"
  *   culturalContext="Traditional knowledge search"
  *   onSearch={handleSearch}
  *   showSuggestions={true}

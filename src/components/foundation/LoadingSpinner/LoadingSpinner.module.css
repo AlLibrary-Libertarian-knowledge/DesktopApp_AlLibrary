@@ -117,25 +117,8 @@
   animation-direction: reverse;
 }
 
-/* Cultural Theme Styles (INFORMATION ONLY - NO ACCESS RESTRICTION) */
-.spinner-cultural-indigenous {
-  color: var(--cultural-indigenous);
-}
-
-.spinner-cultural-traditional {
-  color: var(--cultural-traditional);
-}
-
 .spinner-cultural-modern {
   color: var(--cultural-modern);
-}
-
-.spinner-cultural-ceremonial {
-  color: var(--cultural-ceremonial);
-}
-
-.spinner-cultural-community {
-  color: var(--cultural-community);
 }
 
 /* Default Spinner Variant */

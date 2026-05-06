@@ -11,6 +11,7 @@ import {
   Heart,
   Info,
 } from 'lucide-solid';
+import type { UICulturalTheme } from '@/types/core';
 import styles from './LibrarySection.module.css';
 
 /**
@@ -94,7 +95,7 @@ export interface LibrarySectionProps {
   itemsPerPage?: number;
 
   // Cultural Context Properties (INFORMATION ONLY - NO ACCESS CONTROL)
-  culturalTheme?: 'indigenous' | 'traditional' | 'modern' | 'ceremonial' | 'community' | 'default';
+  culturalTheme?: UICulturalTheme;
   showCulturalIndicators?: boolean;
   enableCulturalFiltering?: boolean; // For educational organization only
 
@@ -129,7 +130,7 @@ export interface LibrarySectionProps {
  * ```tsx
  * <LibrarySection
  *   documents={documents}
- *   culturalTheme="indigenous"
+ *   culturalTheme="modern"
  *   showCulturalIndicators={true}
  *   enableCulturalFiltering={true}
  *   onDocumentOpen={handleDocumentOpen}

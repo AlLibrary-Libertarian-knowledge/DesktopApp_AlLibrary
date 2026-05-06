@@ -226,32 +226,22 @@
   cursor: not-allowed;
 }
 
-/* Cultural Theme Variants */
-.cultural-traditional {
-  border-color: var(--color-cultural-traditional);
+.cultural-default {
+  border-color: var(--border-color);
 }
 
-.cultural-traditional .culturalContext {
-  background: var(--color-cultural-traditional-alpha);
-  border-color: var(--color-cultural-traditional);
+.cultural-default .culturalContext {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
 }
 
-.cultural-indigenous {
-  border-color: var(--color-cultural-indigenous);
+.cultural-modern {
+  border-color: var(--primary-color);
 }
 
-.cultural-indigenous .culturalContext {
-  background: var(--color-cultural-indigenous-alpha);
-  border-color: var(--color-cultural-indigenous);
-}
-
-.cultural-ceremonial {
-  border-color: var(--color-cultural-sacred);
-}
-
-.cultural-ceremonial .culturalContext {
-  background: var(--color-cultural-sacred-alpha);
-  border-color: var(--color-cultural-sacred);
+.cultural-modern .culturalContext {
+  background: var(--bg-glass);
+  border-color: var(--primary-color);
 }
 
 /* Responsive Design */

@@ -18,6 +18,7 @@ import {
   Tag,
   Globe,
 } from 'lucide-solid';
+import type { UICulturalTheme } from '@/types/core';
 import styles from './DocumentPreview.module.css';
 
 /**
@@ -99,7 +100,7 @@ export interface DocumentPreviewProps {
   enableSharing?: boolean;
 
   // Cultural Context Properties (INFORMATION ONLY - NO ACCESS CONTROL)
-  culturalTheme?: 'indigenous' | 'traditional' | 'modern' | 'ceremonial' | 'community' | 'default';
+  culturalTheme?: UICulturalTheme;
   showCulturalContext?: boolean;
   enableCulturalEducation?: boolean; // For educational resources only
   showAlternativePerspectives?: boolean; // Support multiple viewpoints
@@ -133,7 +134,7 @@ export interface DocumentPreviewProps {
  * <DocumentPreview
  *   document={document}
  *   isOpen={true}
- *   culturalTheme="indigenous"
+ *   culturalTheme="modern"
  *   showCulturalContext={true}
  *   showAlternativePerspectives={true}
  *   onClose={handleClose}

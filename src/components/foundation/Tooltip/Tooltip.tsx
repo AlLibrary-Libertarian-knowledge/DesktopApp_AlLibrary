@@ -6,6 +6,7 @@
  */
 
 import { type Component, createSignal, createEffect, createUniqueId, type JSX } from 'solid-js';
+import type { UICulturalTheme } from '@/types/core';
 import styles from './Tooltip.module.css';
 
 export interface TooltipProps {
@@ -20,7 +21,7 @@ export interface TooltipProps {
   /** Tooltip variant */
   variant?: 'default' | 'info' | 'warning' | 'error' | 'success';
   /** Cultural theme */
-  culturalTheme?: 'default' | 'indigenous' | 'traditional' | 'ceremonial';
+  culturalTheme?: UICulturalTheme;
   /** Delay before showing (ms) */
   showDelay?: number;
   /** Delay before hiding (ms) */
