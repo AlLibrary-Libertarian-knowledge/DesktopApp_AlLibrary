@@ -4,6 +4,23 @@ import { createSignal } from 'solid-js';
 import Button from './Button';
 import styles from './Button.module.css';
 
+vi.mock('../../../i18n/hooks', () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      if (key === 'button.validationRequired') {
+        return 'Please complete security validation';
+      }
+      if (key === 'button.validationFailed') {
+        return 'Security validation failed';
+      }
+      if (key === 'button.validationError') {
+        return 'Security validation error';
+      }
+      return `components.${key}`;
+    },
+  }),
+}));
+
 const cls = (name: string) => (styles as Record<string, string>)[name] ?? '';
 
 describe('Button Component', () => {

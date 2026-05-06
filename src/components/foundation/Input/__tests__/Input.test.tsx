@@ -22,6 +22,17 @@ const getClassName = (className: string): string => {
   return styles[className] || className;
 };
 
+vi.mock('../../../../i18n/hooks', () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      if (key === 'input.validation.failed') {
+        return 'Validation failed';
+      }
+      return `components.${key}`;
+    },
+  }),
+}));
+
 // Mock validation service
 vi.mock('../../../../services/validationService', () => ({
   validationService: {
