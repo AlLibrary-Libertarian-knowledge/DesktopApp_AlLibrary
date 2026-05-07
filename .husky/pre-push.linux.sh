@@ -42,17 +42,16 @@ echo "${BOLD}${CYAN}════════════════════
 echo "${BOLD}🚀 Pre-push · Quality checks${RESET}  $(stamp)"
 echo "${BOLD}${CYAN}════════════════════════════════════════════════════════════${RESET}"
 
-RUN_RESULT=$(node scripts/hooks/changed-files.cjs --format=run 2>/dev/null || echo "1 1 1 1 1 1 0 0 5")
+RUN_RESULT=$(node scripts/hooks/changed-files.cjs --format=run 2>/dev/null || echo "1 1 1 1 1 0 0 5")
 set -- $RUN_RESULT
 RUN_T1_QUALITY=${1:-1}
 RUN_T1_COVERAGE=${2:-1}
 RUN_T2_AUDIT=${3:-1}
-RUN_T2_CULTURAL=${4:-1}
-RUN_T3_E2E=${5:-1}
-RUN_T3_BUILD=${6:-1}
-RUN_T3_BUDGET=${7:-0}
-RUN_T3_LH=${8:-0}
-SCOPE_NUM=${9:-5}
+RUN_T3_E2E=${4:-1}
+RUN_T3_BUILD=${5:-1}
+RUN_T3_BUDGET=${6:-0}
+RUN_T3_LH=${7:-0}
+SCOPE_NUM=${8:-5}
 
 SCOPE_LABEL=$(case "$SCOPE_NUM" in 1) echo "docs";; 2) echo "tests";; 3) echo "config";; 4) echo "partial";; *) echo "full";; esac)
 echo "${BLUE}• Scope:${RESET} $SCOPE_LABEL"
@@ -86,27 +85,6 @@ run_step() {
   return 1
 }
 
-run_parallel() {
-  failed=0
-  for cmd in "$@"; do
-    label=$(echo "$cmd" | cut -d'|' -f1)
-    command=$(echo "$cmd" | cut -d'|' -f2-)
-    label_safe=$(echo "$label" | tr ' ' '-')
-    echo "${BLUE}• Step:${RESET} $label"
-    eval "$command" > ".git/prepush-${label_safe}.log" 2>&1 &
-    pid=$!
-    if ! wait "$pid"; then
-      echo "${RED}✖ Failed:${RESET} $label"
-      cat ".git/prepush-${label_safe}.log" >> .git/prepush.log
-      cat ".git/prepush-${label_safe}.log"
-      failed=1
-    else
-      echo "${GREEN}✔ Completed:${RESET} $label"
-    fi
-  done
-  return $failed
-}
-
 # Tier 1
 if [ "$RUN_T1_QUALITY" -gt 0 ]; then
   echo "${BLUE}• Tier 1:${RESET} quality"
@@ -121,18 +99,9 @@ if [ "$RUN_T1_QUALITY" -gt 0 ]; then
 fi
 
 # Tier 2
-if [ "$RUN_T2_AUDIT" -gt 0 ] || [ "$RUN_T2_CULTURAL" -gt 0 ]; then
-  echo "${BLUE}• Tier 2:${RESET} audit & cultural checks"
-  TIER2_FAILED=0
-  if [ "$RUN_T2_AUDIT" -gt 0 ] && [ "$RUN_T2_CULTURAL" -gt 0 ]; then
-    if ! run_parallel \
-      "Security audit|pnpm audit --audit-level=high" \
-      "Cultural policy|pnpm run verify:cultural"; then TIER2_FAILED=1; fi
-  else
-    [ "$RUN_T2_AUDIT" -gt 0 ] && ! run_step "Security audit" sh -c 'pnpm audit --audit-level=high' && TIER2_FAILED=1
-    [ "$RUN_T2_CULTURAL" -gt 0 ] && [ "$TIER2_FAILED" -eq 0 ] && ! run_step "Cultural policy" pnpm run verify:cultural && TIER2_FAILED=1
-  fi
-  if [ "$TIER2_FAILED" -eq 1 ]; then
+if [ "$RUN_T2_AUDIT" -gt 0 ]; then
+  echo "${BLUE}• Tier 2:${RESET} security audit"
+  if ! run_step "Security audit" sh -c 'pnpm audit --audit-level=high'; then
     exit 1
   fi
 else

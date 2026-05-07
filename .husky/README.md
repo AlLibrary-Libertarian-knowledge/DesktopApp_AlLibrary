@@ -9,7 +9,7 @@ Git hooks for the **desktopapp-allibrary** repo (SolidJS, Vite, Tauri v2, pnpm).
 | **pre-commit**         | Block secrets; run **lint-staged** (Biome on staged files)                                                                                                        |
 | **prepare-commit-msg** | Comment hints for conventional commit format                                                                                                                       |
 | **commit-msg**         | Validate branch name + conventional commit header                                                                                                                  |
-| **pre-push**           | Router → [`pre-push.linux.sh`](pre-push.linux.sh) or [`pre-push.windows.sh`](pre-push.windows.sh) — tiered quality, audit, cultural policy, Playwright, Vite build |
+| **pre-push**           | Router → [`pre-push.linux.sh`](pre-push.linux.sh) or [`pre-push.windows.sh`](pre-push.windows.sh) — tiered quality, security audit, Playwright, Vite build |
 | **post-merge**         | Advisory notes after merge (lockfile, Tauri, Playwright, hooks)                                                                                                    |
 | **post-checkout**      | Clear `dist` / `.vite` on branch switch; `pnpm install` if package/lock changed                                                                                    |
 | **post-commit**        | Informative tips after commit                                                                                                                                      |

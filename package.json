@@ -20,7 +20,6 @@
     "quality": "pnpm run lint && pnpm run typecheck && pnpm run test",
     "quality:ci": "pnpm run lint && pnpm run typecheck:ci && vitest run",
     "typecheck:ci": "tsc --noEmit",
-    "verify:cultural": "node ./scripts/verify-cultural-info-only.js",
     "test:ui": "vitest --ui",
     "test:e2e": "npx playwright test",
     "test:e2e:windows": "npx playwright test --config=playwright-windows-only.config.ts",
