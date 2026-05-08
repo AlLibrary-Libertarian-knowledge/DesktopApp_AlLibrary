@@ -4,7 +4,7 @@
 
 import type { Component } from 'solid-js';
 import { For, Show, createSignal, onMount } from 'solid-js';
-import { Button } from '@/components/foundation/Button/Button';
+import Button from '@/components/foundation/Button/Button';
 import * as onionShare from '@/services/network/onionShareService';
 import { pickAnyFiles, pickFolder } from '@/services/system/fileDialogs';
 import { Card } from '@/components/foundation/Card';
