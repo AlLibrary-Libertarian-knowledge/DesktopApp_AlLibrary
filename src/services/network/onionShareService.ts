@@ -1,7 +1,6 @@
 /**
- * M5: POC-style onion HTTP chunk sharing + tracker (Tauri commands).
+ * Network shell mode: onion share commands disabled.
  */
-import { invoke } from '@tauri-apps/api/core';
 
 /** Persisted tracker settings (camelCase from Tauri). */
 export interface TrackerNetworkConfig {
@@ -50,23 +49,25 @@ export interface NetworkLobby {
 }
 
 export async function onionShareStart(): Promise<OnionShareStartResponse> {
-  return invoke('onion_share_start');
+  return Promise.reject(new Error('coming_soon'));
 }
 
 export async function onionShareStop(): Promise<void> {
-  return invoke('onion_share_stop');
+  return;
 }
 
 export async function onionShareAddFile(path: string): Promise<OnionShareAddFileResponse> {
-  return invoke('onion_share_add_file', { path });
+  void path;
+  return Promise.reject(new Error('coming_soon'));
 }
 
 export async function onionShareRemoveFile(fileId: string): Promise<void> {
-  return invoke('onion_share_remove_file', { fileId });
+  void fileId;
+  return;
 }
 
 export async function onionShareListLocal(): Promise<LocalShareEntry[]> {
-  return invoke('onion_share_list_local');
+  return [];
 }
 
 export async function onionShareStatus(): Promise<{
@@ -74,33 +75,36 @@ export async function onionShareStatus(): Promise<{
   onion: string | null;
   localPort: number | null;
 }> {
-  return invoke('onion_share_status');
+  return { running: false, onion: null, localPort: null };
 }
 
 export async function trackerGetConfig(): Promise<TrackerNetworkConfig> {
-  return invoke('tracker_get_config');
+  return { trackerUrl: '', nodeId: 'network-disabled', sharePublicly: false };
 }
 
 export async function trackerSetConfig(config: TrackerNetworkConfig): Promise<void> {
-  return invoke('tracker_set_config', { config });
+  void config;
+  return;
 }
 
 export async function trackerRefreshLobby(): Promise<NetworkLobby> {
-  return invoke('tracker_refresh_lobby');
+  return { online_nodes: 0, files: [] };
 }
 
 export async function trackerGetCachedLobby(): Promise<NetworkLobby> {
-  return invoke('tracker_get_cached_lobby_cmd');
+  return { online_nodes: 0, files: [] };
 }
 
 export async function trackerStartWsLoop(): Promise<void> {
-  return invoke('tracker_start_ws_loop');
+  return;
 }
 
 export async function trackerStopWsLoop(): Promise<void> {
-  return invoke('tracker_stop_ws_loop');
+  return;
 }
 
 export async function onionShareFetch(link: string, outDir: string): Promise<string> {
-  return invoke('onion_share_fetch', { link, outDir });
+  void link;
+  void outDir;
+  return Promise.reject(new Error('coming_soon'));
 }

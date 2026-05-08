@@ -1,5 +1,6 @@
 import { Router, Route } from '@solidjs/router';
 import { Suspense, lazy } from 'solid-js';
+import { useTranslation } from '../i18n/hooks';
 
 const Home = lazy(() => import('../pages/Home'));
 const SearchPage = lazy(() => import('../pages/Search'));
@@ -12,9 +13,8 @@ const Browse = lazy(() => import('../pages/Browse'));
 const NewArrivalsPage = lazy(() => import('../pages/NewArrivals'));
 const Peers = lazy(() => import('../pages/Peers'));
 const NetworkHealth = lazy(() => import('../pages/NetworkHealth'));
-const P2PSearch = lazy(() => import('../pages/P2PSearch'));
-const P2POverview = lazy(() => import('../pages/P2POverview'));
 const ConnectionManager = lazy(() => import('../pages/ConnectionManager'));
+const PeerTransfers = lazy(() => import('../pages/PeerTransfers'));
 const DocumentReader = lazy(() => import('../pages/DocumentReader'));
 
 const RouteLoading = () => (
@@ -24,6 +24,7 @@ const RouteLoading = () => (
 );
 
 const AppRouter = () => {
+  const { t } = useTranslation('errors');
   return (
     <Router>
       {/* Library Routes */}
@@ -120,22 +121,6 @@ const AppRouter = () => {
         )}
       />
       <Route
-        path="/p2p-search"
-        component={() => (
-          <Suspense fallback={<RouteLoading />}>
-            <P2PSearch />
-          </Suspense>
-        )}
-      />
-      <Route
-        path="/p2p-overview"
-        component={() => (
-          <Suspense fallback={<RouteLoading />}>
-            <P2POverview />
-          </Suspense>
-        )}
-      />
-      <Route
         path="/connection-manager"
         component={() => (
           <Suspense fallback={<RouteLoading />}>
@@ -144,10 +129,18 @@ const AppRouter = () => {
         )}
       />
       <Route
+        path="/transfers"
+        component={() => (
+          <Suspense fallback={<RouteLoading />}>
+            <PeerTransfers />
+          </Suspense>
+        )}
+      />
+      <Route
         path="/sharing"
         component={() => (
           <Suspense fallback={<RouteLoading />}>
-            <div>Sharing Status Page</div>
+            <PeerTransfers />
           </Suspense>
         )}
       />
@@ -155,15 +148,7 @@ const AppRouter = () => {
         path="/downloads"
         component={() => (
           <Suspense fallback={<RouteLoading />}>
-            <div>Downloads Page</div>
-          </Suspense>
-        )}
-      />
-      <Route
-        path="/sync"
-        component={() => (
-          <Suspense fallback={<RouteLoading />}>
-            <div>Synchronization Page</div>
+            <PeerTransfers />
           </Suspense>
         )}
       />
@@ -182,10 +167,25 @@ const AppRouter = () => {
       <Route
         path="*"
         component={() => (
-          <div class="error-page">
-            <h1>Page Not Found</h1>
-            <p>The page you're looking for doesn't exist.</p>
-            <a href="/">Return to Home</a>
+          <div class="not-found-wrap">
+            <div class="not-found-glow" />
+            <div class="not-found-page">
+              <span class="not-found-kicker">404 Error</span>
+              <h1>{t('notFoundTitle' as any)}</h1>
+              <p>{t('notFoundDescription' as any)}</p>
+              <div class="not-found-actions">
+                <a href="/" class="not-found-primary">
+                  {t('notFoundReturnHome' as any)}
+                </a>
+                <button
+                  type="button"
+                  class="not-found-secondary"
+                  onClick={() => window.history.back()}
+                >
+                  {t('notFoundGoBack' as any)}
+                </button>
+              </div>
+            </div>
           </div>
         )}
       />

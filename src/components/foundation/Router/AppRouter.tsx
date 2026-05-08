@@ -1,6 +1,7 @@
 import { Router, Route } from '@solidjs/router';
 import HomePage from '../../../pages/Home';
 import DocumentManagement from '../../../pages/DocumentManagement';
+import PeerTransfers from '../../../pages/PeerTransfers';
 
 const AppRouter = () => {
   return (
@@ -21,9 +22,9 @@ const AppRouter = () => {
 
       {/* Network Routes */}
       <Route path="/peers" component={() => <div>Peer Network Page</div>} />
-      <Route path="/sharing" component={() => <div>Sharing Status Page</div>} />
-      <Route path="/downloads" component={() => <div>Downloads Page</div>} />
-      <Route path="/sync" component={() => <div>Synchronization Page</div>} />
+      <Route path="/transfers" component={PeerTransfers} />
+      <Route path="/sharing" component={PeerTransfers} />
+      <Route path="/downloads" component={PeerTransfers} />
 
       {/* Fallback Route */}
       <Route

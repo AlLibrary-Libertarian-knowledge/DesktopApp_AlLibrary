@@ -20,6 +20,10 @@ _Empowering communities to preserve, share, and discover knowledge while respect
 
 ---
 
+## Status Notice
+
+Networking (Tor/P2P/onion-share runtime) is currently disabled and the app runs with a frontend shell for these features. Network screens remain visible as placeholders for future implementation.
+
 ## 🎯 Project Vision
 
 **AlLibrary** is a revolutionary decentralized document sharing platform that embodies the "multiple faces of truth" philosophy. Built as a **desktop-first application** using **Tauri v2**, **Rust**, and **SolidJS**, it enables communities to preserve, share, and discover knowledge without censorship while maintaining deep respect for cultural sensitivities.

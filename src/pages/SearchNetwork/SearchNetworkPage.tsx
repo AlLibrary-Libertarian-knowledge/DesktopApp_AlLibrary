@@ -20,7 +20,6 @@ import LoadingSpinner from '@/components/foundation/LoadingSpinner/LoadingSpinne
 // Domain Components
 import { DocumentCard } from '../../components/domain/document/DocumentCard';
 import { NetworkStatus } from '../../components/domain/network/NetworkStatus';
-import { NetworkInfo } from '../../components/domain/search';
 
 // Hooks and Services
 import { useNetworkSearch } from '../../hooks/api/useNetworkSearch';
@@ -186,27 +185,6 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
             <section class={styles['searchControls']}>
               <div class={styles['searchBar']}>
                 <div class={styles['searchOptions']}>
-                  <Button
-                    variant={torReady() ? 'outline' : 'primary'}
-                    size="sm"
-                    onClick={onEnableTorClick}
-                    disabled={torEstablishing()}
-                  >
-                    <Shield size={16} class="mr-2" />
-                    {torReady()
-                      ? 'TOR Enabled'
-                      : torEstablishing()
-                        ? 'Enabling…'
-                        : 'Enable TOR Search'}
-                  </Button>
-                  <Button
-                    variant={enabled() ? 'outline' : 'primary'}
-                    size="sm"
-                    onClick={enable}
-                    disabled={busy()}
-                  >
-                    {enabled() ? 'Private Networking Enabled' : 'Enable Private Networking'}
-                  </Button>
                   <div class={styles['searchOptionsRight']}>
                     <div>
                       <Input
@@ -346,9 +324,6 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
                 </div>
               </div>
             </section>
-
-            {/* Network Information */}
-            <NetworkInfo />
 
             {/* Quick metrics ribbon using StatCard */}
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">

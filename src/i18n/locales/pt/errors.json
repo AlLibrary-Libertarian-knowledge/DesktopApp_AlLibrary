@@ -4,5 +4,9 @@
   "uploadFailed": "Falha no upload",
   "searchFailed": "Falha na busca",
   "accessDenied": "Acesso negado",
-  "validationFailed": "Falha na validação"
+  "validationFailed": "Falha na validação",
+  "notFoundTitle": "Página não encontrada",
+  "notFoundDescription": "Esta rota não está disponível na versão atual do aplicativo. Você pode voltar ao painel inicial ou continuar navegando pela barra lateral.",
+  "notFoundReturnHome": "Voltar para a página inicial",
+  "notFoundGoBack": "Voltar"
 }

@@ -5,9 +5,7 @@ pub mod settings;
 pub mod search;
 pub mod collections;
 pub mod documents;
-pub mod tor;
-pub mod p2p;
-pub mod onion_share;
+pub mod network_shell;
 
 pub use app::{initialize_app, get_app_ready_state, close_splash_screen, InitProgress};
 pub use security::{get_security_info, refresh_security_info, SecurityInfo};
@@ -28,7 +26,7 @@ pub use documents::{
   ScanResult,
   FolderInfo
 };
-pub use tor::{
+pub use network_shell::{
   init_tor_node,
   start_tor,
   get_tor_status,
@@ -40,9 +38,7 @@ pub use tor::{
   get_tor_log_tail,
   stop_tor,
   TorConfig,
-  TorStatus
-};
-pub use p2p::{
+  TorStatus,
   init_p2p_node,
   start_p2p_node,
   stop_p2p_node,
@@ -62,7 +58,7 @@ pub use p2p::{
   NetworkStatus as P2PNetworkStatus,
   NetworkMetrics as P2PNetworkMetrics
 };
-pub use onion_share::{
+pub use network_shell::{
   onion_share_add_file,
   onion_share_fetch,
   onion_share_list_local,

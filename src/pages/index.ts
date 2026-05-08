@@ -24,18 +24,11 @@ export { default as TrendingPage } from './Trending/Trending';
 // Network & Peers
 export { default as PeerNetworkPage } from './Peers/PeerNetworkPage';
 export { NetworkHealth as NetworkHealthPage } from './NetworkHealth';
-export { P2PSearch as P2PSearchPage } from './P2PSearch';
 export { ConnectionManager as ConnectionManagerPage } from './ConnectionManager';
-export { default as P2POverview } from './P2POverview';
+export { PeerTransfers as PeerTransfersPage } from './PeerTransfers';
 
 // Export page route configurations for router
 export const pageRoutes = [
-  {
-    path: '/p2p-overview',
-    component: 'P2POverview',
-    title: 'P2P Overview - AlLibrary',
-    description: 'Understand how private networking over Tor works in AlLibrary',
-  },
   {
     path: '/',
     component: 'HomePage',
@@ -104,15 +97,16 @@ export const pageRoutes = [
     description: 'Comprehensive P2P network health monitoring and cultural community status',
   },
   {
-    path: '/p2p-search',
-    component: 'P2PSearchPage',
-    title: 'P2P Search - AlLibrary',
-    description: 'Distributed search across the P2P network with cultural awareness',
-  },
-  {
     path: '/connection-manager',
     component: 'ConnectionManagerPage',
-    title: 'Connection Manager - AlLibrary',
-    description: 'Manage P2P connections, TOR integration, and cultural network participation',
+    title: 'Configurations - AlLibrary',
+    description:
+      'Mock runtime limits, bandwidth caps, resource budgets, and peer tuning until networking is restored',
+  },
+  {
+    path: '/transfers',
+    component: 'PeerTransfersPage',
+    title: 'Sharing & downloads - AlLibrary',
+    description: 'Unified outbound sharing and inbound download activity',
   },
 ] as const;

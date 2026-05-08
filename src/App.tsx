@@ -6,6 +6,7 @@ import { listen } from '@tauri-apps/api/event';
 import MainLayout from './components/layout/MainLayout';
 import { Loading } from './components/foundation';
 import { initializeI18n } from './i18n';
+import { useTranslation } from './i18n/hooks';
 import './styles/theme.css';
 import './App.css';
 
@@ -19,13 +20,12 @@ import { Browse as BrowsePage } from './pages/Browse';
 import { Trending as TrendingPage } from './pages/Trending';
 import { Peers as PeersPage } from './pages/Peers';
 import { NetworkHealth } from './pages/NetworkHealth';
-import { P2PSearch } from './pages/P2PSearch';
 import { ConnectionManager } from './pages/ConnectionManager';
-import P2POverview from './pages/P2POverview';
 import DocumentManagement from './pages/DocumentManagement';
 import { DocumentDetailPage } from './pages/DocumentDetail';
 import { SearchNetworkPage } from './pages/SearchNetwork';
 import { DocumentReader } from './pages/DocumentReader';
+import PeerTransfers from './pages/PeerTransfers';
 
 interface InitProgress {
   phase: string;
@@ -114,10 +114,8 @@ const AppWithLayout: Component<ParentProps> = props => {
   );
 };
 
-// Stable route component to avoid remounts; no Suspense to prevent fallback flicker
-const P2POverviewRoute: Component = () => <P2POverview />;
-
 const App: Component = () => {
+  const { t } = useTranslation('errors');
   const [isLoading, setIsLoading] = createSignal(true);
   const [initProgress, setInitProgress] = createSignal<InitProgress | null>(null);
   const [needsFirstRun, setNeedsFirstRun] = createSignal(false);
@@ -383,17 +381,6 @@ const App: Component = () => {
             )}
           />
 
-          <Route path="/p2p-overview" component={P2POverviewRoute} />
-
-          <Route
-            path="/p2p-search"
-            component={() => (
-              <RouteWrapper>
-                <P2PSearch />
-              </RouteWrapper>
-            )}
-          />
-
           <Route
             path="/connection-manager"
             component={() => (
@@ -415,42 +402,52 @@ const App: Component = () => {
           />
 
           <Route
-            path="/sharing"
+            path="/transfers"
             component={() => (
-              <div class="page-placeholder">
-                <h1>Sharing Status</h1>
-                <p>Monitor your sharing activity and contributions.</p>
-              </div>
+              <RouteWrapper>
+                <PeerTransfers />
+              </RouteWrapper>
             )}
           />
-
+          <Route
+            path="/sharing"
+            component={() => (
+              <RouteWrapper>
+                <PeerTransfers />
+              </RouteWrapper>
+            )}
+          />
           <Route
             path="/downloads"
             component={() => (
-              <div class="page-placeholder">
-                <h1>Downloads</h1>
-                <p>Manage your download queue and completed transfers.</p>
-              </div>
-            )}
-          />
-
-          <Route
-            path="/sync"
-            component={() => (
-              <div class="page-placeholder">
-                <h1>Synchronization</h1>
-                <p>Sync status and network health monitoring.</p>
-              </div>
+              <RouteWrapper>
+                <PeerTransfers />
+              </RouteWrapper>
             )}
           />
 
           <Route
             path="*"
             component={() => (
-              <div class="error-page">
-                <h1>Page Not Found</h1>
-                <p>The page you're looking for doesn't exist.</p>
-                <a href="/">Return to Home</a>
+              <div class="not-found-wrap">
+                <div class="not-found-glow" />
+                <div class="not-found-page">
+                  <span class="not-found-kicker">404 Error</span>
+                  <h1>{t('notFoundTitle' as any)}</h1>
+                  <p>{t('notFoundDescription' as any)}</p>
+                  <div class="not-found-actions">
+                    <a href="/" class="not-found-primary">
+                      {t('notFoundReturnHome' as any)}
+                    </a>
+                    <button
+                      type="button"
+                      class="not-found-secondary"
+                      onClick={() => window.history.back()}
+                    >
+                      {t('notFoundGoBack' as any)}
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
           />

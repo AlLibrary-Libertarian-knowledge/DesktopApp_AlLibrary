@@ -536,8 +536,6 @@ export const NetworkHealth: Component = () => {
         <div class={styles['dashboard-container']}>
           <NetworkHealthDashboard
             enableRealTimeUpdates={monitoring()}
-            culturalContextEnabled={true}
-            antiCensorshipMonitoring={true}
             showDetailedMetrics={viewMode() === 'detailed'}
           />
         </div>

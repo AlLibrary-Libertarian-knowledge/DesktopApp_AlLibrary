@@ -23,15 +23,12 @@ import {
   TrendingUp,
   Sparkles,
   Users,
-  RefreshCw,
-  Download,
-  RotateCcw,
+  ArrowLeftRight,
   ChevronDown,
   HardDrive,
   Wifi,
   WifiOff,
   Activity,
-  SearchX,
   Settings,
 } from 'lucide-solid';
 import './Sidebar.css';
@@ -42,6 +39,8 @@ interface NavItem {
   label: string;
   icon: Component<{ size: number }>;
   badge?: string;
+  /** Sidebar highlight when pathname matches these (e.g. legacy routes aliased to one screen) */
+  alsoMatch?: readonly string[];
 }
 
 interface NavSection {
@@ -94,14 +93,15 @@ const Sidebar: Component<SidebarProps> = props => {
       title: 'P2P Network',
       icon: Globe,
       items: [
-        { path: '/p2p-overview', label: 'P2P Overview', icon: Globe },
         { path: '/peers', label: 'Peer Network', icon: Users, badge: '8' },
         { path: '/network-health', label: 'Network Health', icon: Activity },
-        { path: '/p2p-search', label: 'P2P Search', icon: SearchX },
-        { path: '/connection-manager', label: 'Connections', icon: Settings },
-        { path: '/sharing', label: 'Sharing Status', icon: RefreshCw },
-        { path: '/downloads', label: 'Downloads', icon: Download, badge: '3' },
-        { path: '/sync', label: 'Synchronization', icon: RotateCcw },
+        {
+          path: '/transfers',
+          label: 'Sharing & downloads',
+          icon: ArrowLeftRight,
+          alsoMatch: ['/sharing', '/downloads'],
+        },
+        { path: '/connection-manager', label: 'Configurations', icon: Settings },
       ],
     },
   ];
@@ -111,7 +111,7 @@ const Sidebar: Component<SidebarProps> = props => {
     const currentPath = location.pathname;
     for (const section of navigationItems) {
       for (const item of section.items) {
-        if (item.path === currentPath) {
+        if (item.path === currentPath || item.alsoMatch?.includes(currentPath)) {
           return section.section;
         }
       }
@@ -232,8 +232,14 @@ const Sidebar: Component<SidebarProps> = props => {
                   {item => (
                     <A
                       href={item.path}
-                      class="nav-item"
-                      activeClass="active"
+                      classList={{
+                        'nav-item': true,
+                        active:
+                          item.path === '/'
+                            ? location.pathname === '/'
+                            : location.pathname === item.path ||
+                              Boolean(item.alsoMatch?.includes(location.pathname)),
+                      }}
                       end={item.path === '/'}
                     >
                       <span class="nav-icon">
