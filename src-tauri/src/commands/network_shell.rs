@@ -84,20 +84,6 @@ pub struct BootstrapResult {
     pub message: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct TrackerNetworkConfig {
-    pub tracker_url: String,
-    pub node_id: String,
-    pub share_publicly: bool,
-}
-
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
-pub struct NetworkLobby {
-    pub online_nodes: usize,
-    pub files: Vec<serde_json::Value>,
-}
-
 #[tauri::command]
 pub async fn init_tor_node(_config: Option<TorConfig>) -> TorStatus {
     disabled_tor_status()
@@ -255,59 +241,6 @@ pub async fn add_peer_address(_address: String) -> Result<String, String> {
 
 #[tauri::command]
 pub async fn force_create_onion_service() -> Result<String, String> {
-    Err("Network disabled: coming soon".to_string())
-}
-
-#[tauri::command]
-pub async fn onion_share_start() -> Result<serde_json::Value, String> {
-    Err("Network disabled: coming soon".to_string())
-}
-
-#[tauri::command]
-pub async fn onion_share_stop() -> Result<(), String> { Ok(()) }
-
-#[tauri::command]
-pub async fn onion_share_add_file(_path: String) -> Result<serde_json::Value, String> {
-    Err("Network disabled: coming soon".to_string())
-}
-
-#[tauri::command]
-pub async fn onion_share_remove_file(_file_id: String) -> Result<(), String> { Ok(()) }
-
-#[tauri::command]
-pub async fn onion_share_list_local() -> Result<Vec<serde_json::Value>, String> { Ok(Vec::new()) }
-
-#[tauri::command]
-pub async fn onion_share_status() -> Result<serde_json::Value, String> {
-    Ok(serde_json::json!({"running": false, "onion": null, "localPort": null}))
-}
-
-#[tauri::command]
-pub async fn tracker_get_config() -> Result<TrackerNetworkConfig, String> {
-    Ok(TrackerNetworkConfig {
-        tracker_url: String::new(),
-        node_id: "network-disabled".to_string(),
-        share_publicly: false,
-    })
-}
-
-#[tauri::command]
-pub async fn tracker_set_config(_config: TrackerNetworkConfig) -> Result<(), String> { Ok(()) }
-
-#[tauri::command]
-pub async fn tracker_refresh_lobby() -> Result<NetworkLobby, String> { Ok(NetworkLobby::default()) }
-
-#[tauri::command]
-pub async fn tracker_get_cached_lobby_cmd() -> Result<NetworkLobby, String> { Ok(NetworkLobby::default()) }
-
-#[tauri::command]
-pub async fn tracker_start_ws_loop(_app: tauri::AppHandle) -> Result<(), String> { Ok(()) }
-
-#[tauri::command]
-pub async fn tracker_stop_ws_loop() -> Result<(), String> { Ok(()) }
-
-#[tauri::command]
-pub async fn onion_share_fetch(_link: String, _out_dir: String) -> Result<String, String> {
     Err("Network disabled: coming soon".to_string())
 }
 

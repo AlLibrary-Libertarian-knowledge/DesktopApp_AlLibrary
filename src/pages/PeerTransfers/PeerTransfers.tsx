@@ -3,7 +3,10 @@
  */
 
 import type { Component } from 'solid-js';
-import { For } from 'solid-js';
+import { For, Show, createSignal, onMount } from 'solid-js';
+import { Button } from '@/components/foundation/Button/Button';
+import * as onionShare from '@/services/network/onionShareService';
+import { pickAnyFiles, pickFolder } from '@/services/system/fileDialogs';
 import { Card } from '@/components/foundation/Card';
 import { Badge } from '@/components/foundation/Badge';
 import { Upload, Download, Activity } from 'lucide-solid';
@@ -163,6 +166,49 @@ function throughputPath(
 }
 
 const PeerTransfers: Component = () => {
+  const [onionRunning, setOnionRunning] = createSignal(false);
+  const [onionAddr, setOnionAddr] = createSignal<string | null>(null);
+  const [onionErr, setOnionErr] = createSignal('');
+  const [busy, setBusy] = createSignal(false);
+  const [sharePath, setSharePath] = createSignal('');
+  const [fetchLink, setFetchLink] = createSignal('');
+  const [fetchOutDir, setFetchOutDir] = createSignal('');
+  const [lobbySnippet, setLobbySnippet] = createSignal('');
+  const [localList, setLocalList] = createSignal('');
+  const [fetchResult, setFetchResult] = createSignal('');
+
+  const snapshotLobby = async () => {
+    try {
+      const l = await onionShare.trackerGetCachedLobby();
+      setLobbySnippet(
+        `online_nodes: ${l.online_nodes}\nfiles: ${l.files.length}\n${l.files
+          .slice(0, 12)
+          .map(f => f.link)
+          .join('\n')}`
+      );
+    } catch {
+      setLobbySnippet('(tracker lobby unavailable)');
+    }
+  };
+
+  const refreshUi = async () => {
+    setOnionErr('');
+    try {
+      const st = await onionShare.onionShareStatus();
+      setOnionRunning(st.running);
+      setOnionAddr(st.running ? st.onion : null);
+      const loc = await onionShare.onionShareListLocal().catch(() => []);
+      setLocalList(loc.map(e => `${e.name} → ${e.link}`).join('\n') || '(no files shared)');
+      await snapshotLobby();
+    } catch (e: unknown) {
+      setOnionErr(String(e instanceof Error ? e.message : e));
+    }
+  };
+
+  onMount(() => {
+    void refreshUi();
+  });
+
   const activeOut = MOCK_OUTBOUND.filter(o => o.status === 'seeding').length;
   const queuedOut = MOCK_OUTBOUND.filter(o => o.status === 'queued').length;
   const activeIn = MOCK_INBOUND.filter(i => i.status === 'active').length;
@@ -183,10 +229,227 @@ const PeerTransfers: Component = () => {
           </Badge>
         </div>
         <p class={styles.description}>
-          Tables and charts use representative mock data while the mesh layer is disconnected. Rows
-          and series will attach to live transfer events when networking returns.
+          Charts below still use illustrative sample data; the onion panel connects to the vendored
+          onion-poc transfer core (Tor + Axum chunks + tracker) when Tor is installed.
         </p>
       </header>
+
+      <Card class={styles.onionPanel}>
+        <h2 class={styles.onionTitle}>Onion mesh (live)</h2>
+        <div class={styles.onionStatus} aria-live="polite">
+          <strong>Tor onion share:</strong>{' '}
+          {onionRunning() ? (onionAddr() ?? 'starting…') : 'stopped'} |{' '}
+          <strong title="Listed opoc:// shares on this onion">Local manifests</strong> below.
+        </div>
+        <div class={styles.onionToolbar}>
+          <Button
+            variant="primary"
+            size="sm"
+            disabled={busy() || onionRunning()}
+            loading={busy()}
+            onClick={() => {
+              void (async () => {
+                setBusy(true);
+                setOnionErr('');
+                try {
+                  const r = await onionShare.onionShareStart();
+                  setOnionAddr(r.onion);
+                  setOnionRunning(true);
+                } catch (e: unknown) {
+                  setOnionErr(String(e instanceof Error ? e.message : e));
+                } finally {
+                  setBusy(false);
+                  await refreshUi();
+                }
+              })();
+            }}
+          >
+            Start onion share
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={busy() || !onionRunning()}
+            onClick={() => {
+              void (async () => {
+                setBusy(true);
+                setOnionErr('');
+                try {
+                  await onionShare.onionShareStop();
+                  setOnionRunning(false);
+                  setOnionAddr(null);
+                } catch (e: unknown) {
+                  setOnionErr(String(e instanceof Error ? e.message : e));
+                } finally {
+                  setBusy(false);
+                  await refreshUi();
+                }
+              })();
+            }}
+          >
+            Stop
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!onionRunning()}
+            onClick={() => void snapshotLobby()}
+          >
+            Refresh lobby (cache)
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!onionRunning()}
+            onClick={() => {
+              void (async () => {
+                try {
+                  await onionShare.trackerRefreshLobby();
+                  await snapshotLobby();
+                } catch (e: unknown) {
+                  setOnionErr(String(e instanceof Error ? e.message : e));
+                }
+              })();
+            }}
+          >
+            Tracker HTTP refresh
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!onionRunning()}
+            onClick={() => {
+              void (async () => {
+                try {
+                  await onionShare.trackerStartWsLoop();
+                } catch (e: unknown) {
+                  setOnionErr(String(e instanceof Error ? e.message : e));
+                }
+              })();
+            }}
+          >
+            Start tracker WS
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => void onionShare.trackerStopWsLoop()}>
+            Stop tracker WS
+          </Button>
+        </div>
+        <div class={styles.onionFields}>
+          <input
+            class={styles.onionField}
+            type="text"
+            placeholder="Path to file on disk (e.g. C:\path\file.bin)"
+            value={sharePath()}
+            onInput={e => setSharePath(e.currentTarget.value)}
+          />
+          <div class={styles.onionToolbar} style={{ 'margin-bottom': 0 }}>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={!onionRunning()}
+              onClick={() => {
+                void (async () => {
+                  try {
+                    const picked = await pickAnyFiles();
+                    if (picked?.[0]) setSharePath(picked[0]);
+                  } catch {
+                    /* picker cancelled */
+                  }
+                })();
+              }}
+            >
+              Pick file…
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              disabled={!sharePath().trim() || !onionRunning()}
+              onClick={() => {
+                void (async () => {
+                  setOnionErr('');
+                  try {
+                    await onionShare.onionShareAddFile(sharePath().trim());
+                    await refreshUi();
+                  } catch (e: unknown) {
+                    setOnionErr(String(e instanceof Error ? e.message : e));
+                  }
+                })();
+              }}
+            >
+              Add share
+            </Button>
+          </div>
+          <textarea
+            class={styles.onionField}
+            style={{ 'min-height': '72px', 'grid-column': '1 / -1' }}
+            readOnly
+            value={localList()}
+            placeholder="Locally registered shares (manifests)"
+          />
+          <input
+            class={styles.onionField}
+            type="text"
+            placeholder="opoc://… or opocswarm://… link"
+            value={fetchLink()}
+            onInput={e => setFetchLink(e.currentTarget.value)}
+            style={{ 'grid-column': '1 / -1' }}
+          />
+          <input
+            class={styles.onionField}
+            type="text"
+            placeholder="Output folder (absolute path)"
+            value={fetchOutDir()}
+            onInput={e => setFetchOutDir(e.currentTarget.value)}
+            style={{ 'grid-column': '1 / -1' }}
+          />
+          <div class={styles.onionToolbar}>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={!onionRunning()}
+              onClick={() => {
+                void (async () => {
+                  const d = await pickFolder('Select download folder for fetched files');
+                  if (d) setFetchOutDir(d);
+                })();
+              }}
+            >
+              Pick output folder…
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              disabled={!onionRunning() || !fetchLink().trim() || !fetchOutDir().trim()}
+              onClick={() => {
+                void (async () => {
+                  setFetchResult('');
+                  setOnionErr('');
+                  try {
+                    const p = await onionShare.onionShareFetch(
+                      fetchLink().trim(),
+                      fetchOutDir().trim()
+                    );
+                    setFetchResult(`Saved to: ${p}`);
+                  } catch (e: unknown) {
+                    setOnionErr(String(e instanceof Error ? e.message : e));
+                  }
+                })();
+              }}
+            >
+              Download link
+            </Button>
+          </div>
+          <Show when={fetchResult()}>
+            <p class={styles.onionLobby}>{fetchResult()}</p>
+          </Show>
+          <Show when={lobbySnippet()}>
+            <pre class={styles.onionLobby}>{lobbySnippet()}</pre>
+          </Show>
+          <Show when={onionErr()}>
+            <p class={styles.onionError}>{onionErr()}</p>
+          </Show>
+        </div>
+      </Card>
 
       <div class={styles.summaryRow}>
         <Card class={styles.summaryCard}>

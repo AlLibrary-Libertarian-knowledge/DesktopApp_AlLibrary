@@ -6,10 +6,16 @@ pub mod search;
 pub mod collections;
 pub mod documents;
 pub mod network_shell;
+pub mod onion_bridge;
+pub mod tor_setup;
 
 pub use app::{initialize_app, get_app_ready_state, close_splash_screen, InitProgress};
 pub use security::{get_security_info, refresh_security_info, SecurityInfo};
-pub use system::{get_disk_space_info, get_resource_usage, DiskSpaceInfo, pick_library_folder, pick_document_files};
+pub use system::{
+    get_disk_space_info, get_resource_usage, DiskSpaceInfo, pick_any_files, pick_folder,
+    pick_library_folder, pick_document_files,
+};
+pub use tor_setup::{ensure_tor_for_onion_share, TorSetupProgress};
 pub use settings::{load_app_settings, save_app_settings, AppSettings};
 pub use search::{get_search_history, clear_search_history, get_search_index_info, SearchIndex};
 pub use collections::{create_collection, get_collections, get_collection, update_collection, delete_collection};
@@ -58,18 +64,20 @@ pub use network_shell::{
   NetworkStatus as P2PNetworkStatus,
   NetworkMetrics as P2PNetworkMetrics
 };
-pub use network_shell::{
-  onion_share_add_file,
-  onion_share_fetch,
-  onion_share_list_local,
-  onion_share_remove_file,
-  onion_share_start,
-  onion_share_status,
-  onion_share_stop,
-  tracker_get_cached_lobby_cmd,
-  tracker_get_config,
-  tracker_refresh_lobby,
-  tracker_set_config,
-  tracker_start_ws_loop,
-  tracker_stop_ws_loop,
+pub use onion_bridge::{
+    onion_share_add_file,
+    onion_share_fetch,
+    onion_share_list_local,
+    onion_share_remove_file,
+    onion_share_start,
+    onion_share_status,
+    onion_share_stop,
+    tracker_get_cached_lobby_cmd,
+    tracker_get_config,
+    tracker_refresh_lobby,
+    tracker_set_config,
+    tracker_start_ws_loop,
+    tracker_stop_ws_loop,
+    OnionShareState,
+    TrackerNetworkConfig,
 };

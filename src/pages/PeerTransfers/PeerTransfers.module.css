@@ -42,6 +42,72 @@
   font-size: 0.95rem;
 }
 
+.onionPanel {
+  margin-bottom: 1.25rem;
+  padding: 1rem 1.1rem;
+  border-radius: var(--radius-md, 12px);
+  border: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
+  background: color-mix(in srgb, var(--surface-elevated) 92%, transparent);
+}
+
+.onionTitle {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.onionStatus {
+  font-size: 0.87rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.65rem;
+  word-break: break-all;
+}
+
+.onionToolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.onionFields {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+}
+
+@media (min-width: 720px) {
+  .onionFields {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.onionField {
+  width: 100%;
+  padding: 0.45rem 0.55rem;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--border-color) 80%, transparent);
+  background: var(--surface-base, transparent);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.onionLobby {
+  margin-top: 0.65rem;
+  max-height: 200px;
+  overflow: auto;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+}
+
+.onionError {
+  margin-top: 0.35rem;
+  font-size: 0.82rem;
+  color: var(--destructive-text, #c0392b);
+}
+
 .summaryRow {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
