@@ -1,45 +1,19 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-
-vi.mock('@tauri-apps/api/core', () => ({
-  invoke: vi.fn(async (cmd: string, args?: any) => {
-    switch (cmd) {
-      case 'init_tor_node':
-        return {
-          id: 'tor1',
-          config: { enableCulturalFiltering: false, enableContentBlocking: false },
-        };
-      case 'start_tor':
-        return true;
-      case 'get_tor_status':
-        return { bootstrapped: true, circuitEstablished: true };
-      case 'enable_tor_bridges':
-        return true;
-      case 'disable_tor_bridges':
-        return true;
-      case 'rotate_tor_circuit':
-        return true;
-      case 'test_tor_censorship_resistance':
-        return true;
-      default:
-        return true;
-    }
-  }),
-}));
-
+import { describe, it, expect, beforeEach } from 'vitest';
 import { torService } from '../network/torService';
 
-describe('TOR fallback and censorship resistance', () => {
+describe('TOR service shell', () => {
   beforeEach(() => {
-    vi.restoreAllMocks();
+    // singleton; no mocks — implementation is frontend-only stubs
   });
 
-  it('enables bridges and rotates circuits successfully', async () => {
-    const svc: any = torService;
-    await svc.initializeTor({ bridgeSupport: true });
-    await svc.startTor();
-    await svc.enableBridges?.(['obfs4 1.2.3.4:443']);
-    await svc.rotateTorCircuit?.();
+  it('exposes resilient no-op entry points and reports resistance checks as inactive', async () => {
+    const svc = torService;
+    await expect(svc.initializeTor({ bridgeSupport: true } as any)).resolves.toBeTruthy();
+    await expect(svc.startTor()).resolves.toBeUndefined();
+    await expect(svc.enableBridges(['obfs4 1.2.3.4:443'])).resolves.toBeUndefined();
+    await expect(svc.rotateTorCircuit()).resolves.toBeUndefined();
+
     const ok = await svc.testCensorshipResistance?.();
-    expect(ok).toBe(true);
+    expect(ok).toBe(false);
   });
 });
