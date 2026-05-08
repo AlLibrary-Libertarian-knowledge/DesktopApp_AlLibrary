@@ -3,6 +3,7 @@ import { Filter, X, ChevronDown, ChevronUp, RotateCcw } from 'lucide-solid';
 import { Button } from '../../foundation/Button';
 import { Input } from '../../foundation/Input';
 import { Card } from '../../foundation/Card';
+import type { UICulturalTheme } from '@/types/core';
 import styles from './FilterPanel.module.css';
 
 export type FilterValue = string | number | boolean | Date | [Date, Date];
@@ -56,7 +57,7 @@ export interface FilterPanelProps {
   showFilterCount?: boolean;
   showClearAll?: boolean;
   showApplyButton?: boolean;
-  culturalTheme?: 'indigenous' | 'traditional' | 'modern' | 'ceremonial' | 'community' | 'default';
+  culturalTheme?: UICulturalTheme;
   className?: string;
   ariaLabel?: string;
   onApply?: (filters: FilterState) => void;

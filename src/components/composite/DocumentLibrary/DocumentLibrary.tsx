@@ -35,6 +35,7 @@ import {
 import { DocumentStatus } from '../../domain';
 import type { Document } from '../../../types/Document';
 import type { SearchFilters, SearchOptions } from '../../../services/searchService';
+import type { UICulturalTheme } from '@/types/core';
 import styles from './DocumentLibrary.module.css';
 
 /**
@@ -50,7 +51,7 @@ export interface DocumentLibraryProps {
   onSortChange?: (sortBy: string, sortOrder: 'asc' | 'desc') => void;
 
   // Cultural Context Properties (INFORMATION ONLY - NO ACCESS CONTROL)
-  culturalTheme?: 'indigenous' | 'traditional' | 'modern' | 'ceremonial' | 'community' | 'default';
+  culturalTheme?: UICulturalTheme;
   showCulturalIndicators?: boolean;
   culturalContext?: string;
 

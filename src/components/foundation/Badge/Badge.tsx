@@ -6,6 +6,7 @@
  */
 
 import type { Component, JSX } from 'solid-js';
+import type { UICulturalTheme } from '@/types/core';
 import styles from './Badge.module.css';
 
 export interface BadgeProps {
@@ -29,8 +30,8 @@ export interface BadgeProps {
   removable?: boolean;
   /** Custom CSS class */
   class?: string;
-  /** Cultural theme */
-  culturalTheme?: 'traditional' | 'indigenous' | 'ceremonial';
+  /** Optional accent variant */
+  culturalTheme?: UICulturalTheme;
   /** Test ID for testing */
   'data-testid'?: string;
   /** Click event handler */

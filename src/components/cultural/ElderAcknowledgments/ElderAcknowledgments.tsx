@@ -6,6 +6,7 @@
  */
 
 import { type Component, createSignal, For, Show } from 'solid-js';
+import type { UICulturalTheme } from '@/types/core';
 import styles from './ElderAcknowledgments.module.css';
 
 export interface ElderAcknowledgment {
@@ -37,7 +38,7 @@ export interface ElderAcknowledgmentsProps {
   /** Show traditional protocols */
   showProtocols?: boolean;
   /** Cultural theme */
-  culturalTheme?: 'indigenous' | 'traditional' | 'ceremonial' | 'default';
+  culturalTheme?: UICulturalTheme;
   /** Display mode */
   displayMode?: 'full' | 'compact' | 'list';
   /** Custom CSS class */
@@ -60,7 +61,7 @@ export const ElderAcknowledgments: Component<ElderAcknowledgmentsProps> = props 
   const showPhotos = () => props.showPhotos ?? true;
   const showAudio = () => props.showAudio ?? true;
   const showProtocols = () => props.showProtocols ?? true;
-  const culturalTheme = () => props.culturalTheme || 'traditional';
+  const culturalTheme = () => props.culturalTheme || 'default';
   const displayMode = () => props.displayMode || 'full';
 
   // Handle elder selection

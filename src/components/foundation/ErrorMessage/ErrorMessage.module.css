@@ -97,30 +97,9 @@
   border-left: 4px solid var(--general-color, #64748b);
 }
 
-/* Cultural Theme Styles (INFORMATION ONLY - NO ACCESS RESTRICTION) */
-.error-cultural-indigenous {
-  border-color: var(--cultural-indigenous);
-  background-color: var(--cultural-indigenous-bg);
-}
-
-.error-cultural-traditional {
-  border-color: var(--cultural-traditional);
-  background-color: var(--cultural-traditional-bg);
-}
-
 .error-cultural-modern {
   border-color: var(--cultural-modern);
   background-color: var(--cultural-modern-bg);
-}
-
-.error-cultural-ceremonial {
-  border-color: var(--cultural-ceremonial);
-  background-color: var(--cultural-ceremonial-bg);
-}
-
-.error-cultural-community {
-  border-color: var(--cultural-community);
-  background-color: var(--cultural-community-bg);
 }
 
 /* Cultural Indicator */

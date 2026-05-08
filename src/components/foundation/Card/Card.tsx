@@ -1,18 +1,10 @@
 import { type Component, type ParentProps, type JSX, Show, createSignal } from 'solid-js';
 import { CULTURAL_SENSITIVITY_LEVELS, CULTURAL_LABELS } from '../../../constants/cultural';
+import type { UICulturalTheme } from '@/types/core';
 import styles from './Card.module.css';
 
-/**
- * Cultural Theme Types for Card Styling
- * Provides cultural context through visual design without access restriction
- */
-export type CulturalTheme =
-  | 'indigenous'
-  | 'traditional'
-  | 'modern'
-  | 'ceremonial'
-  | 'community'
-  | 'default';
+/** Optional visual variant for this component only. */
+export type CulturalTheme = UICulturalTheme;
 
 /**
  * Card Content Types
@@ -90,7 +82,7 @@ export interface CardProps extends ParentProps {
  * @example
  * ```tsx
  * <Card
- *   culturalTheme="indigenous"
+ *   culturalTheme="modern"
  *   culturalContext="Traditional knowledge card"
  *   ariaLabel="Traditional knowledge content"
  *   contentType="cultural"

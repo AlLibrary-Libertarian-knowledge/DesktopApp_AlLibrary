@@ -7,6 +7,7 @@
 
 import { type Component, type JSX, Show, For } from 'solid-js';
 import { useTranslation } from '../../../i18n/hooks';
+import type { UICulturalTheme } from '@/types/core';
 import styles from './PageHeader.module.css';
 
 export interface BreadcrumbItem {
@@ -37,7 +38,7 @@ export interface PageHeaderProps {
   /** Header variant */
   variant?: 'default' | 'minimal' | 'hero';
   /** Cultural theme */
-  culturalTheme?: 'indigenous' | 'traditional' | 'ceremonial' | 'default';
+  culturalTheme?: UICulturalTheme;
   /** Custom CSS class */
   class?: string;
   /** Test ID for testing */

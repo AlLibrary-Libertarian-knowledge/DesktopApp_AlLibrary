@@ -9,6 +9,8 @@
  * Educational approach to information literacy and critical thinking.
  */
 
+import type { UICulturalTheme } from '@/types/core';
+
 // ============================================================================
 // CORE VERIFICATION INTERFACES
 // ============================================================================
@@ -645,7 +647,7 @@ export interface InformationIntegrityVerificationProps {
   autoStart?: boolean;
 
   // Cultural context (INFORMATION ONLY)
-  culturalTheme?: 'indigenous' | 'traditional' | 'modern' | 'ceremonial' | 'community' | 'default';
+  culturalTheme?: UICulturalTheme;
   culturalContext?: string;
   showCulturalVerification?: boolean;
 

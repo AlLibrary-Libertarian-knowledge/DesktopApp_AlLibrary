@@ -11,6 +11,7 @@ import { HardDrive, FileText, File, Shield, Globe, Clock } from 'lucide-solid';
 import { Card } from '../../foundation';
 import { SystemAPI, SystemUtils } from '../../../types/System';
 import { CULTURAL_SENSITIVITY_LEVELS, CULTURAL_LABELS } from '../../../constants/cultural';
+import type { UICulturalTheme } from '@/types/core';
 import styles from './DocumentStatus.module.css';
 
 /**
@@ -34,7 +35,7 @@ export interface DocumentStatusProps {
   class?: string;
 
   // Cultural Context Properties (INFORMATION ONLY - NO ACCESS CONTROL)
-  culturalTheme?: 'indigenous' | 'traditional' | 'modern' | 'ceremonial' | 'community' | 'default';
+  culturalTheme?: UICulturalTheme;
   showCulturalIndicators?: boolean;
   culturalContext?: string;
 

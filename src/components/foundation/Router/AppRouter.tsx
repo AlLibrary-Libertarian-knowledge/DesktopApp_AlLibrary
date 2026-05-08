@@ -19,15 +19,6 @@ const AppRouter = () => {
       <Route path="/trending" component={() => <div>Trending Content Page</div>} />
       <Route path="/new-arrivals" component={() => <div>New Arrivals Page</div>} />
 
-      {/* Cultural Heritage Routes */}
-      <Route path="/cultural-contexts" component={() => <div>Cultural Contexts Page</div>} />
-      <Route
-        path="/traditional-knowledge"
-        component={() => <div>Traditional Knowledge Page</div>}
-      />
-      <Route path="/community-guidelines" component={() => <div>Community Guidelines Page</div>} />
-      <Route path="/preservation" component={() => <div>Preservation Page</div>} />
-
       {/* Network Routes */}
       <Route path="/peers" component={() => <div>Peer Network Page</div>} />
       <Route path="/sharing" component={() => <div>Sharing Status Page</div>} />

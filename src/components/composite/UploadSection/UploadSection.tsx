@@ -2,6 +2,7 @@ import { type Component, JSX, createSignal, Show, For } from 'solid-js';
 import { Button, Input, Card } from '../../foundation';
 import { Upload, FileText, AlertCircle, Check, X, Info } from 'lucide-solid';
 import { validationService } from '../../../services';
+import type { UICulturalTheme } from '@/types/core';
 import styles from './UploadSection.module.css';
 
 /**
@@ -46,7 +47,7 @@ export interface UploadSectionProps {
   isUploading?: boolean;
 
   // Cultural Context Properties (INFORMATION ONLY - NO ACCESS CONTROL)
-  culturalTheme?: 'indigenous' | 'traditional' | 'modern' | 'ceremonial' | 'community' | 'default';
+  culturalTheme?: UICulturalTheme;
   showCulturalIndicator?: boolean;
   enableCulturalAnalysis?: boolean; // For educational context only
 
@@ -77,7 +78,7 @@ export interface UploadSectionProps {
  * @example
  * ```tsx
  * <UploadSection
- *   culturalTheme="indigenous"
+ *   culturalTheme="modern"
  *   enableCulturalAnalysis={true}
  *   enableSecurityValidation={true}
  *   onFilesSelected={handleFilesSelected}

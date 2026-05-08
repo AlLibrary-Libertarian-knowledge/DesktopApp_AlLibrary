@@ -26,59 +26,7 @@
   display: inline-block;
 }
 
-/* Cultural Theme Styles */
-.btn-cultural-indigenous {
-  background: linear-gradient(135deg, #8b4513 0%, #a0522d 50%, #8b4513 100%);
-  color: #f5f5dc;
-  border-color: #654321;
-  box-shadow: 0 2px 8px rgba(139, 69, 19, 0.3);
-}
-
-.btn-cultural-indigenous:hover:not(.btn-disabled) {
-  background: linear-gradient(135deg, #a0522d 0%, #cd853f 50%, #a0522d 100%);
-  border-color: #8b4513;
-  box-shadow: 0 4px 12px rgba(139, 69, 19, 0.4);
-}
-
-.btn-cultural-traditional {
-  background: linear-gradient(135deg, #2f4f4f 0%, #556b2f 50%, #2f4f4f 100%);
-  color: #f0f8ff;
-  border-color: #2f4f4f;
-  box-shadow: 0 2px 8px rgba(47, 79, 79, 0.3);
-}
-
-.btn-cultural-traditional:hover:not(.btn-disabled) {
-  background: linear-gradient(135deg, #556b2f 0%, #6b8e23 50%, #556b2f 100%);
-  border-color: #556b2f;
-  box-shadow: 0 4px 12px rgba(47, 79, 79, 0.4);
-}
-
-.btn-cultural-ceremonial {
-  background: linear-gradient(135deg, #4b0082 0%, #800080 50%, #4b0082 100%);
-  color: #ffd700;
-  border-color: #4b0082;
-  box-shadow: 0 2px 8px rgba(75, 0, 130, 0.3);
-}
-
-.btn-cultural-ceremonial:hover:not(.btn-disabled) {
-  background: linear-gradient(135deg, #800080 0%, #9932cc 50%, #800080 100%);
-  border-color: #800080;
-  box-shadow: 0 4px 12px rgba(75, 0, 130, 0.4);
-}
-
-.btn-cultural-community {
-  background: linear-gradient(135deg, #228b22 0%, #32cd32 50%, #228b22 100%);
-  color: #ffffff;
-  border-color: #228b22;
-  box-shadow: 0 2px 8px rgba(34, 139, 34, 0.3);
-}
-
-.btn-cultural-community:hover:not(.btn-disabled) {
-  background: linear-gradient(135deg, #32cd32 0%, #90ee90 50%, #32cd32 100%);
-  border-color: #32cd32;
-  box-shadow: 0 4px 12px rgba(34, 139, 34, 0.4);
-}
-
+/* Optional accent variant */
 .btn-cultural-modern {
   background: linear-gradient(135deg, #1e90ff 0%, #00bfff 50%, #1e90ff 100%);
   color: #ffffff;

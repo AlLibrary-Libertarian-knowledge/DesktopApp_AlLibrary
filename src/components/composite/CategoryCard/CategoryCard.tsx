@@ -2,15 +2,10 @@ import { type Component, Show, createSignal, For } from 'solid-js';
 import { Folder, FileText, Users, Star, Info, Globe, ChevronRight } from 'lucide-solid';
 import { Card } from '../../foundation/Card';
 import { CULTURAL_LABELS } from '../../../constants/cultural';
+import type { UICulturalTheme } from '@/types/core';
 import styles from './CategoryCard.module.css';
 
-export type CulturalTheme =
-  | 'indigenous'
-  | 'traditional'
-  | 'modern'
-  | 'ceremonial'
-  | 'community'
-  | 'default';
+export type CulturalTheme = UICulturalTheme;
 
 export interface CategoryStats {
   documentCount: number;

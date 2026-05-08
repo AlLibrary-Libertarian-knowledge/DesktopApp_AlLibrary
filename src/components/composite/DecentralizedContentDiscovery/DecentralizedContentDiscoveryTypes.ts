@@ -8,6 +8,8 @@
  * educational cultural context and resistance to information blocking.
  */
 
+import type { UICulturalTheme } from '@/types/core';
+
 // ============================================================================
 // CORE DISCOVERY INTERFACES
 // ============================================================================
@@ -731,7 +733,7 @@ export interface DecentralizedContentDiscoveryProps {
   prioritizeCensorshipResistant?: boolean;
 
   // Cultural context (INFORMATION ONLY)
-  culturalTheme?: 'indigenous' | 'traditional' | 'modern' | 'ceremonial' | 'community' | 'default';
+  culturalTheme?: UICulturalTheme;
   culturalLanguages?: string[];
   showTraditionalKnowledge?: boolean;
 

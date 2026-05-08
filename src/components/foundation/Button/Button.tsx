@@ -1,19 +1,11 @@
 import { type Component, type ParentProps, createSignal, createEffect } from 'solid-js';
 import { CULTURAL_SENSITIVITY_LEVELS, CULTURAL_LABELS } from '../../../constants/cultural';
 import { useTranslation } from '../../../i18n/hooks';
+import type { UICulturalTheme } from '@/types/core';
 import styles from './Button.module.css';
 
-/**
- * Cultural Theme Types for Button Styling
- * Provides cultural context through visual design without access restriction
- */
-export type CulturalTheme =
-  | 'indigenous'
-  | 'traditional'
-  | 'modern'
-  | 'ceremonial'
-  | 'community'
-  | 'default';
+/** Optional visual variant for this component only (global palette uses useTheme mode + accessibility). */
+export type CulturalTheme = UICulturalTheme;
 
 /**
  * Security Validation Types
@@ -82,7 +74,7 @@ export interface ButtonProps extends ParentProps {
  * ```tsx
  * <Button
  *   variant="primary"
- *   culturalTheme="indigenous"
+ *   culturalTheme="modern"
  *   culturalContext="Traditional knowledge sharing"
  *   ariaLabel="Share traditional knowledge"
  * >

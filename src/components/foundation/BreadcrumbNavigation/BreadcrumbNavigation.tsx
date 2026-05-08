@@ -6,6 +6,7 @@
  */
 
 import { type Component, For, type JSX } from 'solid-js';
+import type { UICulturalTheme } from '@/types/core';
 import styles from './BreadcrumbNavigation.module.css';
 
 export interface BreadcrumbItem {
@@ -33,7 +34,7 @@ export interface BreadcrumbNavigationProps {
   /** Color variant */
   variant?: 'default' | 'muted' | 'primary';
   /** Cultural theme */
-  culturalTheme?: 'default' | 'indigenous' | 'traditional' | 'ceremonial';
+  culturalTheme?: UICulturalTheme;
   /** Show home icon */
   showHomeIcon?: boolean;
   /** Maximum items to show before collapsing */

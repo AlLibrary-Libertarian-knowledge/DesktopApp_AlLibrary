@@ -34,6 +34,7 @@ import { Badge } from '@/components/foundation/Badge';
 import { Card } from '@/components/foundation/Card';
 import { Tooltip } from '@/components/foundation/Tooltip';
 import { CulturalIndicator } from '@/components/cultural/CulturalIndicator';
+import type { UICulturalTheme } from '@/types/core';
 import styles from './TimeFilter.module.css';
 
 export interface TimeFilterOption {
@@ -73,7 +74,7 @@ export interface TimeFilterProps {
   /** Custom CSS class */
   class?: string;
   /** Cultural theme */
-  culturalTheme?: 'traditional' | 'indigenous' | 'ceremonial';
+  culturalTheme?: UICulturalTheme;
   /** Test ID for testing */
   'data-testid'?: string;
   /** Filter change handler */

@@ -1,5 +1,6 @@
 import { type Component, createSignal, Show, For } from 'solid-js';
 import { CULTURAL_SENSITIVITY_LEVELS, CULTURAL_LABELS } from '../../../constants/cultural';
+import type { UICulturalTheme } from '@/types/core';
 import styles from './ErrorMessage.module.css';
 
 /**
@@ -17,16 +18,8 @@ export type ErrorSeverity = 'info' | 'warning' | 'error' | 'critical';
  */
 export type ErrorVariant = 'default' | 'banner' | 'toast' | 'inline';
 
-/**
- * Cultural Theme Types for Error Styling
- */
-export type CulturalTheme =
-  | 'indigenous'
-  | 'traditional'
-  | 'modern'
-  | 'ceremonial'
-  | 'community'
-  | 'default';
+/** Optional visual variant for this component only. */
+export type CulturalTheme = UICulturalTheme;
 
 /**
  * Error Message Props Interface
@@ -85,7 +78,7 @@ export interface ErrorMessageProps {
  *   message="Network connection failed"
  *   severity="error"
  *   type="network"
- *   culturalTheme="indigenous"
+ *   culturalTheme="modern"
  *   culturalContext="Network sharing protocols"
  *   showRetry={true}
  *   onRetry={handleRetry}

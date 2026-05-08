@@ -91,30 +91,14 @@
   );
 }
 
-/* Cultural Theme Styles (INFORMATION ONLY - NO ACCESS RESTRICTION) */
-.category-card.cultural-indigenous {
-  border-left: 4px solid var(--cultural-indigenous, #8b5cf6);
-  background-color: var(--cultural-indigenous-bg, rgba(139, 92, 246, 0.05));
-}
-
-.category-card.cultural-traditional {
-  border-left: 4px solid var(--cultural-traditional, #059669);
-  background-color: var(--cultural-traditional-bg, rgba(5, 150, 105, 0.05));
+.category-card.cultural-default {
+  border-left: 4px solid var(--border-color, #cbd5e1);
+  background-color: var(--bg-primary, transparent);
 }
 
 .category-card.cultural-modern {
   border-left: 4px solid var(--cultural-modern, #3b82f6);
   background-color: var(--cultural-modern-bg, rgba(59, 130, 246, 0.05));
-}
-
-.category-card.cultural-ceremonial {
-  border-left: 4px solid var(--cultural-ceremonial, #dc2626);
-  background-color: var(--cultural-ceremonial-bg, rgba(220, 38, 38, 0.05));
-}
-
-.category-card.cultural-community {
-  border-left: 4px solid var(--cultural-community, #f59e0b);
-  background-color: var(--cultural-community-bg, rgba(245, 158, 11, 0.05));
 }
 
 /* Category Header */

@@ -6,6 +6,7 @@
  */
 
 import { type Component, createSignal, For, Show } from 'solid-js';
+import type { UICulturalTheme } from '@/types/core';
 import styles from './CommunityContributions.module.css';
 
 export interface CommunityContribution {
@@ -56,7 +57,7 @@ export interface CommunityContributionsProps {
   /** Show educational value indicators */
   showEducationalValue?: boolean;
   /** Cultural theme */
-  culturalTheme?: 'indigenous' | 'traditional' | 'ceremonial' | 'default';
+  culturalTheme?: UICulturalTheme;
   /** Custom CSS class */
   class?: string;
   /** Test ID for testing */
@@ -78,7 +79,7 @@ export const CommunityContributions: Component<CommunityContributionsProps> = pr
   // Default props
   const showContributorInfo = () => props.showContributorInfo ?? true;
   const showEducationalValue = () => props.showEducationalValue ?? true;
-  const culturalTheme = () => props.culturalTheme || 'traditional';
+  const culturalTheme = () => props.culturalTheme || 'default';
 
   // Handle contribution selection
   const handleContributionSelect = (contribution: CommunityContribution) => {

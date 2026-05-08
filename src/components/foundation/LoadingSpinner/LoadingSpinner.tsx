@@ -1,18 +1,10 @@
 import { type Component, Show } from 'solid-js';
 import { CULTURAL_LABELS } from '../../../constants/cultural';
+import type { UICulturalTheme } from '@/types/core';
 import styles from './LoadingSpinner.module.css';
 
-/**
- * Cultural Theme Types for LoadingSpinner Styling
- * Provides cultural context through visual design without access restriction
- */
-export type CulturalTheme =
-  | 'indigenous'
-  | 'traditional'
-  | 'modern'
-  | 'ceremonial'
-  | 'community'
-  | 'default';
+/** Optional visual variant for this component only. */
+export type CulturalTheme = UICulturalTheme;
 
 /**
  * Loading Types for Different Content Categories
@@ -67,7 +59,7 @@ export interface LoadingSpinnerProps {
  * <LoadingSpinner
  *   size="lg"
  *   variant="cultural"
- *   culturalTheme="indigenous"
+ *   culturalTheme="modern"
  *   message="Loading traditional knowledge..."
  *   culturalContext="Respectful content loading"
  * />

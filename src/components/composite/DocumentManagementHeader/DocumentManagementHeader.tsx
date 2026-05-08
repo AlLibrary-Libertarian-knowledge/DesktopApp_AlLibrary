@@ -1,4 +1,5 @@
 import { type Component, type JSX, Show } from 'solid-js';
+import type { UICulturalTheme } from '@/types/core';
 import { Button } from '../../foundation';
 import { TopCard } from '../TopCard';
 import { Upload, Settings, HardDrive, Folder, RefreshCw } from 'lucide-solid';
@@ -16,7 +17,7 @@ export interface DocumentManagementHeaderProps {
   isUploading?: boolean;
 
   // Cultural Context Properties (INFORMATION ONLY)
-  culturalTheme?: 'indigenous' | 'traditional' | 'modern' | 'ceremonial' | 'community' | 'default';
+  culturalTheme?: UICulturalTheme;
   showCulturalIndicator?: boolean;
 
   // Project Management
@@ -46,7 +47,7 @@ export interface DocumentManagementHeaderProps {
  * <DocumentManagementHeader
  *   totalDocuments={42}
  *   totalSize="156 MB"
- *   culturalTheme="indigenous"
+ *   culturalTheme="modern"
  *   onUploadClick={() => setActiveTab('upload')}
  * />
  * ```
@@ -57,16 +58,8 @@ const DocumentManagementHeader: Component<DocumentManagementHeaderProps> = props
    */
   const getCulturalDisplay = () => {
     if (!props.culturalTheme || props.culturalTheme === 'default') return null;
-
-    const themeLabels = {
-      indigenous: 'Indigenous Knowledge Library',
-      traditional: 'Traditional Wisdom Archive',
-      modern: 'Contemporary Research Collection',
-      ceremonial: 'Sacred Knowledge Repository',
-      community: 'Community Knowledge Hub',
-    };
-
-    return themeLabels[props.culturalTheme] || 'Document Library';
+    if (props.culturalTheme === 'modern') return 'Contemporary Research Collection';
+    return null;
   };
 
   /**

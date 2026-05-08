@@ -2,7 +2,8 @@
 export { useModal, modalUtils } from './useModal';
 export type { ModalConfig, ModalState, ModalActions, UseModalReturn } from './useModal';
 
-// Theme management
+// Theme management + shared UI accents (foundation components use UICulturalTheme)
+export type { UICulturalTheme } from '@/types/core';
 export { useTheme } from './useTheme';
 export type {
   ThemeMode,

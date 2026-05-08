@@ -2,19 +2,11 @@ import { type Component, type JSX, createSignal, createEffect, Show } from 'soli
 import { useTranslation } from '../../../i18n/hooks';
 import { validationService } from '../../../services/validationService';
 import { CULTURAL_LABELS } from '../../../constants/cultural';
+import type { UICulturalTheme } from '@/types/core';
 import styles from './Input.module.css';
 
-/**
- * Cultural Theme Types for Input Styling
- * Provides cultural context through visual design without access restriction
- */
-export type CulturalTheme =
-  | 'indigenous'
-  | 'traditional'
-  | 'modern'
-  | 'ceremonial'
-  | 'community'
-  | 'default';
+/** Optional visual variant for this component only. */
+export type CulturalTheme = UICulturalTheme;
 
 /**
  * Input Validation Types
@@ -99,9 +91,9 @@ export interface InputProps {
  * ```tsx
  * <Input
  *   type="text"
- *   culturalTheme="indigenous"
- *   culturalContext="Traditional name input"
- *   ariaLabel="Enter traditional name"
+ *   culturalTheme="modern"
+ *   culturalContext="Context label for tooltips"
+ *   ariaLabel="Name"
  *   validationType="cultural"
  * >
  *   Traditional Name
