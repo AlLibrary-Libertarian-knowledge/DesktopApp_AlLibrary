@@ -5,11 +5,11 @@ use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use tauri::{AppHandle, Emitter, State};
+use tauri::{AppHandle, Emitter, Manager, State};
 use tokio::sync::{Mutex, RwLock};
 use uuid::Uuid;
 
-use crate::onion_share::config::AppConfig;
+use crate::onion_share::config::{normalize_tracker_url, AppConfig};
 use crate::onion_share::fetch;
 use crate::onion_share::server::ShareServerHandle;
 use crate::onion_share::tracker_client;
@@ -18,28 +18,94 @@ use crate::onion_share::wizard::installer;
 
 const DEFAULT_CHUNK: usize = 256 * 1024;
 
+fn tracker_epoch_ms() -> i64 {
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_millis().min(u128::from(i64::MAX as u64)) as i64)
+        .unwrap_or(0)
+}
+
+fn default_try_local_fallback() -> bool {
+    true
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TrackerNetworkConfig {
     pub tracker_url: String,
     pub node_id: String,
     pub share_publicly: bool,
+    #[serde(default = "default_try_local_fallback")]
+    pub try_local_tracker_fallback: bool,
 }
 
-#[derive(Clone, Default)]
+#[derive(Clone)]
 pub struct OnionShareState {
     handle: Arc<Mutex<Option<ShareServerHandle>>>,
     tracker_stop: Arc<AtomicBool>,
     tracker_task: Arc<Mutex<Option<tokio::task::JoinHandle<()>>>>,
     cached_lobby: Arc<RwLock<NetworkLobby>>,
+    /// Last tracker announce diagnostics (persisted only in memory).
+    tracker_last_sync: Arc<Mutex<Option<serde_json::Value>>>,
 }
 
-#[tauri::command]
-pub async fn onion_share_start(state: State<'_, OnionShareState>) -> Result<serde_json::Value, String> {
+impl Default for OnionShareState {
+    fn default() -> Self {
+        Self {
+            handle: Arc::new(Mutex::new(None)),
+            tracker_stop: Arc::new(AtomicBool::new(false)),
+            tracker_task: Arc::new(Mutex::new(None)),
+            cached_lobby: Arc::new(RwLock::new(NetworkLobby::default())),
+            tracker_last_sync: Arc::new(Mutex::new(None)),
+        }
+    }
+}
+
+async fn persist_tracker_diag(
+    sink: Arc<Mutex<Option<serde_json::Value>>>,
+    app: Option<&AppHandle>,
+    result: &Result<tracker_client::TrackerSyncOutcome, String>,
+) {
+    let at = tracker_epoch_ms();
+    let diag = match result {
+        Ok(o) => json!({
+            "ok": true,
+            "atEpochMs": at,
+            "urlUsed": o.url_used,
+            "usedLocalhostFallback": o.used_localhost_fallback,
+        }),
+        Err(e) => json!({
+            "ok": false,
+            "atEpochMs": at,
+            "error": e,
+        }),
+    };
+    {
+        let mut g = sink.lock().await;
+        *g = Some(diag.clone());
+    }
+    if let Some(a) = app {
+        let _ = a.emit("tracker-sync-done", diag);
+    }
+}
+
+/// Starts onion share if not already running (embedded Tor + Axum + `.onion` hidden service).
+/// Used by `onion_share_start` and application bootstrap.
+pub async fn bootstrap_onion_share(
+    app: &AppHandle,
+    state: &State<'_, OnionShareState>,
+) -> Result<serde_json::Value, String> {
     let mut guard = state.handle.lock().await;
     if guard.is_some() {
         let h = guard.as_ref().unwrap();
-        return Ok(json!({"onion": h.onion_addr, "localPort": h.local_port}));
+        let onion = h.onion_addr.clone();
+        let port = h.local_port;
+        let tr = tracker_client::sync_tracker_result(Some(h), state.cached_lobby.clone()).await;
+        let sink = Arc::clone(&state.tracker_last_sync);
+        persist_tracker_diag(sink, Some(app), &tr).await;
+        drop(guard);
+        let _ = app.emit("network-presence-changed", json!({}));
+        return Ok(json!({"onion": onion, "localPort": port}));
     }
 
     let mut cfg = AppConfig::load();
@@ -60,11 +126,73 @@ pub async fn onion_share_start(state: State<'_, OnionShareState>) -> Result<serd
     let onion = handle_srv.onion_addr.clone();
     let port = handle_srv.local_port;
     *guard = Some(handle_srv);
+    let lobby = state.cached_lobby.clone();
+    if let Some(ref h) = *guard {
+        let tr = tracker_client::sync_tracker_result(Some(h), lobby).await;
+        let sink = Arc::clone(&state.tracker_last_sync);
+        persist_tracker_diag(sink, Some(app), &tr).await;
+    }
+    drop(guard);
+    let _ = app.emit("network-presence-changed", json!({}));
     Ok(json!({"onion": onion, "localPort": port}))
 }
 
+/// Second-stage startup: Tor + hidden service + chunk server while the React Loading overlay is visible.
 #[tauri::command]
-pub async fn onion_share_stop(state: State<'_, OnionShareState>) -> Result<(), String> {
+pub async fn bootstrap_onion_overlay(
+    app: AppHandle,
+    state: State<'_, OnionShareState>,
+) -> Result<serde_json::Value, String> {
+    let main = app
+        .get_webview_window("main")
+        .ok_or("main window not found".to_string())?;
+
+    let start = json!({
+        "phase": "onion",
+        "message": "Connecting Tor & onion network…",
+        "progress": 12.0,
+        "icon": "Users",
+    });
+    let _ = main.emit("init-progress", &start);
+
+    let result = bootstrap_onion_share(&app, &state).await;
+
+    match &result {
+        Ok(v) => {
+            let done = json!({
+                "phase": "onion",
+                "message": "Onion network ready",
+                "progress": 100.0,
+                "icon": "CheckCircle",
+                "onion": v.get("onion"),
+                "localPort": v.get("localPort"),
+            });
+            let _ = main.emit("init-progress", &done);
+        }
+        Err(e) => {
+            let skip = json!({
+                "phase": "onion",
+                "message": format!("Onion unavailable ({e}). Start from Sharing & downloads when ready."),
+                "progress": 100.0,
+                "icon": "Users",
+            });
+            let _ = main.emit("init-progress", &skip);
+        }
+    }
+
+    result
+}
+
+#[tauri::command]
+pub async fn onion_share_start(
+    app: AppHandle,
+    state: State<'_, OnionShareState>,
+) -> Result<serde_json::Value, String> {
+    bootstrap_onion_share(&app, &state).await
+}
+
+#[tauri::command]
+pub async fn onion_share_stop(app: AppHandle, state: State<'_, OnionShareState>) -> Result<(), String> {
     state.tracker_stop.store(true, Ordering::SeqCst);
     let mut tg = state.tracker_task.lock().await;
     if let Some(task) = tg.take() {
@@ -76,6 +204,7 @@ pub async fn onion_share_stop(state: State<'_, OnionShareState>) -> Result<(), S
     if let Some(h) = guard.take() {
         h.stop().await;
     }
+    let _ = app.emit("network-presence-changed", json!({}));
     Ok(())
 }
 
@@ -161,18 +290,23 @@ pub async fn onion_share_status(
 pub async fn tracker_get_config() -> Result<TrackerNetworkConfig, String> {
     let c = AppConfig::load();
     Ok(TrackerNetworkConfig {
-        tracker_url: c.tracker_url,
+        tracker_url: normalize_tracker_url(&c.tracker_url),
         node_id: c.node_id,
         share_publicly: c.share_publicly,
+        try_local_tracker_fallback: c.try_local_tracker_fallback,
     })
 }
 
 #[tauri::command]
 pub async fn tracker_set_config(config: TrackerNetworkConfig) -> Result<(), String> {
     let mut c = AppConfig::load();
-    c.tracker_url = config.tracker_url;
+    c.tracker_url = normalize_tracker_url(&config.tracker_url);
+    if c.tracker_url.is_empty() {
+        return Err("tracker_url cannot be empty".to_string());
+    }
     c.node_id = config.node_id;
     c.share_publicly = config.share_publicly;
+    c.try_local_tracker_fallback = config.try_local_tracker_fallback;
     c.save().map_err(|e| e.to_string())
 }
 
@@ -184,9 +318,22 @@ pub async fn tracker_refresh_lobby(state: State<'_, OnionShareState>) -> Result<
             "Onion/Tor sharing is not active. Start sharing before refreshing the tracker lobby.".to_string(),
         );
     };
-    tracker_client::sync_tracker(Some(srv), state.cached_lobby.clone()).await;
+    let tr = tracker_client::sync_tracker_result(Some(srv), state.cached_lobby.clone()).await;
     drop(guard);
+    persist_tracker_diag(Arc::clone(&state.tracker_last_sync), None, &tr).await;
+    tr.map_err(|e| format!("Cannot reach tracker: {e}"))?;
+
     tracker_get_cached_inner(&state).await
+}
+
+#[tauri::command]
+pub async fn tracker_get_last_sync_diag(state: State<'_, OnionShareState>) -> Result<serde_json::Value, String> {
+    Ok(state
+        .tracker_last_sync
+        .lock()
+        .await
+        .clone()
+        .unwrap_or(serde_json::Value::Null))
 }
 
 #[tauri::command]
@@ -223,15 +370,20 @@ pub async fn tracker_start_ws_loop(
 
     state.tracker_task.lock().await.replace(task);
     let _ = app.emit("tracker-ws-started", ());
+    let _ = app.emit("network-presence-changed", json!({}));
     Ok(())
 }
 
 #[tauri::command]
-pub async fn tracker_stop_ws_loop(state: State<'_, OnionShareState>) -> Result<(), String> {
+pub async fn tracker_stop_ws_loop(
+    app: AppHandle,
+    state: State<'_, OnionShareState>,
+) -> Result<(), String> {
     state.tracker_stop.store(true, Ordering::SeqCst);
     if let Some(t) = state.tracker_task.lock().await.take() {
         t.abort();
     }
+    let _ = app.emit("network-presence-changed", json!({}));
     Ok(())
 }
 

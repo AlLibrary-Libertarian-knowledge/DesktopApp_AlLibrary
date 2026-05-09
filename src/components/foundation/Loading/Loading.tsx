@@ -54,6 +54,7 @@ const LoadingScreen: Component<LoadingScreenProps> = props => {
     CheckCircle,
     Heart,
     Sparkles,
+    Layers,
   };
 
   let progressInterval: number;

@@ -229,8 +229,9 @@ const PeerTransfers: Component = () => {
           </Badge>
         </div>
         <p class={styles.description}>
-          Charts below still use illustrative sample data; the onion panel connects to the vendored
-          onion-poc transfer core (Tor + Axum chunks + tracker) when Tor is installed.
+          Charts below still use illustrative sample data; Tor onion share starts automatically
+          after the splash screen on the main Loading overlay. Use Stop / Start here to restart the
+          service.
         </p>
       </header>
 

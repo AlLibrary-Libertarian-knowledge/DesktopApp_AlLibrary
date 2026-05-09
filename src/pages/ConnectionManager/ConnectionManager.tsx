@@ -20,8 +20,9 @@ export const ConnectionManager: Component = () => {
       <div class={styles.pageHeader}>
         <h1 class={styles.pageTitle}>Configurations</h1>
         <p class={styles.pageDescription}>
-          Configure practical runtime limits and peer behavior using realistic mock controls while
-          the networking backend is disabled.
+          Set your Docker tracker URL (Tor lobby) below — it is saved with the onion-share stack.
+          Bandwidth and peer sliders remain simulation-only until those limits are wired to transfer
+          code.
         </p>
       </div>
 

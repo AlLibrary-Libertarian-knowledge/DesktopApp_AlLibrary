@@ -10,7 +10,17 @@ export interface TrackerNetworkConfig {
   trackerUrl: string;
   nodeId: string;
   sharePublicly: boolean;
+  /** If true, retry announce to http://127.0.0.1:8080 when Tor to .onion fails (same-PC Docker). */
+  tryLocalTrackerFallback?: boolean;
 }
+
+export type TrackerSyncDiagnostics = {
+  ok: boolean;
+  atEpochMs?: number;
+  urlUsed?: string;
+  usedLocalhostFallback?: boolean;
+  error?: string;
+};
 
 export interface OnionShareStartResponse {
   onion: string;
@@ -74,6 +84,11 @@ export async function onionShareStart(): Promise<OnionShareStartResponse> {
   return invoke<OnionShareStartResponse>('onion_share_start');
 }
 
+/** Second startup stage after splash: Tor + onion share (same as Start button; emits init-progress). */
+export async function bootstrapOnionOverlay(): Promise<OnionShareStartResponse> {
+  return invoke<OnionShareStartResponse>('bootstrap_onion_overlay');
+}
+
 export async function onionShareStop(): Promise<void> {
   return invoke('onion_share_stop');
 }
@@ -98,12 +113,32 @@ export async function onionShareStatus(): Promise<{
   return invoke('onion_share_status');
 }
 
+/** Used by header/sidebar: true when Tor hidden service is up (onion share active with an address). */
+export async function fetchNetworkPresence(): Promise<{
+  online: boolean;
+  onionActive: boolean;
+}> {
+  try {
+    const s = await onionShareStatus();
+    const onionActive = Boolean(s.running && s.onion && String(s.onion).trim().length > 0);
+    return { online: onionActive, onionActive };
+  } catch {
+    return { online: false, onionActive: false };
+  }
+}
+
 export async function trackerGetConfig(): Promise<TrackerNetworkConfig> {
   return invoke<TrackerNetworkConfig>('tracker_get_config');
 }
 
 export async function trackerSetConfig(config: TrackerNetworkConfig): Promise<void> {
   return invoke('tracker_set_config', { config });
+}
+
+export async function trackerGetLastSyncDiag(): Promise<TrackerSyncDiagnostics | null> {
+  const v = await invoke<TrackerSyncDiagnostics | null>('tracker_get_last_sync_diag');
+  if (v === null || typeof v !== 'object') return null;
+  return v as TrackerSyncDiagnostics;
 }
 
 export async function trackerRefreshLobby(): Promise<NetworkLobby> {

@@ -65,6 +65,7 @@ pub use network_shell::{
   NetworkMetrics as P2PNetworkMetrics
 };
 pub use onion_bridge::{
+    bootstrap_onion_overlay,
     onion_share_add_file,
     onion_share_fetch,
     onion_share_list_local,
@@ -75,6 +76,7 @@ pub use onion_bridge::{
     tracker_get_cached_lobby_cmd,
     tracker_get_config,
     tracker_refresh_lobby,
+    tracker_get_last_sync_diag,
     tracker_set_config,
     tracker_start_ws_loop,
     tracker_stop_ws_loop,

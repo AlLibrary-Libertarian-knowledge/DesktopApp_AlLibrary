@@ -4,13 +4,33 @@ use directories::ProjectDirs;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
+/// Docker POC (`tor-entrypoint.sh`) publishes the tracker as `HiddenServicePort 80 127.0.0.1:8080`:
+/// Tor presents **virtual port 80**, not 8080. `http://….onion:8080` never hits the HS and announce fails silently.
+pub fn normalize_tracker_url(raw: &str) -> String {
+    let t = raw.trim();
+    if t.is_empty() {
+        return String::new();
+    }
+    let Ok(mut u) = url::Url::parse(t) else {
+        return t.trim_end_matches('/').to_string();
+    };
+    let host = u.host_str().unwrap_or("");
+    if host.ends_with(".onion") && u.scheme() == "http" && u.port() == Some(8080) {
+        let _ = u.set_port(None);
+    }
+    u.as_str().trim_end_matches('/').to_string()
+}
+
 #[derive(Serialize, Deserialize, Clone)]
+#[serde(default)]
 pub struct AppConfig {
     pub terms_accepted: bool,
     pub tor_path: String,
     pub node_id: String,
     pub tracker_url: String,
     pub share_publicly: bool,
+    /// After Tor fails reaching `tracker_url`, also try HTTP to local Docker Desktop (`127.0.0.1:8080`).
+    pub try_local_tracker_fallback: bool,
     pub bootstrap_peers: Vec<String>,
 }
 
@@ -20,9 +40,11 @@ impl Default for AppConfig {
             terms_accepted: false,
             tor_path: String::new(),
             node_id: uuid::Uuid::new_v4().to_string(),
-            tracker_url: "http://3phps2siiwstimug2mipw7tlizdvdmfydjf5clb7phujg4yfnkrh56qd.onion"
+            tracker_url: "http://tjsdpiz3aweek6wovl2oblmmgacfqvnvxmn7ughwhte2ureidnn5tiqd.onion"
                 .to_string(),
             share_publicly: true,
+            // Docker Desktop POC maps tracker to host :8080; Tor-to-.onion can lag or fail behind strict networks.
+            try_local_tracker_fallback: true,
             bootstrap_peers: Vec::new(),
         }
     }

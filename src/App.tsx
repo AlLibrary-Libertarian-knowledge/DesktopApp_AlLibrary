@@ -140,69 +140,84 @@ const App: Component = () => {
       await initializeI18n();
       /* initialized */
 
-      // Start Tauri initialization process
+      // Register progress listener before invoke so splash receives Tor/onion bootstrap updates
+      const unlisten = await listen<InitProgress>('init-progress', event => {
+        setInitProgress(event.payload);
+        console.log('Tauri init progress:', event.payload);
+      });
+      cleanup = unlisten;
+
+      fallbackTimer = globalThis.setTimeout(() => {
+        console.warn(
+          'Tauri initialization timeout (baseline + onion can take ~90s); forcing dismiss'
+        );
+        setIsLoading(false);
+        try {
+          cleanup?.();
+        } catch {
+          /* ignore */
+        }
+        cleanup = null;
+      }, 120000);
+
       try {
         const { invoke } = await import('@tauri-apps/api/core');
+        const onionShare = await import('@/services/network/onionShareService');
+
+        // 1) Fast baseline + close native splash (splash.html).
         await invoke('initialize_app');
 
-        // M5: Optional Tor for onion share / tracker (POC-style). Legacy libp2p is not started at boot.
+        // Bundled / detected Tor exe (Windows Expert Bundle download) before hidden service bootstrap.
+        try {
+          await invoke('ensure_tor_for_onion_share');
+        } catch (torEns: unknown) {
+          console.warn('ensure_tor_for_onion_share skipped or failed:', torEns);
+        }
+
+        // 2) Heavy Tor / onion bootstrap + tracker announce — Loading overlay stays up.
+        try {
+          await onionShare.bootstrapOnionOverlay();
+        } catch (onionErr) {
+          console.warn('Onion overlay bootstrap failed:', onionErr);
+        }
+
+        // Legacy shell Tor node (optional; separate from embedded onion-share Tor).
         try {
           await invoke('init_tor_node', { config: { bridge_support: true } });
         } catch (torErr) {
-          console.warn('Tor init skipped or failed (onion share can start Tor later):', torErr);
+          console.warn(
+            'Tor init skipped or failed (onion share uses its own Tor when running):',
+            torErr
+          );
         }
 
+        if (fallbackTimer) {
+          globalThis.clearTimeout(fallbackTimer);
+          fallbackTimer = null;
+        }
         globalThis.setTimeout(() => {
           setIsLoading(false);
-          if (fallbackTimer) {
-            globalThis.clearTimeout(fallbackTimer);
-            fallbackTimer = null;
-          }
           try {
             cleanup?.();
           } catch {
             /* ignore */
           }
           cleanup = null;
-        }, 600);
+        }, 450);
       } catch (error) {
         console.warn('Failed during Tauri initialization:', error);
-      }
-
-      // Listen for initialization progress from Tauri
-      const unlisten = await listen<InitProgress>('init-progress', event => {
-        setInitProgress(event.payload);
-        console.log('Tauri init progress:', event.payload);
-
-        // When initialization is complete, hide loading screen
-        if (event.payload.phase === 'complete' || event.payload.progress >= 100) {
-          if (fallbackTimer) {
-            globalThis.clearTimeout(fallbackTimer);
-            fallbackTimer = null;
-          }
-
-          globalThis.setTimeout(() => {
-            setIsLoading(false);
-            // Stop listening after initialization completes to prevent unnecessary re-renders
-            try {
-              cleanup?.();
-            } catch {
-              /* ignore */
-            }
-            cleanup = null;
-          }, 1500); // Small delay to show completion
+        if (fallbackTimer) {
+          globalThis.clearTimeout(fallbackTimer);
+          fallbackTimer = null;
         }
-      });
-
-      cleanup = unlisten;
-
-      // Set fallback timer in case Tauri events don't work
-      fallbackTimer = globalThis.setTimeout(() => {
-        console.warn('Tauri initialization timeout, using fallback');
         setIsLoading(false);
-        cleanup?.();
+        try {
+          cleanup?.();
+        } catch {
+          /* ignore */
+        }
         cleanup = null;
-      }, 5000); // Reduced to 5 seconds for faster recovery
+      }
     } catch (error) {
       console.error('App initialization error:', error);
       /* listener setup failed, fallback */

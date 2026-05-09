@@ -1,9 +1,14 @@
-import { type Component, For, createSignal } from 'solid-js';
+import { type Component, For, createSignal, onMount } from 'solid-js';
 import { Card } from '@/components/foundation/Card';
 import { Button } from '@/components/foundation/Button';
 import { Select } from '@/components/foundation/Select';
 import { Switch } from '@/components/foundation/Switch';
 import type { ConnectionManagerProps } from './types';
+import {
+  trackerGetConfig,
+  trackerSetConfig,
+  type TrackerNetworkConfig,
+} from '@/services/network/onionShareService';
 import styles from './ConnectionManager.module.css';
 
 type ConfigProfile = 'balanced' | 'lowBandwidth' | 'highThroughput' | 'conservative';
@@ -15,9 +20,18 @@ interface MockUsageMetric {
   unit: string;
 }
 
+const TRACKER_PLACEHOLDER =
+  'http://….onion — do not add :8080 (POC hidden service is on Tor port 80)';
+
 export const ConnectionManager: Component<ConnectionManagerProps> = props => {
   const [profile, setProfile] = createSignal<ConfigProfile>('balanced');
   const [saveMessage, setSaveMessage] = createSignal('');
+
+  const [trackerUrl, setTrackerUrl] = createSignal('');
+  const [nodeId, setNodeId] = createSignal('');
+  const [sharePublicly, setSharePublicly] = createSignal(true);
+  const [trackerBusy, setTrackerBusy] = createSignal(false);
+  const [trackerToast, setTrackerToast] = createSignal('');
 
   const [downloadLimitMbps, setDownloadLimitMbps] = createSignal(24);
   const [uploadLimitMbps, setUploadLimitMbps] = createSignal(8);
@@ -94,8 +108,54 @@ export const ConnectionManager: Component<ConnectionManagerProps> = props => {
     }
   };
 
+  const loadTrackerConfig = async () => {
+    setTrackerBusy(true);
+    setTrackerToast('');
+    try {
+      const c = await trackerGetConfig();
+      setTrackerUrl(c.trackerUrl?.trim() ?? '');
+      setNodeId(c.nodeId ?? '');
+      setSharePublicly(c.sharePublicly ?? true);
+    } catch (e) {
+      setTrackerToast(String(e instanceof Error ? e.message : e));
+    } finally {
+      setTrackerBusy(false);
+    }
+  };
+
+  onMount(() => {
+    void loadTrackerConfig();
+  });
+
+  const saveTrackerConfig = async () => {
+    setTrackerBusy(true);
+    setTrackerToast('');
+    try {
+      const url = trackerUrl().trim();
+      if (!url) {
+        setTrackerToast('Tracker URL cannot be empty.');
+        return;
+      }
+      const cfg: TrackerNetworkConfig = {
+        trackerUrl: url,
+        nodeId: nodeId(),
+        sharePublicly: sharePublicly(),
+      };
+      await trackerSetConfig(cfg);
+      props.onConfigChange?.(cfg);
+      setTrackerToast(
+        'Tracker settings saved. Start onion sharing, then use Sharing & downloads or refresh lobby.'
+      );
+      window.setTimeout(() => setTrackerToast(''), 5000);
+    } catch (e) {
+      setTrackerToast(String(e instanceof Error ? e.message : e));
+    } finally {
+      setTrackerBusy(false);
+    }
+  };
+
   const saveMockConfig = () => {
-    setSaveMessage('Mock configuration saved locally (network backend is disabled).');
+    setSaveMessage('Mock configuration saved locally (preview only — not applied to transfers).');
     props.onStatusChange?.('started');
     window.setTimeout(() => setSaveMessage(''), 2600);
   };
@@ -106,12 +166,71 @@ export const ConnectionManager: Component<ConnectionManagerProps> = props => {
     <div class={`${styles.connectionManager} ${props.class || ''}`}>
       <Card class={styles.sectionCard}>
         <div class={styles.sectionHeader}>
-          <h3 class={styles.title}>Configuration Center</h3>
-          <span class={styles.badge}>Mock Mode</span>
+          <h3 class={styles.title}>Global tracker (Tor lobby)</h3>
+          <span class={`${styles.badge} ${styles.badgeLive}`}>Live</span>
         </div>
         <p class={styles.subtitle}>
-          Tune useful runtime limits and peer behavior now; these settings are mocked until the
-          networking layer is reintroduced.
+          Same role as POC-Tracker-Onion-Share Docker: announce files and fetch the public lobby.
+          Use <code class={styles.inlineCode}>http://…onion</code> only (no{' '}
+          <code class={styles.inlineCode}>:8080</code>) — the compose stack exposes the tracker on
+          Tor virtual port <strong>80</strong>, mapped to 8080 inside the container.
+        </p>
+        <label class={styles.fieldLabel}>
+          Tracker base URL
+          <textarea
+            class={styles.trackerUrlField}
+            rows={2}
+            placeholder={TRACKER_PLACEHOLDER}
+            value={trackerUrl()}
+            onInput={e => setTrackerUrl(e.currentTarget.value)}
+            spellcheck={false}
+            autocomplete="off"
+          />
+        </label>
+        <div class={styles.trackerMeta}>
+          <label class={styles.fieldLabelInline}>
+            Node ID (anonymous identity)
+            <input
+              class={styles.input}
+              type="text"
+              readonly
+              value={nodeId()}
+              title="Stored in onion-share config; delete config.json to regenerate if duplicated across PCs."
+            />
+          </label>
+          <Switch
+            checked={sharePublicly()}
+            onChange={setSharePublicly}
+            label="Announce shared files to lobby"
+          />
+        </div>
+        <div class={styles.actionBar}>
+          <Button
+            variant="outline"
+            disabled={trackerBusy()}
+            onClick={() => void loadTrackerConfig()}
+          >
+            Reload from disk
+          </Button>
+          <Button
+            variant="primary"
+            loading={trackerBusy()}
+            disabled={trackerBusy()}
+            onClick={() => void saveTrackerConfig()}
+          >
+            Save tracker settings
+          </Button>
+        </div>
+        {trackerToast() && <div class={styles.toast}>{trackerToast()}</div>}
+      </Card>
+
+      <Card class={styles.sectionCard}>
+        <div class={styles.sectionHeader}>
+          <h3 class={styles.title}>Configuration Center</h3>
+          <span class={styles.badge}>Simulation</span>
+        </div>
+        <p class={styles.subtitle}>
+          Preview-only limits for UI exploration; they are not yet wired to the onion chunk server.
         </p>
       </Card>
 

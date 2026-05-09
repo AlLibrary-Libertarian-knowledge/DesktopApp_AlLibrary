@@ -11,7 +11,10 @@ use crate::onion_share::server::routes;
 use crate::onion_share::tracker_proto::NetworkFile;
 
 pub fn build_http_client(base_url: &str, socks_addr: Option<String>) -> anyhow::Result<reqwest::Client> {
-    let mut builder = reqwest::Client::builder();
+    let mut builder = reqwest::Client::builder()
+        .connect_timeout(std::time::Duration::from_secs(90))
+        .timeout(std::time::Duration::from_secs(180))
+        .user_agent("AlLibrary-onion-share/0.1");
     if base_url.contains(".onion") {
         if let Some(socks) = socks_addr {
             builder = builder.proxy(reqwest::Proxy::all(format!("socks5h://{}", socks))?);

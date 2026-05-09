@@ -75,6 +75,72 @@
   box-shadow: 0 0 14px rgba(255, 102, 0, 0.25);
 }
 
+.badgeLive {
+  border-color: rgba(72, 220, 130, 0.55);
+  background: rgba(34, 160, 90, 0.28);
+  color: #c8ffd8;
+  box-shadow: 0 0 14px rgba(72, 220, 130, 0.25);
+}
+
+.inlineCode {
+  font-family: ui-monospace, monospace;
+  font-size: 0.85em;
+  padding: 0.1rem 0.35rem;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.28);
+  color: #ffe8cc;
+}
+
+.trackerUrlField {
+  width: 100%;
+  min-height: 52px;
+  resize: vertical;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 136, 0, 0.42);
+  background: rgba(28, 14, 6, 0.72);
+  color: #ffe8cc;
+  padding: 0.55rem 0.7rem;
+  font-family: ui-monospace, "Cascadia Mono", monospace;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.trackerUrlField::placeholder {
+  color: rgba(255, 198, 133, 0.45);
+  font-family: inherit;
+}
+
+.trackerMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-bottom: 0.75rem;
+}
+
+@media (min-width: 720px) {
+  .trackerMeta {
+    flex-direction: row;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 1rem 1.5rem;
+  }
+
+  .trackerMeta .fieldLabelInline {
+    flex: 1;
+    min-width: 220px;
+    margin-bottom: 0;
+  }
+}
+
+.fieldLabelInline {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  color: rgba(255, 203, 149, 0.92);
+  font-size: 0.9rem;
+  margin-bottom: 0;
+}
+
 .subtitle {
   margin: 0.55rem 0 0;
   color: rgba(255, 198, 133, 0.88);

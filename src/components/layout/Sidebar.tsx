@@ -32,7 +32,7 @@ import {
   Settings,
 } from 'lucide-solid';
 import './Sidebar.css';
-import { torAdapter } from '@/services/network/torAdapter';
+import { useNetworkPresenceResource } from '@/hooks/network/useNetworkPresence';
 
 interface NavItem {
   path: string;
@@ -57,13 +57,11 @@ interface SidebarProps {
 
 const Sidebar: Component<SidebarProps> = props => {
   const [activeSection, setActiveSection] = createSignal('');
-  const [isOnline] = createSignal(true);
+  const presence = useNetworkPresenceResource();
   const [isTransitioning, setIsTransitioning] = createSignal(false);
   const [wasCollapsed, setWasCollapsed] = createSignal(false);
   const [pendingSection, setPendingSection] = createSignal<string | null>(null);
   const location = useLocation();
-  const [torStatus] = createResource(async () => torAdapter.status());
-
   const navigationItems: NavSection[] = [
     {
       section: 'library',
@@ -293,12 +291,14 @@ const Sidebar: Component<SidebarProps> = props => {
         </Show>
 
         {/* Connection Status */}
-        <div class={`connection-status ${isOnline() ? 'online' : 'offline'}`}>
+        <div class={`connection-status ${presence()?.online ? 'online' : 'offline'}`}>
           <span class="connection-icon">
-            {isOnline() ? <Wifi size={14} /> : <WifiOff size={14} />}
+            {presence()?.online ? <Wifi size={14} /> : <WifiOff size={14} />}
           </span>
           <Show when={!props.collapsed}>
-            <span class="connection-text">{isOnline() ? 'Network Online' : 'Network Offline'}</span>
+            <span class="connection-text">
+              {presence()?.online ? 'Network Online' : 'Network Offline'}
+            </span>
             <div class="connection-indicator">
               <div class="signal-dot" />
               <div class="signal-dot" />
@@ -306,14 +306,10 @@ const Sidebar: Component<SidebarProps> = props => {
             </div>
             <div
               class="tor-status-pill"
-              title={
-                torStatus()?.circuitEstablished ? 'Onion routing active' : 'Onion routing inactive'
-              }
+              title={presence()?.onionActive ? 'Onion routing active' : 'Onion routing inactive'}
             >
-              <span class={`pill-dot ${torStatus()?.circuitEstablished ? 'on' : 'off'}`} />
-              <span class="pill-text">
-                {torStatus()?.circuitEstablished ? 'Onion' : 'No Onion'}
-              </span>
+              <span class={`pill-dot ${presence()?.onionActive ? 'on' : 'off'}`} />
+              <span class="pill-text">{presence()?.onionActive ? 'Onion' : 'No Onion'}</span>
             </div>
           </Show>
         </div>
