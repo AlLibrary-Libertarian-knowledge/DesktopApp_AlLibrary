@@ -1,3 +1,4 @@
+// Derived from onion-poc (MIT): POC-Tracker-Onion-Share/src/share.rs
 use std::fs::File;
 use std::path::PathBuf;
 

@@ -1,14 +1,16 @@
+//! Vendored onion-share / Tor transport core (derived from onion-poc, MIT).
+//! See NOTICE.md in this directory.
+
 pub mod config;
 pub mod crypto;
 pub mod fetch;
-pub mod http_routes;
 pub mod link;
-pub mod runtime;
+pub mod server;
 pub mod share;
-pub mod share_state;
-pub mod tracker;
+pub mod tor;
+pub mod tracker_client;
 pub mod tracker_proto;
+pub mod wizard;
 
-pub use config::TrackerNetworkConfig;
-pub use runtime::ShareHostHandle;
-pub use tracker::{AnnounceState, get_cached_lobby};
+pub use server::ShareServerHandle;
+pub use share::Share;

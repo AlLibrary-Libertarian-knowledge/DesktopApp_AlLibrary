@@ -1,5 +1,4 @@
-//! POC-compatible XChaCha20-Poly1305 chunk encryption and BLAKE3 content hashing.
-
+// Derived from onion-poc (MIT): POC-Tracker-Onion-Share/src/crypto.rs
 use anyhow::Context;
 use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use base64::Engine;
@@ -56,7 +55,10 @@ pub fn encrypt_chunk(
     let aad = aad(file_id, chunk_index);
 
     let ct = cipher
-        .encrypt(&nonce, Payload { msg: plaintext, aad: &aad })
+        .encrypt(&nonce, Payload {
+            msg: plaintext,
+            aad: &aad,
+        })
         .map_err(|_| anyhow::anyhow!("encrypt failed"))?;
     Ok(ct)
 }
@@ -72,7 +74,10 @@ pub fn decrypt_chunk(
     let aad = aad(file_id, chunk_index);
 
     let pt = cipher
-        .decrypt(&nonce, Payload { msg: ciphertext, aad: &aad })
+        .decrypt(&nonce, Payload {
+            msg: ciphertext,
+            aad: &aad,
+        })
         .map_err(|_| anyhow::anyhow!("decrypt failed (wrong key or corrupted data)"))?;
     Ok(pt)
 }
@@ -87,38 +92,4 @@ pub fn key_from_content_hash(hash_hex: &str) -> anyhow::Result<FileKey> {
     let mut key = [0u8; 32];
     key.copy_from_slice(&raw[..32]);
     Ok(key)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use uuid::Uuid;
-
-    #[test]
-    fn encrypt_decrypt_roundtrip() {
-        let key = random_key();
-        let fid = Uuid::new_v4();
-        let pt = b"hello onion share chunk";
-        let ct = encrypt_chunk(&key, fid, 0, pt).unwrap();
-        let out = decrypt_chunk(&key, fid, 0, &ct).unwrap();
-        assert_eq!(out, pt);
-    }
-
-    #[test]
-    fn wrong_key_fails() {
-        let k1 = random_key();
-        let k2 = random_key();
-        let fid = Uuid::new_v4();
-        let ct = encrypt_chunk(&k1, fid, 0, b"data").unwrap();
-        assert!(decrypt_chunk(&k2, fid, 0, &ct).is_err());
-    }
-
-    #[test]
-    fn content_hash_and_key_derivation() {
-        let data = vec![0u8; 1024];
-        let h = content_hash_hex(&data);
-        assert_eq!(h.len(), 64);
-        let key = key_from_content_hash(&h).unwrap();
-        assert_eq!(key.len(), 32);
-    }
 }

@@ -1,3 +1,4 @@
+// Derived from onion-poc (MIT): POC-Tracker-Onion-Share/src/server/state.rs
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
@@ -5,7 +6,7 @@ use std::time::{Duration, Instant};
 use tokio::sync::{watch, Mutex};
 use uuid::Uuid;
 
-use super::share::Share;
+use super::super::share::Share;
 
 #[derive(Default, Clone, Debug)]
 pub struct GlobalStats {
@@ -15,7 +16,7 @@ pub struct GlobalStats {
 }
 
 #[derive(Clone)]
-pub struct OnionShareHostState {
+pub struct AppState {
     pub shares: Arc<Mutex<HashMap<Uuid, Share>>>,
     sessions: Arc<Mutex<HashMap<Uuid, Instant>>>,
     pub ttl: Duration,
@@ -24,7 +25,7 @@ pub struct OnionShareHostState {
     pub online_rx: watch::Receiver<usize>,
 }
 
-impl OnionShareHostState {
+impl AppState {
     pub fn new() -> Self {
         let (online_tx, online_rx) = watch::channel(0usize);
         Self {

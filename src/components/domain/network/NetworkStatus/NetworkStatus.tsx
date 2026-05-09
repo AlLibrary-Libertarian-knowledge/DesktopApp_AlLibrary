@@ -362,52 +362,6 @@ export const NetworkStatus: Component<NetworkStatusProps> = props => {
             </div>
           </div>
         </Show>
-
-        {/* Anti-Censorship Status */}
-        <Show when={currentStatus()?.censorshipResistance}>
-          <div class={styles.censorshipSection}>
-            <h4 class={styles.sectionTitle}>Anti-Censorship Status</h4>
-            <div class={styles.censorshipInfo}>
-              <div class={styles.resistanceLevel}>
-                <span class={styles.label}>Resistance Level</span>
-                <Progress
-                  value={(currentStatus()?.censorshipResistance?.level || 0) * 100}
-                  class={styles.resistanceProgress}
-                />
-                <span class={styles.value}>
-                  {((currentStatus()?.censorshipResistance?.level || 0) * 100).toFixed(1)}%
-                </span>
-              </div>
-              <div class={styles.resistanceFeatures}>
-                <Badge
-                  variant={
-                    currentStatus()?.censorshipResistance?.torConnectivity ? 'success' : 'error'
-                  }
-                >
-                  TOR Connectivity
-                </Badge>
-                <Badge
-                  variant={
-                    currentStatus()?.censorshipResistance?.contentFilteringBypass
-                      ? 'success'
-                      : 'error'
-                  }
-                >
-                  Content Filtering Bypass
-                </Badge>
-                <Badge
-                  variant={
-                    currentStatus()?.censorshipResistance?.alternativeNarrativeSupport
-                      ? 'success'
-                      : 'error'
-                  }
-                >
-                  Alternative Narratives
-                </Badge>
-              </div>
-            </div>
-          </div>
-        </Show>
       </div>
     </Card>
   );

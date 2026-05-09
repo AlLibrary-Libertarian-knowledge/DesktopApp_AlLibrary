@@ -28,7 +28,7 @@ Matrix from `node scripts/hooks/changed-files.cjs --format=run` (override with `
 | Tier  | Typical contents                                                                                                                                                                                       |
 | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **1** | `pnpm run quality:ci` (lint + `tsc` + `vitest run`); optional `pnpm run test:coverage` when `src/` is in scope                                                                                         |
-| **2** | `pnpm audit --audit-level=high`; `pnpm run verify:cultural` when docs/progress/cultural paths change                                                                                                   |
+| **2** | `pnpm audit --audit-level=high` when dependency / source / Rust paths trigger audit scope (`scripts/hooks/changed-files.cjs`)                                                                 |
 | **3** | Playwright: **Windows** → `pnpm run test:e2e:windows`; **Linux/macOS** → `pnpm exec playwright test --project=chromium`; **build** → `pnpm run build:frontend` (use full Tauri build only when needed) |
 
 Set **`HUSKY_TAURI_BUILD=1`** to run `pnpm run build` (full Tauri) instead of Vite-only `build:frontend` in Tier 3.

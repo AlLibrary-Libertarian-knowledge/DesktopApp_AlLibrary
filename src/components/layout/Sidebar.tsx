@@ -23,25 +23,24 @@ import {
   TrendingUp,
   Sparkles,
   Users,
-  RefreshCw,
-  Download,
-  RotateCcw,
+  ArrowLeftRight,
   ChevronDown,
   HardDrive,
   Wifi,
   WifiOff,
   Activity,
-  SearchX,
   Settings,
 } from 'lucide-solid';
 import './Sidebar.css';
-import { torAdapter } from '@/services/network/torAdapter';
+import { useNetworkPresenceResource } from '@/hooks/network/useNetworkPresence';
 
 interface NavItem {
   path: string;
   label: string;
   icon: Component<{ size: number }>;
   badge?: string;
+  /** Sidebar highlight when pathname matches these (e.g. legacy routes aliased to one screen) */
+  alsoMatch?: readonly string[];
 }
 
 interface NavSection {
@@ -58,13 +57,11 @@ interface SidebarProps {
 
 const Sidebar: Component<SidebarProps> = props => {
   const [activeSection, setActiveSection] = createSignal('');
-  const [isOnline] = createSignal(true);
+  const presence = useNetworkPresenceResource();
   const [isTransitioning, setIsTransitioning] = createSignal(false);
   const [wasCollapsed, setWasCollapsed] = createSignal(false);
   const [pendingSection, setPendingSection] = createSignal<string | null>(null);
   const location = useLocation();
-  const [torStatus] = createResource(async () => torAdapter.status());
-
   const navigationItems: NavSection[] = [
     {
       section: 'library',
@@ -94,14 +91,15 @@ const Sidebar: Component<SidebarProps> = props => {
       title: 'P2P Network',
       icon: Globe,
       items: [
-        { path: '/p2p-overview', label: 'P2P Overview', icon: Globe },
         { path: '/peers', label: 'Peer Network', icon: Users, badge: '8' },
         { path: '/network-health', label: 'Network Health', icon: Activity },
-        { path: '/p2p-search', label: 'P2P Search', icon: SearchX },
-        { path: '/connection-manager', label: 'Connections', icon: Settings },
-        { path: '/sharing', label: 'Sharing Status', icon: RefreshCw },
-        { path: '/downloads', label: 'Downloads', icon: Download, badge: '3' },
-        { path: '/sync', label: 'Synchronization', icon: RotateCcw },
+        {
+          path: '/transfers',
+          label: 'Sharing & downloads',
+          icon: ArrowLeftRight,
+          alsoMatch: ['/sharing', '/downloads'],
+        },
+        { path: '/connection-manager', label: 'Configurations', icon: Settings },
       ],
     },
   ];
@@ -111,7 +109,7 @@ const Sidebar: Component<SidebarProps> = props => {
     const currentPath = location.pathname;
     for (const section of navigationItems) {
       for (const item of section.items) {
-        if (item.path === currentPath) {
+        if (item.path === currentPath || item.alsoMatch?.includes(currentPath)) {
           return section.section;
         }
       }
@@ -232,8 +230,14 @@ const Sidebar: Component<SidebarProps> = props => {
                   {item => (
                     <A
                       href={item.path}
-                      class="nav-item"
-                      activeClass="active"
+                      classList={{
+                        'nav-item': true,
+                        active:
+                          item.path === '/'
+                            ? location.pathname === '/'
+                            : location.pathname === item.path ||
+                              Boolean(item.alsoMatch?.includes(location.pathname)),
+                      }}
                       end={item.path === '/'}
                     >
                       <span class="nav-icon">
@@ -287,12 +291,14 @@ const Sidebar: Component<SidebarProps> = props => {
         </Show>
 
         {/* Connection Status */}
-        <div class={`connection-status ${isOnline() ? 'online' : 'offline'}`}>
+        <div class={`connection-status ${presence()?.online ? 'online' : 'offline'}`}>
           <span class="connection-icon">
-            {isOnline() ? <Wifi size={14} /> : <WifiOff size={14} />}
+            {presence()?.online ? <Wifi size={14} /> : <WifiOff size={14} />}
           </span>
           <Show when={!props.collapsed}>
-            <span class="connection-text">{isOnline() ? 'Network Online' : 'Network Offline'}</span>
+            <span class="connection-text">
+              {presence()?.online ? 'Network Online' : 'Network Offline'}
+            </span>
             <div class="connection-indicator">
               <div class="signal-dot" />
               <div class="signal-dot" />
@@ -300,14 +306,10 @@ const Sidebar: Component<SidebarProps> = props => {
             </div>
             <div
               class="tor-status-pill"
-              title={
-                torStatus()?.circuitEstablished ? 'Onion routing active' : 'Onion routing inactive'
-              }
+              title={presence()?.onionActive ? 'Onion routing active' : 'Onion routing inactive'}
             >
-              <span class={`pill-dot ${torStatus()?.circuitEstablished ? 'on' : 'off'}`} />
-              <span class="pill-text">
-                {torStatus()?.circuitEstablished ? 'Onion' : 'No Onion'}
-              </span>
+              <span class={`pill-dot ${presence()?.onionActive ? 'on' : 'off'}`} />
+              <span class="pill-text">{presence()?.onionActive ? 'Onion' : 'No Onion'}</span>
             </div>
           </Show>
         </div>

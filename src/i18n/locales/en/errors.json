@@ -4,5 +4,9 @@
   "uploadFailed": "Upload failed",
   "searchFailed": "Search failed",
   "accessDenied": "Access denied",
-  "validationFailed": "Validation failed"
+  "validationFailed": "Validation failed",
+  "notFoundTitle": "Page Not Found",
+  "notFoundDescription": "This route is not available in the current app shell. You can return to the dashboard or continue browsing from the sidebar.",
+  "notFoundReturnHome": "Return to Home",
+  "notFoundGoBack": "Go Back"
 }

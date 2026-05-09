@@ -2,7 +2,7 @@
  * NetworkHealthDashboard Component Exports
  *
  * Comprehensive P2P network health monitoring dashboard
- * with cultural awareness and anti-censorship capabilities.
+ * with cultural awareness.
  */
 
 export { NetworkHealthDashboard } from './NetworkHealthDashboard';
@@ -11,8 +11,6 @@ export type {
   NetworkHealthMetrics,
   NetworkPerformanceHistory,
   NetworkIssue,
-  CulturalNetworkStatus,
-  AntiCensorshipStatus,
   DashboardConfig,
   DashboardState,
   ChartDataPoint,

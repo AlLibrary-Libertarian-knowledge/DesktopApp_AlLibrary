@@ -1,3 +1,4 @@
+// Derived from onion-poc (MIT): POC-Tracker-Onion-Share/src/server/routes.rs
 use axum::{
     extract::{Path, State},
     http::{HeaderMap, StatusCode},
@@ -9,9 +10,9 @@ use bytes::Bytes;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use super::share_state::OnionShareHostState;
+use super::state::AppState;
 
-pub fn router(state: OnionShareHostState) -> Router {
+pub fn router(state: AppState) -> Router {
     Router::new()
         .route("/s/:id/manifest", get(manifest))
         .route("/s/:id/chunk/:idx", get(chunk))
@@ -57,7 +58,7 @@ pub struct PresenceResponse {
     pub online: usize,
 }
 
-async fn list_files(State(state): State<OnionShareHostState>) -> Json<Vec<FileEntry>> {
+async fn list_files(State(state): State<AppState>) -> Json<Vec<FileEntry>> {
     let shares = state.shares.lock().await;
     let entries = shares
         .values()
@@ -74,7 +75,7 @@ async fn list_files(State(state): State<OnionShareHostState>) -> Json<Vec<FileEn
 }
 
 async fn manifest(
-    State(state): State<OnionShareHostState>,
+    State(state): State<AppState>,
     Path(id): Path<Uuid>,
 ) -> Result<Json<Manifest>, StatusCode> {
     let share = {
@@ -92,7 +93,7 @@ async fn manifest(
 }
 
 async fn chunk(
-    State(state): State<OnionShareHostState>,
+    State(state): State<AppState>,
     Path((id, idx)): Path<(Uuid, u64)>,
 ) -> Result<Response, StatusCode> {
     let share = {
@@ -107,21 +108,20 @@ async fn chunk(
         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
     let bytes_len = ct.len() as u64;
-    let state2 = state.clone();
     tokio::spawn(async move {
-        state2.record_bytes(bytes_len).await;
+        state.record_bytes(bytes_len).await;
     });
 
     let mut headers = HeaderMap::new();
     headers.insert(
         "Content-Type",
-        "application/octet-stream".parse().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?,
+        "application/octet-stream".parse().unwrap(),
     );
     Ok((headers, Bytes::from(ct)).into_response())
 }
 
 async fn register(
-    State(state): State<OnionShareHostState>,
+    State(state): State<AppState>,
     Path(id): Path<Uuid>,
 ) -> Result<Json<RegisterResponse>, StatusCode> {
     {
@@ -135,7 +135,7 @@ async fn register(
 }
 
 async fn ping(
-    State(state): State<OnionShareHostState>,
+    State(state): State<AppState>,
     Path(_id): Path<Uuid>,
     Json(req): Json<PingRequest>,
 ) -> StatusCode {
@@ -144,7 +144,7 @@ async fn ping(
 }
 
 async fn presence(
-    State(state): State<OnionShareHostState>,
+    State(state): State<AppState>,
     Path(_id): Path<Uuid>,
 ) -> Json<PresenceResponse> {
     let online = state.online_count().await;

@@ -162,14 +162,14 @@ _Date: January 2025_
 - Local search performance test added: `src/services/__tests__/searchService.performance.test.ts`.
 - CI prep:
   - Coverage thresholds configured in `vitest.config.ts` (80%).
-  - `package.json` scripts: `test:ci`, `typecheck:ci`, `verify:cultural`.
-  - Cultural info-only verifier: `scripts/verify-cultural-info-only.js`.
+  - `package.json` scripts: `test:ci`, `typecheck:ci`.
+  - Cultural info-only policy test remains in the suite; pre-push Tier 2 is security audit only.
 
 ### Outcome
 - All tests passing locally post-fixes; Phase 2 initial KPIs met.
 
 ### Next
-- Wire CI to run `npm run typecheck:ci && npm run lint && npm run test:ci && npm run verify:cultural`.
+- Wire CI to run `npm run typecheck:ci && npm run lint && npm run test:ci` (full `vitest run` includes `culturalInfoPolicy` if present).
 
 ---
 

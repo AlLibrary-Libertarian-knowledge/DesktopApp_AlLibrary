@@ -1,8 +1,7 @@
 /**
  * NetworkHealthDashboard Component Types
  *
- * Comprehensive types for P2P network health monitoring dashboard
- * with cultural network awareness and anti-censorship metrics.
+ * Types for the P2P network health dashboard.
  */
 
 import type { Component } from 'solid-js';
@@ -37,18 +36,6 @@ export interface NetworkHealthMetrics {
     available: number;
     total: number;
   };
-
-  // Cultural Network Health
-  culturalCommunities: number;
-  culturalContentShared: number;
-  educationalResourcesAvailable: number;
-  communityParticipation: number;
-
-  // Anti-Censorship Metrics
-  torConnectionActive: boolean;
-  alternativeRoutesAvailable: number;
-  censorshipAttempts: number;
-  informationIntegrityScore: number;
 }
 
 /**
@@ -61,7 +48,6 @@ export interface NetworkPerformanceHistory {
     latency: number;
     bandwidth: number;
     stability: number;
-    culturalActivity: number;
   };
 }
 
@@ -80,72 +66,14 @@ export interface NetworkIssue {
 }
 
 /**
- * Cultural Network Status
- */
-export interface CulturalNetworkStatus {
-  activeCommunities: {
-    id: string;
-    name: string;
-    memberCount: number;
-    culturalContext: {
-      origin: string;
-      sensitivityLevel: number;
-      educationalContext?: string;
-    };
-    activity: 'high' | 'medium' | 'low';
-  }[];
-
-  educationalExchanges: {
-    contentShared: number;
-    knowledgeTransferred: number;
-    culturalBridging: number;
-  };
-
-  sovereigntyMetrics: {
-    communityControlled: number;
-    decentralizedGovernance: number;
-    informationFreedom: number;
-  };
-}
-
-/**
- * Anti-Censorship Status
- */
-export interface AntiCensorshipStatus {
-  torIntegration: {
-    active: boolean;
-    hiddenServiceAvailable: boolean;
-    circuitCount: number;
-    anonymityLevel: 'low' | 'medium' | 'high';
-  };
-
-  censorshipResistance: {
-    alternativeRoutes: number;
-    contentMirroring: number;
-    distributedBackups: number;
-    integrityVerification: boolean;
-  };
-
-  informationFreedom: {
-    accessibleContent: number;
-    blockedAttempts: number;
-    educationalContext: number;
-    multiplePerspectives: number;
-  };
-}
-
-/**
  * Dashboard Configuration
  */
 export interface DashboardConfig {
   refreshInterval: number;
-  showCulturalMetrics: boolean;
-  showAntiCensorshipMetrics: boolean;
   alertThresholds: {
     minPeers: number;
     maxLatency: number;
     minStability: number;
-    maxCensorshipAttempts: number;
   };
   displayPreferences: {
     chartType: 'line' | 'bar' | 'area';
@@ -162,12 +90,8 @@ export interface NetworkHealthDashboardProps {
   config?: Partial<DashboardConfig>;
   onMetricsUpdate?: (metrics: NetworkHealthMetrics) => void;
   onIssueDetected?: (issue: NetworkIssue) => void;
-  onCulturalActivityChange?: (activity: CulturalNetworkStatus) => void;
-  onCensorshipAttempt?: (attempt: AntiCensorshipStatus) => void;
   showDetailedMetrics?: boolean;
   enableRealTimeUpdates?: boolean;
-  culturalContextEnabled?: boolean;
-  antiCensorshipMonitoring?: boolean;
 }
 
 /**
@@ -177,8 +101,6 @@ export interface DashboardState {
   metrics: NetworkHealthMetrics | null;
   history: NetworkPerformanceHistory[];
   issues: NetworkIssue[];
-  culturalStatus: CulturalNetworkStatus | null;
-  antiCensorshipStatus: AntiCensorshipStatus | null;
   isLoading: boolean;
   lastUpdate: number;
   connectionStatus: 'connected' | 'connecting' | 'disconnected' | 'error';

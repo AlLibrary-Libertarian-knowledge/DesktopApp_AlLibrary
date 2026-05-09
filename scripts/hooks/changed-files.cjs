@@ -57,10 +57,6 @@ const AFFECTS_CONFIG = matchesAny(
 const AFFECTS_AUDIT =
   matchesAny(/^package\.json$/) || matchesAny(/^pnpm-lock\.yaml$/) || AFFECTS_SRC || AFFECTS_RUST;
 
-const AFFECTS_CULTURAL = matchesAny(
-  /^(docs\/|progress\/|COMPREHENSIVE_PROJECT_ANALYSIS\.md|scripts\/verify-cultural)/
-);
-
 const AFFECTS_BUILD = AFFECTS_SRC || AFFECTS_CONFIG || AFFECTS_RUST;
 
 const CONFIG_ONLY =
@@ -97,7 +93,6 @@ const flags = {
   AFFECTS_E2E,
   AFFECTS_CONFIG,
   AFFECTS_AUDIT,
-  AFFECTS_CULTURAL,
   AFFECTS_BUILD,
   CONFIG_ONLY,
   IMPACT_LEVEL: impact,
@@ -113,26 +108,24 @@ if (process.argv.includes('--format=compact')) {
   const n = b => (b ? 1 : 0);
   const forceFull = process.env.HUSKY_FULL === '1' || process.env.HUSKY_FULL === 'true';
 
-  let t1_quality, t1_coverage, t2_audit, t2_cultural, t3_e2e, t3_build, t3_budget, t3_lh, scope;
+  let t1_quality, t1_coverage, t2_audit, t3_e2e, t3_build, t3_budget, t3_lh, scope;
 
   if (forceFull) {
     t1_quality = 1;
     t1_coverage = 1;
     t2_audit = 1;
-    t2_cultural = 1;
     t3_e2e = 1;
     t3_build = 1;
     t3_budget = 0;
     t3_lh = 0;
     scope = 5;
   } else if (DOCS_ONLY) {
-    t1_quality = t1_coverage = t2_audit = t2_cultural = t3_e2e = t3_build = t3_budget = t3_lh = 0;
+    t1_quality = t1_coverage = t2_audit = t3_e2e = t3_build = t3_budget = t3_lh = 0;
     scope = 1;
   } else if (TESTS_TREE_ONLY && !matchesAny(/^src\//)) {
     t1_quality = 1;
     t1_coverage = 0;
     t2_audit = 0;
-    t2_cultural = 0;
     t3_e2e = 1;
     t3_build = 0;
     t3_budget = 0;
@@ -142,7 +135,6 @@ if (process.argv.includes('--format=compact')) {
     t1_quality = 1;
     t1_coverage = 0;
     t2_audit = n(AFFECTS_AUDIT);
-    t2_cultural = 0;
     t3_e2e = 0;
     t3_build = 1;
     t3_budget = 0;
@@ -152,7 +144,6 @@ if (process.argv.includes('--format=compact')) {
     t1_quality = 1;
     t1_coverage = n(AFFECTS_SRC);
     t2_audit = n(AFFECTS_AUDIT);
-    t2_cultural = n(AFFECTS_CULTURAL);
     t3_e2e = AFFECTS_E2E ? 1 : AFFECTS_SRC ? 1 : 0;
     t3_build = n(AFFECTS_BUILD);
     t3_budget = 0;
@@ -161,7 +152,7 @@ if (process.argv.includes('--format=compact')) {
   }
 
   process.stdout.write(
-    `${t1_quality} ${t1_coverage} ${t2_audit} ${t2_cultural} ${t3_e2e} ${t3_build} ${t3_budget} ${t3_lh} ${scope}\n`
+    `${t1_quality} ${t1_coverage} ${t2_audit} ${t3_e2e} ${t3_build} ${t3_budget} ${t3_lh} ${scope}\n`
   );
 } else {
   Object.entries(flags).forEach(([k, v]) => {

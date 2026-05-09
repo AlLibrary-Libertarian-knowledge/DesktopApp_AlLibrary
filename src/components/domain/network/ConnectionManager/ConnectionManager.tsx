@@ -1,447 +1,445 @@
-/**
- * ConnectionManager Component - P2P Network Connection Management
- *
- * Provides controls for managing P2P network connections, including peer discovery,
- * connection settings, and network configuration with cultural awareness.
- *
- * ANTI-CENSORSHIP PRINCIPLES:
- * - Enables decentralized connections without central authority
- * - Supports anonymous TOR connections for privacy
- * - Allows cultural network participation without restrictions
- * - Provides educational context for cultural protocols
- */
-
-import { type Component, createSignal, createResource, onMount, Show, For } from 'solid-js';
+import { type Component, For, createSignal, onMount } from 'solid-js';
 import { Card } from '@/components/foundation/Card';
 import { Button } from '@/components/foundation/Button';
-import { Badge } from '@/components/foundation/Badge';
-import { Switch } from '@/components/foundation/Switch';
-import { Modal } from '@/components/foundation/Modal';
-import { Input } from '@/components/foundation/Input';
 import { Select } from '@/components/foundation/Select';
-import { p2pNetworkService } from '@/services/network/p2pNetworkService';
-import { torService } from '@/services/network/torService';
-import { PeerCard } from '../PeerCard';
-import type { Peer, NetworkConfig } from '@/types/Network';
+import { Switch } from '@/components/foundation/Switch';
 import type { ConnectionManagerProps } from './types';
+import {
+  trackerGetConfig,
+  trackerSetConfig,
+  type TrackerNetworkConfig,
+} from '@/services/network/onionShareService';
 import styles from './ConnectionManager.module.css';
 
-/**
- * ConnectionManager Component
- *
- * Comprehensive P2P network connection management with cultural awareness
- */
+type ConfigProfile = 'balanced' | 'lowBandwidth' | 'highThroughput' | 'conservative';
+
+interface MockUsageMetric {
+  label: string;
+  current: number;
+  max: number;
+  unit: string;
+}
+
+const TRACKER_PLACEHOLDER =
+  'http://….onion — do not add :8080 (POC hidden service is on Tor port 80)';
+
 export const ConnectionManager: Component<ConnectionManagerProps> = props => {
-  const [isConfigModalOpen, setIsConfigModalOpen] = createSignal(false);
-  const [isAddPeerModalOpen, setIsAddPeerModalOpen] = createSignal(false);
-  const [newPeerAddress, setNewPeerAddress] = createSignal('');
-  const [selectedProtocol, setSelectedProtocol] = createSignal('tcp');
-  const [discoveredPeers, setDiscoveredPeers] = createSignal<Peer[]>([]);
+  const [profile, setProfile] = createSignal<ConfigProfile>('balanced');
+  const [saveMessage, setSaveMessage] = createSignal('');
 
-  // Network configuration resource
-  const [networkConfig, { refetch: refetchConfig }] = createResource(
-    async (): Promise<NetworkConfig> => {
-      try {
-        const status = await p2pNetworkService.getNodeStatus();
-        return {
-          name: 'AlLibrary Node',
-          torSupport: Boolean(status.torStatus),
-          ipfsEnabled: Boolean(status.ipfsStatus),
-          maxConnections: 100,
-          ports: { p2p: 4001, http: 8080, tor: 9050 },
-          enableCulturalFiltering: false,
-          enableContentBlocking: false,
-          educationalMode: true,
-          communityInformationOnly: true,
-          resistCensorship: true,
-          preserveAlternatives: true,
-          communityNetworks: status.activeCommunityNetworks || [],
-          contentSharing: {
-            autoShare: true,
-            shareCulturalContext: true,
-            supportMultiplePerspectives: true,
-            enableEducationalSharing: true,
-            maxContentSize: 1024 * 1024 * 1024,
-            allowedContentTypes: ['pdf', 'epub', 'txt', 'json'],
-          },
-          security: {
-            encryption: true,
-            encryptionAlgorithm: 'xchacha20poly1305',
-            verifyContent: true,
-            verifyPeers: true,
-            keyRotationInterval: 24,
-          },
-        };
-      } catch (error) {
-        console.error('Failed to fetch network config:', error);
-        throw error;
-      }
+  const [trackerUrl, setTrackerUrl] = createSignal('');
+  const [nodeId, setNodeId] = createSignal('');
+  const [sharePublicly, setSharePublicly] = createSignal(true);
+  const [trackerBusy, setTrackerBusy] = createSignal(false);
+  const [trackerToast, setTrackerToast] = createSignal('');
+
+  const [downloadLimitMbps, setDownloadLimitMbps] = createSignal(24);
+  const [uploadLimitMbps, setUploadLimitMbps] = createSignal(8);
+  const [globalSpeedCapMbps, setGlobalSpeedCapMbps] = createSignal(40);
+
+  const [ramBudgetMb, setRamBudgetMb] = createSignal(1024);
+  const [cacheBudgetMb, setCacheBudgetMb] = createSignal(512);
+  const [autoThrottle, setAutoThrottle] = createSignal(true);
+
+  const [maxPeers, setMaxPeers] = createSignal(32);
+  const [minPeers, setMinPeers] = createSignal(6);
+  const [peerDiscoveryIntervalSec, setPeerDiscoveryIntervalSec] = createSignal(30);
+  const [connectTimeoutSec, setConnectTimeoutSec] = createSignal(10);
+  const [retryPolicy, setRetryPolicy] = createSignal('exponential');
+
+  const usageMetrics = (): MockUsageMetric[] => [
+    { label: 'RAM usage', current: 612, max: ramBudgetMb(), unit: 'MB' },
+    { label: 'Cache usage', current: 308, max: cacheBudgetMb(), unit: 'MB' },
+    { label: 'Download throughput', current: 12, max: downloadLimitMbps(), unit: 'Mbps' },
+    { label: 'Upload throughput', current: 3, max: uploadLimitMbps(), unit: 'Mbps' },
+    { label: 'Connected peers', current: 9, max: maxPeers(), unit: '' },
+  ];
+
+  const applyProfile = (next: ConfigProfile) => {
+    setProfile(next);
+    if (next === 'balanced') {
+      setDownloadLimitMbps(24);
+      setUploadLimitMbps(8);
+      setGlobalSpeedCapMbps(40);
+      setRamBudgetMb(1024);
+      setCacheBudgetMb(512);
+      setMaxPeers(32);
+      setMinPeers(6);
+      setPeerDiscoveryIntervalSec(30);
+      setConnectTimeoutSec(10);
+      setRetryPolicy('exponential');
+      setAutoThrottle(true);
+    } else if (next === 'lowBandwidth') {
+      setDownloadLimitMbps(8);
+      setUploadLimitMbps(3);
+      setGlobalSpeedCapMbps(12);
+      setRamBudgetMb(768);
+      setCacheBudgetMb(256);
+      setMaxPeers(12);
+      setMinPeers(3);
+      setPeerDiscoveryIntervalSec(45);
+      setConnectTimeoutSec(12);
+      setRetryPolicy('linear');
+      setAutoThrottle(true);
+    } else if (next === 'highThroughput') {
+      setDownloadLimitMbps(80);
+      setUploadLimitMbps(40);
+      setGlobalSpeedCapMbps(120);
+      setRamBudgetMb(2048);
+      setCacheBudgetMb(1024);
+      setMaxPeers(64);
+      setMinPeers(10);
+      setPeerDiscoveryIntervalSec(20);
+      setConnectTimeoutSec(8);
+      setRetryPolicy('exponential');
+      setAutoThrottle(false);
+    } else {
+      setDownloadLimitMbps(12);
+      setUploadLimitMbps(4);
+      setGlobalSpeedCapMbps(18);
+      setRamBudgetMb(896);
+      setCacheBudgetMb(384);
+      setMaxPeers(16);
+      setMinPeers(4);
+      setPeerDiscoveryIntervalSec(40);
+      setConnectTimeoutSec(10);
+      setRetryPolicy('fixed');
+      setAutoThrottle(true);
     }
-  );
+  };
 
-  // Available peers resource
-  const [availablePeers, { refetch: refetchPeers }] = createResource(async (): Promise<Peer[]> => {
+  const loadTrackerConfig = async () => {
+    setTrackerBusy(true);
+    setTrackerToast('');
     try {
-      return discoveredPeers();
-    } catch (error) {
-      console.error('Failed to fetch available peers:', error);
-      return [];
+      const c = await trackerGetConfig();
+      setTrackerUrl(c.trackerUrl?.trim() ?? '');
+      setNodeId(c.nodeId ?? '');
+      setSharePublicly(c.sharePublicly ?? true);
+    } catch (e) {
+      setTrackerToast(String(e instanceof Error ? e.message : e));
+    } finally {
+      setTrackerBusy(false);
     }
+  };
+
+  onMount(() => {
+    void loadTrackerConfig();
   });
 
-  // Connected peers resource
-  const [connectedPeers, { refetch: refetchConnected }] = createResource(
-    async (): Promise<Peer[]> => {
-      try {
-        return await p2pNetworkService.getConnectedPeers();
-      } catch (error) {
-        console.error('Failed to fetch connected peers:', error);
-        return [];
+  const saveTrackerConfig = async () => {
+    setTrackerBusy(true);
+    setTrackerToast('');
+    try {
+      const url = trackerUrl().trim();
+      if (!url) {
+        setTrackerToast('Tracker URL cannot be empty.');
+        return;
       }
-    }
-  );
-
-  // TOR status
-  const [torEnabled, setTorEnabled] = createSignal(false);
-
-  onMount(async () => {
-    try {
-      const torStatus = await torService.getTorStatus();
-      setTorEnabled(Boolean(torStatus.circuitEstablished));
-    } catch (error) {
-      console.error('Failed to get TOR status:', error);
-    }
-  });
-
-  // Connection management functions
-  const handleStartNetwork = async () => {
-    try {
-      await p2pNetworkService.startNode();
-      refetchConfig();
-      refetchPeers();
-      refetchConnected();
-      if (props.onStatusChange) {
-        props.onStatusChange('started');
-      }
-    } catch (error) {
-      console.error('Failed to start network:', error);
+      const cfg: TrackerNetworkConfig = {
+        trackerUrl: url,
+        nodeId: nodeId(),
+        sharePublicly: sharePublicly(),
+      };
+      await trackerSetConfig(cfg);
+      props.onConfigChange?.(cfg);
+      setTrackerToast(
+        'Tracker settings saved. Start onion sharing, then use Sharing & downloads or refresh lobby.'
+      );
+      window.setTimeout(() => setTrackerToast(''), 5000);
+    } catch (e) {
+      setTrackerToast(String(e instanceof Error ? e.message : e));
+    } finally {
+      setTrackerBusy(false);
     }
   };
 
-  const handleStopNetwork = async () => {
-    try {
-      await p2pNetworkService.stopNode();
-      refetchConfig();
-      refetchPeers();
-      refetchConnected();
-      if (props.onStatusChange) {
-        props.onStatusChange('stopped');
-      }
-    } catch (error) {
-      console.error('Failed to stop network:', error);
-    }
+  const saveMockConfig = () => {
+    setSaveMessage('Mock configuration saved locally (preview only — not applied to transfers).');
+    props.onStatusChange?.('started');
+    window.setTimeout(() => setSaveMessage(''), 2600);
   };
 
-  const handleConnectToPeer = async (peerId: string) => {
-    try {
-      await p2pNetworkService.connectToPeer(peerId);
-      refetchConnected();
-      refetchPeers();
-      if (props.onPeerConnect) {
-        props.onPeerConnect(peerId);
-      }
-    } catch (error) {
-      console.error('Failed to connect to peer:', error);
-    }
-  };
-
-  const handleDisconnectFromPeer = async (peerId: string) => {
-    try {
-      await p2pNetworkService.disconnectFromPeer(peerId);
-      refetchConnected();
-      refetchPeers();
-      if (props.onPeerDisconnect) {
-        props.onPeerDisconnect(peerId);
-      }
-    } catch (error) {
-      console.error('Failed to disconnect from peer:', error);
-    }
-  };
-
-  const handleDiscoverPeers = async () => {
-    try {
-      const peers = await p2pNetworkService.discoverPeers({
-        includeTorPeers: torEnabled(),
-        includeHiddenServices: torEnabled(),
-        enableEducationalSharing: true,
-        supportAlternativeNarratives: true,
-      });
-      setDiscoveredPeers(peers);
-      refetchPeers();
-    } catch (error) {
-      console.error('Failed to discover peers:', error);
-    }
-  };
-
-  const handleToggleTor = async (enabled: boolean) => {
-    try {
-      if (enabled) {
-        await torService.startTor();
-      } else {
-        await torService.stopTor();
-      }
-      setTorEnabled(enabled);
-      refetchConfig();
-    } catch (error) {
-      console.error('Failed to toggle TOR:', error);
-    }
-  };
-
-  const handleAddPeer = async () => {
-    const address = newPeerAddress().trim();
-    if (!address) return;
-
-    try {
-      void selectedProtocol();
-      await p2pNetworkService.connectToPeer(address);
-      setNewPeerAddress('');
-      setIsAddPeerModalOpen(false);
-      refetchPeers();
-    } catch (error) {
-      console.error('Failed to add peer:', error);
-    }
-  };
-
-  const isNetworkActive = () => {
-    return (connectedPeers()?.length || 0) > 0 || networkConfig()?.torSupport === true;
-  };
+  const resetConfig = () => applyProfile('balanced');
 
   return (
     <div class={`${styles.connectionManager} ${props.class || ''}`}>
-      {/* Network Control Header */}
-      <Card class={styles.controlHeader}>
-        <div class={styles.headerContent}>
-          <div class={styles.networkStatus}>
-            <h3 class={styles.title}>P2P Network Control</h3>
-            <Badge variant={isNetworkActive() ? 'success' : 'error'} class={styles.statusBadge}>
-              {isNetworkActive() ? 'Active' : 'Inactive'}
-            </Badge>
-          </div>
-          <div class={styles.controls}>
-            <Show when={!isNetworkActive()}>
-              <Button onClick={handleStartNetwork} variant="primary">
-                Start Network
-              </Button>
-            </Show>
-            <Show when={isNetworkActive()}>
-              <Button onClick={handleStopNetwork} variant="secondary">
-                Stop Network
-              </Button>
-            </Show>
-            <Button onClick={handleDiscoverPeers} variant="outline">
-              Discover Peers
-            </Button>
-            <Button onClick={() => setIsConfigModalOpen(true)} variant="outline">
-              Settings
-            </Button>
-          </div>
+      <Card class={styles.sectionCard}>
+        <div class={styles.sectionHeader}>
+          <h3 class={styles.title}>Global tracker (Tor lobby)</h3>
+          <span class={`${styles.badge} ${styles.badgeLive}`}>Live</span>
+        </div>
+        <p class={styles.subtitle}>
+          Same role as POC-Tracker-Onion-Share Docker: announce files and fetch the public lobby.
+          Use <code class={styles.inlineCode}>http://…onion</code> only (no{' '}
+          <code class={styles.inlineCode}>:8080</code>) — the compose stack exposes the tracker on
+          Tor virtual port <strong>80</strong>, mapped to 8080 inside the container.
+        </p>
+        <label class={styles.fieldLabel}>
+          Tracker base URL
+          <textarea
+            class={styles.trackerUrlField}
+            rows={2}
+            placeholder={TRACKER_PLACEHOLDER}
+            value={trackerUrl()}
+            onInput={e => setTrackerUrl(e.currentTarget.value)}
+            spellcheck={false}
+            autocomplete="off"
+          />
+        </label>
+        <div class={styles.trackerMeta}>
+          <label class={styles.fieldLabelInline}>
+            Node ID (anonymous identity)
+            <input
+              class={styles.input}
+              type="text"
+              readonly
+              value={nodeId()}
+              title="Stored in onion-share config; delete config.json to regenerate if duplicated across PCs."
+            />
+          </label>
+          <Switch
+            checked={sharePublicly()}
+            onChange={setSharePublicly}
+            label="Announce shared files to lobby"
+          />
+        </div>
+        <div class={styles.actionBar}>
+          <Button
+            variant="outline"
+            disabled={trackerBusy()}
+            onClick={() => void loadTrackerConfig()}
+          >
+            Reload from disk
+          </Button>
+          <Button
+            variant="primary"
+            loading={trackerBusy()}
+            disabled={trackerBusy()}
+            onClick={() => void saveTrackerConfig()}
+          >
+            Save tracker settings
+          </Button>
+        </div>
+        {trackerToast() && <div class={styles.toast}>{trackerToast()}</div>}
+      </Card>
+
+      <Card class={styles.sectionCard}>
+        <div class={styles.sectionHeader}>
+          <h3 class={styles.title}>Configuration Center</h3>
+          <span class={styles.badge}>Simulation</span>
+        </div>
+        <p class={styles.subtitle}>
+          Preview-only limits for UI exploration; they are not yet wired to the onion chunk server.
+        </p>
+      </Card>
+
+      <Card class={styles.sectionCard}>
+        <h4 class={styles.sectionTitle}>Performance Profile</h4>
+        <div class={styles.profileRow}>
+          <Button
+            variant={profile() === 'balanced' ? 'primary' : 'outline'}
+            size="sm"
+            onClick={() => applyProfile('balanced')}
+          >
+            Balanced
+          </Button>
+          <Button
+            variant={profile() === 'lowBandwidth' ? 'primary' : 'outline'}
+            size="sm"
+            onClick={() => applyProfile('lowBandwidth')}
+          >
+            Low Bandwidth
+          </Button>
+          <Button
+            variant={profile() === 'highThroughput' ? 'primary' : 'outline'}
+            size="sm"
+            onClick={() => applyProfile('highThroughput')}
+          >
+            High Throughput
+          </Button>
+          <Button
+            variant={profile() === 'conservative' ? 'primary' : 'outline'}
+            size="sm"
+            onClick={() => applyProfile('conservative')}
+          >
+            Conservative
+          </Button>
         </div>
       </Card>
 
-      {/* Network Configuration */}
-      <Show when={networkConfig()}>
-        <Card class={styles.configSection}>
-          <h4 class={styles.sectionTitle}>Network Configuration</h4>
-          <div class={styles.configGrid}>
-            <div class={styles.configItem}>
-              <span class={styles.label}>P2P Port:</span>
-              <span class={styles.value}>{networkConfig()?.ports?.p2p || 'Not configured'}</span>
-            </div>
-            <div class={styles.configItem}>
-              <span class={styles.label}>Max Connections:</span>
-              <span class={styles.value}>{networkConfig()?.maxConnections || 'Unlimited'}</span>
-            </div>
-            <div class={styles.configItem}>
-              <span class={styles.label}>IPFS Enabled:</span>
-              <Badge variant={networkConfig()?.ipfsEnabled ? 'success' : 'error'}>
-                {networkConfig()?.ipfsEnabled ? 'Yes' : 'No'}
-              </Badge>
-            </div>
-            <div class={styles.configItem}>
-              <span class={styles.label}>TOR Support:</span>
-              <Switch checked={torEnabled()} onChange={handleToggleTor} label="Anonymous routing" />
-            </div>
-          </div>
-
-          {/* Anti-Censorship Features */}
-          <div class={styles.censorshipFeatures}>
-            <h5 class={styles.featureTitle}>Anti-Censorship Features</h5>
-            <div class={styles.features}>
-              <Badge variant="success">Educational Mode</Badge>
-              <Badge variant="success">Community Information</Badge>
-              <Badge variant="success">Resist Censorship</Badge>
-              <Badge variant="success">Preserve Alternatives</Badge>
-              <Badge variant="error">No Cultural Filtering</Badge>
-              <Badge variant="error">No Content Blocking</Badge>
-            </div>
-          </div>
-
-          {/* Cultural Networks */}
-          <Show when={networkConfig()?.communityNetworks?.length}>
-            <div class={styles.culturalNetworks}>
-              <h5 class={styles.featureTitle}>Cultural Networks</h5>
-              <div class={styles.networks}>
-                <For each={networkConfig()?.communityNetworks || []}>
-                  {network => <Badge variant="info">{network}</Badge>}
-                </For>
-              </div>
-              <p class={styles.networkDescription}>
-                Connected to {networkConfig()?.communityNetworks?.length || 0} cultural networks
-                providing educational context and community-specific resources.
-              </p>
-            </div>
-          </Show>
+      <div class={styles.gridTwo}>
+        <Card class={styles.sectionCard}>
+          <h4 class={styles.sectionTitle}>Bandwidth & Speed Limits</h4>
+          <label class={styles.fieldLabel}>
+            Download limit: <strong>{downloadLimitMbps()} Mbps</strong>
+            <input
+              class={styles.range}
+              type="range"
+              min="2"
+              max="200"
+              value={downloadLimitMbps()}
+              onInput={e => setDownloadLimitMbps(Number(e.currentTarget.value))}
+            />
+          </label>
+          <label class={styles.fieldLabel}>
+            Upload limit: <strong>{uploadLimitMbps()} Mbps</strong>
+            <input
+              class={styles.range}
+              type="range"
+              min="1"
+              max="100"
+              value={uploadLimitMbps()}
+              onInput={e => setUploadLimitMbps(Number(e.currentTarget.value))}
+            />
+          </label>
+          <label class={styles.fieldLabel}>
+            Global speed cap: <strong>{globalSpeedCapMbps()} Mbps</strong>
+            <input
+              class={styles.range}
+              type="range"
+              min="5"
+              max="250"
+              value={globalSpeedCapMbps()}
+              onInput={e => setGlobalSpeedCapMbps(Number(e.currentTarget.value))}
+            />
+          </label>
         </Card>
-      </Show>
 
-      {/* Connected Peers */}
-      <Show when={(connectedPeers()?.length || 0) > 0}>
-        <Card class={styles.peersSection}>
-          <div class={styles.sectionHeader}>
-            <h4 class={styles.sectionTitle}>Connected Peers ({connectedPeers()?.length || 0})</h4>
-            <Button onClick={() => setIsAddPeerModalOpen(true)} variant="outline" size="sm">
-              Add Peer
-            </Button>
-          </div>
-          <div class={styles.peersList}>
-            <For each={connectedPeers()?.slice(0, 5) || []}>
-              {peer => (
-                <PeerCard
-                  peer={peer}
-                  variant="default"
-                  showCulturalContext={props.showCulturalContext}
-                  onDisconnect={handleDisconnectFromPeer}
-                  class={styles.peerCard}
-                />
-              )}
-            </For>
-            <Show when={(connectedPeers()?.length || 0) > 5}>
-              <div class={styles.moreInfo}>
-                ...and {(connectedPeers()?.length || 0) - 5} more peers
-              </div>
-            </Show>
-          </div>
+        <Card class={styles.sectionCard}>
+          <h4 class={styles.sectionTitle}>Resource Budgets</h4>
+          <label class={styles.fieldLabel}>
+            RAM budget: <strong>{ramBudgetMb()} MB</strong>
+            <input
+              class={styles.range}
+              type="range"
+              min="256"
+              max="4096"
+              step="64"
+              value={ramBudgetMb()}
+              onInput={e => setRamBudgetMb(Number(e.currentTarget.value))}
+            />
+          </label>
+          <label class={styles.fieldLabel}>
+            Cache budget: <strong>{cacheBudgetMb()} MB</strong>
+            <input
+              class={styles.range}
+              type="range"
+              min="128"
+              max="2048"
+              step="64"
+              value={cacheBudgetMb()}
+              onInput={e => setCacheBudgetMb(Number(e.currentTarget.value))}
+            />
+          </label>
+          <Switch
+            checked={autoThrottle()}
+            onChange={setAutoThrottle}
+            label="Enable auto-throttle when usage is near limits"
+          />
         </Card>
-      </Show>
+      </div>
 
-      {/* Available Peers */}
-      <Show when={(availablePeers()?.length || 0) > 0}>
-        <Card class={styles.discoverySection}>
-          <h4 class={styles.sectionTitle}>Available Peers ({availablePeers()?.length || 0})</h4>
-          <div class={styles.peersList}>
-            <For each={availablePeers()?.slice(0, 3) || []}>
-              {peer => (
-                <PeerCard
-                  peer={peer}
-                  variant="default"
-                  showCulturalContext={props.showCulturalContext}
-                  onConnect={handleConnectToPeer}
-                  class={styles.peerCard}
-                />
-              )}
-            </For>
-          </div>
-        </Card>
-      </Show>
-
-      {/* Configuration Modal */}
-      <Modal
-        isOpen={isConfigModalOpen()}
-        onClose={() => setIsConfigModalOpen(false)}
-        title="Network Configuration"
-      >
-        <div class={styles.configModal}>
-          <div class={styles.configForm}>
-            <div class={styles.formGroup}>
-              <label>Maximum Connections</label>
-              <Input
-                type="number"
-                value={networkConfig()?.maxConnections?.toString() || '50'}
-                placeholder="50"
-              />
-            </div>
-            <div class={styles.formGroup}>
-              <label>P2P Port</label>
-              <Input
-                type="number"
-                value={networkConfig()?.ports?.p2p?.toString() || '4001'}
-                placeholder="4001"
-              />
-            </div>
-            <div class={styles.formGroup}>
-              <label>IPFS Content Addressing</label>
-              <Switch
-                checked={networkConfig()?.ipfsEnabled || false}
-                label="Enable IPFS for distributed content"
-              />
-            </div>
-            <div class={styles.formGroup}>
-              <label>TOR Anonymous Routing</label>
-              <Switch
-                checked={torEnabled()}
-                onChange={handleToggleTor}
-                label="Enable anonymous connections"
-              />
-            </div>
-          </div>
-          <div class={styles.modalActions}>
-            <Button variant="secondary" onClick={() => setIsConfigModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button variant="primary">Save Configuration</Button>
-          </div>
+      <Card class={styles.sectionCard}>
+        <h4 class={styles.sectionTitle}>Peer Network Tuning</h4>
+        <div class={styles.gridFour}>
+          <label class={styles.fieldLabel}>
+            Max peers
+            <input
+              class={styles.input}
+              type="number"
+              min="1"
+              max="200"
+              value={maxPeers()}
+              onInput={e => setMaxPeers(Number(e.currentTarget.value))}
+            />
+          </label>
+          <label class={styles.fieldLabel}>
+            Min peers
+            <input
+              class={styles.input}
+              type="number"
+              min="1"
+              max="100"
+              value={minPeers()}
+              onInput={e => setMinPeers(Number(e.currentTarget.value))}
+            />
+          </label>
+          <label class={styles.fieldLabel}>
+            Discovery interval (s)
+            <input
+              class={styles.input}
+              type="number"
+              min="5"
+              max="300"
+              value={peerDiscoveryIntervalSec()}
+              onInput={e => setPeerDiscoveryIntervalSec(Number(e.currentTarget.value))}
+            />
+          </label>
+          <label class={styles.fieldLabel}>
+            Connect timeout (s)
+            <input
+              class={styles.input}
+              type="number"
+              min="3"
+              max="120"
+              value={connectTimeoutSec()}
+              onInput={e => setConnectTimeoutSec(Number(e.currentTarget.value))}
+            />
+          </label>
         </div>
-      </Modal>
-
-      {/* Add Peer Modal */}
-      <Modal
-        isOpen={isAddPeerModalOpen()}
-        onClose={() => setIsAddPeerModalOpen(false)}
-        title="Add Peer"
-      >
-        <div class={styles.addPeerModal}>
-          <div class={styles.addPeerForm}>
-            <div class={styles.formGroup}>
-              <label>Peer Address</label>
-              <Input
-                value={newPeerAddress()}
-                onInput={setNewPeerAddress}
-                placeholder="/ip4/192.168.1.100/tcp/4001/p2p/..."
-              />
-            </div>
-            <div class={styles.formGroup}>
-              <label>Connection Protocol</label>
-              <Select
-                value={selectedProtocol()}
-                onChange={setSelectedProtocol}
-                options={[
-                  { value: 'tcp', label: 'TCP' },
-                  { value: 'tor', label: 'TOR (Anonymous)' },
-                  { value: 'webrtc', label: 'WebRTC' },
-                ]}
-              />
-            </div>
-          </div>
-          <div class={styles.modalActions}>
-            <Button variant="secondary" onClick={() => setIsAddPeerModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button variant="primary" onClick={handleAddPeer}>
-              Add Peer
-            </Button>
-          </div>
+        <div class={styles.selectRow}>
+          <Select
+            value={retryPolicy()}
+            onChange={setRetryPolicy}
+            options={[
+              { value: 'fixed', label: 'Retry policy: Fixed interval' },
+              { value: 'linear', label: 'Retry policy: Linear backoff' },
+              { value: 'exponential', label: 'Retry policy: Exponential backoff' },
+            ]}
+          />
         </div>
-      </Modal>
+      </Card>
+
+      <Card class={styles.sectionCard}>
+        <h4 class={styles.sectionTitle}>Live Mock Utilization</h4>
+        <div class={styles.metrics}>
+          <For each={usageMetrics()}>
+            {metric => {
+              const pct = Math.min(
+                100,
+                Math.round((metric.current / Math.max(metric.max, 1)) * 100)
+              );
+              return (
+                <div class={styles.metric}>
+                  <div class={styles.metricTop}>
+                    <span>{metric.label}</span>
+                    <span>
+                      {metric.current}
+                      {metric.unit} / {metric.max}
+                      {metric.unit}
+                    </span>
+                  </div>
+                  <div class={styles.progressTrack}>
+                    <div class={styles.progressFill} style={{ width: `${pct}%` }} />
+                  </div>
+                </div>
+              );
+            }}
+          </For>
+        </div>
+      </Card>
+
+      <div class={styles.actionBar}>
+        <Button variant="outline" onClick={resetConfig}>
+          Reset to Balanced
+        </Button>
+        <Button variant="primary" onClick={saveMockConfig}>
+          Save Mock Configuration
+        </Button>
+      </div>
+
+      {saveMessage() && <div class={styles.toast}>{saveMessage()}</div>}
     </div>
   );
 };

@@ -23,10 +23,10 @@ MSG=$(cat "$MSG_FILE")
 echo "${BOLD}${CYAN}┌ Commit & branch validation ┐${RESET}"
 
 BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
-BRANCH_PATTERN='^(main|master|develop|dev|release-[0-9]+\.[0-9]+\.[0-9]+|t[0-9]+\.[0-9]+|M[0-9]+(-[a-zA-Z0-9-]+)?|(hotfix|feat|fix|test|refactor|style|docs|build|perf|ci|chore|revert)-[a-z0-9-]+)$'
+BRANCH_PATTERN='^(main|master|develop|dev|release-[0-9]+\.[0-9]+\.[0-9]+|t[0-9]+\.[0-9]+|M[0-9]+(-[a-zA-Z0-9-]+)?|(hotfix|feat|fix|test|refactor|style|docs|build|perf|ci|chore|revert)(-[a-z0-9-]+|/[a-zA-Z0-9._/-]+))$'
 if [ -n "$BRANCH" ] && ! printf "%s" "$BRANCH" | grep -Eq "$BRANCH_PATTERN" ; then
   echo "${RED}❌ Invalid branch name: ${BOLD}$BRANCH${RESET}"
-  echo "${YELLOW}Expected:${RESET} ${BOLD}<type>-<name>${RESET}, ${BOLD}t<n>.<n>${RESET}, ${BOLD}M<n>${RESET}, or release/develop/main."
+  echo "${YELLOW}Expected:${RESET} ${BOLD}<type>-<name>${RESET} or ${BOLD}<type>/<name>${RESET} (e.g. feat/foo), ${BOLD}t<n>.<n>${RESET}, ${BOLD}M<n>${RESET}, or release/develop/main."
   exit 1
 fi
 

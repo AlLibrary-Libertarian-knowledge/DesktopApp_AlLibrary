@@ -6,6 +6,7 @@ import { listen } from '@tauri-apps/api/event';
 import MainLayout from './components/layout/MainLayout';
 import { Loading } from './components/foundation';
 import { initializeI18n } from './i18n';
+import { useTranslation } from './i18n/hooks';
 import './styles/theme.css';
 import './App.css';
 
@@ -19,13 +20,12 @@ import { Browse as BrowsePage } from './pages/Browse';
 import { Trending as TrendingPage } from './pages/Trending';
 import { Peers as PeersPage } from './pages/Peers';
 import { NetworkHealth } from './pages/NetworkHealth';
-import { P2PSearch } from './pages/P2PSearch';
 import { ConnectionManager } from './pages/ConnectionManager';
-import P2POverview from './pages/P2POverview';
 import DocumentManagement from './pages/DocumentManagement';
 import { DocumentDetailPage } from './pages/DocumentDetail';
 import { SearchNetworkPage } from './pages/SearchNetwork';
 import { DocumentReader } from './pages/DocumentReader';
+import PeerTransfers from './pages/PeerTransfers';
 
 interface InitProgress {
   phase: string;
@@ -114,10 +114,8 @@ const AppWithLayout: Component<ParentProps> = props => {
   );
 };
 
-// Stable route component to avoid remounts; no Suspense to prevent fallback flicker
-const P2POverviewRoute: Component = () => <P2POverview />;
-
 const App: Component = () => {
+  const { t } = useTranslation('errors');
   const [isLoading, setIsLoading] = createSignal(true);
   const [initProgress, setInitProgress] = createSignal<InitProgress | null>(null);
   const [needsFirstRun, setNeedsFirstRun] = createSignal(false);
@@ -142,69 +140,84 @@ const App: Component = () => {
       await initializeI18n();
       /* initialized */
 
-      // Start Tauri initialization process
+      // Register progress listener before invoke so splash receives Tor/onion bootstrap updates
+      const unlisten = await listen<InitProgress>('init-progress', event => {
+        setInitProgress(event.payload);
+        console.log('Tauri init progress:', event.payload);
+      });
+      cleanup = unlisten;
+
+      fallbackTimer = globalThis.setTimeout(() => {
+        console.warn(
+          'Tauri initialization timeout (baseline + onion can take ~90s); forcing dismiss'
+        );
+        setIsLoading(false);
+        try {
+          cleanup?.();
+        } catch {
+          /* ignore */
+        }
+        cleanup = null;
+      }, 120000);
+
       try {
         const { invoke } = await import('@tauri-apps/api/core');
+        const onionShare = await import('@/services/network/onionShareService');
+
+        // 1) Fast baseline + close native splash (splash.html).
         await invoke('initialize_app');
 
-        // M5: Optional Tor for onion share / tracker (POC-style). Legacy libp2p is not started at boot.
+        // Bundled / detected Tor exe (Windows Expert Bundle download) before hidden service bootstrap.
+        try {
+          await invoke('ensure_tor_for_onion_share');
+        } catch (torEns: unknown) {
+          console.warn('ensure_tor_for_onion_share skipped or failed:', torEns);
+        }
+
+        // 2) Heavy Tor / onion bootstrap + tracker announce — Loading overlay stays up.
+        try {
+          await onionShare.bootstrapOnionOverlay();
+        } catch (onionErr) {
+          console.warn('Onion overlay bootstrap failed:', onionErr);
+        }
+
+        // Legacy shell Tor node (optional; separate from embedded onion-share Tor).
         try {
           await invoke('init_tor_node', { config: { bridge_support: true } });
         } catch (torErr) {
-          console.warn('Tor init skipped or failed (onion share can start Tor later):', torErr);
+          console.warn(
+            'Tor init skipped or failed (onion share uses its own Tor when running):',
+            torErr
+          );
         }
 
+        if (fallbackTimer) {
+          globalThis.clearTimeout(fallbackTimer);
+          fallbackTimer = null;
+        }
         globalThis.setTimeout(() => {
           setIsLoading(false);
-          if (fallbackTimer) {
-            globalThis.clearTimeout(fallbackTimer);
-            fallbackTimer = null;
-          }
           try {
             cleanup?.();
           } catch {
             /* ignore */
           }
           cleanup = null;
-        }, 600);
+        }, 450);
       } catch (error) {
         console.warn('Failed during Tauri initialization:', error);
-      }
-
-      // Listen for initialization progress from Tauri
-      const unlisten = await listen<InitProgress>('init-progress', event => {
-        setInitProgress(event.payload);
-        console.log('Tauri init progress:', event.payload);
-
-        // When initialization is complete, hide loading screen
-        if (event.payload.phase === 'complete' || event.payload.progress >= 100) {
-          if (fallbackTimer) {
-            globalThis.clearTimeout(fallbackTimer);
-            fallbackTimer = null;
-          }
-
-          globalThis.setTimeout(() => {
-            setIsLoading(false);
-            // Stop listening after initialization completes to prevent unnecessary re-renders
-            try {
-              cleanup?.();
-            } catch {
-              /* ignore */
-            }
-            cleanup = null;
-          }, 1500); // Small delay to show completion
+        if (fallbackTimer) {
+          globalThis.clearTimeout(fallbackTimer);
+          fallbackTimer = null;
         }
-      });
-
-      cleanup = unlisten;
-
-      // Set fallback timer in case Tauri events don't work
-      fallbackTimer = globalThis.setTimeout(() => {
-        console.warn('Tauri initialization timeout, using fallback');
         setIsLoading(false);
-        cleanup?.();
+        try {
+          cleanup?.();
+        } catch {
+          /* ignore */
+        }
         cleanup = null;
-      }, 5000); // Reduced to 5 seconds for faster recovery
+      }
     } catch (error) {
       console.error('App initialization error:', error);
       /* listener setup failed, fallback */
@@ -383,17 +396,6 @@ const App: Component = () => {
             )}
           />
 
-          <Route path="/p2p-overview" component={P2POverviewRoute} />
-
-          <Route
-            path="/p2p-search"
-            component={() => (
-              <RouteWrapper>
-                <P2PSearch />
-              </RouteWrapper>
-            )}
-          />
-
           <Route
             path="/connection-manager"
             component={() => (
@@ -415,42 +417,52 @@ const App: Component = () => {
           />
 
           <Route
-            path="/sharing"
+            path="/transfers"
             component={() => (
-              <div class="page-placeholder">
-                <h1>Sharing Status</h1>
-                <p>Monitor your sharing activity and contributions.</p>
-              </div>
+              <RouteWrapper>
+                <PeerTransfers />
+              </RouteWrapper>
             )}
           />
-
+          <Route
+            path="/sharing"
+            component={() => (
+              <RouteWrapper>
+                <PeerTransfers />
+              </RouteWrapper>
+            )}
+          />
           <Route
             path="/downloads"
             component={() => (
-              <div class="page-placeholder">
-                <h1>Downloads</h1>
-                <p>Manage your download queue and completed transfers.</p>
-              </div>
-            )}
-          />
-
-          <Route
-            path="/sync"
-            component={() => (
-              <div class="page-placeholder">
-                <h1>Synchronization</h1>
-                <p>Sync status and network health monitoring.</p>
-              </div>
+              <RouteWrapper>
+                <PeerTransfers />
+              </RouteWrapper>
             )}
           />
 
           <Route
             path="*"
             component={() => (
-              <div class="error-page">
-                <h1>Page Not Found</h1>
-                <p>The page you're looking for doesn't exist.</p>
-                <a href="/">Return to Home</a>
+              <div class="not-found-wrap">
+                <div class="not-found-glow" />
+                <div class="not-found-page">
+                  <span class="not-found-kicker">404 Error</span>
+                  <h1>{t('notFoundTitle' as any)}</h1>
+                  <p>{t('notFoundDescription' as any)}</p>
+                  <div class="not-found-actions">
+                    <a href="/" class="not-found-primary">
+                      {t('notFoundReturnHome' as any)}
+                    </a>
+                    <button
+                      type="button"
+                      class="not-found-secondary"
+                      onClick={() => window.history.back()}
+                    >
+                      {t('notFoundGoBack' as any)}
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
           />

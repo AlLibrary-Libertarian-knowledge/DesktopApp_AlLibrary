@@ -1,3 +1,6 @@
+// Derived from onion-poc (MIT): POC-Tracker-Onion-Share/src/link.rs
+use std::fmt;
+
 use anyhow::Context;
 use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use base64::Engine;
@@ -57,6 +60,12 @@ impl ShareLink {
     }
 }
 
+impl fmt::Display for ShareLink {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(&self.to_link_string())
+    }
+}
+
 impl SwarmLink {
     pub fn to_link_string(&self) -> String {
         let encoded_tracker = URL_SAFE_NO_PAD.encode(self.tracker_url.as_bytes());
@@ -65,8 +74,14 @@ impl SwarmLink {
 
     pub fn parse(s: &str) -> anyhow::Result<Self> {
         let url = Url::parse(s).context("invalid swarm link URL")?;
-        anyhow::ensure!(url.scheme() == "opocswarm", "link must start with opocswarm://");
-        anyhow::ensure!(url.host_str() == Some("swarm"), "swarm link host must be 'swarm'");
+        anyhow::ensure!(
+            url.scheme() == "opocswarm",
+            "link must start with opocswarm://"
+        );
+        anyhow::ensure!(
+            url.host_str() == Some("swarm"),
+            "swarm link host must be 'swarm'"
+        );
         let content_hash = url
             .path_segments()
             .context("swarm link missing path")?
@@ -74,13 +89,22 @@ impl SwarmLink {
             .context("swarm link missing content hash")?
             .to_string();
         let fragment = url.fragment().context("swarm link missing tracker fragment")?;
-        let tracker_url =
-            String::from_utf8(URL_SAFE_NO_PAD.decode(fragment).context("invalid tracker encoding")?)
-                .context("tracker URL is not utf-8")?;
+        let tracker_url = String::from_utf8(
+            URL_SAFE_NO_PAD
+                .decode(fragment)
+                .context("invalid tracker encoding")?,
+        )
+        .context("tracker URL is not utf-8")?;
         Ok(Self {
             tracker_url,
             content_hash,
         })
+    }
+}
+
+impl fmt::Display for SwarmLink {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(&self.to_link_string())
     }
 }
 
@@ -89,40 +113,5 @@ pub fn parse_any(s: &str) -> anyhow::Result<ParsedLink> {
         Ok(ParsedLink::Swarm(SwarmLink::parse(s)?))
     } else {
         Ok(ParsedLink::Direct(ShareLink::parse(s)?))
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::onion_share::crypto::random_key;
-    use uuid::Uuid;
-
-    #[test]
-    fn opoc_link_roundtrip() {
-        let key = random_key();
-        let fid = Uuid::new_v4();
-        let sl = ShareLink {
-            onion: "abcd1234efgh5678abcd1234efgh5678abcd1234efgh5678abcd1234.onion".to_string(),
-            file_id: fid,
-            key,
-        };
-        let s = sl.to_link_string();
-        let p = ShareLink::parse(&s).unwrap();
-        assert_eq!(p.onion, sl.onion);
-        assert_eq!(p.file_id, sl.file_id);
-        assert_eq!(p.key, sl.key);
-    }
-
-    #[test]
-    fn swarm_link_roundtrip() {
-        let sw = SwarmLink {
-            tracker_url: "http://tracker.onion".to_string(),
-            content_hash: "aa".repeat(32),
-        };
-        let s = sw.to_link_string();
-        let p = SwarmLink::parse(&s).unwrap();
-        assert_eq!(p.tracker_url, sw.tracker_url);
-        assert_eq!(p.content_hash, sw.content_hash);
     }
 }

@@ -1,3 +1,4 @@
+// Derived from onion-poc (MIT): POC-Tracker-Onion-Share/src/tracker_proto.rs
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -48,4 +49,28 @@ pub enum WsClientMessage {
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum WsServerMessage {
     Lobby { lobby: NetworkLobby },
+}
+
+#[cfg(test)]
+mod serde_tests {
+    use super::*;
+
+    #[test]
+    fn announce_http_json_matches_tracker_axum() {
+        let m = WsClientMessage::Announce {
+            node_id: "n1".into(),
+            onion: "z.onion".into(),
+            files: vec![],
+        };
+        let s = serde_json::to_string(&m).expect("serialize");
+        assert!(s.contains("\"type\":\"announce\""), "got: {s}");
+        let back: WsClientMessage = serde_json::from_str(&s).expect("deserialize");
+        match back {
+            WsClientMessage::Announce { node_id, onion, files } => {
+                assert_eq!(node_id, "n1");
+                assert_eq!(onion, "z.onion");
+                assert!(files.is_empty());
+            }
+        }
+    }
 }

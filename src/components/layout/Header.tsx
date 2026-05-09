@@ -1,4 +1,4 @@
-import { type Component, createResource, createSignal, onCleanup, onMount } from 'solid-js';
+import { type Component, onCleanup, onMount } from 'solid-js';
 import './Header.css';
 import logoSvg from '/src/assets/logo.svg';
 import { LanguageSwitcher } from '@/components/foundation/LanguageSwitcher';
@@ -6,8 +6,7 @@ import { ThemeSwitcher } from '@/components/foundation/ThemeSwitcher';
 import { useTranslation } from '@/i18n';
 import { Bell, Menu, Search as SearchIcon, Settings as SettingsIcon } from 'lucide-solid';
 import { Badge } from '@/components/foundation/Badge';
-import { torAdapter } from '@/services/network/torAdapter';
-import { p2pNetworkService } from '@/services/network/p2pNetworkService';
+import { useNetworkPresenceResource } from '@/hooks/network/useNetworkPresence';
 
 interface HeaderProps {
   sidebarCollapsed?: boolean;
@@ -17,27 +16,7 @@ interface HeaderProps {
 const Header: Component<HeaderProps> = props => {
   const { t } = useTranslation();
 
-  // Lightweight, one-shot resources for header indicators
-  const [tick, setTick] = createSignal(0);
-  const [torStatus, { refetch: refetchTor }] = createResource(tick, async () =>
-    torAdapter.status()
-  );
-  const [nodeStatus, { refetch: refetchNode }] = createResource(tick, async () =>
-    p2pNetworkService.getNodeStatus()
-  );
-
-  onMount(() => {
-    setTick(t => t + 1);
-    const id = globalThis.setInterval(() => setTick(t => t + 1), 5000) as unknown as number;
-    onCleanup(() => globalThis.clearInterval(id));
-  });
-
-  // Instant refresh when bootstrap completes
-  onMount(() => {
-    const handler = () => setTick(t => t + 1);
-    window.addEventListener('tor-status-updated', handler as any);
-    onCleanup(() => window.removeEventListener('tor-status-updated', handler as any));
-  });
+  const presence = useNetworkPresenceResource();
 
   // Global keyboard shortcut: Ctrl/Cmd + B to toggle sidebar
   onMount(() => {
@@ -135,20 +114,16 @@ const Header: Component<HeaderProps> = props => {
           style={{ display: 'flex', 'align-items': 'center', gap: '8px' }}
         >
           <span
-            class={`status-indicator ${(nodeStatus()?.connectedPeers || 0) > 0 ? 'online' : 'offline'}`}
+            class={`status-indicator ${presence()?.online ? 'online' : 'offline'}`}
             title={
-              (nodeStatus()?.connectedPeers || 0) > 0
-                ? t('common.status.connected')
-                : t('common.status.disconnected')
+              presence()?.online ? t('common.status.connected') : t('common.status.disconnected')
             }
           />
           <span class="network-text">
-            {(nodeStatus()?.connectedPeers || 0) > 0
-              ? t('common.status.online')
-              : t('common.status.offline')}
+            {presence()?.online ? t('common.status.online') : t('common.status.offline')}
           </span>
-          <Badge variant={torStatus()?.circuitEstablished ? 'success' : 'secondary'}>
-            {torStatus()?.circuitEstablished ? 'Onion' : 'No Onion'}
+          <Badge variant={presence()?.onionActive ? 'success' : 'secondary'}>
+            {presence()?.onionActive ? 'Onion' : 'No Onion'}
           </Badge>
         </div>
       </div>

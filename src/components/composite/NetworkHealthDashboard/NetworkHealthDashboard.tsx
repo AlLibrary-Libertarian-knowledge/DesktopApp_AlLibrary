@@ -1,14 +1,7 @@
 /**
  * NetworkHealthDashboard Component - Comprehensive P2P Network Monitoring
  *
- * Real-time dashboard for monitoring P2P network health, cultural community
- * participation, and anti-censorship capabilities.
- *
- * ANTI-CENSORSHIP PRINCIPLES:
- * - Monitors network freedom and censorship resistance
- * - Displays cultural information for educational purposes only
- * - Tracks information integrity and multiple perspectives
- * - Provides transparency in network operations
+ * Real-time dashboard for monitoring P2P network health.
  */
 
 import {
@@ -26,13 +19,10 @@ import { Button } from '@/components/foundation/Button';
 import { Badge } from '@/components/foundation/Badge';
 import { Progress } from '@/components/foundation/Progress';
 import { p2pNetworkService } from '@/services/network/p2pNetworkService';
-import { torAdapter } from '@/services/network/torAdapter';
 import type {
   NetworkHealthDashboardProps,
   NetworkHealthMetrics,
   NetworkIssue,
-  CulturalNetworkStatus,
-  AntiCensorshipStatus,
   DashboardConfig,
   NetworkPerformanceHistory,
 } from './types';
@@ -41,7 +31,7 @@ import styles from './NetworkHealthDashboard.module.css';
 /**
  * NetworkHealthDashboard Component
  *
- * Comprehensive dashboard for P2P network health monitoring with cultural awareness
+ * Dashboard for P2P network health monitoring
  */
 export const NetworkHealthDashboard: Component<NetworkHealthDashboardProps> = props => {
   // State management
@@ -53,13 +43,10 @@ export const NetworkHealthDashboard: Component<NetworkHealthDashboardProps> = pr
   // Default configuration
   const defaultConfig: DashboardConfig = {
     refreshInterval: 5000, // 5 seconds
-    showCulturalMetrics: props.culturalContextEnabled ?? true,
-    showAntiCensorshipMetrics: props.antiCensorshipMonitoring ?? true,
     alertThresholds: {
       minPeers: 3,
       maxLatency: 1000,
       minStability: 0.8,
-      maxCensorshipAttempts: 5,
     },
     displayPreferences: {
       chartType: 'line',
@@ -77,7 +64,6 @@ export const NetworkHealthDashboard: Component<NetworkHealthDashboardProps> = pr
       try {
         const rawMetrics = (await p2pNetworkService.getNetworkMetrics()) || ({} as any);
         const nodeStatus = (await p2pNetworkService.getNodeStatus()) || ({} as any);
-        const torStatus = (await torAdapter.status()) || ({} as any);
 
         const perf = rawMetrics.performance || {
           averageLatency: 0,
@@ -89,13 +75,6 @@ export const NetworkHealthDashboard: Component<NetworkHealthDashboardProps> = pr
           connectionStability: 0,
           contentAvailability: 0,
         };
-        const culturalSharing = rawMetrics.culturalSharing || {
-          culturalContentShared: 0,
-          educationalContextProvided: 0,
-          communityInteractions: 0,
-          alternativeNarrativesSupported: 0,
-        };
-
         return {
           // Connection Health
           connectedPeers: Number(nodeStatus.connectedPeers || 0),
@@ -123,136 +102,10 @@ export const NetworkHealthDashboard: Component<NetworkHealthDashboardProps> = pr
             available: 1000000000, // 1GB available (mock)
             total: 1000000000 + Number(perf.messagesSent || 0) * 1024,
           },
-
-          // Cultural Network Health
-          culturalCommunities: Number(nodeStatus.activeCommunityNetworks?.length || 0),
-          culturalContentShared: Number(culturalSharing.culturalContentShared || 0),
-          educationalResourcesAvailable: Number(culturalSharing.educationalContextProvided || 0),
-          communityParticipation: Number(culturalSharing.communityInteractions || 0),
-
-          // Anti-Censorship Metrics
-          torConnectionActive: Boolean(torStatus.circuitEstablished),
-          alternativeRoutesAvailable: Number(
-            rawMetrics.censorshipResistance?.alternativeRoutes || 0
-          ),
-          censorshipAttempts: Number(rawMetrics.censorshipResistance?.censorshipAttempts || 0),
-          informationIntegrityScore: Number(health.contentAvailability || 0),
         };
       } catch (error) {
         console.error('Failed to fetch network metrics:', error);
         throw error;
-      }
-    }
-  );
-
-  // Cultural network status resource
-  const [culturalStatus, { refetch: refetchCulturalStatus }] = createResource(
-    () => config().showCulturalMetrics,
-    async (): Promise<CulturalNetworkStatus> => {
-      try {
-        const nodeStatus = await p2pNetworkService.getNodeStatus();
-
-        return {
-          activeCommunities: (nodeStatus.activeCommunityNetworks || []).map(network => ({
-            id: network,
-            name: `Community ${network}`,
-            memberCount: Math.floor(Math.random() * 100) + 10, // Mock data
-            culturalContext: {
-              origin: 'Various',
-              sensitivityLevel: Math.floor(Math.random() * 5) + 1,
-              educationalContext: 'Educational resources available',
-            },
-            activity: ['high', 'medium', 'low'][Math.floor(Math.random() * 3)] as
-              | 'high'
-              | 'medium'
-              | 'low',
-          })),
-
-          educationalExchanges: {
-            contentShared: nodeStatus.contentStats?.educationalContentShared || 0,
-            knowledgeTransferred: nodeStatus.contentStats?.alternativeNarrativesShared || 0,
-            culturalBridging: nodeStatus.contentStats?.communityContentShared || 0,
-          },
-
-          sovereigntyMetrics: {
-            communityControlled: 95, // Percentage - communities control their data
-            decentralizedGovernance: 90, // No central authority
-            informationFreedom: 98, // Information flows freely
-          },
-        };
-      } catch (error) {
-        console.error('Failed to fetch cultural status:', error);
-        return {
-          activeCommunities: [],
-          educationalExchanges: {
-            contentShared: 0,
-            knowledgeTransferred: 0,
-            culturalBridging: 0,
-          },
-          sovereigntyMetrics: {
-            communityControlled: 0,
-            decentralizedGovernance: 0,
-            informationFreedom: 0,
-          },
-        };
-      }
-    }
-  );
-
-  // Anti-censorship status resource
-  const [antiCensorshipStatus, { refetch: refetchAntiCensorship }] = createResource(
-    () => config().showAntiCensorshipMetrics,
-    async (): Promise<AntiCensorshipStatus> => {
-      try {
-        const torStatus = (await torAdapter.status()) || ({} as any);
-        const rawMetrics = (await p2pNetworkService.getNetworkMetrics()) || ({} as any);
-
-        return {
-          torIntegration: {
-            active: Boolean(torStatus.circuitEstablished),
-            hiddenServiceAvailable: false,
-            circuitCount: torStatus.supportsControl ? 1 : 0,
-            anonymityLevel: torStatus.circuitEstablished ? 'high' : 'low',
-          },
-
-          censorshipResistance: {
-            alternativeRoutes: Number(rawMetrics.censorshipResistance?.alternativeRoutes || 0),
-            contentMirroring: Number(rawMetrics.censorshipResistance?.successfulBypasses || 0),
-            distributedBackups: Number((rawMetrics.health?.contentAvailability || 0) * 10), // Estimate
-            integrityVerification: Number(rawMetrics.health?.contentAvailability || 0) > 0.8,
-          },
-
-          informationFreedom: {
-            accessibleContent: Number(rawMetrics.culturalSharing?.culturalContentShared || 0),
-            blockedAttempts: 0, // Always 0 - no blocking
-            educationalContext: Number(rawMetrics.culturalSharing?.educationalContextProvided || 0),
-            multiplePerspectives: Number(
-              rawMetrics.culturalSharing?.alternativeNarrativesSupported || 0
-            ),
-          },
-        };
-      } catch (error) {
-        console.error('Failed to fetch anti-censorship status:', error);
-        return {
-          torIntegration: {
-            active: false,
-            hiddenServiceAvailable: false,
-            circuitCount: 0,
-            anonymityLevel: 'low',
-          },
-          censorshipResistance: {
-            alternativeRoutes: 0,
-            contentMirroring: 0,
-            distributedBackups: 0,
-            integrityVerification: false,
-          },
-          informationFreedom: {
-            accessibleContent: 0,
-            blockedAttempts: 0,
-            educationalContext: 0,
-            multiplePerspectives: 0,
-          },
-        };
       }
     }
   );
@@ -303,8 +156,6 @@ export const NetworkHealthDashboard: Component<NetworkHealthDashboardProps> = pr
     if (props.enableRealTimeUpdates !== false) {
       const interval = setInterval(() => {
         refetchNetworkMetrics();
-        if (config().showCulturalMetrics) refetchCulturalStatus();
-        if (config().showAntiCensorshipMetrics) refetchAntiCensorship();
       }, config().refreshInterval);
 
       setRefreshInterval(interval);
@@ -326,7 +177,6 @@ export const NetworkHealthDashboard: Component<NetworkHealthDashboardProps> = pr
           latency: metrics.averageLatency,
           bandwidth: metrics.bandwidthUsage.total,
           stability: metrics.networkStability,
-          culturalActivity: metrics.communityParticipation,
         },
       };
 
@@ -384,23 +234,6 @@ export const NetworkHealthDashboard: Component<NetworkHealthDashboardProps> = pr
         });
       }
 
-      if (metrics.censorshipAttempts > config().alertThresholds.maxCensorshipAttempts) {
-        issues.push({
-          id: 'censorship-attempts',
-          type: 'censorship',
-          severity: 'high',
-          title: 'Censorship Attempts Detected',
-          description: `${metrics.censorshipAttempts} censorship attempts detected`,
-          timestamp: Date.now(),
-          resolved: false,
-          recommendations: [
-            'Enable TOR for anonymous access',
-            'Use alternative network routes',
-            'Report censorship attempts to community',
-          ],
-        });
-      }
-
       setCurrentIssues(issues);
 
       // Trigger issue callbacks
@@ -431,8 +264,6 @@ export const NetworkHealthDashboard: Component<NetworkHealthDashboardProps> = pr
           <Button
             onClick={() => {
               refetchNetworkMetrics();
-              refetchCulturalStatus();
-              refetchAntiCensorship();
             }}
             variant="secondary"
             size="sm"
@@ -541,131 +372,6 @@ export const NetworkHealthDashboard: Component<NetworkHealthDashboardProps> = pr
           </div>
         </Card>
       </div>
-
-      {/* Cultural Network Status */}
-      <Show when={config().showCulturalMetrics && culturalStatus()}>
-        <Card class={styles.culturalCard}>
-          <h4 class={styles.sectionTitle}>Cultural Network Status</h4>
-          <div class={styles.culturalGrid}>
-            <div class={styles.culturalMetric}>
-              <h5>Active Communities</h5>
-              <div class={styles.culturalValue}>
-                {culturalStatus()?.activeCommunities.length || 0}
-              </div>
-            </div>
-            <div class={styles.culturalMetric}>
-              <h5>Educational Exchanges</h5>
-              <div class={styles.culturalValue}>
-                {culturalStatus()?.educationalExchanges.contentShared || 0}
-              </div>
-            </div>
-            <div class={styles.culturalMetric}>
-              <h5>Information Freedom</h5>
-              <div class={styles.culturalValue}>
-                {culturalStatus()?.sovereigntyMetrics.informationFreedom || 0}%
-              </div>
-            </div>
-          </div>
-
-          <div class={styles.communitiesList}>
-            <h5 class={styles.communitiesTitle}>Active Communities:</h5>
-            <For each={culturalStatus()?.activeCommunities || []}>
-              {community => (
-                <div class={styles.communityItem}>
-                  <span class={styles.communityName}>{community.name}</span>
-                  <Badge
-                    variant={
-                      community.activity === 'high'
-                        ? 'success'
-                        : community.activity === 'medium'
-                          ? 'warning'
-                          : 'secondary'
-                    }
-                    class={styles.activityBadge}
-                  >
-                    {community.activity} activity
-                  </Badge>
-                  <span class={styles.memberCount}>{community.memberCount} members</span>
-                </div>
-              )}
-            </For>
-          </div>
-        </Card>
-      </Show>
-
-      {/* Anti-Censorship Status */}
-      <Show when={config().showAntiCensorshipMetrics && antiCensorshipStatus()}>
-        <Card class={styles.antiCensorshipCard}>
-          <h4 class={styles.sectionTitle}>Anti-Censorship Status</h4>
-          <div class={styles.antiCensorshipGrid}>
-            <div class={styles.torStatus}>
-              <h5>TOR Integration</h5>
-              <div class={styles.torInfo}>
-                <Badge
-                  variant={antiCensorshipStatus()?.torIntegration.active ? 'success' : 'error'}
-                  class={styles.torBadge}
-                >
-                  {antiCensorshipStatus()?.torIntegration.active ? 'Active' : 'Inactive'}
-                </Badge>
-                <span class={styles.torDetails}>
-                  {antiCensorshipStatus()?.torIntegration.circuitCount || 0} circuits
-                </span>
-                <span class={styles.anonymityLevel}>
-                  Anonymity: {antiCensorshipStatus()?.torIntegration.anonymityLevel || 'low'}
-                </span>
-              </div>
-            </div>
-
-            <div class={styles.resistanceMetrics}>
-              <h5>Censorship Resistance</h5>
-              <div class={styles.resistanceStats}>
-                <div class={styles.resistanceStat}>
-                  <span>Alternative Routes:</span>
-                  <span>{antiCensorshipStatus()?.censorshipResistance.alternativeRoutes || 0}</span>
-                </div>
-                <div class={styles.resistanceStat}>
-                  <span>Content Mirrors:</span>
-                  <span>{antiCensorshipStatus()?.censorshipResistance.contentMirroring || 0}</span>
-                </div>
-                <div class={styles.resistanceStat}>
-                  <span>Distributed Backups:</span>
-                  <span>
-                    {antiCensorshipStatus()?.censorshipResistance.distributedBackups || 0}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div class={styles.informationFreedom}>
-              <h5>Information Freedom</h5>
-              <div class={styles.freedomStats}>
-                <div class={styles.freedomStat}>
-                  <span>Accessible Content:</span>
-                  <span>{antiCensorshipStatus()?.informationFreedom.accessibleContent || 0}</span>
-                </div>
-                <div class={styles.freedomStat}>
-                  <span>Educational Context:</span>
-                  <span>{antiCensorshipStatus()?.informationFreedom.educationalContext || 0}</span>
-                </div>
-                <div class={styles.freedomStat}>
-                  <span>Multiple Perspectives:</span>
-                  <span>
-                    {antiCensorshipStatus()?.informationFreedom.multiplePerspectives || 0}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class={styles.antiCensorshipNotice}>
-            <p class={styles.noticeText}>
-              🛡️ This network operates on anti-censorship principles. All content is accessible with
-              educational context provided. Cultural information enhances understanding without
-              restricting access.
-            </p>
-          </div>
-        </Card>
-      </Show>
 
       {/* Current Issues */}
       <Show when={currentIssues().length > 0}>

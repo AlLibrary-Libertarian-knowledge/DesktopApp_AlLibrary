@@ -302,10 +302,20 @@ pub async fn get_installer_library_dir() -> Option<String> {
 
 #[tauri::command]
 pub async fn pick_library_folder() -> Option<String> {
-    let dir = FileDialog::new()
-        .set_title("Select your AlLibrary folder")
-        .pick_folder();
-    dir.map(|p| p.to_string_lossy().to_string())
+    pick_folder_impl("Select your AlLibrary folder")
+}
+
+/// Pick a directory; optional window title (defaults to a generic label).
+#[tauri::command]
+pub async fn pick_folder(title: Option<String>) -> Option<String> {
+    pick_folder_impl(title.as_deref().unwrap_or("Select folder"))
+}
+
+fn pick_folder_impl(title: &str) -> Option<String> {
+    FileDialog::new()
+        .set_title(title)
+        .pick_folder()
+        .map(|p| p.to_string_lossy().to_string())
 }
 
 #[tauri::command]
@@ -313,6 +323,23 @@ pub async fn pick_document_files() -> Vec<String> {
     let dialog = match std::env::current_dir() {
         Ok(dir) => FileDialog::new().set_title("Select documents to import").add_filter("Documents", &["pdf", "epub"]).set_directory(dir),
         Err(_) => FileDialog::new().set_title("Select documents to import").add_filter("Documents", &["pdf", "epub"]),
+    };
+    let files = dialog.pick_files();
+    files
+        .unwrap_or_default()
+        .into_iter()
+        .map(|p| p.to_string_lossy().to_string())
+        .collect()
+}
+
+/// Any file type(s) for onion share / tooling (not limited to PDF/EPUB).
+#[tauri::command]
+pub async fn pick_any_files() -> Vec<String> {
+    let dialog = match std::env::current_dir() {
+        Ok(dir) => FileDialog::new()
+            .set_title("Select file(s) to share")
+            .set_directory(dir),
+        Err(_) => FileDialog::new().set_title("Select file(s) to share"),
     };
     let files = dialog.pick_files();
     files
