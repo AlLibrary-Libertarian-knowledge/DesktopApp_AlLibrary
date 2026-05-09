@@ -17,6 +17,8 @@ use crate::onion_share::tracker_proto::NetworkLobby;
 use crate::onion_share::wizard::installer;
 
 const DEFAULT_CHUNK: usize = 256 * 1024;
+/// Re-announce before tracker `last_seen` TTL (30s in POC) when not using WS.
+const HTTP_ANNOUNCE_HEARTBEAT_SECS: u64 = 20;
 
 fn tracker_epoch_ms() -> i64 {
     std::time::SystemTime::now()
@@ -47,6 +49,8 @@ pub struct OnionShareState {
     cached_lobby: Arc<RwLock<NetworkLobby>>,
     /// Last tracker announce diagnostics (persisted only in memory).
     tracker_last_sync: Arc<Mutex<Option<serde_json::Value>>>,
+    http_announce_stop: Arc<AtomicBool>,
+    http_announce_task: Arc<Mutex<Option<tokio::task::JoinHandle<()>>>>,
 }
 
 impl Default for OnionShareState {
@@ -57,8 +61,45 @@ impl Default for OnionShareState {
             tracker_task: Arc::new(Mutex::new(None)),
             cached_lobby: Arc::new(RwLock::new(NetworkLobby::default())),
             tracker_last_sync: Arc::new(Mutex::new(None)),
+            http_announce_stop: Arc::new(AtomicBool::new(true)),
+            http_announce_task: Arc::new(Mutex::new(None)),
         }
     }
+}
+
+async fn restart_http_announce_heartbeat(state: &OnionShareState) {
+    state.http_announce_stop.store(true, Ordering::SeqCst);
+    if let Some(t) = state.http_announce_task.lock().await.take() {
+        t.abort();
+    }
+    state.http_announce_stop.store(false, Ordering::SeqCst);
+
+    let stop = Arc::clone(&state.http_announce_stop);
+    let handle_arc = Arc::clone(&state.handle);
+    let lobby_arc = Arc::clone(&state.cached_lobby);
+    let diag_arc = Arc::clone(&state.tracker_last_sync);
+
+    let task = tokio::spawn(async move {
+        let mut interval =
+            tokio::time::interval(std::time::Duration::from_secs(HTTP_ANNOUNCE_HEARTBEAT_SECS));
+        interval.tick().await;
+        loop {
+            interval.tick().await;
+            if stop.load(Ordering::SeqCst) {
+                break;
+            }
+            let g = handle_arc.lock().await;
+            let Some(ref h) = *g else {
+                drop(g);
+                break;
+            };
+            let tr = tracker_client::sync_tracker_result(Some(h), lobby_arc.clone()).await;
+            drop(g);
+            persist_tracker_diag(diag_arc.clone(), None, &tr).await;
+        }
+    });
+
+    state.http_announce_task.lock().await.replace(task);
 }
 
 async fn persist_tracker_diag(
@@ -104,6 +145,7 @@ pub async fn bootstrap_onion_share(
         let sink = Arc::clone(&state.tracker_last_sync);
         persist_tracker_diag(sink, Some(app), &tr).await;
         drop(guard);
+        restart_http_announce_heartbeat(state).await;
         let _ = app.emit("network-presence-changed", json!({}));
         return Ok(json!({"onion": onion, "localPort": port}));
     }
@@ -133,6 +175,7 @@ pub async fn bootstrap_onion_share(
         persist_tracker_diag(sink, Some(app), &tr).await;
     }
     drop(guard);
+    restart_http_announce_heartbeat(state).await;
     let _ = app.emit("network-presence-changed", json!({}));
     Ok(json!({"onion": onion, "localPort": port}))
 }
@@ -199,6 +242,11 @@ pub async fn onion_share_stop(app: AppHandle, state: State<'_, OnionShareState>)
         task.abort();
     }
     drop(tg);
+
+    state.http_announce_stop.store(true, Ordering::SeqCst);
+    if let Some(t) = state.http_announce_task.lock().await.take() {
+        t.abort();
+    }
 
     let mut guard = state.handle.lock().await;
     if let Some(h) = guard.take() {
