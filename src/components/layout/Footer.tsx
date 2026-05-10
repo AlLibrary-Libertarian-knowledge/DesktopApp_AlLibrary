@@ -39,8 +39,8 @@ const Footer: Component = () => {
 
         <div class="footer-right">
           <div class="version-info">
-            <span class="app-version">AlLibrary v0.1.0</span>
-            <span class="build-info">Phase 1 Development</span>
+            <span class="app-version">AlLibrary v1.0.10</span>
+            <span class="build-info">P2P Onion-Routing Active</span>
           </div>
 
           <div class="status-indicators">

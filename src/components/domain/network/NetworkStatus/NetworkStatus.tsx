@@ -154,6 +154,19 @@ export const NetworkStatus: Component<NetworkStatusProps> = props => {
     }
   };
 
+  const handleTorRetry = async () => {
+    // If already connected, no need to retry unless user wants to force a restart
+    // but the request is specifically for when it's offline.
+    try {
+      console.log('Manually triggering Tor network initialization...');
+      await p2pNetworkService.startNode();
+      // Wait a bit and refetch
+      setTimeout(refetchStatus, 2000);
+    } catch (e) {
+      console.error('Manual Tor start failed:', e);
+    }
+  };
+
   const currentStatus = () => networkStatus();
   const currentMetrics = () => networkMetrics();
   const currentPeers = () => connectedPeers();
@@ -166,7 +179,13 @@ export const NetworkStatus: Component<NetworkStatusProps> = props => {
         <Show when={currentStatus()}>
           <Badge
             variant={getStatusColor(currentStatus()?.nodeStatus || NodeStatus.OFFLINE)}
-            class={styles.statusBadge}
+            class={`${styles.statusBadge} ${styles.clickable}`}
+            onClick={handleTorRetry}
+            title={
+              currentStatus()?.nodeStatus === NodeStatus.OFFLINE
+                ? 'Click to start network'
+                : 'P2P Status'
+            }
           >
             {getStatusText(currentStatus()?.nodeStatus || NodeStatus.OFFLINE)}
           </Badge>
@@ -235,7 +254,13 @@ export const NetworkStatus: Component<NetworkStatusProps> = props => {
                 <span class={styles.label}>TOR Status</span>
                 <Badge
                   variant={currentStatus()?.torStatus?.connected ? 'success' : 'error'}
-                  class={styles.torBadge}
+                  class={`${styles.torBadge} ${styles.clickable}`}
+                  onClick={handleTorRetry}
+                  title={
+                    !currentStatus()?.torStatus?.connected
+                      ? 'Click to reconnect Tor'
+                      : 'Tor connected'
+                  }
                 >
                   {currentStatus()?.torStatus?.connected ? 'Connected' : 'Disconnected'}
                 </Badge>
