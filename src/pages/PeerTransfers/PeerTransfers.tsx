@@ -177,6 +177,8 @@ const PeerTransfers: Component = () => {
   const [localList, setLocalList] = createSignal('');
   const [fetchResult, setFetchResult] = createSignal('');
 
+  const [localShares, setLocalShares] = createSignal<onionShare.LocalShareEntry[]>([]);
+
   const snapshotLobby = async () => {
     try {
       const l = await onionShare.trackerGetCachedLobby();
@@ -198,6 +200,7 @@ const PeerTransfers: Component = () => {
       setOnionRunning(st.running);
       setOnionAddr(st.running ? st.onion : null);
       const loc = await onionShare.onionShareListLocal().catch(() => []);
+      setLocalShares(loc);
       setLocalList(loc.map(e => `${e.name} → ${e.link}`).join('\n') || '(no files shared)');
       await snapshotLobby();
     } catch (e: unknown) {
@@ -600,27 +603,55 @@ const PeerTransfers: Component = () => {
                 </tr>
               </thead>
               <tbody>
-                <For each={MOCK_OUTBOUND}>
+                <For each={localShares()}>
                   {row => (
                     <tr>
                       <td>
-                        <div class={styles.mono}>{row.id}</div>
+                        <div class={styles.mono}>{row.fileId.slice(0, 8)}</div>
                         <div class={styles.cellTitle}>{row.name}</div>
                       </td>
-                      <td>{row.peers}</td>
+                      <td>(Lobby)</td>
                       <td>
                         <div class={styles.barCell}>
-                          <div class={styles.barFill} style={{ width: `${row.progress * 100}%` }} />
+                          <div class={styles.barFill} style={{ width: '100%' }} />
                         </div>
-                        <span class={styles.barLabel}>{`${Math.round(row.progress * 100)}%`}</span>
+                        <span class={styles.barLabel}>100%</span>
                       </td>
-                      <td>{row.speedMbps.toFixed(2)}</td>
+                      <td>—</td>
                       <td>
-                        <Badge variant={statusToneOut(row.status)}>{row.status}</Badge>
+                        <Badge variant="success">seeding</Badge>
                       </td>
                     </tr>
                   )}
                 </For>
+                <Show when={localShares().length === 0}>
+                  <For each={MOCK_OUTBOUND}>
+                    {row => (
+                      <tr>
+                        <td>
+                          <div class={styles.mono}>{row.id}</div>
+                          <div class={styles.cellTitle}>{row.name}</div>
+                        </td>
+                        <td>{row.peers}</td>
+                        <td>
+                          <div class={styles.barCell}>
+                            <div
+                              class={styles.barFill}
+                              style={{ width: `${row.progress * 100}%` }}
+                            />
+                          </div>
+                          <span
+                            class={styles.barLabel}
+                          >{`${Math.round(row.progress * 100)}%`}</span>
+                        </td>
+                        <td>{row.speedMbps.toFixed(2)}</td>
+                        <td>
+                          <Badge variant={statusToneOut(row.status)}>{row.status}</Badge>
+                        </td>
+                      </tr>
+                    )}
+                  </For>
+                </Show>
               </tbody>
             </table>
           </div>

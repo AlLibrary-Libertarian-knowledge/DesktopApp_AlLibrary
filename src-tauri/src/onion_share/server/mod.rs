@@ -50,7 +50,7 @@ impl ShareServerHandle {
         });
 
         let mut tor = TorProcess::start(tor_path).await?;
-        tor.wait_bootstrap(Duration::from_secs(90)).await?;
+        tor.wait_bootstrap(Duration::from_secs(120)).await?;
         let mut ctl = TorControl::connect(tor.control_addr(), tor.cookie_path()).await?;
         let service_id = ctl.add_onion(local_port).await?;
         let onion_addr = format!("{}.onion", service_id);

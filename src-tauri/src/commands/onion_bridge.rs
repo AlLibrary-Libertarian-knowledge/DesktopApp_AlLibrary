@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use tauri::{AppHandle, Emitter, Manager, State};
 use tokio::sync::{Mutex, RwLock};
+use tracing::{info, error, warn};
 use uuid::Uuid;
 
 use crate::onion_share::config::{normalize_tracker_url, AppConfig};
@@ -152,13 +153,18 @@ pub async fn bootstrap_onion_share(
 
     let mut cfg = AppConfig::load();
     let resolved = installer::detect_tor(&cfg.tor_path).ok_or_else(|| {
+        error!("Tor not found during bootstrap");
         "Tor not found. Install Tor Browser or Expert Bundle and set tor path in config, or rely on bundled install (Windows)."
             .to_string()
     })?;
 
+    info!("Starting OnionShare with Tor binary: {}", resolved);
     let handle_srv = ShareServerHandle::start(&resolved)
         .await
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| {
+            error!("ShareServerHandle::start failed: {}", e);
+            e.to_string()
+        })?;
 
     if cfg.tor_path != resolved && !resolved.eq_ignore_ascii_case("tor") && !resolved.eq_ignore_ascii_case("tor.exe") {
         cfg.tor_path = resolved.clone();
@@ -186,6 +192,7 @@ pub async fn bootstrap_onion_overlay(
     app: AppHandle,
     state: State<'_, OnionShareState>,
 ) -> Result<serde_json::Value, String> {
+    info!("Starting bootstrap_onion_overlay");
     let main = app
         .get_webview_window("main")
         .ok_or("main window not found".to_string())?;

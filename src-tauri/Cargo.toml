@@ -1,6 +1,7 @@
 [package]
 name = "desktopapp_allibrary"
-version = "0.1.3"
+version = "1.0.10"
+default-run = "desktopapp_allibrary"
 description = "A Tauri App"
 authors = ["you"]
 edition = "2021"

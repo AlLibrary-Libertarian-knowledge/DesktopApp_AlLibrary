@@ -10,7 +10,7 @@ use futures_util::StreamExt;
 use futures_util::future::Either;
 use tokio_tungstenite::client_async_with_config;
 use tokio_tungstenite::tungstenite::Message;
-use tracing::{info, warn};
+use tracing::{info, warn, error};
 
 use crate::onion_share::config::{normalize_tracker_url, AppConfig};
 use crate::onion_share::fetch::build_http_client;
@@ -202,6 +202,7 @@ pub async fn sync_tracker_result(
     for (base, is_fb) in candidates {
         match announce_and_refresh_lobby(&base, handle, &cfg, cached_lobby.clone()).await {
             Ok(()) => {
+                info!("Tracker announce/refresh OK for {}", base);
                 if is_fb {
                     warn!(
                         "Announce succeeded via LOCALHOST {}; Tor path to .onion may still be broken.",
@@ -213,9 +214,14 @@ pub async fn sync_tracker_result(
                     used_localhost_fallback: is_fb,
                 });
             }
-            Err(e) => last_err = e,
+            Err(e) => {
+                warn!("Tracker candidate {} failed: {}", base, e);
+                last_err = e;
+            }
         }
     }
+
+    error!("All tracker targets failed. Last error: {}", last_err);
 
     Err(format!(
         "All tracker targets failed. Last error: {}. Hint: for Docker Desktop on this PC the tracker listens on mapped port 8080 — fallback can use http://127.0.0.1:8080.",

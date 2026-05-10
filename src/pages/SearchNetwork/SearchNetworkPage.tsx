@@ -48,7 +48,7 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
 
   // State Management
   const [searchQuery, setSearchQuery] = createSignal(props.initialQuery || '');
-  const [activeTab, setActiveTab] = createSignal<'search' | 'results'>('search');
+  const [activeTab, setActiveTab] = createSignal<'search' | 'results'>('results');
   // const [viewMode, setViewMode] = createSignal<'grid' | 'list'>(props.initialViewMode || 'grid');
   const [showFilters, setShowFilters] = createSignal(false);
   const [anonymousMode, setAnonymousMode] = createSignal(props.anonymousMode || false);
@@ -105,6 +105,14 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
       }
     };
     window.addEventListener('keydown', keyHandler);
+
+    // Initial search to populate the "acervo" (collection) automatically
+    globalThis.setTimeout(() => {
+      if (torReady()) {
+        handleSearch();
+      }
+    }, 1500);
+
     return () => {
       globalThis.clearInterval(timer);
       window.removeEventListener('tor-status-updated', handler as any);
@@ -116,7 +124,7 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
 
   // Title-only, Tor-gated search interface
   const handleSearch = async () => {
-    if (!searchQuery().trim()) return;
+    // if (!searchQuery().trim()) return;
     if (!torReady()) return;
     setActiveTab('results');
     try {
@@ -238,7 +246,7 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
                     <Button
                       variant="primary"
                       onClick={handleSearch}
-                      disabled={!searchQuery().trim() || isSearching() || !torReady()}
+                      disabled={isSearching() || !torReady()}
                     >
                       {isSearching() ? 'Searching...' : 'Search Network'}
                     </Button>

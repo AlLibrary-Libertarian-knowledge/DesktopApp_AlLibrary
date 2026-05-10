@@ -121,7 +121,7 @@ export async function fetchNetworkPresence(): Promise<{
   try {
     const s = await onionShareStatus();
     const onionActive = Boolean(s.running && s.onion && String(s.onion).trim().length > 0);
-    return { online: onionActive, onionActive };
+    return { online: s.running, onionActive };
   } catch {
     return { online: false, onionActive: false };
   }

@@ -20,9 +20,38 @@ _Empowering communities to preserve, share, and discover knowledge while respect
 
 ---
 
+## 📥 Download Latest Release
+
+Get the latest production-ready installers for your system:
+
+<div align="center">
+
+[![Download .deb (Linux)](https://img.shields.io/badge/Download-.deb%20(Linux)-orange?style=for-the-badge&logo=ubuntu)](https://github.com/AlLibrary-Libertarian-knowledge/DesktopApp_AlLibrary/releases/download/v1.0.9/AlLibrary_1.0.9_amd64.deb)
+[![Download .msi (Windows)](https://img.shields.io/badge/Download-.msi%20(Windows)-blue?style=for-the-badge&logo=windows)](https://github.com/AlLibrary-Libertarian-knowledge/DesktopApp_AlLibrary/releases/download/v1.0.9/AlLibrary_1.0.9_x64_en-US.msi)
+
+</div>
+
+---
+
 ## Status Notice
 
 Networking (Tor/P2P/onion-share runtime) is now integrated and functional. The application uses a decentralized approach via Tor Onion Services and a global Tracker/Lobby for peer discovery.
+
+## 📁 P2P Sharing & Downloads Guide
+
+### 📤 Machine A: Sharing Documents
+1. Open AlLibrary and navigate to the **"P2P Network"** -> **"Sharing & Downloads"** tab.
+2. Ensure your status is **"Online"** (this confirms your Tor Onion Service is active).
+3. In the **"Local Shares"** section, click the **"+"** button to select a PDF or EPUB document from your local machine.
+4. The system will automatically generate a unique `.onion` link and announce your document to the **Global Tracker Lobby**.
+5. Your document is now discoverable and downloadable by other peers across the world.
+
+### 📥 Machine B: Discovering & Downloading
+1. On the receiving machine, go to the **"Discovery"** -> **"Search Network"** tab.
+2. The **Global Collection (Acervo)** will populate automatically once your Tor connection is established (look for the "Onion" pill).
+3. Browse the list of available documents or use the search bar to find a specific title.
+4. Click the **"Download"** button on the document card.
+5. The machine will establish a direct, anonymous P2P tunnel via Tor to Machine A and download the content in encrypted chunks.
 
 ## 🎯 Project Vision
 

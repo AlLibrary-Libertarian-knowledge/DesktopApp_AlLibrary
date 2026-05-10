@@ -31,8 +31,6 @@ struct IpApiResponse {
     city: Option<String>,
     isp: Option<String>,
     timezone: Option<String>,
-    #[serde(rename = "countryCode")]
-    country_code: Option<String>,
 }
 
 impl Default for SecurityInfo {

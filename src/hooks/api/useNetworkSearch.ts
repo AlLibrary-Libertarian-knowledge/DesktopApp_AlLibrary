@@ -116,7 +116,7 @@ export const useNetworkSearch = (): UseNetworkSearchReturn => {
     if (!st?.circuitEstablished) throw new Error('TOR circuit not established');
     // Title-only mode; request service to search titles
     const q = (filters.query || '').trim();
-    if (!q) return [];
+    // Empty query returns full network lobby (the "acervo")
     // Delegate to service (it should aggregate peers via libp2p/Tor)
     const raw = await p2pNetworkService.searchNetwork(q, {
       type: 'content',

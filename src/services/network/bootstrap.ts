@@ -8,9 +8,12 @@ export interface EnableTorResult {
 }
 
 export const enableTorAndP2P = async (): Promise<EnableTorResult> => {
-  // Network stack intentionally disabled in shell mode.
-  void torAdapter;
-  void p2pNetworkService;
-  void NodeStatus;
-  return { torConnected: false, p2pStarted: false };
+  try {
+    await p2pNetworkService.startNode();
+    const st = await torAdapter.status();
+    return { torConnected: st.circuitEstablished, p2pStarted: true };
+  } catch (e) {
+    console.error('enableTorAndP2P failed', e);
+    return { torConnected: false, p2pStarted: false };
+  }
 };

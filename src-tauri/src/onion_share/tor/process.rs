@@ -103,7 +103,7 @@ impl TorProcess {
             }
             if t0.elapsed() > timeout {
                 anyhow::bail!(
-                    "Tor bootstrap timeout ({}s). Is tor installed and allowed to run?",
+                    "Tor bootstrap timeout ({}s). Check your internet connection or if Tor is blocked. If you are using a VPN, try disabling it.",
                     timeout.as_secs()
                 );
             }
@@ -127,7 +127,8 @@ fn tor_data_dir() -> anyhow::Result<PathBuf> {
     let proj =
         ProjectDirs::from("br", "tcc", "onion_poc").context("ProjectDirs unavailable")?;
     let base = proj.data_local_dir();
-    let dir = base.join(format!("tor-{}", uuid::Uuid::new_v4()));
+    // Use a stable directory so Tor can cache consensus data and start faster
+    let dir = base.join("tor-overlay-data");
     Ok(dir)
 }
 
