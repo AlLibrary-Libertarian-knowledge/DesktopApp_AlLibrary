@@ -1,6 +1,6 @@
 {
   "name": "desktopapp-allibrary",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "AlLibrary - Decentralized Knowledge Sharing Platform",
   "packageManager": "pnpm@9.15.9",
   "type": "module",

@@ -52,6 +52,6 @@ jobs:
           tagName: v__VERSION__ # tauri-action automatically replaces this with the version from tauri.conf.json
           releaseName: "AlLibrary v__VERSION__"
           releaseBody: "Automated release of AlLibrary with P2P Onion Share integration."
-          releaseDraft: true
+          releaseDraft: false
           prerelease: false
           args: ${{ matrix.platform == 'windows-latest' && '--target x86_64-pc-windows-msvc' || '' }}
