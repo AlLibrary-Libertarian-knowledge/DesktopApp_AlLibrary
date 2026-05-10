@@ -24,6 +24,12 @@ impl TorProcess {
         let (socks_port, control_port) = (free_port().await?, free_port().await?);
 
         let data_dir = tor_data_dir()?;
+        // Cleanup stale lock files before starting
+        let lock_file = data_dir.join("lock");
+        if lock_file.exists() {
+            let _ = std::fs::remove_file(&lock_file);
+        }
+
         tokio::fs::create_dir_all(&data_dir)
             .await
             .context("create tor data_dir failed")?;
@@ -38,7 +44,13 @@ impl TorProcess {
             .arg("--DataDirectory")
             .arg(&data_dir)
             .arg("--Log")
-            .arg("notice stdout")
+            .arg("info stdout")
+            .arg("--ConnectionPadding")
+            .arg("1")
+            .arg("--ReducedConnectionPadding")
+            .arg("0")
+            .arg("--CircuitBuildTimeout")
+            .arg("60")
             .stdout(Stdio::piped())
             .stderr(Stdio::piped());
 
@@ -103,7 +115,7 @@ impl TorProcess {
             }
             if t0.elapsed() > timeout {
                 anyhow::bail!(
-                    "Tor bootstrap timeout ({}s). Check your internet connection or if Tor is blocked. If you are using a VPN, try disabling it.",
+                    "Tor bootstrap timeout ({}s). The system will attempt a deep reset on next retry.",
                     timeout.as_secs()
                 );
             }
