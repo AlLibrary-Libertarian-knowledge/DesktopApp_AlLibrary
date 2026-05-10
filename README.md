@@ -22,7 +22,7 @@ _Empowering communities to preserve, share, and discover knowledge while respect
 
 ## Status Notice
 
-Networking (Tor/P2P/onion-share runtime) is currently disabled and the app runs with a frontend shell for these features. Network screens remain visible as placeholders for future implementation.
+Networking (Tor/P2P/onion-share runtime) is now integrated and functional. The application uses a decentralized approach via Tor Onion Services and a global Tracker/Lobby for peer discovery.
 
 ## 🎯 Project Vision
 
