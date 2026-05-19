@@ -148,7 +148,7 @@ export async function onionShareStatus(): Promise<{
 export async function fetchNetworkPresence(): Promise<{
   online: boolean;
   onionActive: boolean;
-  }> {
+}> {
   try {
     const s = await onionShareStatus();
     const onionActive = Boolean(s.running && s.onion && String(s.onion).trim().length > 0);
