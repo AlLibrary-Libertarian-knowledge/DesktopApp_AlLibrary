@@ -7,7 +7,7 @@ import { listen } from '@tauri-apps/api/event';
 
 // Custom wrapper to prevent test environments (like Vitest in Node) from failing on Tauri commands
 async function safeInvoke<T>(cmd: string, args?: Record<string, unknown>): Promise<T> {
-  if (typeof window === 'undefined' || !window.__TAURI_INTERNALS__) {
+  if (typeof window === 'undefined' || !(window as any).__TAURI_INTERNALS__) {
     if (cmd === 'tracker_get_config') {
       return {
         trackerUrl: 'http://127.0.0.1:8080',
