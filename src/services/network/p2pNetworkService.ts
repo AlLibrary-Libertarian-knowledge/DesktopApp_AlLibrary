@@ -7,6 +7,7 @@ import {
   trackerRefreshLobby,
   onionShareFetch,
   trackerGetConfig,
+  trackerGetCachedLobby,
 } from './onionShareService';
 import type {
   P2PNode,
@@ -204,7 +205,13 @@ class P2PNetworkServiceImpl implements P2PNetworkService {
   ): Promise<ContentHash> {
     if ('filePath' in content && content.filePath) {
       const res = await onionShareAddFile(content.filePath);
-      return res.contentHash;
+      return {
+        ipfsHash: res.contentHash,
+        contentType: 'document',
+        size: res.fileSize,
+        verificationHash: res.contentHash,
+        createdAt: new Date(),
+      };
     }
     throw new Error('Only documents with local file paths can be published to P2P network');
   }

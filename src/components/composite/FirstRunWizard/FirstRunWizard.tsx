@@ -6,7 +6,7 @@ import {
   ensureTorForOnionShare,
   type TorSetupProgressPayload,
 } from '@/services/network/onionShareService';
-import { pickLibraryFolder } from '@/services/system/fileDialogs';
+import { pickLibraryFolder, pickFolder } from '@/services/system/fileDialogs';
 
 interface FirstRunWizardProps {
   onComplete: () => void;
@@ -16,7 +16,8 @@ type TorUi = 'idle' | 'working' | 'done' | 'error';
 
 export const FirstRunWizard: Component<FirstRunWizardProps> = props => {
   const [step, setStep] = createSignal(1);
-  const [pickedPath, setPickedPath] = createSignal<string | null>(null);
+  const [sharePath, setSharePath] = createSignal<string | null>(null);
+  const [downloadPath, setDownloadPath] = createSignal<string | null>(null);
   const [busy, setBusy] = createSignal(false);
   const [error, setError] = createSignal<string | null>(null);
 
@@ -25,6 +26,9 @@ export const FirstRunWizard: Component<FirstRunWizardProps> = props => {
   const [torMessage, setTorMessage] = createSignal('');
   const [torErr, setTorErr] = createSignal<string | null>(null);
 
+  // Steps: 1=Welcome, 2=Tor Setup, 3=Share Folder, 4=Download Folder, 5=Ready
+  const TOTAL_STEPS = 5;
+
   const next = () => {
     const s = step();
     if (s === 1) {
@@ -32,7 +36,7 @@ export const FirstRunWizard: Component<FirstRunWizardProps> = props => {
       void runTorSetup();
       return;
     }
-    if (s < 4) setStep(s + 1);
+    if (s < TOTAL_STEPS) setStep(s + 1);
   };
 
   const back = () => setStep(Math.max(1, step() - 1));
@@ -53,34 +57,47 @@ export const FirstRunWizard: Component<FirstRunWizardProps> = props => {
     setTorErr(null);
     setTorUi('working');
     setTorProgress(0);
-    setTorMessage('');
+    setTorMessage('Starting Tor setup...');
     try {
       await ensureTorForOnionShare();
       setTorUi('done');
       setTorProgress(1);
+      setTorMessage('Tor is ready!');
     } catch (e: unknown) {
       setTorUi('error');
       setTorErr(String(e instanceof Error ? e.message : e));
     }
   };
 
-  const pickFolder = async () => {
+  const pickShareFolder = async () => {
     setError(null);
     try {
       const path = await pickLibraryFolder();
-      if (path && path.trim().length > 0) setPickedPath(path);
+      if (path && path.trim().length > 0) setSharePath(path);
+    } catch {
+      setError('Failed to open folder picker');
+    }
+  };
+
+  const pickDownloadFolder = async () => {
+    setError(null);
+    try {
+      const path = await pickFolder('Select Download Folder');
+      if (path && path.trim().length > 0) setDownloadPath(path);
     } catch {
       setError('Failed to open folder picker');
     }
   };
 
   const finish = async () => {
-    const path = pickedPath();
-    if (!path) return;
+    const share = sharePath();
+    const download = downloadPath() || share;
+    if (!share) return;
     setBusy(true);
     setError(null);
     try {
-      await settingsService.setProjectFolder(path);
+      await settingsService.setProjectFolder(share);
+      if (download) await settingsService.setDownloadFolder(download);
       try {
         globalThis.localStorage?.setItem('FIRST_RUN_DONE', '1');
       } catch {
@@ -88,7 +105,7 @@ export const FirstRunWizard: Component<FirstRunWizardProps> = props => {
       }
       props.onComplete();
     } catch {
-      setError('Failed to save folder');
+      setError('Failed to save settings. Please try again.');
     } finally {
       setBusy(false);
     }
@@ -96,93 +113,194 @@ export const FirstRunWizard: Component<FirstRunWizardProps> = props => {
 
   const torPct = () => Math.round(Math.min(100, Math.max(0, torProgress() * 100)));
 
+  const canGoNext = () => {
+    const s = step();
+    if (s === 2) return torUi() === 'done' || torUi() === 'error';
+    if (s === 3) return !!sharePath();
+    return true;
+  };
+
+  const stepLabel = (n: number) => {
+    const labels = ['Welcome', 'Tor Setup', 'Share Folder', 'Download Folder', 'Ready'];
+    return labels[n - 1] || '';
+  };
+
   return (
-    <div class={styles.overlay} role="dialog" aria-modal="true">
+    <div class={styles.overlay} role="dialog" aria-modal="true" aria-label="AlLibrary Setup">
       <div class={styles.container}>
-        <div class={styles.header}>Welcome to AlLibrary</div>
+        {/* Header with step indicator */}
+        <div class={styles.header}>
+          <span>Welcome to AlLibrary</span>
+          <div class={styles.stepIndicator}>
+            {Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1).map(n => (
+              <div
+                class={`${styles.stepDot} ${n < step() ? styles.stepDone : ''} ${n === step() ? styles.stepActive : ''}`}
+                title={stepLabel(n)}
+              />
+            ))}
+          </div>
+        </div>
+
         <div class={styles.body}>
+          {/* Step 1: Welcome */}
           <Show when={step() === 1}>
             <div class={styles.section}>
-              <h3 class={styles.title}>Private P2P over Tor</h3>
+              <div class={styles.stepIcon}>🌐</div>
+              <h3 class={styles.title}>Private P2P Document Sharing</h3>
               <p class={styles.text}>
-                Your library shares documents over an anonymous network. Cultural info is
-                educational only.
+                AlLibrary lets you share and discover documents anonymously using the Tor network.
+                No central server holds your data — everything is peer-to-peer.
               </p>
               <ul class={styles.list}>
-                <li>Security-first: malware/legal checks only</li>
-                <li>No censorship: information-only cultural context</li>
-                <li>Offline-capable: everything works without internet</li>
+                <li>🔒 Anonymous sharing via Tor hidden services (.onion)</li>
+                <li>🌍 Discover documents from peers worldwide via tracker</li>
+                <li>📚 Supports PDF and EPUB formats</li>
+                <li>🚫 No censorship: information-only, no content filtering</li>
               </ul>
+              <p class={styles.hint}>
+                This wizard will set up Tor and configure your folders. It takes about 2 minutes.
+              </p>
             </div>
           </Show>
+
+          {/* Step 2: Tor Setup */}
           <Show when={step() === 2}>
             <div class={styles.section}>
-              <h3 class={styles.title}>Tor for private sharing</h3>
+              <div class={styles.stepIcon}>
+                {torUi() === 'done' ? '✅' : torUi() === 'error' ? '⚠️' : '🔧'}
+              </div>
+              <h3 class={styles.title}>Setting up Tor Network</h3>
               <p class={styles.text}>
-                We set up the Tor executable used for onion-address file sharing. On Windows this
-                may download the Tor Expert Bundle once.
+                Tor enables anonymous, encrypted communication between peers. On Windows, this may
+                download the Tor Expert Bundle once (~50 MB).
               </p>
-              <div class={styles.progressTrack} role="progressbar" aria-valuenow={torPct()}>
+              <div
+                class={styles.progressTrack}
+                role="progressbar"
+                aria-valuenow={torPct()}
+                aria-valuemax={100}
+              >
                 <div class={styles.progressFill} style={{ width: `${torPct()}%` }} />
               </div>
-              <p class={styles.progressCaption}>{torMessage() || '\u00a0'}</p>
+              <p class={styles.progressCaption}>
+                {torMessage() || (torUi() === 'working' ? 'Initializing...' : '\u00a0')}
+              </p>
               <Show when={torUi() === 'error' && torErr()}>
-                <div class={styles.error}>{torErr()}</div>
-                <p class={styles.text}>
-                  On macOS or Linux, install Tor with your package manager, then use Retry.
+                <div class={styles.error}>⚠️ {torErr()}</div>
+                <p class={styles.hint}>
+                  On Linux/macOS: install Tor via your package manager (e.g.{' '}
+                  <code>sudo apt install tor</code>
+                  ), then retry. You can also skip and set up Tor later.
                 </p>
+              </Show>
+              <Show when={torUi() === 'done'}>
+                <div class={styles.successMsg}>
+                  ✅ Tor is ready! Your anonymous network is active.
+                </div>
               </Show>
               <Show when={torUi() === 'error'}>
                 <button type="button" class={styles.btn} onClick={() => void runTorSetup()}>
-                  Retry
+                  🔄 Retry Tor Setup
                 </button>
               </Show>
             </div>
           </Show>
+
+          {/* Step 3: Share Folder */}
           <Show when={step() === 3}>
             <div class={styles.section}>
-              <h3 class={styles.title}>Choose your Library Folder</h3>
-              <p class={styles.text}>All documents, indexes and cache will be stored here.</p>
+              <div class={styles.stepIcon}>📂</div>
+              <h3 class={styles.title}>Choose Share Folder</h3>
+              <p class={styles.text}>
+                This folder contains documents you want to <strong>share with the network</strong>.
+                Files here will be announced to other peers via your Tor onion address.
+              </p>
               <div class={styles.pathRow}>
-                <div class={styles.pathBox}>{pickedPath() || 'No folder selected'}</div>
-                <button class={styles.btn} onClick={pickFolder}>
-                  Pick Folder
+                <div class={styles.pathBox} title={sharePath() || ''}>
+                  {sharePath() || 'No folder selected'}
+                </div>
+                <button class={styles.btnPick} onClick={pickShareFolder}>
+                  📁 Pick Folder
                 </button>
               </div>
               <Show when={error()}>
                 <div class={styles.error}>{error()}</div>
               </Show>
+              <Show when={!sharePath()}>
+                <p class={styles.hint}>⚠️ You must select a share folder to continue.</p>
+              </Show>
             </div>
           </Show>
+
+          {/* Step 4: Download Folder */}
           <Show when={step() === 4}>
             <div class={styles.section}>
-              <h3 class={styles.title}>Ready</h3>
-              <p class={styles.text}>We will index your folder and prepare private networking.</p>
-              <div class={styles.summary}>
-                <span>Folder</span>
-                <span>{pickedPath() || '-'}</span>
+              <div class={styles.stepIcon}>⬇️</div>
+              <h3 class={styles.title}>Choose Download Folder</h3>
+              <p class={styles.text}>
+                Files you download from other peers will be saved here. You can choose the same
+                folder as Share, or a different one.
+              </p>
+              <div class={styles.pathRow}>
+                <div class={styles.pathBox} title={downloadPath() || ''}>
+                  {downloadPath() || 'Same as share folder (default)'}
+                </div>
+                <button class={styles.btnPick} onClick={pickDownloadFolder}>
+                  📁 Pick Folder
+                </button>
+              </div>
+              <Show when={error()}>
+                <div class={styles.error}>{error()}</div>
+              </Show>
+              <p class={styles.hint}>💡 Leave empty to use the same folder as Share.</p>
+            </div>
+          </Show>
+
+          {/* Step 5: Ready */}
+          <Show when={step() === 5}>
+            <div class={styles.section}>
+              <div class={styles.stepIcon}>🚀</div>
+              <h3 class={styles.title}>All Set!</h3>
+              <p class={styles.text}>
+                AlLibrary is configured and ready. Your documents will be shared anonymously via Tor
+                onion services and discovered by peers worldwide.
+              </p>
+              <div class={styles.summaryGrid}>
+                <div class={styles.summaryItem}>
+                  <span class={styles.summaryLabel}>📂 Share Folder</span>
+                  <span class={styles.summaryValue} title={sharePath() || '-'}>
+                    {sharePath() || '-'}
+                  </span>
+                </div>
+                <div class={styles.summaryItem}>
+                  <span class={styles.summaryLabel}>⬇️ Download Folder</span>
+                  <span class={styles.summaryValue} title={downloadPath() || sharePath() || '-'}>
+                    {downloadPath() || sharePath() || '-'}
+                  </span>
+                </div>
+                <div class={styles.summaryItem}>
+                  <span class={styles.summaryLabel}>🔒 Tor Network</span>
+                  <span class={styles.summaryValue}>
+                    {torUi() === 'done' ? '✅ Active' : '⚠️ Needs attention'}
+                  </span>
+                </div>
               </div>
             </div>
           </Show>
         </div>
+
         <div class={styles.footer}>
           <button class={styles.btnSecondary} disabled={step() === 1 || busy()} onClick={back}>
-            Back
+            ← Back
           </button>
-          <Show when={step() < 4}>
-            <button
-              class={styles.btnPrimary}
-              onClick={next}
-              disabled={
-                busy() || (step() === 2 && torUi() !== 'done') || (step() === 3 && !pickedPath())
-              }
-            >
-              Next
+          <Show when={step() < TOTAL_STEPS}>
+            <button class={styles.btnPrimary} onClick={next} disabled={busy() || !canGoNext()}>
+              {step() === 2 && torUi() === 'working' ? 'Setting up...' : 'Next →'}
             </button>
           </Show>
-          <Show when={step() === 4}>
-            <button class={styles.btnPrimary} onClick={finish} disabled={busy() || !pickedPath()}>
-              {busy() ? 'Saving...' : 'Finish'}
+          <Show when={step() === TOTAL_STEPS}>
+            <button class={styles.btnPrimary} onClick={finish} disabled={busy() || !sharePath()}>
+              {busy() ? 'Saving...' : '🚀 Launch AlLibrary'}
             </button>
           </Show>
         </div>

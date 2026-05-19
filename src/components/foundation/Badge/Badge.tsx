@@ -38,6 +38,8 @@ export interface BadgeProps {
   onClick?: () => void;
   /** Remove event handler */
   onRemove?: () => void;
+  /** Optional HTML title attribute for tooltips */
+  title?: string;
 }
 
 export const Badge: Component<BadgeProps> = props => {
@@ -63,6 +65,7 @@ export const Badge: Component<BadgeProps> = props => {
       class={badgeClasses()}
       onClick={props.onClick}
       data-testid={props['data-testid']}
+      title={props.title}
       role={props.onClick ? 'button' : undefined}
       tabIndex={props.onClick ? 0 : undefined}
       onKeyDown={

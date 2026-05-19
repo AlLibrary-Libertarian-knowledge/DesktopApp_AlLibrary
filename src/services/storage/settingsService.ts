@@ -2,19 +2,33 @@ import { invoke } from '@tauri-apps/api/core';
 
 export interface AppSettings {
   projectFolderPath: string;
+  downloadFolderPath: string;
 }
 
-const SETTINGS_KEY = 'alLibrary_projectPath';
+const SHARE_KEY = 'alLibrary_projectPath';
+const DOWNLOAD_KEY = 'alLibrary_downloadPath';
 
 export const settingsService = {
   async getProjectFolder(): Promise<string | null> {
-    const local = globalThis.localStorage?.getItem(SETTINGS_KEY);
+    const local = globalThis.localStorage?.getItem(SHARE_KEY);
     return local || null;
   },
+
+  async getDownloadFolder(): Promise<string | null> {
+    const local = globalThis.localStorage?.getItem(DOWNLOAD_KEY);
+    return local || null;
+  },
+
   async setProjectFolder(path: string): Promise<void> {
-    globalThis.localStorage?.setItem(SETTINGS_KEY, path);
+    globalThis.localStorage?.setItem(SHARE_KEY, path);
     try {
-      await invoke('save_app_settings', { settings: { projectFolderPath: path } });
+      const downloadPath = await this.getDownloadFolder();
+      await invoke('save_app_settings', {
+        settings: {
+          projectFolderPath: path,
+          downloadFolderPath: downloadPath || path,
+        },
+      });
     } catch {
       /* noop */
     }
@@ -29,8 +43,23 @@ export const settingsService = {
       /* noop */
     }
   },
+
+  async setDownloadFolder(path: string): Promise<void> {
+    globalThis.localStorage?.setItem(DOWNLOAD_KEY, path);
+    try {
+      const projectPath = await this.getProjectFolder();
+      await invoke('save_app_settings', {
+        settings: {
+          projectFolderPath: projectPath || path,
+          downloadFolderPath: path,
+        },
+      });
+    } catch {
+      /* noop */
+    }
+  },
+
   async ensureInitialized(): Promise<string | null> {
-    // First-run flow now; no installer-based adoption.
     return await this.getProjectFolder();
   },
 };

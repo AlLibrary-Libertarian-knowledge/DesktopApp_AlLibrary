@@ -3,13 +3,14 @@
  */
 
 import type { Component } from 'solid-js';
-import { For, Show, createSignal, onMount } from 'solid-js';
+import { For, Show, createSignal, onMount, onCleanup } from 'solid-js';
 import Button from '@/components/foundation/Button/Button';
 import * as onionShare from '@/services/network/onionShareService';
 import { pickAnyFiles, pickFolder } from '@/services/system/fileDialogs';
 import { Card } from '@/components/foundation/Card';
 import { Badge } from '@/components/foundation/Badge';
-import { Upload, Download, Activity } from 'lucide-solid';
+import { Upload, Download, Activity, Plus, Trash2 } from 'lucide-solid';
+import { downloadManager, type DownloadItem } from '@/services/network/downloadManager';
 import styles from './PeerTransfers.module.css';
 
 type OutStatus = 'seeding' | 'queued' | 'paused';
@@ -178,6 +179,8 @@ const PeerTransfers: Component = () => {
   const [fetchResult, setFetchResult] = createSignal('');
 
   const [localShares, setLocalShares] = createSignal<onionShare.LocalShareEntry[]>([]);
+  const [activeDls, setActiveDls] = createSignal<DownloadItem[]>([]);
+  const [completedDls, setCompletedDls] = createSignal<DownloadItem[]>([]);
 
   const snapshotLobby = async () => {
     try {
@@ -208,16 +211,79 @@ const PeerTransfers: Component = () => {
     }
   };
 
+  const handleAddMultipleShares = async () => {
+    setOnionErr('');
+    try {
+      const picked = await pickAnyFiles();
+      if (picked && picked.length > 0) {
+        const data = globalThis.localStorage?.getItem('allibrary_shared_paths');
+        const paths: string[] = data ? JSON.parse(data) : [];
+
+        for (const file of picked) {
+          try {
+            await onionShare.onionShareAddFile(file);
+            if (!paths.includes(file)) {
+              paths.push(file);
+            }
+          } catch (e: unknown) {
+            console.error('Failed to share file:', file, e);
+            setOnionErr(`Failed to share ${file.split('/').pop() || file}: ${String(e)}`);
+          }
+        }
+
+        globalThis.localStorage?.setItem('allibrary_shared_paths', JSON.stringify(paths));
+        await refreshUi();
+      }
+    } catch (e: unknown) {
+      console.warn('Pick files failed:', e);
+    }
+  };
+
+  const handleRemoveShare = async (share: onionShare.LocalShareEntry) => {
+    setOnionErr('');
+    try {
+      await onionShare.onionShareRemoveFile(share.fileId);
+      try {
+        const data = globalThis.localStorage?.getItem('allibrary_shared_paths');
+        if (data) {
+          let paths: string[] = JSON.parse(data);
+          paths = paths.filter(p => {
+            const fileName = p.split('/').pop() || p.split('\\').pop() || p;
+            return fileName !== share.name;
+          });
+          globalThis.localStorage?.setItem('allibrary_shared_paths', JSON.stringify(paths));
+        }
+      } catch (err) {
+        console.error('Failed to remove path from localStorage:', err);
+      }
+      await refreshUi();
+    } catch (e: unknown) {
+      setOnionErr(String(e instanceof Error ? e.message : e));
+    }
+  };
+
   onMount(() => {
     void refreshUi();
+    let prevCompletedLength = -1;
+    const unsub = downloadManager.subscribe((active, completed) => {
+      setActiveDls(active);
+      setCompletedDls(completed);
+      if (prevCompletedLength === -1) {
+        prevCompletedLength = completed.length;
+      } else if (completed.length > prevCompletedLength) {
+        prevCompletedLength = completed.length;
+        void refreshUi();
+      }
+    });
+    onCleanup(() => unsub());
   });
 
   const activeOut = MOCK_OUTBOUND.filter(o => o.status === 'seeding').length;
   const queuedOut = MOCK_OUTBOUND.filter(o => o.status === 'queued').length;
-  const activeIn = MOCK_INBOUND.filter(i => i.status === 'active').length;
-  const queuedIn = MOCK_INBOUND.filter(i => i.status === 'queued').length;
-  const activeTotal = activeOut + activeIn;
-  const queuedTotal = queuedOut + queuedIn;
+  const activeIn = () => activeDls().length;
+  const queuedIn = () => 0;
+  const activeTotal = () => activeOut + activeIn();
+  const queuedTotal = () => queuedOut + queuedIn();
 
   const upSeries = THROUGHPUT_SAMPLES.map(s => s.up);
   const downSeries = THROUGHPUT_SAMPLES.map(s => s.down);
@@ -365,6 +431,14 @@ const PeerTransfers: Component = () => {
               Pick file…
             </Button>
             <Button
+              variant="outline"
+              size="sm"
+              disabled={!onionRunning()}
+              onClick={handleAddMultipleShares}
+            >
+              <Plus size={14} /> Share Multiple
+            </Button>
+            <Button
               variant="primary"
               size="sm"
               disabled={!sharePath().trim() || !onionRunning()}
@@ -372,7 +446,22 @@ const PeerTransfers: Component = () => {
                 void (async () => {
                   setOnionErr('');
                   try {
-                    await onionShare.onionShareAddFile(sharePath().trim());
+                    const cleanPath = sharePath().trim();
+                    await onionShare.onionShareAddFile(cleanPath);
+                    try {
+                      const data = globalThis.localStorage?.getItem('allibrary_shared_paths');
+                      const paths: string[] = data ? JSON.parse(data) : [];
+                      if (!paths.includes(cleanPath)) {
+                        paths.push(cleanPath);
+                        globalThis.localStorage?.setItem(
+                          'allibrary_shared_paths',
+                          JSON.stringify(paths)
+                        );
+                      }
+                    } catch (err) {
+                      console.error('Failed to save shared path:', err);
+                    }
+                    setSharePath('');
                     await refreshUi();
                   } catch (e: unknown) {
                     setOnionErr(String(e instanceof Error ? e.message : e));
@@ -429,10 +518,9 @@ const PeerTransfers: Component = () => {
                   setFetchResult('');
                   setOnionErr('');
                   try {
-                    const p = await onionShare.onionShareFetch(
-                      fetchLink().trim(),
-                      fetchOutDir().trim()
-                    );
+                    const link = fetchLink().trim();
+                    const name = link.split('/').pop() || 'Onion Shared File';
+                    const p = await downloadManager.startDownload(link, name, fetchOutDir().trim());
                     setFetchResult(`Saved to: ${p}`);
                   } catch (e: unknown) {
                     setOnionErr(String(e instanceof Error ? e.message : e));
@@ -458,7 +546,7 @@ const PeerTransfers: Component = () => {
       <div class={styles.summaryRow}>
         <Card class={styles.summaryCard}>
           <span class={styles.summaryLabel}>Active transfers</span>
-          <strong class={styles.summaryValue}>{activeTotal}</strong>
+          <strong class={styles.summaryValue}>{activeTotal()}</strong>
           <div class={styles.sparkLine} aria-hidden>
             <For each={[0.35, 0.42, 0.38, 0.52, 0.48, 0.61, 0.55].map(x => `${x * 100}%`)}>
               {height => <div class={styles.sparkBar} style={{ height }} />}
@@ -467,7 +555,7 @@ const PeerTransfers: Component = () => {
         </Card>
         <Card class={styles.summaryCard}>
           <span class={styles.summaryLabel}>Queued</span>
-          <strong class={styles.summaryValue}>{queuedTotal}</strong>
+          <strong class={styles.summaryValue}>{queuedTotal()}</strong>
           <div class={styles.sparkLine} aria-hidden>
             <For each={[0.52, 0.48, 0.41, 0.44, 0.46, 0.39, 0.43].map(x => `${x * 100}%`)}>
               {height => <div class={styles.sparkAlt} style={{ height }} />}
@@ -476,7 +564,7 @@ const PeerTransfers: Component = () => {
         </Card>
         <Card class={styles.summaryCard}>
           <span class={styles.summaryLabel}>Completed (24h)</span>
-          <strong class={styles.summaryValue}>{MOCK_COMPLETED.length}</strong>
+          <strong class={styles.summaryValue}>{completedDls().length}</strong>
           <div class={styles.sparkLine} aria-hidden>
             <For each={[0.22, 0.35, 0.31, 0.58, 0.44, 0.72, 0.66].map(x => `${x * 100}%`)}>
               {height => <div class={styles.sparkBar} style={{ height }} />}
@@ -600,6 +688,7 @@ const PeerTransfers: Component = () => {
                   <th scope="col">Progress</th>
                   <th scope="col">Mbps</th>
                   <th scope="col">Status</th>
+                  <th scope="col">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -620,6 +709,16 @@ const PeerTransfers: Component = () => {
                       <td>—</td>
                       <td>
                         <Badge variant="success">seeding</Badge>
+                      </td>
+                      <td>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          class={styles.stopBtn}
+                          onClick={() => void handleRemoveShare(row)}
+                        >
+                          <Trash2 size={11} /> Stop
+                        </Button>
                       </td>
                     </tr>
                   )}
@@ -648,6 +747,7 @@ const PeerTransfers: Component = () => {
                         <td>
                           <Badge variant={statusToneOut(row.status)}>{row.status}</Badge>
                         </td>
+                        <td>—</td>
                       </tr>
                     )}
                   </For>
@@ -675,14 +775,28 @@ const PeerTransfers: Component = () => {
                 </tr>
               </thead>
               <tbody>
-                <For each={MOCK_INBOUND}>
+                <Show when={activeDls().length === 0}>
+                  <tr>
+                    <td
+                      colspan="5"
+                      style={{
+                        'text-align': 'center',
+                        padding: '20px',
+                        color: 'var(--text-muted)',
+                      }}
+                    >
+                      No active downloads. Add an onion link above or use the Global Acervo.
+                    </td>
+                  </tr>
+                </Show>
+                <For each={activeDls()}>
                   {row => (
                     <tr>
                       <td>
                         <div class={styles.mono}>{row.id}</div>
                         <div class={styles.cellTitle}>{row.name}</div>
                       </td>
-                      <td>{`${row.sizeMb} MB`}</td>
+                      <td>—</td>
                       <td>
                         <div class={styles.barCell}>
                           <div
@@ -692,9 +806,9 @@ const PeerTransfers: Component = () => {
                         </div>
                         <span class={styles.barLabel}>{`${Math.round(row.progress * 100)}%`}</span>
                       </td>
-                      <td>{row.status === 'queued' ? '—' : `${row.etaMin} min`}</td>
+                      <td>Connecting...</td>
                       <td>
-                        <Badge variant={statusToneIn(row.status)}>{row.status}</Badge>
+                        <Badge variant="warning">{row.status}</Badge>
                       </td>
                     </tr>
                   )}
@@ -721,16 +835,36 @@ const PeerTransfers: Component = () => {
                 </tr>
               </thead>
               <tbody>
-                <For each={MOCK_COMPLETED}>
+                <Show when={completedDls().length === 0}>
+                  <tr>
+                    <td
+                      colspan="4"
+                      style={{
+                        'text-align': 'center',
+                        padding: '20px',
+                        color: 'var(--text-muted)',
+                      }}
+                    >
+                      No downloads completed recently.
+                    </td>
+                  </tr>
+                </Show>
+                <For each={completedDls()}>
                   {row => (
                     <tr>
                       <td>
                         <div class={styles.mono}>{row.id}</div>
                         <div class={styles.cellTitle}>{row.name}</div>
                       </td>
-                      <td>{row.routed}</td>
-                      <td>{`${row.mib.toFixed(1)} MiB`}</td>
-                      <td class={styles.mutedTd}>{row.ended}</td>
+                      <td>
+                        <Badge variant="success">INBOUND</Badge>
+                      </td>
+                      <td>—</td>
+                      <td class={styles.mutedTd}>
+                        {row.status === 'completed'
+                          ? '✅ Baixado & Seeding'
+                          : `❌ Failed (${row.error || 'unknown error'})`}
+                      </td>
                     </tr>
                   )}
                 </For>

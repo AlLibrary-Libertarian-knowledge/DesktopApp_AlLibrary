@@ -26,6 +26,7 @@ import { DocumentDetailPage } from './pages/DocumentDetail';
 import { SearchNetworkPage } from './pages/SearchNetwork';
 import { DocumentReader } from './pages/DocumentReader';
 import PeerTransfers from './pages/PeerTransfers';
+import { GlobalAcervo } from './pages/GlobalAcervo';
 
 interface InitProgress {
   phase: string;
@@ -177,6 +178,23 @@ const App: Component = () => {
         // 2) Heavy Tor / onion bootstrap + tracker announce — Loading overlay stays up.
         try {
           await onionShare.bootstrapOnionOverlay();
+          // Restore previously saved shared files automatically
+          try {
+            const data = globalThis.localStorage?.getItem('allibrary_shared_paths');
+            if (data) {
+              const paths: string[] = JSON.parse(data);
+              for (const path of paths) {
+                try {
+                  console.log('Restoring shared file on boot:', path);
+                  await onionShare.onionShareAddFile(path);
+                } catch (shareErr) {
+                  console.error('Failed to restore shared file:', path, shareErr);
+                }
+              }
+            }
+          } catch (restoreErr) {
+            console.error('Failed to restore saved shares:', restoreErr);
+          }
         } catch (onionErr) {
           console.warn('Onion overlay bootstrap failed:', onionErr);
         }
@@ -356,6 +374,15 @@ const App: Component = () => {
             component={() => (
               <RouteWrapper>
                 <SearchNetworkPage />
+              </RouteWrapper>
+            )}
+          />
+
+          <Route
+            path="/acervo"
+            component={() => (
+              <RouteWrapper>
+                <GlobalAcervo />
               </RouteWrapper>
             )}
           />

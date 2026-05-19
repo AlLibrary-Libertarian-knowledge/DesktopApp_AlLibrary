@@ -27,6 +27,7 @@ import { enableTorAndP2P } from '../../services/network/bootstrap';
 import { useP2PTransfers } from '@/hooks/api/useP2PTransfers';
 import { torAdapter } from '../../services/network/torAdapter';
 import { useNetworkStore } from '@/stores/network/networkStore';
+import { settingsService } from '@/services/storage/settingsService';
 
 // Types
 import type { Document } from '@/types/core';
@@ -407,6 +408,17 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
                     <DocumentCard
                       document={result.document}
                       onOpen={() => handleDocumentOpen(result.document)}
+                      onDownload={async doc => {
+                        try {
+                          const dDir =
+                            (await settingsService.getDownloadFolder()) ||
+                            (await settingsService.getProjectFolder()) ||
+                            '.';
+                          await downloadByHash(doc.id, dDir);
+                        } catch (e) {
+                          console.error('Download failed:', e);
+                        }
+                      }}
                       showCulturalContext={true}
                       variant="default"
                     />

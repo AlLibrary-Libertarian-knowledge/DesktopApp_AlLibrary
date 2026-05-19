@@ -8,6 +8,7 @@ import {
   onCleanup,
   For,
 } from 'solid-js';
+import { trackerGetCachedLobby } from '@/services/network/onionShareService';
 import { settingsService } from '@/services/storage/settingsService';
 import { invoke } from '@tauri-apps/api/core';
 import { A, useLocation } from '@solidjs/router';
@@ -61,6 +62,7 @@ const Sidebar: Component<SidebarProps> = props => {
   const [isTransitioning, setIsTransitioning] = createSignal(false);
   const [wasCollapsed, setWasCollapsed] = createSignal(false);
   const [pendingSection, setPendingSection] = createSignal<string | null>(null);
+  const [onlineNodes, setOnlineNodes] = createSignal<number | null>(null);
   const location = useLocation();
   const navigationItems: NavSection[] = [
     {
@@ -80,7 +82,8 @@ const Sidebar: Component<SidebarProps> = props => {
       title: 'Discovery',
       icon: Search,
       items: [
-        { path: '/search-network', label: 'Search Network', icon: Globe },
+        { path: '/acervo', label: 'Global Acervo', icon: Globe },
+        { path: '/search-network', label: 'Search Network', icon: Search },
         { path: '/browse', label: 'Browse Categories', icon: FolderOpen },
         { path: '/trending', label: 'Trending', icon: TrendingUp, badge: '12' },
         { path: '/new-arrivals', label: 'New Arrivals', icon: Sparkles, badge: 'New' },
@@ -184,8 +187,22 @@ const Sidebar: Component<SidebarProps> = props => {
   onMount(() => {
     const handler = () => refetchDisk();
     window.addEventListener('project-folder-changed' as any, handler);
+
+    // Poll tracker lobby for online node count
+    const pollNodes = async () => {
+      try {
+        const lobby = await trackerGetCachedLobby();
+        setOnlineNodes(lobby.online_nodes ?? null);
+      } catch {
+        /* ignore — tracker may not be reachable */
+      }
+    };
+    void pollNodes();
+    const nodeTimer = setInterval(() => void pollNodes(), 15000);
+
     onCleanup(() => {
       window.removeEventListener('project-folder-changed' as any, handler);
+      clearInterval(nodeTimer);
     });
   });
   const storagePercentage = () =>
@@ -311,6 +328,18 @@ const Sidebar: Component<SidebarProps> = props => {
               <span class={`pill-dot ${presence()?.onionActive ? 'on' : 'off'}`} />
               <span class="pill-text">{presence()?.onionActive ? 'Onion' : 'No Onion'}</span>
             </div>
+            <Show when={onlineNodes() !== null}>
+              <div
+                class="tor-status-pill"
+                title="Nodes connected to the global tracker"
+                style={{ 'margin-top': '4px', cursor: 'default' }}
+              >
+                <span class="pill-dot on" />
+                <span class="pill-text">
+                  {onlineNodes()} node{onlineNodes() !== 1 ? 's' : ''} online
+                </span>
+              </div>
+            </Show>
           </Show>
         </div>
       </div>
