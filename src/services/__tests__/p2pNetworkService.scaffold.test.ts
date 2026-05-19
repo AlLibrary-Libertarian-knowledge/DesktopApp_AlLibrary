@@ -32,10 +32,10 @@ describe('P2P network shell (backend disabled)', () => {
           culturalOrigin: 'origin',
         } as any
       )
-    ).rejects.toThrow(/coming_soon/);
+    ).rejects.toThrow(/local file paths/);
 
     await expect(svc.requestContent({ ipfsHash: 'Qm123' } as any, 'peer1')).rejects.toThrow(
-      /coming_soon/
+      /specific download UI/
     );
   });
 

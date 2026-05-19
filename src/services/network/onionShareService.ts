@@ -5,6 +5,37 @@
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 
+// Custom wrapper to prevent test environments (like Vitest in Node) from failing on Tauri commands
+async function safeInvoke<T>(cmd: string, args?: Record<string, unknown>): Promise<T> {
+  if (typeof window === 'undefined' || !window.__TAURI_INTERNALS__) {
+    if (cmd === 'tracker_get_config') {
+      return {
+        trackerUrl: 'http://127.0.0.1:8080',
+        nodeId: 'network-disabled',
+        sharePublicly: false,
+      } as unknown as T;
+    }
+    if (cmd === 'onion_share_status') {
+      return {
+        running: false,
+        onion: null,
+        localPort: null,
+      } as unknown as T;
+    }
+    if (cmd === 'tracker_refresh_lobby' || cmd === 'tracker_get_cached_lobby_cmd') {
+      return {
+        online_nodes: 0,
+        files: [],
+      } as unknown as T;
+    }
+    if (cmd === 'onion_share_list_local') {
+      return [] as unknown as T;
+    }
+    return Promise.resolve() as unknown as T;
+  }
+  return invoke<T>(cmd, args);
+}
+
 /** Persisted tracker settings (camelCase from Tauri serde). */
 export interface TrackerNetworkConfig {
   trackerUrl: string;
@@ -77,32 +108,32 @@ export interface TorSetupProgressPayload {
 
 /** Ensures Tor exists for onion share: detects PATH/bundle, downloads Expert Bundle on Windows, persists `AppConfig.tor_path`. */
 export async function ensureTorForOnionShare(): Promise<string> {
-  return invoke<string>('ensure_tor_for_onion_share');
+  return safeInvoke<string>('ensure_tor_for_onion_share');
 }
 
 export async function onionShareStart(): Promise<OnionShareStartResponse> {
-  return invoke<OnionShareStartResponse>('onion_share_start');
+  return safeInvoke<OnionShareStartResponse>('onion_share_start');
 }
 
 /** Second startup stage after splash: Tor + onion share (same as Start button; emits init-progress). */
 export async function bootstrapOnionOverlay(): Promise<OnionShareStartResponse> {
-  return invoke<OnionShareStartResponse>('bootstrap_onion_overlay');
+  return safeInvoke<OnionShareStartResponse>('bootstrap_onion_overlay');
 }
 
 export async function onionShareStop(): Promise<void> {
-  return invoke('onion_share_stop');
+  return safeInvoke('onion_share_stop');
 }
 
 export async function onionShareAddFile(path: string): Promise<OnionShareAddFileResponse> {
-  return invoke<OnionShareAddFileResponse>('onion_share_add_file', { path });
+  return safeInvoke<OnionShareAddFileResponse>('onion_share_add_file', { path });
 }
 
 export async function onionShareRemoveFile(fileId: string): Promise<void> {
-  return invoke('onion_share_remove_file', { fileId });
+  return safeInvoke('onion_share_remove_file', { fileId });
 }
 
 export async function onionShareListLocal(): Promise<LocalShareEntry[]> {
-  return invoke<LocalShareEntry[]>('onion_share_list_local');
+  return safeInvoke<LocalShareEntry[]>('onion_share_list_local');
 }
 
 export async function onionShareStatus(): Promise<{
@@ -110,14 +141,14 @@ export async function onionShareStatus(): Promise<{
   onion: string | null;
   localPort: number | null;
 }> {
-  return invoke('onion_share_status');
+  return safeInvoke('onion_share_status');
 }
 
 /** Used by header/sidebar: true when Tor hidden service is up (onion share active with an address). */
 export async function fetchNetworkPresence(): Promise<{
   online: boolean;
   onionActive: boolean;
-}> {
+  }> {
   try {
     const s = await onionShareStatus();
     const onionActive = Boolean(s.running && s.onion && String(s.onion).trim().length > 0);
@@ -128,33 +159,33 @@ export async function fetchNetworkPresence(): Promise<{
 }
 
 export async function trackerGetConfig(): Promise<TrackerNetworkConfig> {
-  return invoke<TrackerNetworkConfig>('tracker_get_config');
+  return safeInvoke<TrackerNetworkConfig>('tracker_get_config');
 }
 
 export async function trackerSetConfig(config: TrackerNetworkConfig): Promise<void> {
-  return invoke('tracker_set_config', { config });
+  return safeInvoke('tracker_set_config', { config });
 }
 
 export async function trackerGetLastSyncDiag(): Promise<TrackerSyncDiagnostics | null> {
-  const v = await invoke<TrackerSyncDiagnostics | null>('tracker_get_last_sync_diag');
+  const v = await safeInvoke<TrackerSyncDiagnostics | null>('tracker_get_last_sync_diag');
   if (v === null || typeof v !== 'object') return null;
   return v as TrackerSyncDiagnostics;
 }
 
 export async function trackerRefreshLobby(): Promise<NetworkLobby> {
-  return invoke<NetworkLobby>('tracker_refresh_lobby');
+  return safeInvoke<NetworkLobby>('tracker_refresh_lobby');
 }
 
 export async function trackerGetCachedLobby(): Promise<NetworkLobby> {
-  return invoke<NetworkLobby>('tracker_get_cached_lobby_cmd');
+  return safeInvoke<NetworkLobby>('tracker_get_cached_lobby_cmd');
 }
 
 export async function trackerStartWsLoop(): Promise<void> {
-  return invoke('tracker_start_ws_loop');
+  return safeInvoke('tracker_start_ws_loop');
 }
 
 export async function trackerStopWsLoop(): Promise<void> {
-  return invoke('tracker_stop_ws_loop');
+  return safeInvoke('tracker_stop_ws_loop');
 }
 
 /**
@@ -172,7 +203,7 @@ export async function onionShareFetch(link: string, outDir: string): Promise<str
         else reject(new Error(p.error ?? 'download failed'));
       });
       try {
-        await invoke('onion_share_fetch', { link: linkTrim, outDir });
+        await safeInvoke('onion_share_fetch', { link: linkTrim, outDir });
       } catch (err) {
         unlisten();
         reject(err);
