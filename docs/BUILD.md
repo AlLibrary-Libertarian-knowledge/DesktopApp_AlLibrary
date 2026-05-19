@@ -3,15 +3,15 @@
 ## Development Build
 
 ```bash
-yarn dev           # Start development server
-yarn tauri:dev     # Start Tauri development mode
+pnpm run dev       # Start Vite development server
+pnpm run tauri:dev # Start Tauri development mode
 ```
 
 ## Production Build
 
 ```bash
-yarn build         # Build frontend for production
-yarn tauri:build   # Build complete Tauri application with installers
+pnpm run build     # Build frontend for production
+pnpm run tauri:build # Build complete Tauri application with installers
 ```
 
 ## Quality Assurance
@@ -20,8 +20,8 @@ yarn tauri:build   # Build complete Tauri application with installers
 pnpm run lint      # Run Biome check (format + lint) on src and tests
 pnpm run lint:fix  # Run Biome check with --write
 pnpm run format    # Run Biome format --write
-yarn typecheck     # Run TypeScript type checking
-yarn test          # Run unit tests with Vitest
+pnpm run typecheck # Run TypeScript type checking
+pnpm run test      # Run unit tests with Vitest
 ```
 
 ## Available Build Targets
