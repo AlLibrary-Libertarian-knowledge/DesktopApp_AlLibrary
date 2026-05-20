@@ -367,6 +367,7 @@ pnpm format           # Format all code
 - [🏛️ Architecture Guide](docs/architecture/README.md)
 - [🔧 API Reference](docs/api/README.md)
 - [🧪 Testing Guide](docs/development/testing.md)
+- [🧭 Tracker Server & P2P Integration Guide](docs/FUNCIONAMENTO_E_INTEGRACAO_TRACKER.md)
 
 ### Cultural Guidelines
 
