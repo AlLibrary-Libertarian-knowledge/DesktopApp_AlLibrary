@@ -26,7 +26,8 @@ Existing commands in `onion_bridge.rs` / `tracker_client.rs`:
 | `tracker_start_ws_loop` / `tracker_stop_ws_loop` | Done | Auto-start on boot; idempotent |
 | `bootstrap_onion_overlay` | Done | Emit `init-progress` (already) |
 
-- [ ] **P0** Implement `sync_lobby_to_db(lobby: NetworkLobby)` in Rust
+- [x] **P0** Migration `002_network_cache` — `network_files`, `network_peers`, `network_file_peers` in `allibrary.db`; runner via `ensure_node_database` at init
+- [ ] **P0** Implement `sync_lobby_to_db(lobby: NetworkLobby)` in Rust *(Task 3)*
 - [ ] **P0** On WS `Lobby` message → update in-memory cache + SQLite
 - [ ] **P0** Background task: if WS disconnected, periodic HTTP `announce` + `/lobby` (already in client; ensure DB sync)
 

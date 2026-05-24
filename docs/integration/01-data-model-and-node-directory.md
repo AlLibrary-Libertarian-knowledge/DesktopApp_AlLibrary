@@ -49,7 +49,7 @@ After first run (auto-created when `autoCreateSubfolders` is true):
 
 ## SQLite: one database per node
 
-**Current:** `allibrary.db` under `{documentsFolder}` — collections CRUD only (`commands/collections.rs`).
+**Current:** `allibrary.db` under `{documentsFolder}` — collections CRUD plus **`network_*` cache tables** (migration `002_network_cache`; lobby sync in Task 3).
 
 **Target:** Same file becomes the node's operational database. Network cache tables are **replicas**, not authoritative over the tracker (tracker remains ephemeral in RAM on server).
 
@@ -155,8 +155,8 @@ CREATE TABLE activity_log (
 
 ### Integration tasks — SQLite
 
-- [ ] **Migration runner** — Extend `core/database/migrations.rs` for new tables; versioned migrations on app start.
-- [ ] **Lobby sync command** — On `tracker_refresh_lobby` / WS lobby message: upsert `network_files`, `network_peers`, `network_file_peers`; prune stale by `last_seen_at`.
+- [x] **Migration runner** — Versioned migrations in `core/database/migrations.rs`; `ensure_node_database` runs on app init and before collection commands.
+- [ ] **Lobby sync command** — On `tracker_refresh_lobby` / WS lobby message: upsert `network_files`, `network_peers`, `network_file_peers`; prune stale by `last_seen_at`. *(Task 3)*
 - [ ] **Query commands for UI** — `search_network_cached`, `list_network_files`, `get_network_file_by_hash`, `list_network_peers` reading SQLite (fast, works when Tor blips).
 - [ ] **Persist transfers** — Rust owns transfer rows; emit events to frontend; remove `localStorage` `allibrary_completed_downloads`.
 - [ ] **Mirror local shares** — On `onion_share_add_file` / `remove`, upsert/delete `local_shares`.

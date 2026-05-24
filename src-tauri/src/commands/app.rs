@@ -4,6 +4,7 @@ use std::thread;
 use std::time::Duration;
 use tokio::time::{sleep, Duration as TokioDuration};
 use tracing::{error, info};
+use crate::core::database::ensure_node_database;
 
 /// Quick baseline startup only — closes the native splash. Tor/onion runs in `bootstrap_onion_overlay`.
 
@@ -38,12 +39,6 @@ pub async fn initialize_app(app: AppHandle) -> Result<(), String> {
             progress: 44.0,
             icon: "Shield".to_string(),
         },
-        InitProgress {
-            phase: "database".to_string(),
-            message: "Preparing Knowledge Vault".to_string(),
-            progress: 66.0,
-            icon: "Database".to_string(),
-        },
     ];
 
     for phase in early {
@@ -53,6 +48,22 @@ pub async fn initialize_app(app: AppHandle) -> Result<(), String> {
         }
         sleep(TokioDuration::from_millis(380)).await;
     }
+
+    let database_phase = InitProgress {
+        phase: "database".to_string(),
+        message: "Preparing Knowledge Vault".to_string(),
+        progress: 66.0,
+        icon: "Database".to_string(),
+    };
+    info!("Initialization phase: {}", database_phase.phase);
+    if let Err(e) = main_window.emit("init-progress", &database_phase) {
+        error!("Failed to emit progress: {}", e);
+    }
+    ensure_node_database(&app).await.map_err(|e| {
+        error!("Node database initialization failed: {}", e);
+        e
+    })?;
+    sleep(TokioDuration::from_millis(380)).await;
 
     let baseline_ready = InitProgress {
         phase: "baseline".to_string(),

@@ -26,7 +26,7 @@ export const FirstRunWizard: Component<FirstRunWizardProps> = props => {
   const [torMessage, setTorMessage] = createSignal('');
   const [torErr, setTorErr] = createSignal<string | null>(null);
 
-  // Steps: 1=Welcome, 2=Tor Setup, 3=Share Folder, 4=Download Folder, 5=Ready
+  // Steps: 1=Welcome, 2=Tor Setup, 3=Project Folder, 4=Download Folder, 5=Ready
   const TOTAL_STEPS = 5;
 
   const next = () => {
@@ -119,7 +119,7 @@ export const FirstRunWizard: Component<FirstRunWizardProps> = props => {
   };
 
   const stepLabel = (n: number) => {
-    const labels = ['Welcome', 'Tor Setup', 'Share Folder', 'Download Folder', 'Ready'];
+    const labels = ['Welcome', 'Tor Setup', 'Project Folder', 'Download Folder', 'Ready'];
     return labels[n - 1] || '';
   };
 
@@ -204,14 +204,15 @@ export const FirstRunWizard: Component<FirstRunWizardProps> = props => {
             </div>
           </Show>
 
-          {/* Step 3: Share Folder */}
+          {/* Step 3: Project Folder */}
           <Show when={step() === 3}>
             <div class={styles.section}>
               <div class={styles.stepIcon}>📂</div>
-              <h3 class={styles.title}>Choose Share Folder</h3>
+              <h3 class={styles.title}>Choose Project Folder</h3>
               <p class={styles.text}>
-                This folder contains documents you want to <strong>share with the network</strong>.
-                Files here will be announced to other peers via your Tor onion address.
+                This is your AlLibrary <strong>project root</strong>. The app will create subfolders
+                here — your library files go in <code>documents/</code>, and files you share with
+                the network are announced from there via your Tor onion address.
               </p>
               <div class={styles.pathRow}>
                 <div class={styles.pathBox} title={sharePath() || ''}>
@@ -225,7 +226,7 @@ export const FirstRunWizard: Component<FirstRunWizardProps> = props => {
                 <div class={styles.error}>{error()}</div>
               </Show>
               <Show when={!sharePath()}>
-                <p class={styles.hint}>⚠️ You must select a share folder to continue.</p>
+                <p class={styles.hint}>⚠️ You must select a project folder to continue.</p>
               </Show>
             </div>
           </Show>
@@ -236,8 +237,8 @@ export const FirstRunWizard: Component<FirstRunWizardProps> = props => {
               <div class={styles.stepIcon}>⬇️</div>
               <h3 class={styles.title}>Choose Download Folder</h3>
               <p class={styles.text}>
-                Files you download from other peers will be saved here. You can choose the same
-                folder as Share, or a different one.
+                Files you download from other peers will be saved here. By default they go in a{' '}
+                <code>downloads/</code> subfolder under your project root.
               </p>
               <div class={styles.pathRow}>
                 <div class={styles.pathBox} title={downloadPath() || ''}>
@@ -267,7 +268,7 @@ export const FirstRunWizard: Component<FirstRunWizardProps> = props => {
               </p>
               <div class={styles.summaryGrid}>
                 <div class={styles.summaryItem}>
-                  <span class={styles.summaryLabel}>📂 Share Folder</span>
+                  <span class={styles.summaryLabel}>📂 Project Folder</span>
                   <span class={styles.summaryValue} title={sharePath() || '-'}>
                     {sharePath() || '-'}
                   </span>

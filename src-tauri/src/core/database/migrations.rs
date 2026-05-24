@@ -196,5 +196,110 @@ fn get_migrations() -> Vec<Migration> {
                 CREATE INDEX idx_tags_name ON tags(name);
             "#.to_string(),
         },
+        Migration {
+            version: "002_network_cache".to_string(),
+            description: "Create network cache tables for tracker lobby".to_string(),
+            sql: r#"
+                CREATE TABLE network_files (
+                    content_hash TEXT PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    size INTEGER NOT NULL,
+                    canonical_link TEXT,
+                    peer_count INTEGER NOT NULL DEFAULT 0,
+                    first_seen_at TEXT,
+                    last_seen_at TEXT NOT NULL
+                );
+
+                CREATE TABLE network_peers (
+                    node_id TEXT PRIMARY KEY,
+                    onion TEXT NOT NULL,
+                    last_seen_at TEXT NOT NULL
+                );
+
+                CREATE TABLE network_file_peers (
+                    content_hash TEXT NOT NULL,
+                    node_id TEXT NOT NULL,
+                    file_id TEXT NOT NULL,
+                    link TEXT NOT NULL,
+                    PRIMARY KEY (content_hash, node_id, file_id),
+                    FOREIGN KEY (content_hash) REFERENCES network_files(content_hash),
+                    FOREIGN KEY (node_id) REFERENCES network_peers(node_id)
+                );
+
+                CREATE INDEX idx_network_files_name ON network_files(name);
+                CREATE INDEX idx_network_files_last_seen_at ON network_files(last_seen_at);
+                CREATE INDEX idx_network_peers_last_seen_at ON network_peers(last_seen_at);
+            "#.to_string(),
+        },
     ]
-} 
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use sqlx::sqlite::SqlitePoolOptions;
+    use std::path::PathBuf;
+
+    async fn run_all_migrations_on_path(db_path: &PathBuf) -> Result<()> {
+        if let Some(parent) = db_path.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+        let options = sqlx::sqlite::SqliteConnectOptions::new()
+            .filename(db_path)
+            .create_if_missing(true);
+        let pool = SqlitePoolOptions::new()
+            .max_connections(1)
+            .connect_with(options)
+            .await?;
+        run_migrations(&pool).await
+    }
+
+    async fn table_exists(pool: &SqlitePool, name: &str) -> bool {
+        let count = sqlx::query_scalar::<_, i64>(
+            "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = ?",
+        )
+        .bind(name)
+        .fetch_one(pool)
+        .await
+        .unwrap_or(0);
+        count > 0
+    }
+
+    #[tokio::test]
+    async fn migration_002_creates_network_cache_tables() {
+        let db_path = std::env::temp_dir().join(format!(
+            "allibrary_test_{}.db",
+            uuid::Uuid::new_v4()
+        ));
+        if let Some(parent) = db_path.parent() {
+            std::fs::create_dir_all(parent).expect("temp parent dir");
+        }
+
+        run_all_migrations_on_path(&db_path)
+            .await
+            .expect("migrations should succeed");
+
+        let options = sqlx::sqlite::SqliteConnectOptions::new()
+            .filename(&db_path)
+            .create_if_missing(true);
+        let pool = SqlitePoolOptions::new()
+            .max_connections(1)
+            .connect_with(options)
+            .await
+            .expect("connect");
+
+        assert!(table_exists(&pool, "network_files").await);
+        assert!(table_exists(&pool, "network_peers").await);
+        assert!(table_exists(&pool, "network_file_peers").await);
+
+        let applied: Vec<String> = sqlx::query_scalar(
+            "SELECT version FROM schema_migrations ORDER BY version",
+        )
+        .fetch_all(&pool)
+        .await
+        .expect("schema_migrations");
+
+        assert!(applied.contains(&"001_initial_schema".to_string()));
+        assert!(applied.contains(&"002_network_cache".to_string()));
+    }
+}

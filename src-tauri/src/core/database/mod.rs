@@ -2,10 +2,12 @@ pub mod models;
 pub mod connection;
 pub mod migrations;
 pub mod operations;
+pub mod node_db;
 
 pub use connection::*;
 pub use models::*;
 pub use operations::*;
+pub use node_db::{ensure_node_database, resolve_database_path};
 
 use crate::utils::error::Result;
 use sqlx::SqlitePool;
