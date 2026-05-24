@@ -27,9 +27,11 @@ Existing commands in `onion_bridge.rs` / `tracker_client.rs`:
 | `bootstrap_onion_overlay` | Done | Emit `init-progress` (already) |
 
 - [x] **P0** Migration `002_network_cache` — `network_files`, `network_peers`, `network_file_peers` in `allibrary.db`; runner via `ensure_node_database` at init
-- [ ] **P0** Implement `sync_lobby_to_db(lobby: NetworkLobby)` in Rust *(Task 3)*
-- [ ] **P0** On WS `Lobby` message → update in-memory cache + SQLite
-- [ ] **P0** Background task: if WS disconnected, periodic HTTP `announce` + `/lobby` (already in client; ensure DB sync)
+- [x] **P0** Implement `sync_lobby_to_db(lobby: NetworkLobby)` in Rust — wired from onion_bridge + WS loop
+- [x] **P0** On WS `Lobby` message → update in-memory cache + SQLite
+- [x] **P0** Background task: HTTP announce heartbeat persists lobby to SQLite on success
+- [x] **P1** `search_network_cached` — SQL `LIKE` on `network_files.name`, order by `peer_count`
+- [x] **P1** `list_network_peers` — from `network_peers`
 
 ### Onion share
 
@@ -76,8 +78,8 @@ list_network_peers() -> Vec<NetworkPeerDto>
 get_swarm(content_hash: String) -> Option<NetworkFileDto>  // HTTP to tracker or cache
 ```
 
-- [ ] **P1** `search_network_cached` — SQL `LIKE` on `network_files.name`, order by `peer_count`
-- [ ] **P1** `list_network_peers` — from `network_peers`
+- [x] **P1** `search_network_cached` — SQL `LIKE` on `network_files.name`, order by `peer_count`
+- [x] **P1** `list_network_peers` — from `network_peers`
 - [ ] **P1** `get_swarm` — proxy `GET /swarm/:hash` when online; else cache
 - [ ] **P1** Wire existing `search_p2p_network` Tauri command either to cached search or deprecate in favor of above
 

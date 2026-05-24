@@ -8,7 +8,7 @@ import {
   onCleanup,
   For,
 } from 'solid-js';
-import { trackerGetCachedLobby } from '@/services/network/onionShareService';
+import { networkFacade } from '@/services/network/networkFacade';
 import { settingsService } from '@/services/storage/settingsService';
 import { invoke } from '@tauri-apps/api/core';
 import { A, useLocation } from '@solidjs/router';
@@ -191,8 +191,8 @@ const Sidebar: Component<SidebarProps> = props => {
     // Poll tracker lobby for online node count
     const pollNodes = async () => {
       try {
-        const lobby = await trackerGetCachedLobby();
-        setOnlineNodes(lobby.online_nodes ?? null);
+        const lobby = await networkFacade.getLobby();
+        setOnlineNodes(lobby.onlineNodes ?? null);
       } catch {
         /* ignore — tracker may not be reachable */
       }

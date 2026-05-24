@@ -3,11 +3,16 @@ pub mod connection;
 pub mod migrations;
 pub mod operations;
 pub mod node_db;
+pub mod network_cache;
 
 pub use connection::*;
 pub use models::*;
 pub use operations::*;
 pub use node_db::{ensure_node_database, resolve_database_path};
+pub use network_cache::{
+    cache_cutoff_rfc3339, load_lobby_from_db, load_lobby_from_pool, sync_lobby_to_db,
+    sync_lobby_to_pool, search_network_cached_pool, list_network_peers_pool,
+};
 
 use crate::utils::error::Result;
 use sqlx::SqlitePool;

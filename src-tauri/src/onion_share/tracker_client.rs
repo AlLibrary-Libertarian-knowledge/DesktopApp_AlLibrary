@@ -229,10 +229,13 @@ pub async fn sync_tracker_result(
     ))
 }
 
+pub type LobbyUpdatedCallback = Arc<dyn Fn() + Send + Sync>;
+
 pub async fn run_tracker_ws_loop(
     handle: Arc<tokio::sync::Mutex<Option<ShareServerHandle>>>,
     cached_lobby: Arc<tokio::sync::RwLock<NetworkLobby>>,
     stop: Arc<std::sync::atomic::AtomicBool>,
+    on_lobby_updated: Option<LobbyUpdatedCallback>,
 ) {
     loop {
         if stop.load(std::sync::atomic::Ordering::SeqCst) {
@@ -278,7 +281,14 @@ pub async fn run_tracker_ws_loop(
         match ws_conn {
             Ok(ws_stream) => {
                 info!("Connected to tracker WebSocket: {}", ws_url);
-                let _ = ws_comm_loop(ws_stream, handle.clone(), cached_lobby.clone(), stop.clone()).await;
+                let _ = ws_comm_loop(
+                    ws_stream,
+                    handle.clone(),
+                    cached_lobby.clone(),
+                    stop.clone(),
+                    on_lobby_updated.clone(),
+                )
+                .await;
             }
             Err(e) => {
                 warn!("Tracker WebSocket error ({}): {}", ws_url, e);
@@ -297,6 +307,7 @@ async fn ws_comm_loop<S>(
     handle: Arc<tokio::sync::Mutex<Option<ShareServerHandle>>>,
     cached_lobby: Arc<tokio::sync::RwLock<NetworkLobby>>,
     stop: Arc<std::sync::atomic::AtomicBool>,
+    on_lobby_updated: Option<LobbyUpdatedCallback>,
 ) -> anyhow::Result<()>
 where
     S: futures_util::SinkExt<Message, Error = tokio_tungstenite::tungstenite::Error>
@@ -338,6 +349,10 @@ where
                         {
                             let mut w = cached_lobby.write().await;
                             *w = lobby;
+                            drop(w);
+                            if let Some(cb) = &on_lobby_updated {
+                                cb();
+                            }
                         }
                     }
                     Some(Ok(Message::Ping(bytes))) => {

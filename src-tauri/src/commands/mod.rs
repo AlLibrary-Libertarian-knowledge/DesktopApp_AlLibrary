@@ -7,6 +7,7 @@ pub mod collections;
 pub mod documents;
 pub mod network_shell;
 pub mod onion_bridge;
+pub mod network_cache;
 pub mod tor_setup;
 
 pub use app::{initialize_app, get_app_ready_state, close_splash_screen, InitProgress};
@@ -83,3 +84,4 @@ pub use onion_bridge::{
     OnionShareState,
     TrackerNetworkConfig,
 };
+pub use network_cache::{list_network_peers, search_network_cached};

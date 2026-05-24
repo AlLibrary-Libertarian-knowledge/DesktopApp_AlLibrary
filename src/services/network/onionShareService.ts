@@ -28,6 +28,12 @@ async function safeInvoke<T>(cmd: string, args?: Record<string, unknown>): Promi
         files: [],
       } as unknown as T;
     }
+    if (cmd === 'search_network_cached') {
+      return [] as unknown as T;
+    }
+    if (cmd === 'list_network_peers') {
+      return [] as unknown as T;
+    }
     if (cmd === 'onion_share_list_local') {
       return [] as unknown as T;
     }

@@ -4,11 +4,10 @@ import {
   onionShareRemoveFile,
   onionShareListLocal,
   onionShareStatus,
-  trackerRefreshLobby,
   onionShareFetch,
   trackerGetConfig,
-  trackerGetCachedLobby,
 } from './onionShareService';
+import { networkFacade } from './networkFacade';
 import type {
   P2PNode,
   Peer,
@@ -155,13 +154,17 @@ class P2PNetworkServiceImpl implements P2PNetworkService {
 
   async getNodeStatus(): Promise<NetworkStatus> {
     const s = await onionShareStatus();
-    // Use cached lobby for status; refresh manually or via searches to avoid Tor circuit spam
-    const lobby = await trackerGetCachedLobby().catch(() => ({ online_nodes: 0, files: [] }));
+    const lobby = await networkFacade.getLobby().catch(() => ({
+      onlineNodes: 0,
+      files: [],
+      totalBytes: 0,
+      lastSyncAt: null,
+    }));
 
     return {
       ...defaultNetworkStatus(),
       nodeStatus: s.running ? 'online' : 'offline',
-      connectedPeers: lobby.online_nodes,
+      connectedPeers: lobby.onlineNodes,
       torStatus: {
         enabled: true,
         connected: s.running,
@@ -181,12 +184,9 @@ class P2PNetworkServiceImpl implements P2PNetworkService {
   }
 
   async discoverPeers(_options: PeerDiscoveryOptions = {}): Promise<Peer[]> {
-    const lobby = await trackerRefreshLobby();
-    const uniquePeers = new Set<string>();
-    lobby.files.forEach(f => f.peers.forEach(p => uniquePeers.add(p.node_id)));
-
-    return Array.from(uniquePeers).map(id => ({
-      id,
+    const peers = await networkFacade.listPeers();
+    return peers.map(p => ({
+      id: p.nodeId,
       status: 'online',
       protocols: ['onion-share'],
     })) as any;
@@ -245,30 +245,24 @@ class P2PNetworkServiceImpl implements P2PNetworkService {
   }
 
   async searchNetwork(query: string, _options: SearchOptions): Promise<SearchResult[]> {
-    const lobby = await trackerRefreshLobby();
-    const q = query.toLowerCase();
-
-    // Filter lobby files by query
-    const matches = lobby.files.filter(
-      f => f.name.toLowerCase().includes(q) || f.content_hash.toLowerCase().includes(q)
-    );
+    const matches = await networkFacade.searchFiles(query);
 
     return matches.map(
       f =>
         ({
-          id: f.content_hash,
+          id: f.contentHash,
           title: f.name,
-          description: `Available via ${f.peer_count} peer(s)`,
+          description: `Available via ${f.peerCount} peer(s)`,
           author: 'P2P Network',
           fileType: (f.name.split('.').pop() as any) || 'pdf',
           fileSize: f.size,
           uploadDate: new Date().toISOString(),
           tags: ['p2p', 'decentralized'],
           culturalLevel: 1,
-          peerId: f.peers[0]?.node_id || 'unknown',
+          peerId: f.peers[0]?.nodeId || 'unknown',
           peerReputation: 5,
           relevanceScore: 100,
-          filePath: f.link, // Use the onion link as a reference
+          filePath: f.link,
         }) as any
     );
   }

@@ -16,6 +16,7 @@ use crate::onion_share::server::ShareServerHandle;
 use crate::onion_share::tracker_client;
 use crate::onion_share::tracker_proto::NetworkLobby;
 use crate::onion_share::wizard::installer;
+use crate::core::database::{load_lobby_from_db, sync_lobby_to_db};
 
 const DEFAULT_CHUNK: usize = 256 * 1024;
 /// Re-announce before tracker `last_seen` TTL (30s in POC) when not using WS.
@@ -68,7 +69,26 @@ impl Default for OnionShareState {
     }
 }
 
-async fn restart_http_announce_heartbeat(state: &OnionShareState) {
+async fn persist_lobby_to_sqlite(app: &AppHandle, state: &OnionShareState) {
+    let lobby = state.cached_lobby.read().await.clone();
+    if let Err(e) = sync_lobby_to_db(app, &lobby).await {
+        warn!("Lobby SQLite sync failed: {e}");
+        return;
+    }
+    let _ = app.emit("lobby-updated", &lobby);
+}
+
+fn lobby_persist_callback(app: AppHandle, state: OnionShareState) -> tracker_client::LobbyUpdatedCallback {
+    Arc::new(move || {
+        let app = app.clone();
+        let state = state.clone();
+        tokio::spawn(async move {
+            persist_lobby_to_sqlite(&app, &state).await;
+        });
+    })
+}
+
+async fn restart_http_announce_heartbeat(app: AppHandle, state: &OnionShareState) {
     state.http_announce_stop.store(true, Ordering::SeqCst);
     if let Some(t) = state.http_announce_task.lock().await.take() {
         t.abort();
@@ -79,6 +99,8 @@ async fn restart_http_announce_heartbeat(state: &OnionShareState) {
     let handle_arc = Arc::clone(&state.handle);
     let lobby_arc = Arc::clone(&state.cached_lobby);
     let diag_arc = Arc::clone(&state.tracker_last_sync);
+    let state_clone = state.clone();
+    let app_clone = app.clone();
 
     let task = tokio::spawn(async move {
         let mut interval =
@@ -96,7 +118,10 @@ async fn restart_http_announce_heartbeat(state: &OnionShareState) {
             };
             let tr = tracker_client::sync_tracker_result(Some(h), lobby_arc.clone()).await;
             drop(g);
-            persist_tracker_diag(diag_arc.clone(), None, &tr).await;
+            persist_tracker_diag(diag_arc.clone(), Some(&app_clone), &tr).await;
+            if tr.is_ok() {
+                persist_lobby_to_sqlite(&app_clone, &state_clone).await;
+            }
         }
     });
 
@@ -145,8 +170,11 @@ pub async fn bootstrap_onion_share(
         let tr = tracker_client::sync_tracker_result(Some(h), state.cached_lobby.clone()).await;
         let sink = Arc::clone(&state.tracker_last_sync);
         persist_tracker_diag(sink, Some(app), &tr).await;
+        if tr.is_ok() {
+            persist_lobby_to_sqlite(app, state.inner()).await;
+        }
         drop(guard);
-        restart_http_announce_heartbeat(state).await;
+        restart_http_announce_heartbeat(app.clone(), state.inner()).await;
         let _ = app.emit("network-presence-changed", json!({}));
         return Ok(json!({"onion": onion, "localPort": port}));
     }
@@ -179,9 +207,12 @@ pub async fn bootstrap_onion_share(
         let tr = tracker_client::sync_tracker_result(Some(h), lobby).await;
         let sink = Arc::clone(&state.tracker_last_sync);
         persist_tracker_diag(sink, Some(app), &tr).await;
+        if tr.is_ok() {
+            persist_lobby_to_sqlite(app, state.inner()).await;
+        }
     }
     drop(guard);
-    restart_http_announce_heartbeat(state).await;
+    restart_http_announce_heartbeat(app.clone(), state.inner()).await;
     let _ = app.emit("network-presence-changed", json!({}));
     Ok(json!({"onion": onion, "localPort": port}))
 }
@@ -366,7 +397,10 @@ pub async fn tracker_set_config(config: TrackerNetworkConfig) -> Result<(), Stri
 }
 
 #[tauri::command]
-pub async fn tracker_refresh_lobby(state: State<'_, OnionShareState>) -> Result<NetworkLobby, String> {
+pub async fn tracker_refresh_lobby(
+    app: AppHandle,
+    state: State<'_, OnionShareState>,
+) -> Result<NetworkLobby, String> {
     let guard = state.handle.lock().await;
     let Some(ref srv) = *guard else {
         return Err(
@@ -375,10 +409,11 @@ pub async fn tracker_refresh_lobby(state: State<'_, OnionShareState>) -> Result<
     };
     let tr = tracker_client::sync_tracker_result(Some(srv), state.cached_lobby.clone()).await;
     drop(guard);
-    persist_tracker_diag(Arc::clone(&state.tracker_last_sync), None, &tr).await;
+    persist_tracker_diag(Arc::clone(&state.tracker_last_sync), Some(&app), &tr).await;
     tr.map_err(|e| format!("Cannot reach tracker: {e}"))?;
+    persist_lobby_to_sqlite(&app, state.inner()).await;
 
-    tracker_get_cached_inner(&state).await
+    tracker_get_cached_inner(&app, state.inner()).await
 }
 
 #[tauri::command]
@@ -393,13 +428,18 @@ pub async fn tracker_get_last_sync_diag(state: State<'_, OnionShareState>) -> Re
 
 #[tauri::command]
 pub async fn tracker_get_cached_lobby_cmd(
+    app: AppHandle,
     state: State<'_, OnionShareState>,
 ) -> Result<NetworkLobby, String> {
-    tracker_get_cached_inner(&state).await
+    tracker_get_cached_inner(&app, state.inner()).await
 }
 
-async fn tracker_get_cached_inner(state: &OnionShareState) -> Result<NetworkLobby, String> {
-    Ok(state.cached_lobby.read().await.clone())
+async fn tracker_get_cached_inner(app: &AppHandle, state: &OnionShareState) -> Result<NetworkLobby, String> {
+    let mem = state.cached_lobby.read().await.clone();
+    if !mem.files.is_empty() || mem.online_nodes > 0 {
+        return Ok(mem);
+    }
+    load_lobby_from_db(app).await
 }
 
 #[tauri::command]
@@ -418,9 +458,10 @@ pub async fn tracker_start_ws_loop(
     let handle_arc = Arc::clone(&state.handle);
     let lobby_arc = Arc::clone(&state.cached_lobby);
     let stop = Arc::clone(&state.tracker_stop);
+    let on_lobby_updated = Some(lobby_persist_callback(app.clone(), state.inner().clone()));
 
     let task = tokio::spawn(async move {
-        tracker_client::run_tracker_ws_loop(handle_arc, lobby_arc, stop).await;
+        tracker_client::run_tracker_ws_loop(handle_arc, lobby_arc, stop, on_lobby_updated).await;
     });
 
     state.tracker_task.lock().await.replace(task);

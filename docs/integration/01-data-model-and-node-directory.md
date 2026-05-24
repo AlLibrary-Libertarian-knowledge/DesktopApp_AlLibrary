@@ -156,8 +156,8 @@ CREATE TABLE activity_log (
 ### Integration tasks — SQLite
 
 - [x] **Migration runner** — Versioned migrations in `core/database/migrations.rs`; `ensure_node_database` runs on app init and before collection commands.
-- [ ] **Lobby sync command** — On `tracker_refresh_lobby` / WS lobby message: upsert `network_files`, `network_peers`, `network_file_peers`; prune stale by `last_seen_at`. *(Task 3)*
-- [ ] **Query commands for UI** — `search_network_cached`, `list_network_files`, `get_network_file_by_hash`, `list_network_peers` reading SQLite (fast, works when Tor blips).
+- [x] **Lobby sync command** — `sync_lobby_to_db` runs on HTTP refresh, bootstrap, heartbeat, and WS lobby push; emits `lobby-updated`.
+- [ ] **Query commands for UI** — `search_network_cached`, `list_network_peers` registered; full screen wiring in Task 4.
 - [ ] **Persist transfers** — Rust owns transfer rows; emit events to frontend; remove `localStorage` `allibrary_completed_downloads`.
 - [ ] **Mirror local shares** — On `onion_share_add_file` / `remove`, upsert/delete `local_shares`.
 - [ ] **Favorites commands** — Implement `list_favorites`, `toggle_favorite`, `is_favorite` against SQLite (frontend already calls them).

@@ -61,9 +61,9 @@ export const networkFacade = {
 
 ### Implementation notes
 
-- [ ] Create file; migrate logic from `GlobalAcervo.loadLobby`, Sidebar poll, `p2pNetworkService.searchNetwork`
-- [ ] `searchFiles('')` returns full lobby — **Global Acervo replacement**
-- [ ] When `tracker_refresh_lobby` fails, call new Tauri `search_network_cached` (doc 03)
+- [x] Create file; migrate logic from `GlobalAcervo.loadLobby`, Sidebar poll, `p2pNetworkService.searchNetwork`
+- [x] `searchFiles('')` returns full lobby — **Global Acervo replacement** path via facade
+- [x] When `tracker_refresh_lobby` fails, call `search_network_cached` (SQLite fallback)
 - [ ] Re-export types from `src/types/NetworkLobby.ts` aligned with `tracker_proto.rs`
 
 ---
