@@ -4,8 +4,8 @@ Each AlLibrary installation is a **node**. Its local state is the node's contrib
 
 ## Project directory (first run)
 
-**Source of truth (frontend):** `FirstRunWizard` + `settingsService.setProjectFolder`  
-**Source of truth (backend):** `load_app_settings` / `save_app_settings` → `settings.json` in Tauri app data dir, plus subfolders under `project.projectFolderPath`.
+**Source of truth (frontend):** `FirstRunWizard` + `settingsService.saveProjectSetup` → `apply_project_paths`  
+**Source of truth (backend):** `load_app_settings` / `apply_project_paths` → `settings.json` in Tauri app data dir, plus subfolders under `project.projectFolderPath`.
 
 ### Required layout
 
@@ -41,10 +41,10 @@ After first run (auto-created when `autoCreateSubfolders` is true):
 
 ### Integration tasks — directory & config
 
-- [ ] **Unify path writes** — `settingsService` currently mirrors project path in `localStorage` only; always persist via `save_app_settings` on first run and on change in Configurations.
-- [ ] **Single download folder** — Store `downloadFolderPath` in `settings.json`; default `{projectFolder}/downloads`. All network downloads use this unless overridden per transfer.
+- [x] **Unify path writes** — `settingsService` persists via `apply_project_paths` on first run and on folder change; localStorage is a read cache only.
+- [x] **Single download folder** — Store `downloadFolderPath` in `settings.json`; default `{projectFolder}/downloads`. All network downloads use this unless overridden per transfer.
 - [ ] **Move onion `AppConfig` under project or app_data** — Stop using orphan `onion_poc` namespace; store `tracker_url`, `node_id`, `share_publicly`, `try_local_tracker_fallback` next to `settings.json` or in SQLite `node_config` table.
-- [ ] **First-run creates downloads subfolder** — Extend Rust folder bootstrap to match `FolderStructure` in `settings.rs`.
+- [x] **First-run creates downloads subfolder** — Rust `apply_project_paths` bootstraps `FolderStructure` plus `{project}/downloads`.
 - [ ] **Expose folder paths in Configurations** — Project folder, download folder, read-only display of DB path (`documents/allibrary.db`).
 
 ## SQLite: one database per node

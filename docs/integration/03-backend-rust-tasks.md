@@ -8,7 +8,7 @@ Tasks derived from frontend screens and from retiring POC flows. Priority: **P0*
 
 ### Settings & paths
 
-- [ ] **P0** Align `save_app_settings` payload with frontend `settingsService` (project + download paths, folder creation)
+- [ ] **P0** Align `save_app_settings` payload with frontend `settingsService` (project + download paths, folder creation) — done via `apply_project_paths` (Task 1)
 - [ ] **P0** Return resolved paths in `load_app_settings` for UI display (documents, downloads, db file)
 - [ ] **P0** Relocate `onion_share/config.rs` `AppConfig` persistence into app settings or SQLite `node_config`
 

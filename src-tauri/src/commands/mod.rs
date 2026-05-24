@@ -16,7 +16,7 @@ pub use system::{
     pick_library_folder, pick_document_files,
 };
 pub use tor_setup::{ensure_tor_for_onion_share, TorSetupProgress};
-pub use settings::{load_app_settings, save_app_settings, AppSettings};
+pub use settings::{apply_project_paths, load_app_settings, save_app_settings, AppSettings};
 pub use search::{get_search_history, clear_search_history, get_search_index_info, SearchIndex};
 pub use collections::{create_collection, get_collections, get_collection, update_collection, delete_collection};
 pub use documents::{

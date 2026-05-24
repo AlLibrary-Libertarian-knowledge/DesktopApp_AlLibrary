@@ -2,6 +2,7 @@
 export interface ProjectSettings {
   // Project folder configuration
   projectFolderPath: string;
+  downloadFolderPath: string;
   defaultProjectName: string;
   autoCreateSubfolders: boolean;
 

@@ -20,6 +20,8 @@ pub struct AppSettings {
 pub struct ProjectSettings {
     #[serde(rename = "projectFolderPath")]
     pub project_folder_path: String,
+    #[serde(rename = "downloadFolderPath", default)]
+    pub download_folder_path: String,
     #[serde(rename = "defaultProjectName")]
     pub default_project_name: String,
     #[serde(rename = "autoCreateSubfolders")]
@@ -123,6 +125,67 @@ fn get_settings_path(app_handle: &AppHandle) -> Result<PathBuf, Box<dyn std::err
     Ok(app_data_dir.join("settings.json"))
 }
 
+fn default_download_folder(project_root: &str) -> String {
+    PathBuf::from(project_root.trim())
+        .join("downloads")
+        .to_string_lossy()
+        .into_owned()
+}
+
+fn derive_folder_structure(project_root: &str) -> FolderStructure {
+    let root = PathBuf::from(project_root.trim());
+    FolderStructure {
+        documents_folder: root.join("documents").to_string_lossy().into_owned(),
+        index_folder: root.join("search_index").to_string_lossy().into_owned(),
+        metadata_folder: root.join("metadata").to_string_lossy().into_owned(),
+        cache_folder: root.join("cache").to_string_lossy().into_owned(),
+        backup_folder: root.join("backups").to_string_lossy().into_owned(),
+        cultural_contexts_folder: root.join("cultural_contexts").to_string_lossy().into_owned(),
+        educational_resources_folder: root
+            .join("educational_resources")
+            .to_string_lossy()
+            .into_owned(),
+        community_content_folder: root
+            .join("community_content")
+            .to_string_lossy()
+            .into_owned(),
+    }
+}
+
+fn apply_project_root(settings: &mut AppSettings, project_root: &str, download_folder: &str) {
+    let project_root = project_root.trim();
+    let download_folder = download_folder.trim();
+    settings.project.project_folder_path = project_root.to_string();
+    settings.project.download_folder_path = download_folder.to_string();
+    settings.folder_structure = derive_folder_structure(project_root);
+    settings.project.search_index_path = settings.folder_structure.index_folder.clone();
+}
+
+fn subfolder_paths(settings: &AppSettings) -> Vec<&str> {
+    vec![
+        settings.folder_structure.documents_folder.as_str(),
+        settings.folder_structure.index_folder.as_str(),
+        settings.folder_structure.metadata_folder.as_str(),
+        settings.folder_structure.cache_folder.as_str(),
+        settings.folder_structure.backup_folder.as_str(),
+        settings.folder_structure.cultural_contexts_folder.as_str(),
+        settings.folder_structure.educational_resources_folder.as_str(),
+        settings.folder_structure.community_content_folder.as_str(),
+        settings.project.download_folder_path.as_str(),
+    ]
+}
+
+fn create_project_subfolders(settings: &AppSettings) -> Result<(), String> {
+    for path in subfolder_paths(settings) {
+        if path.is_empty() {
+            continue;
+        }
+        fs::create_dir_all(path)
+            .map_err(|e| format!("Failed to create directory {}: {}", path, e))?;
+    }
+    Ok(())
+}
+
 fn get_default_settings() -> AppSettings {
     let home_dir = dirs::home_dir()
         .unwrap_or_else(|| PathBuf::from("/"))
@@ -130,13 +193,16 @@ fn get_default_settings() -> AppSettings {
         .to_string();
     
     let default_project_path = format!("{}/AlLibrary", home_dir);
+    let default_download = default_download_folder(&default_project_path);
+    let folder_structure = derive_folder_structure(&default_project_path);
 
     AppSettings {
         project: ProjectSettings {
             project_folder_path: default_project_path.clone(),
+            download_folder_path: default_download,
             default_project_name: "AlLibrary".to_string(),
             auto_create_subfolders: true,
-            search_index_path: format!("{}/search_index", default_project_path),
+            search_index_path: folder_structure.index_folder.clone(),
             enable_full_text_search: true,
             search_results_limit: 100,
             search_history_limit: 50,
@@ -147,16 +213,7 @@ fn get_default_settings() -> AppSettings {
             search_timeout: 5000,
             cache_search_results: true,
         },
-        folder_structure: FolderStructure {
-            documents_folder: format!("{}/documents", default_project_path),
-            index_folder: format!("{}/search_index", default_project_path),
-            metadata_folder: format!("{}/metadata", default_project_path),
-            cache_folder: format!("{}/cache", default_project_path),
-            backup_folder: format!("{}/backups", default_project_path),
-            cultural_contexts_folder: format!("{}/cultural_contexts", default_project_path),
-            educational_resources_folder: format!("{}/educational_resources", default_project_path),
-            community_content_folder: format!("{}/community_content", default_project_path),
-        },
+        folder_structure,
         search: SearchSettings {
             case_sensitive: false,
             include_metadata: true,
@@ -233,4 +290,36 @@ pub async fn save_app_settings(app_handle: AppHandle, settings: AppSettings) -> 
 
     info!("App settings saved successfully");
     Ok(())
-} 
+}
+
+#[tauri::command]
+pub async fn apply_project_paths(
+    app_handle: AppHandle,
+    project_folder_path: String,
+    download_folder_path: Option<String>,
+) -> Result<AppSettings, String> {
+    let project = project_folder_path.trim();
+    if project.is_empty() {
+        return Err("project_folder_path cannot be empty".into());
+    }
+
+    let mut settings = load_app_settings(app_handle.clone()).await?;
+    let download = download_folder_path
+        .map(|p| p.trim().to_string())
+        .filter(|p| !p.is_empty())
+        .unwrap_or_else(|| default_download_folder(project));
+
+    apply_project_root(&mut settings, project, &download);
+
+    if settings.project.auto_create_subfolders {
+        create_project_subfolders(&settings)?;
+        info!("Project subfolders created under {}", project);
+    }
+
+    save_app_settings(app_handle, settings.clone()).await?;
+    info!(
+        "Applied project paths: project={}, download={}",
+        settings.project.project_folder_path, settings.project.download_folder_path
+    );
+    Ok(settings)
+}

@@ -91,21 +91,19 @@ export const FirstRunWizard: Component<FirstRunWizardProps> = props => {
 
   const finish = async () => {
     const share = sharePath();
-    const download = downloadPath() || share;
     if (!share) return;
     setBusy(true);
     setError(null);
     try {
-      await settingsService.setProjectFolder(share);
-      if (download) await settingsService.setDownloadFolder(download);
+      await settingsService.saveProjectSetup(share, downloadPath());
       try {
         globalThis.localStorage?.setItem('FIRST_RUN_DONE', '1');
       } catch {
         /* noop */
       }
       props.onComplete();
-    } catch {
-      setError('Failed to save settings. Please try again.');
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Failed to save settings. Please try again.');
     } finally {
       setBusy(false);
     }
@@ -243,7 +241,7 @@ export const FirstRunWizard: Component<FirstRunWizardProps> = props => {
               </p>
               <div class={styles.pathRow}>
                 <div class={styles.pathBox} title={downloadPath() || ''}>
-                  {downloadPath() || 'Same as share folder (default)'}
+                  {downloadPath() || `${sharePath() || 'project'}/downloads (default)`}
                 </div>
                 <button class={styles.btnPick} onClick={pickDownloadFolder}>
                   📁 Pick Folder
@@ -252,7 +250,9 @@ export const FirstRunWizard: Component<FirstRunWizardProps> = props => {
               <Show when={error()}>
                 <div class={styles.error}>{error()}</div>
               </Show>
-              <p class={styles.hint}>💡 Leave empty to use the same folder as Share.</p>
+              <p class={styles.hint}>
+                💡 Leave empty to use <code>{sharePath() || 'project'}/downloads</code>.
+              </p>
             </div>
           </Show>
 
@@ -274,8 +274,11 @@ export const FirstRunWizard: Component<FirstRunWizardProps> = props => {
                 </div>
                 <div class={styles.summaryItem}>
                   <span class={styles.summaryLabel}>⬇️ Download Folder</span>
-                  <span class={styles.summaryValue} title={downloadPath() || sharePath() || '-'}>
-                    {downloadPath() || sharePath() || '-'}
+                  <span
+                    class={styles.summaryValue}
+                    title={downloadPath() || `${sharePath() || ''}/downloads`}
+                  >
+                    {downloadPath() || `${sharePath() || '-'}/downloads`}
                   </span>
                 </div>
                 <div class={styles.summaryItem}>
