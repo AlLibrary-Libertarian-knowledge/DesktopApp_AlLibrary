@@ -28,6 +28,53 @@ pub fn tracker_ws_url(tracker_url: &str) -> String {
     }
 }
 
+const LOCAL_TRACKER_HTTP: &str = "http://127.0.0.1:8080";
+
+pub fn local_tracker_http_url() -> &'static str {
+    LOCAL_TRACKER_HTTP
+}
+
+pub fn local_tracker_ws_url() -> String {
+    tracker_ws_url(LOCAL_TRACKER_HTTP)
+}
+
+async fn fetch_lobby_http(
+    tracker_url: &str,
+    socks_addr: Option<&str>,
+) -> Result<NetworkLobby, String> {
+    let client = build_http_client(
+        tracker_url,
+        socks_addr.map(|s| s.to_string()),
+    )
+    .map_err(|e| e.to_string())?;
+    let lobby_url = format!("{}/lobby", tracker_url.trim_end_matches('/'));
+    let lobby = client
+        .get(&lobby_url)
+        .send()
+        .await
+        .map_err(|e| format!("GET lobby failed: {e}"))?;
+    let lobby = lobby.error_for_status().map_err(|e| {
+        e.status()
+            .map(|s| format!("Lobby HTTP {s}"))
+            .unwrap_or_else(|| format!("Lobby: {e}"))
+    })?;
+    lobby
+        .json::<NetworkLobby>()
+        .await
+        .map_err(|e| format!("Lobby JSON: {e}"))
+}
+
+/// Pull lobby over plain HTTP (no announce). Used when Tor/onion is unavailable.
+pub async fn sync_lobby_http_only(
+    tracker_url: &str,
+    cached_lobby: Arc<tokio::sync::RwLock<NetworkLobby>>,
+) -> Result<(), String> {
+    let lobby = fetch_lobby_http(tracker_url, None).await?;
+    let mut w = cached_lobby.write().await;
+    *w = lobby;
+    Ok(())
+}
+
 pub async fn announced_files(handle: &ShareServerHandle, cfg: &AppConfig) -> Vec<AnnouncedFile> {
     if !cfg.share_publicly {
         return Vec::new();
@@ -162,12 +209,29 @@ async fn announce_and_refresh_lobby(
     }
 }
 
+async fn sync_localhost_lobby_only(
+    cached_lobby: Arc<tokio::sync::RwLock<NetworkLobby>>,
+) -> Result<TrackerSyncOutcome, String> {
+    sync_lobby_http_only(LOCAL_TRACKER_HTTP, cached_lobby).await?;
+    info!(
+        "Tracker lobby synced via localhost fallback ({}) without onion announce",
+        LOCAL_TRACKER_HTTP
+    );
+    Ok(TrackerSyncOutcome {
+        url_used: LOCAL_TRACKER_HTTP.to_string(),
+        used_localhost_fallback: true,
+    })
+}
+
 pub async fn sync_tracker_result(
     handle: Option<&ShareServerHandle>,
     cached_lobby: Arc<tokio::sync::RwLock<NetworkLobby>>,
 ) -> Result<TrackerSyncOutcome, String> {
     let cfg = AppConfig::load();
     let Some(handle) = handle else {
+        if cfg.try_local_tracker_fallback {
+            return sync_localhost_lobby_only(cached_lobby).await;
+        }
         return Err("No onion share active — start Tor/onion sharing first.".into());
     };
 
@@ -243,26 +307,37 @@ pub async fn run_tracker_ws_loop(
         }
 
         let cfg = AppConfig::load();
-        let tracker_url = normalize_tracker_url(&cfg.tracker_url).trim_end_matches('/').to_string();
-        if tracker_url.is_empty() {
-            warn!("tracker_url empty; skipping tracker WS until configured");
-            tokio::time::sleep(Duration::from_secs(5)).await;
-            continue;
-        }
-
-        let guard = handle.lock().await;
-        let Some(ref h) = *guard else {
-            drop(guard);
-            tokio::time::sleep(Duration::from_secs(2)).await;
-            continue;
+        let (ws_url, use_socks, socks_addr_str) = {
+            let guard = handle.lock().await;
+            if let Some(ref h) = *guard {
+                let tracker_url =
+                    normalize_tracker_url(&cfg.tracker_url).trim_end_matches('/').to_string();
+                if tracker_url.is_empty() {
+                    drop(guard);
+                    warn!("tracker_url empty; skipping tracker WS until configured");
+                    tokio::time::sleep(Duration::from_secs(5)).await;
+                    continue;
+                }
+                (
+                    tracker_ws_url(&tracker_url),
+                    tracker_url.contains(".onion"),
+                    h.socks_addr(),
+                )
+            } else if cfg.try_local_tracker_fallback {
+                (
+                    local_tracker_ws_url(),
+                    false,
+                    String::new(),
+                )
+            } else {
+                drop(guard);
+                tokio::time::sleep(Duration::from_secs(2)).await;
+                continue;
+            }
         };
-        let socks_addr_str = h.socks_addr();
-        drop(guard);
-
-        let ws_url = tracker_ws_url(&tracker_url);
 
         let ws_conn: anyhow::Result<Either<_, _>> = async {
-            if tracker_url.contains(".onion") {
+            if use_socks {
                 let socks_socket: SocketAddr = socks_addr_str.parse()?;
                 let url = url::Url::parse(&ws_url)?;
                 let host = url.host_str().context("no host")?;
@@ -293,8 +368,12 @@ pub async fn run_tracker_ws_loop(
             Err(e) => {
                 warn!("Tracker WebSocket error ({}): {}", ws_url, e);
                 let g = handle.lock().await;
-                let h_opt = g.as_ref();
-                sync_tracker(h_opt, cached_lobby.clone()).await;
+                if g.is_some() {
+                    sync_tracker(g.as_ref(), cached_lobby.clone()).await;
+                } else if cfg.try_local_tracker_fallback {
+                    let _ =
+                        sync_lobby_http_only(LOCAL_TRACKER_HTTP, cached_lobby.clone()).await;
+                }
                 drop(g);
                 tokio::time::sleep(Duration::from_secs(3)).await;
             }

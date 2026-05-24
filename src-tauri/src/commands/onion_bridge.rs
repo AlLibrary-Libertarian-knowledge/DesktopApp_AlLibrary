@@ -16,7 +16,15 @@ use crate::onion_share::server::ShareServerHandle;
 use crate::onion_share::tracker_client;
 use crate::onion_share::tracker_proto::NetworkLobby;
 use crate::onion_share::wizard::installer;
-use crate::core::database::{load_lobby_from_db, sync_lobby_to_db};
+use crate::core::database::{
+    delete_local_share_by_path_pool, delete_local_share_pool, ensure_node_database,
+    list_local_shares_pool, load_lobby_from_db, local_share_disk_path_map_pool,
+    sync_lobby_to_db, upsert_local_share_pool,
+};
+use crate::core::database::models::LocalShareRow;
+use chrono::Utc;
+use std::collections::HashSet;
+use std::path::PathBuf;
 
 const DEFAULT_CHUNK: usize = 256 * 1024;
 /// Re-announce before tracker `last_seen` TTL (30s in POC) when not using WS.
@@ -65,6 +73,106 @@ impl Default for OnionShareState {
             tracker_last_sync: Arc::new(Mutex::new(None)),
             http_announce_stop: Arc::new(AtomicBool::new(true)),
             http_announce_task: Arc::new(Mutex::new(None)),
+        }
+    }
+}
+
+async fn persist_share_to_db(
+    app: &AppHandle,
+    disk_path: &str,
+    file_id: &str,
+    name: &str,
+    size_bytes: u64,
+    content_hash: &str,
+    link: &str,
+) -> Result<(), String> {
+    let pool = ensure_node_database(app).await?;
+    upsert_local_share_pool(
+        &pool,
+        &LocalShareRow {
+            file_id: file_id.to_string(),
+            name: name.to_string(),
+            size_bytes: size_bytes as i64,
+            content_hash: content_hash.to_string(),
+            link: link.to_string(),
+            disk_path: disk_path.to_string(),
+            created_at: Utc::now().to_rfc3339(),
+        },
+    )
+    .await
+}
+
+async fn restore_local_shares_from_db(app: &AppHandle, state: &OnionShareState) {
+    let pool = match ensure_node_database(app).await {
+        Ok(p) => p,
+        Err(e) => {
+            warn!("Skipping local share restore: {e}");
+            return;
+        }
+    };
+
+    let rows = match list_local_shares_pool(&pool).await {
+        Ok(r) => r,
+        Err(e) => {
+            warn!("Failed to list local_shares for restore: {e}");
+            return;
+        }
+    };
+
+    if rows.is_empty() {
+        return;
+    }
+
+    let guard = state.handle.lock().await;
+    let Some(ref srv) = *guard else {
+        return;
+    };
+
+    let active_hashes: HashSet<String> = {
+        let shares = srv.state.shares.lock().await;
+        shares
+            .values()
+            .map(|s| s.content_hash.clone())
+            .collect()
+    };
+
+    for row in rows {
+        let pb = PathBuf::from(&row.disk_path);
+        if !pb.is_file() {
+            if let Err(e) = delete_local_share_by_path_pool(&pool, &row.disk_path).await {
+                warn!("Failed to remove stale local_share {}: {e}", row.disk_path);
+            } else {
+                warn!("Removed stale local_share (missing file): {}", row.disk_path);
+            }
+            continue;
+        }
+
+        if active_hashes.contains(&row.content_hash) {
+            continue;
+        }
+
+        match srv.add_file(pb, DEFAULT_CHUNK).await {
+            Ok(share) => {
+                let link = srv.link_for(&share);
+                if let Err(e) = persist_share_to_db(
+                    app,
+                    &row.disk_path,
+                    &share.file_id.to_string(),
+                    &share.file_name,
+                    share.file_size,
+                    &share.content_hash,
+                    &link,
+                )
+                .await
+                {
+                    warn!("Failed to persist restored share {}: {e}", row.disk_path);
+                } else {
+                    info!("Restored local share: {}", row.disk_path);
+                }
+            }
+            Err(e) => {
+                warn!("Failed to restore share {}: {e}", row.disk_path);
+            }
         }
     }
 }
@@ -128,6 +236,45 @@ async fn restart_http_announce_heartbeat(app: AppHandle, state: &OnionShareState
     state.http_announce_task.lock().await.replace(task);
 }
 
+async fn spawn_tracker_ws_loop(app: &AppHandle, state: &OnionShareState) {
+    state.tracker_stop.store(false, Ordering::SeqCst);
+    {
+        let mut tg = state.tracker_task.lock().await;
+        if let Some(prev) = tg.take() {
+            prev.abort();
+        }
+    }
+
+    let handle_arc = Arc::clone(&state.handle);
+    let lobby_arc = Arc::clone(&state.cached_lobby);
+    let stop = Arc::clone(&state.tracker_stop);
+    let on_lobby_updated = Some(lobby_persist_callback(app.clone(), state.clone()));
+
+    let task = tokio::spawn(async move {
+        tracker_client::run_tracker_ws_loop(handle_arc, lobby_arc, stop, on_lobby_updated).await;
+    });
+
+    state.tracker_task.lock().await.replace(task);
+    let _ = app.emit("tracker-ws-started", ());
+}
+
+async fn connect_local_tracker_fallback(app: &AppHandle, state: &OnionShareState) {
+    let cfg = AppConfig::load();
+    if !cfg.try_local_tracker_fallback {
+        return;
+    }
+
+    let tr = tracker_client::sync_tracker_result(None, state.cached_lobby.clone()).await;
+    persist_tracker_diag(Arc::clone(&state.tracker_last_sync), Some(app), &tr).await;
+    if tr.is_ok() {
+        persist_lobby_to_sqlite(app, state).await;
+        spawn_tracker_ws_loop(app, state).await;
+        let _ = app.emit("network-presence-changed", json!({}));
+    } else if let Err(e) = &tr {
+        warn!("Local tracker fallback failed: {e}");
+    }
+}
+
 async fn persist_tracker_diag(
     sink: Arc<Mutex<Option<serde_json::Value>>>,
     app: Option<&AppHandle>,
@@ -175,24 +322,48 @@ pub async fn bootstrap_onion_share(
         }
         drop(guard);
         restart_http_announce_heartbeat(app.clone(), state.inner()).await;
+        spawn_tracker_ws_loop(app, state.inner()).await;
+        restore_local_shares_from_db(app, state.inner()).await;
         let _ = app.emit("network-presence-changed", json!({}));
         return Ok(json!({"onion": onion, "localPort": port}));
     }
 
     let mut cfg = AppConfig::load();
-    let resolved = installer::detect_tor(&cfg.tor_path).ok_or_else(|| {
-        error!("Tor not found during bootstrap");
-        "Tor not found. Install Tor Browser or Expert Bundle and set tor path in config, or rely on bundled install (Windows)."
-            .to_string()
-    })?;
+    let resolved = match installer::detect_tor(&cfg.tor_path) {
+        Some(r) => r,
+        None => {
+            error!("Tor not found during bootstrap");
+            drop(guard);
+            connect_local_tracker_fallback(app, state.inner()).await;
+            if cfg.try_local_tracker_fallback {
+                return Ok(json!({
+                    "localOnly": true,
+                    "error": "Tor not found. Install Tor Browser or Expert Bundle and set tor path in config, or rely on bundled install (Windows).",
+                }));
+            }
+            return Err(
+                "Tor not found. Install Tor Browser or Expert Bundle and set tor path in config, or rely on bundled install (Windows)."
+                    .to_string(),
+            );
+        }
+    };
 
     info!("Starting OnionShare with Tor binary: {}", resolved);
-    let handle_srv = ShareServerHandle::start(&resolved)
-        .await
-        .map_err(|e| {
+    let handle_srv = match ShareServerHandle::start(&resolved).await {
+        Ok(h) => h,
+        Err(e) => {
             error!("ShareServerHandle::start failed: {}", e);
-            e.to_string()
-        })?;
+            drop(guard);
+            connect_local_tracker_fallback(app, state.inner()).await;
+            if AppConfig::load().try_local_tracker_fallback {
+                return Ok(json!({
+                    "localOnly": true,
+                    "error": e.to_string(),
+                }));
+            }
+            return Err(e.to_string());
+        }
+    };
 
     if cfg.tor_path != resolved && !resolved.eq_ignore_ascii_case("tor") && !resolved.eq_ignore_ascii_case("tor.exe") {
         cfg.tor_path = resolved.clone();
@@ -213,6 +384,8 @@ pub async fn bootstrap_onion_share(
     }
     drop(guard);
     restart_http_announce_heartbeat(app.clone(), state.inner()).await;
+    spawn_tracker_ws_loop(app, state.inner()).await;
+    restore_local_shares_from_db(app, state.inner()).await;
     let _ = app.emit("network-presence-changed", json!({}));
     Ok(json!({"onion": onion, "localPort": port}))
 }
@@ -253,12 +426,26 @@ pub async fn bootstrap_onion_overlay(
         Err(e) => {
             let skip = json!({
                 "phase": "onion",
-                "message": format!("Onion unavailable ({e}). Start from Sharing & downloads when ready."),
+                "message": format!("Onion unavailable ({e}). Local tracker may still work if Docker is running."),
                 "progress": 100.0,
                 "icon": "Users",
             });
             let _ = main.emit("init-progress", &skip);
         }
+    }
+
+    match &result {
+        Ok(v) if v.get("localOnly").and_then(|x| x.as_bool()) == Some(true) => {
+            let partial = json!({
+                "phase": "onion",
+                "message": "Tracker connected via localhost (Tor unavailable)",
+                "progress": 100.0,
+                "icon": "Users",
+                "localOnly": true,
+            });
+            let _ = main.emit("init-progress", &partial);
+        }
+        _ => {}
     }
 
     result
@@ -296,6 +483,7 @@ pub async fn onion_share_stop(app: AppHandle, state: State<'_, OnionShareState>)
 
 #[tauri::command]
 pub async fn onion_share_add_file(
+    app: AppHandle,
     path: String,
     state: State<'_, OnionShareState>,
 ) -> Result<serde_json::Value, String> {
@@ -303,22 +491,38 @@ pub async fn onion_share_add_file(
     let Some(ref srv) = *guard else {
         return Err("Onion sharing not running. Run onion_share_start first.".to_string());
     };
-    let p = std::path::PathBuf::from(path);
+    let disk_path = path.clone();
+    let p = PathBuf::from(&path);
     let share = srv
         .add_file(p, DEFAULT_CHUNK)
         .await
         .map_err(|e| e.to_string())?;
+    let link = srv.link_for(&share);
+    drop(guard);
+
+    persist_share_to_db(
+        &app,
+        &disk_path,
+        &share.file_id.to_string(),
+        &share.file_name,
+        share.file_size,
+        &share.content_hash,
+        &link,
+    )
+    .await?;
+
     Ok(json!({
         "fileId": share.file_id.to_string(),
         "fileName": share.file_name,
         "fileSize": share.file_size,
         "contentHash": share.content_hash,
-        "link": srv.link_for(&share),
+        "link": link,
     }))
 }
 
 #[tauri::command]
 pub async fn onion_share_remove_file(
+    app: AppHandle,
     file_id: String,
     state: State<'_, OnionShareState>,
 ) -> Result<(), String> {
@@ -328,11 +532,16 @@ pub async fn onion_share_remove_file(
         return Err("Share server not active".to_string());
     };
     srv.remove_file(fid).await;
+    drop(guard);
+
+    let pool = ensure_node_database(&app).await?;
+    delete_local_share_pool(&pool, &file_id).await?;
     Ok(())
 }
 
 #[tauri::command]
 pub async fn onion_share_list_local(
+    app: AppHandle,
     state: State<'_, OnionShareState>,
 ) -> Result<Vec<serde_json::Value>, String> {
     let guard = state.handle.lock().await;
@@ -340,14 +549,20 @@ pub async fn onion_share_list_local(
         return Ok(Vec::new());
     };
     let shares = srv.state.shares.lock().await;
+    let disk_paths = match ensure_node_database(&app).await {
+        Ok(pool) => local_share_disk_path_map_pool(&pool).await.unwrap_or_default(),
+        Err(_) => std::collections::HashMap::new(),
+    };
     let mut out = Vec::new();
     for s in shares.values() {
+        let file_id = s.file_id.to_string();
         out.push(json!({
-            "fileId": s.file_id.to_string(),
+            "fileId": file_id,
             "name": s.file_name,
             "size": s.file_size,
             "contentHash": s.content_hash,
             "link": srv.link_for(s),
+            "diskPath": disk_paths.get(&file_id),
         }));
     }
     Ok(out)
@@ -402,12 +617,11 @@ pub async fn tracker_refresh_lobby(
     state: State<'_, OnionShareState>,
 ) -> Result<NetworkLobby, String> {
     let guard = state.handle.lock().await;
-    let Some(ref srv) = *guard else {
-        return Err(
-            "Onion/Tor sharing is not active. Start sharing before refreshing the tracker lobby.".to_string(),
-        );
+    let tr = if let Some(ref srv) = *guard {
+        tracker_client::sync_tracker_result(Some(srv), state.cached_lobby.clone()).await
+    } else {
+        tracker_client::sync_tracker_result(None, state.cached_lobby.clone()).await
     };
-    let tr = tracker_client::sync_tracker_result(Some(srv), state.cached_lobby.clone()).await;
     drop(guard);
     persist_tracker_diag(Arc::clone(&state.tracker_last_sync), Some(&app), &tr).await;
     tr.map_err(|e| format!("Cannot reach tracker: {e}"))?;
@@ -447,25 +661,7 @@ pub async fn tracker_start_ws_loop(
     app: AppHandle,
     state: State<'_, OnionShareState>,
 ) -> Result<(), String> {
-    state.tracker_stop.store(false, Ordering::SeqCst);
-    {
-        let mut tg = state.tracker_task.lock().await;
-        if let Some(prev) = tg.take() {
-            prev.abort();
-        }
-    }
-
-    let handle_arc = Arc::clone(&state.handle);
-    let lobby_arc = Arc::clone(&state.cached_lobby);
-    let stop = Arc::clone(&state.tracker_stop);
-    let on_lobby_updated = Some(lobby_persist_callback(app.clone(), state.inner().clone()));
-
-    let task = tokio::spawn(async move {
-        tracker_client::run_tracker_ws_loop(handle_arc, lobby_arc, stop, on_lobby_updated).await;
-    });
-
-    state.tracker_task.lock().await.replace(task);
-    let _ = app.emit("tracker-ws-started", ());
+    spawn_tracker_ws_loop(&app, state.inner()).await;
     let _ = app.emit("network-presence-changed", json!({}));
     Ok(())
 }

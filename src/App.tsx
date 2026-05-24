@@ -178,22 +178,29 @@ const App: Component = () => {
         // 2) Heavy Tor / onion bootstrap + tracker announce — Loading overlay stays up.
         try {
           await onionShare.bootstrapOnionOverlay();
-          // Restore previously saved shared files automatically
+
+          // One-time legacy migration from localStorage → SQLite (via add_file)
           try {
-            const data = globalThis.localStorage?.getItem('allibrary_shared_paths');
-            if (data) {
-              const paths: string[] = JSON.parse(data);
+            const raw = globalThis.localStorage?.getItem('allibrary_shared_paths');
+            if (raw) {
+              const existing = await onionShare.onionShareListLocal();
+              const restoredPaths = new Set(
+                existing.map(s => s.diskPath).filter((p): p is string => Boolean(p))
+              );
+              const paths: string[] = JSON.parse(raw);
               for (const path of paths) {
+                if (restoredPaths.has(path)) continue;
                 try {
-                  console.log('Restoring shared file on boot:', path);
+                  console.log('Migrating legacy shared path to SQLite:', path);
                   await onionShare.onionShareAddFile(path);
                 } catch (shareErr) {
-                  console.error('Failed to restore shared file:', path, shareErr);
+                  console.warn('Failed to migrate legacy shared path:', path, shareErr);
                 }
               }
+              globalThis.localStorage?.removeItem('allibrary_shared_paths');
             }
-          } catch (restoreErr) {
-            console.error('Failed to restore saved shares:', restoreErr);
+          } catch (migrateErr) {
+            console.warn('Legacy share path migration failed:', migrateErr);
           }
         } catch (onionErr) {
           console.warn('Onion overlay bootstrap failed:', onionErr);

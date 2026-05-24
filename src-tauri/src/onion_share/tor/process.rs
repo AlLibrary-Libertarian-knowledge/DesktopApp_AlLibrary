@@ -10,6 +10,8 @@ use tokio::process::{Child, Command};
 use tokio::sync::watch;
 use tracing::{info, warn};
 
+use super::TorControl;
+
 #[derive(Debug)]
 pub struct TorProcess {
     data_dir: PathBuf,
@@ -20,15 +22,37 @@ pub struct TorProcess {
 }
 
 impl TorProcess {
+    /// Remove stale lock files before spawning Tor.
+    pub async fn preflight_cleanup() {
+        if let Ok(dir) = tor_data_dir() {
+            let lock_file = dir.join("lock");
+            if lock_file.exists() {
+                let _ = std::fs::remove_file(lock_file);
+            }
+        }
+    }
+
+    /// Wipe overlay data dir (used after bootstrap timeout).
+    pub async fn reset_data_dir() -> anyhow::Result<()> {
+        let dir = tor_data_dir()?;
+        if dir.exists() {
+            tokio::fs::remove_dir_all(&dir)
+                .await
+                .context("failed to remove tor data dir")?;
+        }
+        tokio::fs::create_dir_all(&dir)
+            .await
+            .context("failed to recreate tor data dir")?;
+        info!("Tor overlay data directory reset: {}", dir.display());
+        Ok(())
+    }
+
     pub async fn start(tor_path: &str) -> anyhow::Result<Self> {
+        Self::preflight_cleanup().await;
+
         let (socks_port, control_port) = (free_port().await?, free_port().await?);
 
         let data_dir = tor_data_dir()?;
-        // Cleanup stale lock files before starting
-        let lock_file = data_dir.join("lock");
-        if lock_file.exists() {
-            let _ = std::fs::remove_file(&lock_file);
-        }
 
         tokio::fs::create_dir_all(&data_dir)
             .await
@@ -50,7 +74,7 @@ impl TorProcess {
             .arg("--ReducedConnectionPadding")
             .arg("0")
             .arg("--CircuitBuildTimeout")
-            .arg("60")
+            .arg("120")
             .stdout(Stdio::piped())
             .stderr(Stdio::piped());
 
@@ -73,10 +97,15 @@ impl TorProcess {
             }
         });
 
+        let boot_tx3 = boot_tx.clone();
         tokio::spawn(async move {
             let mut lines = BufReader::new(stderr).lines();
             while let Ok(Some(line)) = lines.next_line().await {
-                warn!("tor: {}", line);
+                if line.contains("Bootstrapped 100%") {
+                    let _ = boot_tx3.send(true);
+                } else if !line.trim().is_empty() {
+                    warn!("tor: {}", line);
+                }
             }
         });
 
@@ -103,17 +132,32 @@ impl TorProcess {
 
     pub async fn wait_bootstrap(&mut self, timeout: Duration) -> anyhow::Result<()> {
         let cookie = self.cookie_path();
+        let control_addr = self.control_addr();
 
         let t0 = tokio::time::Instant::now();
         loop {
-            if cookie.exists() && *self.boot_rx.borrow() {
-                info!(
-                    "Tor ready (socks={}, control={})",
-                    self.socks_port, self.control_port
-                );
-                return Ok(());
+            if cookie.exists() {
+                if *self.boot_rx.borrow() {
+                    info!(
+                        "Tor ready (socks={}, control={})",
+                        self.socks_port, self.control_port
+                    );
+                    return Ok(());
+                }
+                if let Ok(mut ctl) =
+                    TorControl::connect(control_addr.clone(), cookie.clone()).await
+                {
+                    if ctl.bootstrap_progress().await.unwrap_or(0) >= 100 {
+                        info!(
+                            "Tor ready via control port (socks={}, control={})",
+                            self.socks_port, self.control_port
+                        );
+                        return Ok(());
+                    }
+                }
             }
             if t0.elapsed() > timeout {
+                let _ = self.kill().await;
                 anyhow::bail!(
                     "Tor bootstrap timeout ({}s). The system will attempt a deep reset on next retry.",
                     timeout.as_secs()

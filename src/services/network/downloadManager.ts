@@ -105,16 +105,6 @@ class DownloadManager {
         void onionShareAddFile(filePath)
           .then(() => {
             console.log(`Auto-seeding started for downloaded file: ${filePath}`);
-            try {
-              const data = globalThis.localStorage?.getItem('allibrary_shared_paths');
-              const paths: string[] = data ? JSON.parse(data) : [];
-              if (!paths.includes(filePath)) {
-                paths.push(filePath);
-                globalThis.localStorage?.setItem('allibrary_shared_paths', JSON.stringify(paths));
-              }
-            } catch (err) {
-              console.error('Failed to save auto-seeded file to shared paths:', err);
-            }
           })
           .catch(err => {
             console.error('Failed to auto-seed completed download:', err);

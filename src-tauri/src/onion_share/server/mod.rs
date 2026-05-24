@@ -10,7 +10,7 @@ use axum::Router;
 use tokio::io::AsyncWriteExt;
 use tokio::net::TcpListener;
 use tokio::sync::{oneshot, watch};
-use tracing::info;
+use tracing::{info, warn};
 
 use super::link::ShareLink;
 use super::share::Share;
@@ -30,6 +30,23 @@ pub struct ShareServerHandle {
 
 impl ShareServerHandle {
     pub async fn start(tor_path: &str) -> anyhow::Result<Self> {
+        match Self::start_once(tor_path, Duration::from_secs(120)).await {
+            Ok(handle) => Ok(handle),
+            Err(e) => {
+                let msg = e.to_string();
+                if !msg.contains("bootstrap timeout") {
+                    return Err(e);
+                }
+                warn!(
+                    "Tor bootstrap timed out; resetting overlay data dir and retrying once…"
+                );
+                TorProcess::reset_data_dir().await?;
+                Self::start_once(tor_path, Duration::from_secs(180)).await
+            }
+        }
+    }
+
+    async fn start_once(tor_path: &str, bootstrap_timeout: Duration) -> anyhow::Result<Self> {
         let listener = TcpListener::bind("127.0.0.1:0")
             .await
             .context("bind failed")?;
@@ -49,10 +66,40 @@ impl ShareServerHandle {
                 .map_err(|e| anyhow::anyhow!(e))
         });
 
-        let mut tor = TorProcess::start(tor_path).await?;
-        tor.wait_bootstrap(Duration::from_secs(120)).await?;
-        let mut ctl = TorControl::connect(tor.control_addr(), tor.cookie_path()).await?;
-        let service_id = ctl.add_onion(local_port).await?;
+        let mut tor = match TorProcess::start(tor_path).await {
+            Ok(t) => t,
+            Err(e) => {
+                let _ = shutdown_tx.send(());
+                return Err(e);
+            }
+        };
+
+        if let Err(e) = tor.wait_bootstrap(bootstrap_timeout).await {
+            let _ = tor.kill().await;
+            let _ = shutdown_tx.send(());
+            let _ = server_task.await;
+            return Err(e);
+        }
+
+        let mut ctl = match TorControl::connect(tor.control_addr(), tor.cookie_path()).await {
+            Ok(c) => c,
+            Err(e) => {
+                let _ = tor.kill().await;
+                let _ = shutdown_tx.send(());
+                let _ = server_task.await;
+                return Err(e);
+            }
+        };
+
+        let service_id = match ctl.add_onion(local_port).await {
+            Ok(id) => id,
+            Err(e) => {
+                let _ = tor.kill().await;
+                let _ = shutdown_tx.send(());
+                let _ = server_task.await;
+                return Err(e);
+            }
+        };
         let onion_addr = format!("{}.onion", service_id);
 
         info!("Onion service ready: {}", onion_addr);

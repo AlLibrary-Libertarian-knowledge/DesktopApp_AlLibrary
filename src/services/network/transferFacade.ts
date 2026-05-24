@@ -54,6 +54,7 @@ function mapShare(entry: LocalShareEntry): ShareEntryView {
     size: entry.size,
     contentHash: entry.contentHash,
     link: entry.link,
+    diskPath: entry.diskPath,
   };
 }
 

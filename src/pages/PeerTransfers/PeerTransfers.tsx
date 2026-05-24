@@ -262,7 +262,7 @@ const PeerTransfers: Component = () => {
                             variant="outline"
                             size="sm"
                             class={styles.stopBtn}
-                            onClick={() => void transfer.removeShare(row.fileId, row.name)}
+                            onClick={() => void transfer.removeShare(row.fileId)}
                           >
                             <Trash2 size={11} /> Remove
                           </Button>

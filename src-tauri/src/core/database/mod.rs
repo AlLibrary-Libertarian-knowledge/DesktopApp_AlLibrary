@@ -4,6 +4,7 @@ pub mod migrations;
 pub mod operations;
 pub mod node_db;
 pub mod network_cache;
+pub mod local_shares;
 
 pub use connection::*;
 pub use models::*;
@@ -12,6 +13,10 @@ pub use node_db::{ensure_node_database, resolve_database_path};
 pub use network_cache::{
     cache_cutoff_rfc3339, load_lobby_from_db, load_lobby_from_pool, sync_lobby_to_db,
     sync_lobby_to_pool, search_network_cached_pool, list_network_peers_pool,
+};
+pub use local_shares::{
+    delete_local_share_by_path_pool, delete_local_share_pool, list_local_share_paths_pool,
+    list_local_shares_pool, local_share_disk_path_map_pool, upsert_local_share_pool,
 };
 
 use crate::utils::error::Result;

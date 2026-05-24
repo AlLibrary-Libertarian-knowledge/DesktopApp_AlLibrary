@@ -130,6 +130,17 @@ pub struct NetworkFilePeerRow {
     pub link: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+pub struct LocalShareRow {
+    pub file_id: String,
+    pub name: String,
+    pub size_bytes: i64,
+    pub content_hash: String,
+    pub link: String,
+    pub disk_path: String,
+    pub created_at: String,
+}
+
 // Enums for specific fields
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum FileType {

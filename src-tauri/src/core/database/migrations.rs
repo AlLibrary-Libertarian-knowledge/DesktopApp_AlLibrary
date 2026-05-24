@@ -231,6 +231,23 @@ fn get_migrations() -> Vec<Migration> {
                 CREATE INDEX idx_network_peers_last_seen_at ON network_peers(last_seen_at);
             "#.to_string(),
         },
+        Migration {
+            version: "003_local_shares".to_string(),
+            description: "Create local_shares table for persisted outbound shares".to_string(),
+            sql: r#"
+                CREATE TABLE local_shares (
+                    file_id TEXT PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    size_bytes INTEGER NOT NULL,
+                    content_hash TEXT NOT NULL,
+                    link TEXT NOT NULL,
+                    disk_path TEXT NOT NULL UNIQUE,
+                    created_at TEXT NOT NULL
+                );
+
+                CREATE INDEX idx_local_shares_disk_path ON local_shares(disk_path);
+            "#.to_string(),
+        },
     ]
 }
 
@@ -301,5 +318,7 @@ mod tests {
 
         assert!(applied.contains(&"001_initial_schema".to_string()));
         assert!(applied.contains(&"002_network_cache".to_string()));
+        assert!(applied.contains(&"003_local_shares".to_string()));
+        assert!(table_exists(&pool, "local_shares").await);
     }
 }

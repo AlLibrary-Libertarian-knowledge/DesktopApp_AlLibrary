@@ -5,36 +5,6 @@ import {
   type TransferView,
 } from '@/services/network/transferFacade';
 
-const SHARED_PATHS_KEY = 'allibrary_shared_paths';
-
-function persistSharePath(path: string): void {
-  try {
-    const data = globalThis.localStorage?.getItem(SHARED_PATHS_KEY);
-    const paths: string[] = data ? JSON.parse(data) : [];
-    if (!paths.includes(path)) {
-      paths.push(path);
-      globalThis.localStorage?.setItem(SHARED_PATHS_KEY, JSON.stringify(paths));
-    }
-  } catch {
-    /* ignore */
-  }
-}
-
-function removeSharePathByName(name: string): void {
-  try {
-    const data = globalThis.localStorage?.getItem(SHARED_PATHS_KEY);
-    if (!data) return;
-    const paths: string[] = JSON.parse(data);
-    const filtered = paths.filter(p => {
-      const fileName = p.split('/').pop() || p.split('\\').pop() || p;
-      return fileName !== name;
-    });
-    globalThis.localStorage?.setItem(SHARED_PATHS_KEY, JSON.stringify(filtered));
-  } catch {
-    /* ignore */
-  }
-}
-
 export function useTransferState() {
   const [shares, setShares] = createSignal<ShareEntryView[]>([]);
   const [activeDownloads, setActiveDownloads] = createSignal<TransferView[]>([]);
@@ -88,7 +58,6 @@ export function useTransferState() {
     setError(null);
     try {
       await transferFacade.addShare(path);
-      persistSharePath(path);
       await refreshShares();
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
@@ -99,12 +68,11 @@ export function useTransferState() {
     }
   };
 
-  const removeShare = async (fileId: string, name?: string) => {
+  const removeShare = async (fileId: string) => {
     setBusy(true);
     setError(null);
     try {
       await transferFacade.removeShare(fileId);
-      if (name) removeSharePathByName(name);
       await refreshShares();
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);

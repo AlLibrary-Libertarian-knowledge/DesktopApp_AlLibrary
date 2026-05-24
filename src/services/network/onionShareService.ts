@@ -78,6 +78,7 @@ export interface LocalShareEntry {
   size: number;
   contentHash: string;
   link: string;
+  diskPath?: string;
 }
 
 /** Matches POC tracker / Rust `NetworkLobby` (snake_case JSON). */
