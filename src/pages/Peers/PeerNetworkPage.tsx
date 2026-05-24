@@ -1,14 +1,8 @@
 /**
  * PeerNetworkPage - P2P Network Monitoring & Management
- * Enhanced to match HomePage and DocumentManagement sophisticated patterns
  */
 
-// Declare global timer functions for TypeScript
-declare global {
-  function setTimeout(callback: () => void, delay: number): number;
-}
-
-import { type Component, createSignal, For } from 'solid-js';
+import { type Component, createSignal, For, Show, createMemo } from 'solid-js';
 import {
   Users,
   Globe,
@@ -17,164 +11,105 @@ import {
   BarChart3,
   Settings,
   RefreshCw,
-  TrendingUp,
   ArrowRight,
   Network,
   Clock,
-  AlertTriangle,
   BookOpen,
   Wifi,
+  WifiOff,
+  FileText,
 } from 'lucide-solid';
 
-// Foundation Components
 import { Button } from '../../components/foundation/Button';
 import { Card } from '../../components/foundation/Card';
 import { Badge } from '../../components/foundation/Badge';
+import { useNetworkLobby } from '../../hooks/api/useNetworkLobby';
+import { useNetworkPeers } from '../../hooks/api/useNetworkPeers';
+import { useNetworkPresenceResource } from '../../hooks/network/useNetworkPresence';
 
-// Styles
 import styles from './PeerNetworkPage.module.css';
 
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 ** 2) return `${(bytes / 1024).toFixed(1)} KB`;
+  if (bytes < 1024 ** 3) return `${(bytes / 1024 ** 2).toFixed(1)} MB`;
+  return `${(bytes / 1024 ** 3).toFixed(2)} GB`;
+}
+
 export const PeerNetworkPage: Component = () => {
-  // State Management
   const [activeTab, setActiveTab] = createSignal<'overview' | 'peers' | 'health' | 'analytics'>(
     'overview'
   );
   const [viewMode, setViewMode] = createSignal<'grid' | 'list'>('grid');
-  const [filterStatus, setFilterStatus] = createSignal<'all' | 'online' | 'trusted'>('all');
-  const [isLoading, setIsLoading] = createSignal(false);
 
-  // Sample data for demonstration
-  const networkStats = [
+  const presence = useNetworkPresenceResource();
+  const lobby = useNetworkLobby();
+  const networkPeers = useNetworkPeers();
+
+  const isRefreshing = () => lobby.isLoading() || networkPeers.isLoading();
+
+  const networkStats = createMemo(() => [
     {
       type: 'peers',
       icon: <Users size={24} />,
-      number: '89',
-      label: 'Connected Peers',
-      trendType: 'positive',
-      trendIcon: <TrendingUp size={12} />,
-      trendValue: '+5',
-      trendLabel: 'online',
+      number: String(lobby.onlineNodes()),
+      label: 'Tracker Nodes Online',
+      sublabel: 'from last lobby sync',
     },
     {
-      type: 'decentralization',
+      type: 'cached-peers',
       icon: <Network size={24} />,
-      number: '94%',
-      label: 'Decentralization Score',
-      trendType: 'positive',
-      trendIcon: <TrendingUp size={14} />,
-      trendValue: '+2%',
-      trendLabel: 'today',
+      number: String(networkPeers.peerCount()),
+      label: 'Cached Peers',
+      sublabel: 'in local SQLite cache',
     },
     {
-      type: 'resistance',
-      icon: <Shield size={24} />,
-      number: '98%',
-      label: 'Censorship Resistance',
-      trendType: 'positive',
-      trendIcon: <TrendingUp size={14} />,
-      trendValue: 'excellent',
+      type: 'files',
+      icon: <FileText size={24} />,
+      number: String(lobby.files().length),
+      label: 'Network Files',
+      sublabel: 'shared on tracker',
     },
     {
-      type: 'cultural',
+      type: 'size',
       icon: <Globe size={24} />,
-      number: '156',
-      label: 'Cultural Communities',
-      trendType: 'neutral',
-      trendIcon: <ArrowRight size={14} />,
-      trendValue: 'stable',
+      number: formatBytes(lobby.totalBytes()),
+      label: 'Total Shared Size',
+      sublabel: lobby.lastSyncAt()
+        ? `synced ${lobby.lastSyncAt()!.toLocaleTimeString()}`
+        : 'awaiting sync',
     },
-  ];
-
-  // Sample connected peers data
-  const mockConnectedPeers = [
-    {
-      id: '1',
-      nickname: 'Universidad Nacional Autónoma de México',
-      status: 'online',
-      latency: 45,
-      totalDocuments: 1247,
-      culturalContributions: 89,
-      capabilities: ['cultural-content', 'academic-research'],
-    },
-    {
-      id: '2',
-      nickname: 'Cultural Heritage Institute',
-      status: 'online',
-      latency: 78,
-      totalDocuments: 823,
-      culturalContributions: 156,
-      capabilities: ['traditional-knowledge', 'artifact-digitization'],
-    },
-    {
-      id: '3',
-      nickname: 'Anonymous Peer',
-      status: 'online',
-      latency: 123,
-      totalDocuments: 234,
-      culturalContributions: 23,
-      capabilities: ['general-sharing'],
-    },
-    {
-      id: '4',
-      nickname: 'Indigenous Knowledge Collective',
-      status: 'online',
-      latency: 67,
-      totalDocuments: 567,
-      culturalContributions: 234,
-      capabilities: ['traditional-knowledge', 'cultural-preservation'],
-    },
-  ];
-
-  // Handlers
-  const handleEmergencyProtocols = async () => {
-    setIsLoading(true);
-    try {
-      console.log('Activating emergency protocols...');
-      await new Promise(resolve => window.setTimeout(resolve, 2000));
-    } catch (error) {
-      console.error('Emergency protocols failed:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  ]);
 
   const handleRefreshPeers = async () => {
-    setIsLoading(true);
-    try {
-      console.log('Refreshing peers...');
-      await new Promise(resolve => window.setTimeout(resolve, 1000));
-    } catch (error) {
-      console.error('Failed to refresh peers:', error);
-    } finally {
-      setIsLoading(false);
-    }
+    await Promise.all([lobby.refresh(true), networkPeers.refresh(true)]);
   };
+
+  const isOnline = () => presence().online;
 
   return (
     <div class={styles['peer-network-page']}>
-      {/* Enhanced Page Header */}
       <header class={`${styles['page-header']} ${styles.enhanced}`}>
         <div class={styles['header-content']}>
           <div class={styles['title-section']}>
             <h1 class={styles['page-title']}>Peer Network Monitor</h1>
             <p class={styles['page-subtitle']}>
-              Decentralized P2P network monitoring and anti-censorship protocols
+              Tracker peers and cached network metadata from your node
             </p>
           </div>
           <div class={styles['network-status-enhanced']}>
             <div class={styles['status-indicator']}>
-              <Wifi size={20} />
-              <span>Network Online</span>
+              {isOnline() ? <Wifi size={20} /> : <WifiOff size={20} />}
+              <span>{isOnline() ? 'Network Online' : 'Network Offline'}</span>
             </div>
             <div class={styles['peer-count']}>
               <Users size={16} />
-              <span>{mockConnectedPeers.length} peers</span>
+              <span>{networkPeers.peerCount()} peers cached</span>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Enhanced Navigation Tabs */}
       <div class={styles['dashboard-tabs']}>
         <button
           class={`${styles.tab} ${activeTab() === 'overview' ? styles.active : ''}`}
@@ -202,49 +137,45 @@ export const PeerNetworkPage: Component = () => {
           onClick={() => setActiveTab('analytics')}
         >
           <Shield size={16} />
-          <span>Anti-Censorship</span>
+          <span>Onion Status</span>
         </button>
       </div>
 
       <div class={styles['dashboard-content']}>
-        {/* Overview Tab */}
         {activeTab() === 'overview' && (
           <>
-            {/* Network Statistics Section */}
             <div class={styles['stats-grid']}>
-              <For each={networkStats}>
+              <For each={networkStats()}>
                 {stat => (
                   <Card class={styles['stat-card']}>
                     <div class={styles['stat-header']}>
                       <div class={styles['stat-icon']}>{stat.icon}</div>
-                      <div class={styles['stat-trend']}>
-                        {stat.trendIcon}
-                        <span class={styles[`trend-${stat.trendType}`]}>{stat.trendValue}</span>
-                      </div>
                     </div>
                     <div class={styles['stat-content']}>
                       <div class={styles['stat-number']}>{stat.number}</div>
                       <div class={styles['stat-label']}>{stat.label}</div>
-                      <div class={styles['stat-sublabel']}>{stat.trendLabel}</div>
+                      <div class={styles['stat-sublabel']}>{stat.sublabel}</div>
                     </div>
                   </Card>
                 )}
               </For>
             </div>
 
-            {/* Network Activity Section */}
             <section class={styles['activity-section']}>
               <div class={styles['section-header']}>
                 <div class={styles['header-content']}>
-                  <h2 class={styles['section-title']}>Live Network Activity</h2>
-                  <p class={styles['section-subtitle']}>
-                    Real-time peer connections and network discoveries
-                  </p>
+                  <h2 class={styles['section-title']}>Network Activity</h2>
+                  <p class={styles['section-subtitle']}>Live counts from tracker lobby cache</p>
                 </div>
                 <div class={styles['header-actions']}>
-                  <Button variant="ghost" size="sm" onClick={handleRefreshPeers}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleRefreshPeers}
+                    disabled={isRefreshing()}
+                  >
                     <RefreshCw size={16} />
-                    Refresh
+                    {isRefreshing() ? 'Refreshing…' : 'Refresh'}
                   </Button>
                   <Button variant="outline" size="sm" onClick={() => setActiveTab('peers')}>
                     View All Peers
@@ -257,16 +188,12 @@ export const PeerNetworkPage: Component = () => {
                 <Card class={styles['activity-card']}>
                   <div class={styles['activity-header']}>
                     <Users size={20} />
-                    <h3>Peer Connections</h3>
+                    <h3>Tracker Nodes</h3>
                   </div>
                   <div class={styles['activity-content']}>
                     <div class={styles['activity-stat']}>
-                      <span class={styles['stat-number']}>89</span>
-                      <span class={styles['stat-label']}>Active Peers</span>
-                    </div>
-                    <div class={styles['activity-trend']}>
-                      <TrendingUp size={14} />
-                      <span>+5 new connections</span>
+                      <span class={styles['stat-number']}>{lobby.onlineNodes()}</span>
+                      <span class={styles['stat-label']}>Online on tracker</span>
                     </div>
                   </div>
                 </Card>
@@ -274,16 +201,15 @@ export const PeerNetworkPage: Component = () => {
                 <Card class={styles['activity-card']}>
                   <div class={styles['activity-header']}>
                     <BookOpen size={20} />
-                    <h3>Content Sharing</h3>
+                    <h3>Shared Files</h3>
                   </div>
                   <div class={styles['activity-content']}>
                     <div class={styles['activity-stat']}>
-                      <span class={styles['stat-number']}>2.4k</span>
-                      <span class={styles['stat-label']}>Documents Shared</span>
+                      <span class={styles['stat-number']}>{lobby.files().length}</span>
+                      <span class={styles['stat-label']}>Files in lobby</span>
                     </div>
                     <div class={styles['activity-trend']}>
-                      <TrendingUp size={14} />
-                      <span>847 cultural documents</span>
+                      <span>{formatBytes(lobby.totalBytes())} total</span>
                     </div>
                   </div>
                 </Card>
@@ -291,56 +217,61 @@ export const PeerNetworkPage: Component = () => {
                 <Card class={styles['activity-card']}>
                   <div class={styles['activity-header']}>
                     <Globe size={20} />
-                    <h3>Network Discovery</h3>
+                    <h3>Cached Peers</h3>
                   </div>
                   <div class={styles['activity-content']}>
                     <div class={styles['activity-stat']}>
-                      <span class={styles['stat-number']}>156</span>
-                      <span class={styles['stat-label']}>Cultural Communities</span>
-                    </div>
-                    <div class={styles['activity-trend']}>
-                      <ArrowRight size={14} />
-                      <span>3 new institutions</span>
+                      <span class={styles['stat-number']}>{networkPeers.peerCount()}</span>
+                      <span class={styles['stat-label']}>Peers in SQLite</span>
                     </div>
                   </div>
                 </Card>
               </div>
+
+              <Show when={lobby.syncError()}>
+                <p style={{ color: 'var(--color-warning, #b45309)', 'margin-top': '1rem' }}>
+                  Sync warning: {lobby.syncError()}
+                </p>
+              </Show>
             </section>
 
-            {/* Quick Actions */}
             <section class={styles['actions-section']}>
               <h2 class={styles['section-title']}>Network Actions</h2>
               <div class={styles['actions-grid']}>
-                <button class={styles['action-button']} onClick={handleRefreshPeers}>
+                <button
+                  class={styles['action-button']}
+                  onClick={handleRefreshPeers}
+                  disabled={isRefreshing()}
+                >
                   <RefreshCw size={20} />
                   <span>Refresh Network</span>
                 </button>
-                <button class={styles['action-button']} onClick={handleEmergencyProtocols}>
-                  <Shield size={20} />
-                  <span>Emergency Protocols</span>
+                <button class={styles['action-button']} onClick={() => setActiveTab('health')}>
+                  <Activity size={20} />
+                  <span>Network Health</span>
                 </button>
                 <button class={styles['action-button']} onClick={() => setActiveTab('analytics')}>
-                  <BarChart3 size={20} />
-                  <span>Network Analytics</span>
-                </button>
-                <button class={styles['action-button']}>
-                  <Settings size={20} />
-                  <span>Network Settings</span>
+                  <Shield size={20} />
+                  <span>Onion Status</span>
                 </button>
               </div>
             </section>
           </>
         )}
 
-        {/* Connected Peers Tab */}
         {activeTab() === 'peers' && (
           <section class={styles['peers-section']}>
             <div class={styles['section-header']}>
-              <h2>Connected Peers</h2>
+              <h2>Cached Peers</h2>
               <div class={styles['peer-controls']}>
-                <Button variant="ghost" size="sm">
-                  <Globe size={14} />
-                  Discover Peers
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleRefreshPeers}
+                  disabled={isRefreshing()}
+                >
+                  <RefreshCw size={14} />
+                  {isRefreshing() ? 'Refreshing…' : 'Refresh'}
                 </Button>
                 <Button
                   variant="ghost"
@@ -350,98 +281,71 @@ export const PeerNetworkPage: Component = () => {
                   <Users size={14} />
                   {viewMode() === 'grid' ? 'List View' : 'Grid View'}
                 </Button>
-                <Button variant="outline" size="sm">
-                  <Settings size={14} />
-                  Peer Settings
-                </Button>
               </div>
             </div>
 
-            <div class={styles['peer-filters']}>
-              <Button
-                variant={filterStatus() === 'all' ? 'primary' : 'outline'}
-                size="sm"
-                onClick={() => setFilterStatus('all')}
+            <Show
+              when={networkPeers.peers().length > 0}
+              fallback={
+                <Card
+                  class={styles['peer-card']}
+                  style={{ padding: '2rem', 'text-align': 'center' }}
+                >
+                  <p>No peers in cache yet.</p>
+                  <p style={{ opacity: 0.75, 'margin-top': '0.5rem' }}>
+                    Start onion share and sync the tracker from Configurations → Sync now.
+                  </p>
+                </Card>
+              }
+            >
+              <div
+                class={styles['peers-grid']}
+                style={viewMode() === 'list' ? { 'grid-template-columns': '1fr' } : undefined}
               >
-                All Peers
-              </Button>
-              <Button
-                variant={filterStatus() === 'online' ? 'primary' : 'outline'}
-                size="sm"
-                onClick={() => setFilterStatus('online')}
-              >
-                Online Only
-              </Button>
-              <Button
-                variant={filterStatus() === 'trusted' ? 'primary' : 'outline'}
-                size="sm"
-                onClick={() => setFilterStatus('trusted')}
-              >
-                Trusted Peers
-              </Button>
-            </div>
-
-            <div class={styles['peers-grid']}>
-              <For each={mockConnectedPeers}>
-                {peer => (
-                  <Card class={styles['peer-card']}>
-                    <div class={styles['peer-header']}>
-                      <h3 class={styles['peer-name']}>{peer.nickname}</h3>
-                      <Badge variant={peer.status === 'online' ? 'success' : 'secondary'}>
-                        {peer.status}
-                      </Badge>
-                    </div>
-                    <div class={styles['peer-info']}>
-                      <div class={styles['info-item']}>
-                        <Clock size={16} />
-                        <span>Latency: {peer.latency}ms</span>
+                <For each={networkPeers.peers()}>
+                  {peer => (
+                    <Card class={styles['peer-card']}>
+                      <div class={styles['peer-header']}>
+                        <h3 class={styles['peer-name']} title={peer.nodeId}>
+                          {peer.displayName}
+                        </h3>
+                        <Badge variant="success">online</Badge>
                       </div>
-                      <div class={styles['info-item']}>
-                        <BookOpen size={16} />
-                        <span>Documents: {peer.totalDocuments}</span>
+                      <div class={styles['peer-info']}>
+                        <div class={styles['info-item']}>
+                          <Globe size={16} />
+                          <span title={peer.onion}>{peer.onionShort}</span>
+                        </div>
+                        <div class={styles['info-item']}>
+                          <Clock size={16} />
+                          <span>Last seen: {peer.lastSeenLabel}</span>
+                        </div>
+                        <div class={styles['info-item']}>
+                          <BookOpen size={16} />
+                          <span>Files: {peer.fileCount}</span>
+                        </div>
                       </div>
-                      <div class={styles['info-item']}>
-                        <Globe size={16} />
-                        <span>Cultural: {peer.culturalContributions}</span>
-                      </div>
-                    </div>
-                    <div class={styles['peer-capabilities']}>
-                      <For each={peer.capabilities}>
-                        {capability => (
-                          <Badge variant="outline" size="sm">
-                            {capability}
-                          </Badge>
-                        )}
-                      </For>
-                    </div>
-                    <div class={styles['peer-actions']}>
-                      <Button variant="outline" size="sm">
-                        View Details
-                      </Button>
-                      <Button variant="ghost" size="sm">
-                        Disconnect
-                      </Button>
-                    </div>
-                  </Card>
-                )}
-              </For>
-            </div>
+                    </Card>
+                  )}
+                </For>
+              </div>
+            </Show>
           </section>
         )}
 
-        {/* Network Health Tab */}
         {activeTab() === 'health' && (
           <section class={styles['health-section']}>
             <div class={styles['section-header']}>
-              <h2>Network Health & Monitoring</h2>
+              <h2>Network Health</h2>
               <div class={styles['health-controls']}>
-                <Button variant="ghost" size="sm" onClick={handleRefreshPeers}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleRefreshPeers}
+                  disabled={isRefreshing()}
+                >
                   <RefreshCw size={14} />
                   Refresh Status
-                </Button>
-                <Button variant="outline" size="sm">
-                  <BarChart3 size={14} />
-                  Detailed Analytics
                 </Button>
               </div>
             </div>
@@ -450,20 +354,28 @@ export const PeerNetworkPage: Component = () => {
               <Card class={styles['health-card']}>
                 <div class={styles['health-header']}>
                   <Activity size={24} />
-                  <h3>Network Health</h3>
+                  <h3>Tracker Connection</h3>
                 </div>
                 <div class={styles['health-content']}>
                   <div class={styles['health-metric']}>
-                    <span class={styles['metric-label']}>Overall Health</span>
-                    <Badge variant="success">Excellent</Badge>
+                    <span class={styles['metric-label']}>Network status</span>
+                    <Badge variant={isOnline() ? 'success' : 'secondary'}>
+                      {isOnline() ? 'Online' : 'Offline'}
+                    </Badge>
                   </div>
                   <div class={styles['health-metric']}>
-                    <span class={styles['metric-label']}>Average Latency</span>
-                    <span class={styles['metric-value']}>67ms</span>
+                    <span class={styles['metric-label']}>Nodes online</span>
+                    <span class={styles['metric-value']}>{lobby.onlineNodes()}</span>
                   </div>
                   <div class={styles['health-metric']}>
-                    <span class={styles['metric-label']}>Network Bandwidth</span>
-                    <span class={styles['metric-value']}>3.5 MB/s</span>
+                    <span class={styles['metric-label']}>Cached files</span>
+                    <span class={styles['metric-value']}>{lobby.files().length}</span>
+                  </div>
+                  <div class={styles['health-metric']}>
+                    <span class={styles['metric-label']}>Last sync</span>
+                    <span class={styles['metric-value']}>
+                      {lobby.lastSyncAt()?.toLocaleString() ?? 'Never'}
+                    </span>
                   </div>
                 </div>
               </Card>
@@ -471,20 +383,22 @@ export const PeerNetworkPage: Component = () => {
               <Card class={styles['health-card']}>
                 <div class={styles['health-header']}>
                   <Shield size={24} />
-                  <h3>Security Status</h3>
+                  <h3>Onion Share</h3>
                 </div>
                 <div class={styles['health-content']}>
                   <div class={styles['health-metric']}>
-                    <span class={styles['metric-label']}>TOR Routing</span>
-                    <Badge variant="success">Active</Badge>
+                    <span class={styles['metric-label']}>Onion routing</span>
+                    <Badge variant={presence().onionActive ? 'success' : 'secondary'}>
+                      {presence().onionActive ? 'Active' : 'Inactive'}
+                    </Badge>
                   </div>
                   <div class={styles['health-metric']}>
-                    <span class={styles['metric-label']}>Content Redundancy</span>
-                    <Badge variant="success">OK</Badge>
+                    <span class={styles['metric-label']}>Throughput</span>
+                    <span class={styles['metric-value']}>—</span>
                   </div>
                   <div class={styles['health-metric']}>
-                    <span class={styles['metric-label']}>Network Resilience</span>
-                    <Badge variant="success">Healthy</Badge>
+                    <span class={styles['metric-label']}>Latency</span>
+                    <span class={styles['metric-value']}>—</span>
                   </div>
                 </div>
               </Card>
@@ -492,21 +406,10 @@ export const PeerNetworkPage: Component = () => {
           </section>
         )}
 
-        {/* Anti-Censorship Tab */}
         {activeTab() === 'analytics' && (
           <section class={styles['emergency-section']}>
             <div class={styles['section-header']}>
-              <h2>Anti-Censorship Emergency Protocols</h2>
-              <div class={styles['emergency-controls']}>
-                <Button variant="ghost" size="sm">
-                  <Shield size={14} />
-                  Protocol Status
-                </Button>
-                <Button variant="outline" size="sm">
-                  <Settings size={14} />
-                  Configure
-                </Button>
-              </div>
+              <h2>Onion & Tracker Status</h2>
             </div>
 
             <Card class={styles['emergency-card']}>
@@ -514,38 +417,42 @@ export const PeerNetworkPage: Component = () => {
                 <div class={styles['emergency-header']}>
                   <Shield size={32} />
                   <div>
-                    <h3>Emergency Anti-Censorship Protocols</h3>
+                    <h3>Hidden service & tracker</h3>
                     <p>
-                      Activate emergency protocols to bypass network restrictions and maintain
-                      information access during censorship attempts.
+                      Onion share must be running to announce files to the tracker. Throughput and
+                      latency metrics will appear here when the backend exposes them.
                     </p>
                   </div>
                 </div>
 
                 <div class={styles['protocol-status']}>
                   <div class={styles['status-item']}>
-                    <Badge variant="success">TOR Routing Active</Badge>
+                    <Badge variant={presence().onionActive ? 'success' : 'secondary'}>
+                      {presence().onionActive ? 'Onion active' : 'No onion address'}
+                    </Badge>
                   </div>
                   <div class={styles['status-item']}>
-                    <Badge variant="success">Content Redundancy OK</Badge>
+                    <Badge variant={isOnline() ? 'success' : 'secondary'}>
+                      {isOnline() ? 'Overlay online' : 'Overlay offline'}
+                    </Badge>
                   </div>
                   <div class={styles['status-item']}>
-                    <Badge variant="success">Network Resilient</Badge>
+                    <Badge variant="outline">
+                      {networkPeers.peerCount()} peer{networkPeers.peerCount() !== 1 ? 's' : ''}{' '}
+                      cached
+                    </Badge>
                   </div>
                 </div>
 
                 <div class={styles['emergency-actions']}>
                   <Button
-                    variant="primary"
+                    variant="outline"
                     size="lg"
-                    onClick={handleEmergencyProtocols}
-                    disabled={isLoading()}
+                    onClick={handleRefreshPeers}
+                    disabled={isRefreshing()}
                   >
-                    {isLoading() ? 'Activating...' : 'Activate Emergency Protocols'}
-                  </Button>
-                  <Button variant="outline" size="lg">
-                    <AlertTriangle size={16} />
-                    Test Protocols
+                    <RefreshCw size={16} />
+                    {isRefreshing() ? 'Syncing…' : 'Sync tracker now'}
                   </Button>
                 </div>
               </div>

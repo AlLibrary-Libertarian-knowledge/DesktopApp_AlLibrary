@@ -114,16 +114,16 @@ const Header: Component<HeaderProps> = props => {
           style={{ display: 'flex', 'align-items': 'center', gap: '8px' }}
         >
           <span
-            class={`status-indicator ${presence()?.online ? 'online' : 'offline'}`}
+            class={`status-indicator ${presence().online ? 'online' : 'offline'}`}
             title={
-              presence()?.online ? t('common.status.connected') : t('common.status.disconnected')
+              presence().online ? t('common.status.connected') : t('common.status.disconnected')
             }
           />
           <span class="network-text">
-            {presence()?.online ? t('common.status.online') : t('common.status.offline')}
+            {presence().online ? t('common.status.online') : t('common.status.offline')}
           </span>
-          <Badge variant={presence()?.onionActive ? 'success' : 'secondary'}>
-            {presence()?.onionActive ? 'Onion' : 'No Onion'}
+          <Badge variant={presence().onionActive ? 'success' : 'secondary'}>
+            {presence().onionActive ? 'Onion' : 'No Onion'}
           </Badge>
         </div>
       </div>

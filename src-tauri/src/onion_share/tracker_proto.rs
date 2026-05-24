@@ -35,6 +35,13 @@ pub struct NetworkLobby {
     pub files: Vec<NetworkFile>,
 }
 
+/// Cheap fingerprint to skip redundant lobby persist / UI events.
+pub fn lobby_fingerprint(lobby: &NetworkLobby) -> String {
+    let mut parts: Vec<&str> = lobby.files.iter().map(|f| f.content_hash.as_str()).collect();
+    parts.sort_unstable();
+    format!("{}:{}", lobby.online_nodes, parts.join(","))
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum WsClientMessage {
@@ -72,5 +79,22 @@ mod serde_tests {
                 assert!(files.is_empty());
             }
         }
+    }
+
+    #[test]
+    fn lobby_fingerprint_stable_for_same_content() {
+        let a = NetworkLobby {
+            online_nodes: 1,
+            files: vec![NetworkFile {
+                name: "a".into(),
+                size: 1,
+                link: "l".into(),
+                content_hash: "h1".into(),
+                peer_count: 1,
+                peers: vec![],
+            }],
+        };
+        let b = a.clone();
+        assert_eq!(super::lobby_fingerprint(&a), super::lobby_fingerprint(&b));
     }
 }

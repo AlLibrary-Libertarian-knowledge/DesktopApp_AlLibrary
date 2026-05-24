@@ -12,8 +12,8 @@ Each section lists **UI intent** (from existing design), **current state**, and 
 |---------|---------|------|
 | Storage bar | ✅ `get_disk_space_info` | [ ] Show download folder free space optional |
 | Network Online / Onion pill | ✅ `useNetworkPresenceResource` | — |
-| Nodes online count | ✅ `trackerGetCachedLobby` poll | [ ] Subscribe to `lobby-updated` event instead of 15s poll |
-| Nav badges (Trending 12, Peers 8) | ❌ Hardcoded | [ ] Live counts from SQLite cache or remove badges |
+| Nodes online count | ✅ `useNetworkLobby` + `lobby-updated` | [x] Subscribe to `lobby-updated` event instead of 15s poll |
+| Nav badges (Trending 12, Peers 8) | ✅ Live from lobby/peers | [x] Live counts from SQLite cache or remove badges |
 | Top search bar | ❌ Not wired globally | [ ] Navigate to `/search-network?q=` or local document search |
 
 ### App bootstrap (`App.tsx`)
@@ -21,8 +21,8 @@ Each section lists **UI intent** (from existing design), **current state**, and 
 | Step | Current | Task |
 |------|---------|------|
 | First-run wizard | ✅ Project folder | [ ] Also set download folder + trigger Rust subfolder creation |
-| `bootstrapOnionOverlay` | ✅ | [ ] Start `tracker_start_ws_loop` after success |
-| Restore shares | ⚠️ localStorage paths | [ ] Restore from SQLite `local_shares` |
+| `bootstrapOnionOverlay` | ✅ | [x] Start `tracker_start_ws_loop` after success |
+| Restore shares | ✅ SQLite `local_shares` | [x] Restore from SQLite `local_shares` |
 | Legacy `init_tor_node` | ⚠️ Optional | [ ] Remove call when confirmed unused |
 
 ### Routes
@@ -143,8 +143,8 @@ Each section lists **UI intent** (from existing design), **current state**, and 
 
 | Feature | Current | Task |
 |---------|---------|------|
-| Stats cards | ❌ Static | [ ] `network_peers` count, cache file count, onion status |
-| Peer list | ❌ `mockConnectedPeers` | [ ] Map `p2pNetworkService.discoverPeers()` / SQLite peers |
+| Stats cards | ✅ Tracker + cache | [x] `network_peers` count, cache file count, onion status |
+| Peer list | ✅ `useNetworkPeers` | [x] Map `networkFacade.listPeers()` / SQLite peers |
 | Trust / capabilities | ❌ Mock fields | [ ] P2: reputation table; hide until real |
 
 ### Network Health `/network-health`
@@ -200,7 +200,7 @@ Each section lists **UI intent** (from existing design), **current state**, and 
 ## Mock removal checklist
 
 - [x] `PeerTransfers`: `MOCK_OUTBOUND`, `MOCK_INBOUND`, `MOCK_COMPLETED`, `THROUGHPUT_SAMPLES`
-- [ ] `PeerNetworkPage`: `mockConnectedPeers`, fake `networkStats`
+- [x] `PeerNetworkPage`: `mockConnectedPeers`, fake `networkStats`
 - [ ] `Browse.tsx`: mock categories `createEffect`
 - [ ] `Trending.tsx`: `generateMockData`
 - [ ] `Favorites.tsx`: inline mock array
@@ -217,7 +217,7 @@ Each section lists **UI intent** (from existing design), **current state**, and 
 
 1. `networkFacade` + fix Search Network download + `/settings` route  
 2. Sharing & downloads real tables only; remove Onion mesh panel  
-3. Peer Network + Sidebar live counts  
+3. Peer Network + Sidebar live counts — **done**
 4. DocumentDetail → real document load; Library share action  
 5. Favorites + Recent from SQLite  
 6. Browse / Trending / New Arrivals from cache  

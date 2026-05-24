@@ -3,14 +3,23 @@ use crate::core::database::migrations;
 use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
 use sqlx::SqlitePool;
 use std::path::PathBuf;
+use std::sync::Arc;
 use tauri::AppHandle;
-use tracing::info;
+use tokio::sync::OnceCell;
+use tracing::{debug, info};
+
+static NODE_DB_POOL: OnceCell<Arc<SqlitePool>> = OnceCell::const_new();
 
 pub fn resolve_database_path(settings: &AppSettings) -> PathBuf {
     PathBuf::from(&settings.folder_structure.documents_folder).join("allibrary.db")
 }
 
 pub async fn ensure_node_database(app_handle: &AppHandle) -> Result<SqlitePool, String> {
+    if let Some(pool) = NODE_DB_POOL.get() {
+        debug!("Reusing cached node database pool");
+        return Ok((**pool).clone());
+    }
+
     let settings = load_app_settings(app_handle.clone())
         .await
         .map_err(|e| format!("Failed to load app settings: {e}"))?;
@@ -39,6 +48,8 @@ pub async fn ensure_node_database(app_handle: &AppHandle) -> Result<SqlitePool, 
         .map_err(|e| format!("Failed to run database migrations: {e}"))?;
 
     info!("Node database ready at {}", database_path.display());
+
+    let _ = NODE_DB_POOL.set(Arc::new(pool.clone()));
     Ok(pool)
 }
 

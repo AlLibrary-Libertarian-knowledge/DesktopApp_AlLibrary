@@ -15,6 +15,7 @@ use crate::onion_share::fetch;
 use crate::onion_share::server::ShareServerHandle;
 use crate::onion_share::tracker_client;
 use crate::onion_share::tracker_proto::NetworkLobby;
+use crate::onion_share::tracker_proto::lobby_fingerprint;
 use crate::onion_share::wizard::installer;
 use crate::core::database::{
     delete_local_share_by_path_pool, delete_local_share_pool, ensure_node_database,
@@ -61,6 +62,8 @@ pub struct OnionShareState {
     tracker_last_sync: Arc<Mutex<Option<serde_json::Value>>>,
     http_announce_stop: Arc<AtomicBool>,
     http_announce_task: Arc<Mutex<Option<tokio::task::JoinHandle<()>>>>,
+    /// Skip redundant SQLite sync + frontend events when lobby unchanged.
+    last_persisted_lobby_fp: Arc<Mutex<Option<String>>>,
 }
 
 impl Default for OnionShareState {
@@ -73,6 +76,7 @@ impl Default for OnionShareState {
             tracker_last_sync: Arc::new(Mutex::new(None)),
             http_announce_stop: Arc::new(AtomicBool::new(true)),
             http_announce_task: Arc::new(Mutex::new(None)),
+            last_persisted_lobby_fp: Arc::new(Mutex::new(None)),
         }
     }
 }
@@ -179,6 +183,14 @@ async fn restore_local_shares_from_db(app: &AppHandle, state: &OnionShareState) 
 
 async fn persist_lobby_to_sqlite(app: &AppHandle, state: &OnionShareState) {
     let lobby = state.cached_lobby.read().await.clone();
+    let fp = lobby_fingerprint(&lobby);
+    {
+        let mut last = state.last_persisted_lobby_fp.lock().await;
+        if last.as_deref() == Some(fp.as_str()) {
+            return;
+        }
+        *last = Some(fp);
+    }
     if let Err(e) = sync_lobby_to_db(app, &lobby).await {
         warn!("Lobby SQLite sync failed: {e}");
         return;

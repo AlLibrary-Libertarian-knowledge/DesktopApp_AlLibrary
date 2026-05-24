@@ -3,7 +3,7 @@
  */
 
 import { invoke } from '@tauri-apps/api/core';
-import { listen, type UnlistenFn } from '@tauri-apps/api/event';
+import { createEffect, createRoot } from 'solid-js';
 import {
   onionShareStatus,
   trackerGetCachedLobby,
@@ -12,6 +12,7 @@ import {
   type NetworkLobby,
   type TrackerSyncDiagnostics,
 } from './onionShareService';
+import { getNetworkLobbyStore } from './networkLobbyStore';
 
 export interface NetworkFileView {
   contentHash: string;
@@ -186,23 +187,27 @@ export const networkFacade = {
   },
 
   subscribeLobby(listener: (lobby: NetworkLobbyView) => void): () => void {
-    const unsubs: UnlistenFn[] = [];
-    let cancelled = false;
+    const store = getNetworkLobbyStore();
+    let lastKey = '';
 
-    void (async () => {
-      const handlers = ['lobby-updated', 'tracker-sync-done'] as const;
-      for (const event of handlers) {
-        const unlisten = await listen(event, () => {
-          if (cancelled) return;
-          void networkFacade.getLobby().then(listener);
-        });
-        unsubs.push(unlisten);
-      }
-    })();
+    const disposer = createRoot(dispose => {
+      createEffect(() => {
+        const lobby: NetworkLobbyView = {
+          onlineNodes: store.onlineNodes(),
+          files: store.files(),
+          totalBytes: store.totalBytes(),
+          lastSyncAt: store.lastSyncAt(),
+          syncError: store.syncError(),
+        };
+        const key = `${lobby.onlineNodes}:${lobby.files.length}:${lobby.totalBytes}`;
+        if (key !== lastKey) {
+          lastKey = key;
+          listener(lobby);
+        }
+      });
+      return dispose;
+    });
 
-    return () => {
-      cancelled = true;
-      for (const fn of unsubs) fn();
-    };
+    return () => disposer();
   },
 };
