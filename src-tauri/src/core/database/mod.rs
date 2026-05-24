@@ -15,6 +15,7 @@ pub use network_cache::{
 };
 
 use crate::utils::error::Result;
+use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
 use sqlx::SqlitePool;
 use std::path::PathBuf;
 
@@ -24,14 +25,17 @@ pub struct Database {
 
 impl Database {
     pub async fn new(database_path: &PathBuf) -> Result<Self> {
-        let database_url = format!("sqlite:{}", database_path.display());
-        
         // Create database file if it doesn't exist
         if let Some(parent) = database_path.parent() {
             tokio::fs::create_dir_all(parent).await?;
         }
 
-        let pool = SqlitePool::connect(&database_url).await?;
+        let options = SqliteConnectOptions::new()
+            .filename(database_path)
+            .create_if_missing(true);
+        let pool = SqlitePoolOptions::new()
+            .connect_with(options)
+            .await?;
         
         let db = Self { pool };
         

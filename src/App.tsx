@@ -26,7 +26,6 @@ import { DocumentDetailPage } from './pages/DocumentDetail';
 import { SearchNetworkPage } from './pages/SearchNetwork';
 import { DocumentReader } from './pages/DocumentReader';
 import PeerTransfers from './pages/PeerTransfers';
-import { GlobalAcervo } from './pages/GlobalAcervo';
 import { SettingsPage } from './pages/Settings/SettingsPage';
 
 interface InitProgress {
@@ -375,15 +374,6 @@ const App: Component = () => {
             component={() => (
               <RouteWrapper>
                 <SearchNetworkPage />
-              </RouteWrapper>
-            )}
-          />
-
-          <Route
-            path="/acervo"
-            component={() => (
-              <RouteWrapper>
-                <GlobalAcervo />
               </RouteWrapper>
             )}
           />

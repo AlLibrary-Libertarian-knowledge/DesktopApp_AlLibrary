@@ -41,10 +41,10 @@ Also remove from navigation (`Sidebar.tsx`): **Global Acervo** nav item; optiona
 ### Migration tasks
 
 - [ ] Extract `GlobalAcervo` download + card logic into `src/components/domain/network/NetworkFileCard/` (or extend `DocumentCard` with `source: 'network'`)
-- [ ] Add `useNetworkLobby()` hook — wraps cached lobby, refresh, SQLite fallback (see doc 03)
-- [ ] Search Network: on mount, if Tor/onion ready → `search({ query: '' })` (replace Global Acervo auto-browse)
-- [ ] Remove `/acervo` route and sidebar link after above works
-- [ ] Delete `src/pages/GlobalAcervo/` directory
+- [x] Add `useNetworkLobby()` hook — wraps cached lobby, refresh, SQLite fallback (see doc 03)
+- [x] Search Network: on mount, if Tor/onion ready → `search({ query: '' })` (replace Global Acervo auto-browse)
+- [x] Remove `/acervo` route and sidebar link after above works
+- [x] Delete `src/pages/GlobalAcervo/` directory
 
 ---
 
@@ -80,10 +80,10 @@ Also remove from navigation (`Sidebar.tsx`): **Global Acervo** nav item; optiona
 ### Migration tasks
 
 - [ ] Move share-restore from `localStorage` `allibrary_shared_paths` → SQLite `local_shares.disk_path` on boot
-- [ ] **Sharing & downloads**: remove `onionPanel` section; keep header status (onion address, start/stop if not auto-started)
-- [ ] Wire outbound table **only** to real data; empty state CTA “Add files to share”
-- [ ] Wire inbound table **only** to `downloadManager`; remove `MOCK_INBOUND` / `MOCK_COMPLETED`
-- [ ] Consolidate manual fetch form into one “Download from network link” dialog (not full debug panel)
+- [x] **Sharing & downloads**: remove `onionPanel` section; keep header status (onion address, start/stop if not auto-started)
+- [x] Wire outbound table **only** to real data; empty state CTA “Add files to share”
+- [x] Wire inbound table **only** to `downloadManager`; remove `MOCK_INBOUND` / `MOCK_COMPLETED`
+- [x] Consolidate manual fetch form into one “Download from network link” dialog (not full debug panel)
 - [ ] Connection Manager: optional “Advanced” collapsible with tracker sync diag (`trackerGetLastSyncDiag`) replacing lobby snippet textarea
 
 ---

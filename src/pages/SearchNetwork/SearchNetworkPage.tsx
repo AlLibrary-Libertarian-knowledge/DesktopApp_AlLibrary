@@ -3,7 +3,7 @@
  * Enhanced to match HomePage and DocumentManagement sophisticated patterns
  */
 
-import { type Component, createSignal, onMount, Show, For } from 'solid-js';
+import { type Component, createSignal, onMount, Show, For, createEffect } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
 import { Search, Shield, Filter, Download, BookOpen, ArrowRight, Users } from 'lucide-solid';
 
@@ -23,6 +23,7 @@ import { NetworkStatus } from '../../components/domain/network/NetworkStatus';
 
 // Hooks and Services
 import { useNetworkSearch } from '../../hooks/api/useNetworkSearch';
+import { useNetworkLobby } from '../../hooks/api/useNetworkLobby';
 import { enableTorAndP2P } from '../../services/network/bootstrap';
 import { useP2PTransfers } from '@/hooks/api/useP2PTransfers';
 import { transferFacade } from '@/services/network/transferFacade';
@@ -57,8 +58,8 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
   const [searchScope, setSearchScope] = createSignal<'all' | 'trusted' | 'nearby'>('all');
   // const [sortBy, setSortBy] = createSignal<'relevance' | 'date' | 'peers'>('relevance');
   const [torReady, setTorReady] = createSignal(false);
-  // const [torBootstrapped, setTorBootstrapped] = createSignal(false);
   const [torEstablishing, setTorEstablishing] = createSignal(false);
+  const [autoSearchDone, setAutoSearchDone] = createSignal(false);
 
   // Search filters
   const [fileTypes, setFileTypes] = createSignal<string[]>([]);
@@ -66,6 +67,7 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
 
   // Hooks
   const { results, isSearching, search } = useNetworkSearch();
+  const lobby = useNetworkLobby({ pollIntervalMs: 30000 });
   const net = useNetworkStore();
   let searchInputEl: HTMLInputElement | undefined;
   const onEnableTorClick = async () => {
@@ -108,19 +110,25 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
     };
     window.addEventListener('keydown', keyHandler);
 
-    // Initial search to populate the "acervo" (collection) automatically
-    globalThis.setTimeout(() => {
-      if (torReady()) {
-        handleSearch();
-      }
-    }, 1500);
-
     return () => {
       globalThis.clearInterval(timer);
       window.removeEventListener('tor-status-updated', handler as any);
       window.removeEventListener('keydown', keyHandler);
     };
   });
+
+  createEffect(() => {
+    if (torReady() && !autoSearchDone()) {
+      setAutoSearchDone(true);
+      void handleSearch();
+    }
+  });
+
+  const formatTotalSize = () => {
+    const bytes = lobby.totalBytes();
+    if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KiB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MiB`;
+  };
 
   // Removed mocked activity/stats
 
@@ -347,8 +355,8 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
               <StatCard
                 type="peers"
                 icon={<Users size={20} />}
-                number={`${net.connectedPeers()}`}
-                label="Connected Peers"
+                number={`${lobby.onlineNodes()}`}
+                label="Nodes Online"
                 trendType="neutral"
                 trendIcon={<ArrowRight size={12} />}
                 trendValue="live"
@@ -357,21 +365,21 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
               <StatCard
                 type="documents"
                 icon={<BookOpen size={20} />}
-                number={String(results()?.length || 0)}
-                label="Results"
+                number={String(lobby.files().length || results()?.length || 0)}
+                label="Network Files"
                 trendType="neutral"
                 trendIcon={<ArrowRight size={12} />}
-                trendValue="now"
+                trendValue="cached"
                 graphType="chart"
               />
               <StatCard
                 type="health"
                 icon={<Shield size={20} />}
-                number={torReady() ? 'Onion' : 'No Onion'}
-                label="Routing"
+                number={formatTotalSize()}
+                label="Total Size"
                 trendType={torReady() ? 'positive' : 'neutral'}
                 trendIcon={<ArrowRight size={12} />}
-                trendValue="status"
+                trendValue={torReady() ? 'Onion' : 'No Onion'}
                 graphType="health"
               />
             </div>

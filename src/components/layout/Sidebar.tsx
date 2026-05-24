@@ -82,7 +82,6 @@ const Sidebar: Component<SidebarProps> = props => {
       title: 'Discovery',
       icon: Search,
       items: [
-        { path: '/acervo', label: 'Global Acervo', icon: Globe },
         { path: '/search-network', label: 'Search Network', icon: Search },
         { path: '/browse', label: 'Browse Categories', icon: FolderOpen },
         { path: '/trending', label: 'Trending', icon: TrendingUp, badge: '12' },

@@ -31,7 +31,7 @@ Each section lists **UI intent** (from existing design), **current state**, and 
 |-------|--------|------|
 | `/settings` | ✅ Registered | [x] Register `SettingsPage`; link project/download folders |
 | `/new-arrivals` | ❌ Placeholder div | [ ] Register `NewArrivalsPage` when data wired |
-| `/acervo` | POC | [ ] **Remove** after Search Network default browse works |
+| `/acervo` | Removed | [x] **Remove** after Search Network default browse works |
 
 ---
 
@@ -104,7 +104,7 @@ Each section lists **UI intent** (from existing design), **current state**, and 
 | Feature | Current | Task |
 |---------|---------|------|
 | Title search | ✅ Tracker lobby filter | [ ] Also query SQLite cache when offline |
-| Empty query = all files | ⚠️ Partial | [ ] Auto-run on mount (replaces Global Acervo) |
+| Empty query = all files | ✅ | [x] Auto-run on mount when Tor ready (replaces Global Acervo) |
 | Tor gate | ⚠️ `torAdapter` | [ ] Gate on `onionShareStatus` + tracker reachability |
 | Download result | ✅ `transferFacade.downloadLink` | [x] Onion link via transferFacade + hash resolution |
 | Open result | ❌ `/document/:hash` | [ ] Download-first or open network link; local docs → reader |
@@ -160,12 +160,12 @@ Each section lists **UI intent** (from existing design), **current state**, and 
 
 | Feature | Current | Task |
 |---------|---------|------|
-| Outbound real shares | ✅ When shares exist | [ ] Remove MOCK fallback rows |
-| Inbound downloads | ✅ `downloadManager` | [ ] Remove MOCK inbound/completed |
-| Charts | ❌ Sample data | [ ] Real throughput or remove charts until metrics exist |
-| Onion mesh panel | POC | [ ] **Delete**; retain compact status + actions in header |
+| Outbound real shares | ✅ | [x] Remove MOCK fallback rows |
+| Inbound downloads | ✅ `downloadManager` | [x] Remove MOCK inbound/completed |
+| Charts | Placeholder | [x] Real throughput or remove charts until metrics exist |
+| Onion mesh panel | Removed | [x] **Delete**; retain compact status + actions in header |
 | Add files | ✅ Pickers | — |
-| Download by link | ✅ | [ ] Move to modal |
+| Download by link | ✅ | [x] Move to modal |
 
 ### Configurations `/connection-manager`
 
@@ -199,7 +199,7 @@ Each section lists **UI intent** (from existing design), **current state**, and 
 
 ## Mock removal checklist
 
-- [ ] `PeerTransfers`: `MOCK_OUTBOUND`, `MOCK_INBOUND`, `MOCK_COMPLETED`, `THROUGHPUT_SAMPLES`
+- [x] `PeerTransfers`: `MOCK_OUTBOUND`, `MOCK_INBOUND`, `MOCK_COMPLETED`, `THROUGHPUT_SAMPLES`
 - [ ] `PeerNetworkPage`: `mockConnectedPeers`, fake `networkStats`
 - [ ] `Browse.tsx`: mock categories `createEffect`
 - [ ] `Trending.tsx`: `generateMockData`

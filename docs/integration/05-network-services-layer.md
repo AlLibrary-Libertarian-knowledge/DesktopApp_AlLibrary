@@ -118,7 +118,8 @@ export const transferFacade = {
 
 - [x] Wrap `onionShareService` + `downloadManager` + `settingsService.getDownloadFolder`
 - [x] Self-download guard from Global Acervo → keep in `downloadLink`
-- [ ] `PeerTransfers` and **Home** use only this module
+- [x] `PeerTransfers` uses `useTransferState` → `transferFacade`
+- [ ] **Home** downloads tab uses `useTransferState`
 - [ ] Remove direct `onionShare.*` imports from pages except Connection Manager config
 
 ---
@@ -163,7 +164,8 @@ Today implements 20+ methods; most are no-ops. Target:
 | `useNetworkSearch` | `networkFacade.searchFiles` + `transferFacade.downloadLink` |
 | `useP2PTransfers` | `transferFacade` |
 | `useNetworkPresenceResource` | `networkFacade.getPresence` |
-| `useNetworkLobby` (new) | `networkFacade` with Solid resource |
+| `useNetworkLobby` | `networkFacade` with Solid resource |
+| `useTransferState` | `transferFacade` subscribe + shares |
 
 ### Fix `useNetworkSearch.downloadFromPeer`
 

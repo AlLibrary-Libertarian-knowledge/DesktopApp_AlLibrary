@@ -1,5 +1,6 @@
 use crate::commands::settings::{load_app_settings, AppSettings};
 use crate::core::database::migrations;
+use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
 use sqlx::SqlitePool;
 use std::path::PathBuf;
 use tauri::AppHandle;
@@ -16,7 +17,6 @@ pub async fn ensure_node_database(app_handle: &AppHandle) -> Result<SqlitePool, 
 
     let documents_folder = PathBuf::from(&settings.folder_structure.documents_folder);
     let database_path = resolve_database_path(&settings);
-    let database_url = format!("sqlite:{}", database_path.to_string_lossy());
 
     info!(
         "Ensuring node database at {}",
@@ -26,7 +26,11 @@ pub async fn ensure_node_database(app_handle: &AppHandle) -> Result<SqlitePool, 
     std::fs::create_dir_all(&documents_folder)
         .map_err(|e| format!("Failed to create documents folder: {e}"))?;
 
-    let pool = SqlitePool::connect(&database_url)
+    let options = SqliteConnectOptions::new()
+        .filename(&database_path)
+        .create_if_missing(true);
+    let pool = SqlitePoolOptions::new()
+        .connect_with(options)
         .await
         .map_err(|e| format!("Failed to connect to database: {e}"))?;
 
