@@ -1,67 +1,92 @@
-# 🏛️ Arquitetura de Rede P2P e Conectividade do AlLibrary
+# Arquitetura de rede — AlLibrary (estado atual)
 
-Este documento explica como o AlLibrary gerencia a comunicação P2P e como ele permite o compartilhamento de arquivos entre computadores em **redes totalmente distantes** (como cidades diferentes, países diferentes ou atrás de firewalls rígidos).
-
----
-
-## ❓ O aplicativo consegue transferir arquivos entre redes distantes?
-
-**Sim!** O AlLibrary foi projetado especificamente para isso. 
-
-Normalmente, para que dois computadores se conectem diretamente pela internet (P2P tradicional), ambos ou pelo menos um deles precisaria de:
-1. **IP Público Dedicado** (cada vez mais raro devido ao CGNAT das operadoras).
-2. **Redirecionamento de Portas (Port Forwarding)** configurado manualmente no roteador.
-3. Desativação de **Firewalls** locais.
-
-O AlLibrary contorna todas essas barreiras utilizando a **rede Tor (Onion Hidden Services)**.
+Visão da conectividade P2P **como o projeto funciona hoje**, não apenas como ideal de produto.
 
 ---
 
-## 🌐 Como a Magia Ocorre: Ultrapassando Firewalls e CGNAT
+## Resposta direta: transferência entre redes distantes?
 
-Em vez de abrir portas públicas no seu roteador doméstico, o AlLibrary utiliza o Tor como um túnel de **Rendezvous (Ponto de Encontro)**.
+**Sim, no caminho de produção atual:** Tor Hidden Services + tracker de presença.
+
+O cliente **não** depende de IP público nem port forwarding. Cada nó:
+
+1. Sobe um **Tor embarcado** e um **servidor HTTP local** de compartilhamento (onion-share).
+2. Publica um endereço **`.onion`** e anuncia metadados (nome, hash, link) ao **tracker**.
+3. Outros nós consultam o lobby do tracker e baixam via **`onion_share_fetch`** (SOCKS5 → link `.onion` do peer).
+
+---
+
+## Stack em produção (v1.0.x)
+
+| Camada | Implementação | Papel |
+|--------|---------------|--------|
+| UI | SolidJS (`src/`) | Telas Library / Discovery / P2P Network |
+| Ponte Tauri | `onion_bridge` + `onionShareService.ts` | Tor, shares, tracker, downloads |
+| Tracker | Repositório **`TrackerRust_AlLibrary`** (`allibrary-tracker` v0.7.4) | Lobby em RAM; HTTP + WebSocket |
+| Dados locais | SQLite `documents/allibrary.db` | Coleções (CRUD); **cache de rede planejado** |
+| Legado (não-UI) | `init_p2p_node`, Kademlia, libp2p | Comandos Tauri existem; **não** são o fluxo principal da UI |
+
+Plano de integração detalhado: [integration/README.md](./integration/README.md).
+
+---
+
+## Fluxo de dados (simplificado)
 
 ```mermaid
 sequenceDiagram
-    participant Doador as Cliente A (Doador)
-    participant Tor as Rede Tor (Rendezvous)
-    participant Tracker as Servidor Tracker
-    participant Receptor as Cliente B (Receptor)
+    participant UI as SolidJS
+    participant Tauri as onion_bridge (Rust)
+    participant Tor as Tor local
+    participant Tracker as Tracker .onion
+    participant Peer as Outro nó .onion
 
-    Note over Doador: Inicia Serviço Oculto (.onion)
-    Doador->>Tor: Abre conexão de saída persistente
-    Note over Doador: Registra arquivos compartilhados
-    Doador->>Tracker: Anuncia: "Tenho o arquivo X no link zyx.onion"
-    
-    Receptor->>Tracker: Consulta arquivos disponíveis
-    Tracker-->>Receptor: Retorna: "Arquivo X está em zyx.onion"
-    
-    Note over Receptor: Solicita download do arquivo X
-    Receptor->>Tor: Conecta ao endereço zyx.onion
-    Tor->>Tor: Conecta os dois túneis no Ponto de Encontro (Rendezvous)
-    Tor-->>Receptor: Transfere o arquivo com segurança e anonimato
+    UI->>Tauri: bootstrap_onion_overlay
+    Tauri->>Tor: hidden service (share)
+    Tauri->>Tracker: WS /ws + POST /announce
+    UI->>Tauri: tracker_get_cached_lobby
+    Tauri-->>UI: NetworkLobby
+    UI->>Tauri: onion_share_fetch(link)
+    Tauri->>Tor: SOCKS → Peer
+    Peer-->>UI: arquivo em pasta de downloads
 ```
 
-### Explicação Passo a Passo:
+---
 
-1. **Abertura de Conexões de Saída**: Quando o Tor inicia em seu computador, ele faz uma conexão de *saída* para a rede Tor pública. Firewalls domésticos e CGNAT **não bloqueiam** conexões de saída (apenas de entrada).
-2. **Criação do Serviço Oculto (.onion)**: O aplicativo cria um endereço virtual criptográfico único (ex: `exemplo123456789.onion`). Esse link representa a sua máquina dentro da rede Tor.
-3. **Ponto de Encontro (Rendezvous Point)**: Quando o Cliente B quer baixar do Cliente A, ambos se conectam a um terceiro nó intermediário na rede Tor (o ponto de encontro). A conexão é estabelecida de forma bidirecional sem que o Cliente A ou o Cliente B precisem expor seus IPs reais ou configurar roteadores.
+## Tracker (“lista telefônica”)
+
+- **Não** armazena bytes de arquivo.
+- Mantém **nós online** e **metadados** (hash, nome, tamanho, link `.onion`).
+- TTL ~30s + remoção imediata ao fechar WebSocket.
+- Deploy recomendado: Docker Compose em `TrackerRust_AlLibrary/` (tracker + `tor_service`).
+
+Configuração no cliente: `src-tauri/src/onion_share/config.rs` (default `tracker_url`) ou **Configurations** (`/connection-manager`) em runtime.
 
 ---
 
-## 🧭 O Papel do Tracker Server ("Lista Telefônica")
+## UI vs backend (honestidade)
 
-Como os endereços `.onion` são gerados dinamicamente e mudam quando as chaves de sessão são limpas, os clientes precisam de um ponto centralizado para se localizarem. É aqui que entra o **Tracker**:
-
-- O Tracker **não hospeda nem trafega os arquivos**.
-- Ele atua apenas como uma **lista telefônica dinâmica em memória**.
-- Quando o aplicativo do doador está online, ele avisa o tracker: *"Eu sou o nó X, meu endereço Tor ativo é Y.onion, e estou compartilhando os arquivos A, B e C"*.
-- Quando o receptor abre o aplicativo, ele lê o lobby do tracker para descobrir automaticamente quem está online e quais arquivos estão disponíveis para download imediato (Conhecido como **Zero-Search Discovery**).
+| Área | Estado |
+|------|--------|
+| Bootstrap Tor + announce no boot | Funcional |
+| Download via link `.onion` | Funcional (`downloadManager` + `onion_share_fetch`) |
+| Busca na rede por título | Funcional via lobby do tracker (`p2pNetworkService.searchNetwork`) |
+| Métricas de throughput / libp2p | **Não** alimentam a UI (valores zerados ou mock) |
+| Telas POC **Global Acervo** e painel **Onion mesh (live)** | Funcionais como POC; **serão removidas** — capacidades migram para Search Network, Sharing & downloads, Configurations |
+| Várias telas Discovery/P2P | Layout pronto; parte ainda usa **dados mock** |
 
 ---
 
-## 🛡️ Resistência à Censura e Anonimato
+## Privacidade
 
-- **Ponta a Ponta Criptografado**: Toda a comunicação dentro da rede Tor é criptografada por padrão, impedindo que provedores de internet (ISPs) ou intermediários saibam qual arquivo está sendo baixado.
-- **Metadata Protegido**: Como as conexões são roteadas através de múltiplos saltos criptografados, o receptor não conhece o IP físico do doador, e o doador não conhece o IP físico do receptor.
+- Tráfego entre peers passa pela rede Tor (camadas criptografadas).
+- Tracker vê apenas metadados e endereços `.onion`, não conteúdo.
+- IPs reais dos peers não são expostos um ao outro via links onion.
+
+---
+
+## Documentos relacionados
+
+- [TRACKER_SERVER.md](./TRACKER_SERVER.md) — protocolo HTTP/WS
+- [P2P_INTEGRATION.md](./P2P_INTEGRATION.md) — integração no desktop
+- [CONECTIVIDADE_GLOBAL.md](./CONECTIVIDADE_GLOBAL.md) — cenário Brasil ↔ Japão
+- [DESCENTRALIZACAO_COMPLETA.md](./DESCENTRALIZACAO_COMPLETA.md) — evolução futura (DHT/gossip)

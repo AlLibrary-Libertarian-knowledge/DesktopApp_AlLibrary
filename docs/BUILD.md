@@ -1,42 +1,95 @@
-# 🏗️ Build Documentation
+# Build & desenvolvimento
 
-## Development Build
+Projeto **Tauri 2 + SolidJS + Rust**. Gerenciador de pacotes: **pnpm** (`packageManager` em `package.json`).
+
+---
+
+## Pré-requisitos
+
+- Node.js (LTS)
+- pnpm 9.x
+- Rust toolchain (stable)
+- Windows: WebView2 (runtime usualmente já instalado)
+
+---
+
+## Comandos principais
 
 ```bash
-pnpm run dev       # Start Vite development server
-pnpm run tauri:dev # Start Tauri development mode
+pnpm install
+
+# App completo (frontend + Tauri + Rust)
+pnpm dev              # alias: pnpm tauri:dev → npx tauri dev
+
+# Apenas frontend (sem Tauri)
+pnpm dev:frontend     # vite
+
+# Produção
+pnpm build            # npx tauri build (instaladores)
+pnpm build:frontend   # vite build → dist/
 ```
 
-## Production Build
+---
+
+## Qualidade
 
 ```bash
-pnpm run build     # Build frontend for production
-pnpm run tauri:build # Build complete Tauri application with installers
+pnpm lint             # biome check src tests
+pnpm lint:fix         # biome --write
+pnpm format           # biome format --write
+pnpm typecheck        # tsc --noEmit
+pnpm test             # vitest (watch)
+pnpm test:ci          # vitest run
+pnpm quality          # lint + typecheck + test
+pnpm validate         # typecheck + lint + test:ci + build:frontend
 ```
 
-## Quality Assurance
+---
+
+## E2E (Playwright)
 
 ```bash
-pnpm run lint      # Run Biome check (format + lint) on src and tests
-pnpm run lint:fix  # Run Biome check with --write
-pnpm run format    # Run Biome format --write
-pnpm run typecheck # Run TypeScript type checking
-pnpm run test      # Run unit tests with Vitest
+pnpm test:e2e:windows   # recomendado no Windows (Chromium / WebView2)
+pnpm test:e2e           # Chromium + WebKit
+pnpm test:e2e:debug
 ```
 
-## Available Build Targets
+Ver [E2E_TESTING_STRATEGY.md](./E2E_TESTING_STRATEGY.md).
 
-- **Windows**: MSI and NSIS installers
-- **Frontend**: Vite-optimized static files in `dist/`
-- **Backend**: Rust binary compiled with Cargo
+---
 
-## Build Configuration
+## Tracker (servidor separado)
 
-- Frontend dist: `src-tauri/tauri.conf.json`
-- Rust dependencies: `src-tauri/Cargo.toml`
-- TypeScript config: `tsconfig.json`
-- Vite config: `vite.config.ts`
+Para testes P2P com lobby real:
 
-## Build Pipeline Status ✅
+```bash
+cd ../TrackerRust_AlLibrary   # ou clone allibrary-tracker
+docker compose up -d --build
+```
 
-All build commands verified and working correctly.
+Legado local (cópia no monorepo): `DesktopApp_AlLibrary/deploy/` — preferir **`TrackerRust_AlLibrary`**.
+
+---
+
+## Artefatos
+
+| Saída | Local |
+|-------|--------|
+| Frontend build | `dist/` |
+| Binário Rust | `src-tauri/target/release/` |
+| Instaladores Windows | `src-tauri/target/release/bundle/` (MSI/NSIS conforme `tauri.conf.json`) |
+| Config Tauri | `src-tauri/tauri.conf.json` |
+| Dependências Rust | `src-tauri/Cargo.toml` |
+
+---
+
+## Versão
+
+Versão do app: campo `version` em `package.json` (ex.: **1.0.12**). Tracker standalone: `allibrary-tracker` **0.7.4** em `TrackerRust_AlLibrary/Cargo.toml`.
+
+---
+
+## Notas
+
+- Primeira execução: **FirstRunWizard** pede pasta do projeto (ex.: `D:\AlLibrary`); Tor/onion sobem no overlay de loading (`bootstrap_onion_overlay`).
+- Build CI: ver workflows em `.github/` se presentes no repositório remoto.

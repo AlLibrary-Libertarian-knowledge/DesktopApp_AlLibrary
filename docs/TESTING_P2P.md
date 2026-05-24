@@ -1,63 +1,107 @@
-# 🧪 Como Testar o Download P2P Localmente (Antes de Commitar & Push)
+# Testar P2P localmente
 
-Para garantir que o download P2P de arquivos e a persistência de compartilhamento estão funcionando perfeitamente, você pode realizar testes em seu próprio computador utilizando o Tracker local em modo Docker de forma muito simples.
+Procedimento manual antes de push/release. Requer **Docker** para o tracker.
 
 ---
 
-## 🛠️ Passo 1: Subir o Servidor Tracker Local
-Na pasta `deploy/` do seu projeto, execute o Docker Compose para iniciar o Tracker:
+## 1. Subir o tracker
+
+**Recomendado** (repo standalone):
+
 ```bash
-cd deploy
+cd TrackerRust_AlLibrary
 docker compose up -d --build
+curl -s http://127.0.0.1:8080/debug/nodes
 ```
-Isso iniciará o Tracker na porta `8080` do seu localhost.
 
-Para verificar se o tracker está rodando e ver os nós conectados, use:
+Alternativa legada: `DesktopApp_AlLibrary/deploy/` (mesmos comandos).
+
+---
+
+## 2. Configurar o cliente
+
+1. Abrir app: `pnpm dev`
+2. **Configurations** → `/connection-manager`
+3. **Tracker URL:** `http://127.0.0.1:8080`
+4. Guardar ( `tracker_set_config` )
+5. Opcional: `try_local_tracker_fallback` já ajuda quando `.onion` falha no mesmo PC
+
+Para Tor real: usar hostname `.onion` do passo abaixo e Tor activo no cliente.
+
 ```bash
-docker compose exec tracker curl -s http://localhost:8080/debug/nodes
+docker compose exec tor_service cat /var/lib/tor/hidden_service/hostname
+# URL: http://{hostname}.onion  (sem :8080)
 ```
 
 ---
 
-## 🔄 Passo 2: Configurar o App para Usar o Tracker Local
-No aplicativo desktop AlLibrary:
-1. Vá para **Configurações** (ou pelo menu lateral).
-2. No campo **Tracker URL**, insira: `http://127.0.0.1:8080` (isso evita o atraso da rede Tor para o Tracker, facilitando testes rápidos).
-3. Habilite a opção **Try Local Tracker Fallback** (se disponível) ou apenas salve o campo.
+## 3. Partilhar ficheiros
+
+**Sharing & downloads** (`/transfers`):
+
+1. Confirmar onion activo (sidebar: “Onion” / status no header da página)
+2. **Share Multiple** ou painel POC “Onion mesh” → pick files → `onion_share_add_file`
+3. Tabela outbound deve listar shares reais (`onionShareListLocal`)
+
+Persistência actual: `localStorage` `allibrary_shared_paths` + re-announce no boot (`App.tsx`).
 
 ---
 
-## 📂 Passo 3: Adicionar Arquivos para Compartilhar (Seeding)
-Na tela **Sharing & Downloads**:
-1. Certifique-se de que o Tor está conectado (barra lateral mostra "Onion Active").
-2. Adicione os arquivos que deseja compartilhar:
-   - Clique em **Share Multiple** (o botão `+`) para abrir o seletor nativo e escolher um ou mais arquivos de uma vez.
-   - Os arquivos aparecerão na tabela **Outbound — sharing & seeding** com o status `seeding`.
-3. Os arquivos compartilhados são salvos automaticamente no seu navegador (`localStorage`).
-4. **Teste de Persistência**: Feche o aplicativo e abra-o novamente. Assim que a tela de carregamento terminar e o Tor conectar, você verá no console logs como:
-   `Restoring shared file on boot: /caminho/do/seu/arquivo`
-   E os arquivos voltarão automaticamente à tabela de compartilhamento no estado `seeding`!
+## 4. Ver lobby
+
+Qualquer um:
+
+```bash
+curl -s http://127.0.0.1:8080/lobby | jq
+```
+
+UI:
+
+- **Global Acervo** `/acervo` (POC) — lista automática
+- **Search Network** `/search-network` — pesquisa / query vazia
+
+Alvo pós-integração: só Search Network + cache SQLite.
 
 ---
 
-## 📥 Passo 4: Testar o Download do Arquivo
-Como você está na mesma máquina, você pode testar o download simulando um nó receptor:
-1. Vá até a tela **Global Acervo** (onde todos os arquivos disponíveis na rede são listados de forma automatizada).
-2. Você verá os arquivos que você mesmo acabou de compartilhar listados ali.
-3. Se você clicar em **Download** no card de um arquivo:
-   - O aplicativo iniciará o processo de download via rede Tor.
-   - O card do arquivo mostrará o progresso do download em tempo real (ex: `10%`, `50%`, `100%`).
-   - Caso o serviço do Tor não esteja ativo, um banner vermelho explicativo (`downloadErrorBanner`) aparecerá no topo informando o ocorrido.
-4. Quando o download for concluído com sucesso:
-   - O arquivo será salvo na pasta de downloads configurada no assistente inicial (First Run Wizard).
-   - O status do arquivo no **Global Acervo** mudará para `✅ Saved`.
-   - Na aba **Sharing & Downloads**, o download aparecerá na lista de transferências de entrada como `✅ Baixado & Seeding`.
-   - **Auto-Seeding**: O arquivo baixado será automaticamente adicionado ao compartilhamento local para que outros nós possam baixá-lo a partir de você, aumentando a velocidade e descentralização da rede.
+## 5. Testar download
+
+1. Com ficheiro no lobby, clicar **Download** (Global Acervo) ou corrigir fluxo em Search Network
+2. Pasta destino: first-run / `settingsService.getDownloadFolder()`
+3. Progresso: `downloadManager` (percentagem simulada até evento final)
+4. Sucesso: evento `onion-share-fetch-done`, badge “Saved”
+
+**Mesma máquina:** evitar descarregar link do **próprio** `.onion` (guard no Global Acervo).
+
+**Dois PCs:** dois clientes, tracker acessível (localhost ou `.onion`), cada um partilha ficheiros diferentes.
 
 ---
 
-## 🐛 Diagnóstico de Problemas
-Se o download falhar ou ficar travado em progresso inicial:
-*   Verifique se o seu Tor local está conseguindo se conectar aos circuitos.
-*   Veja se o caminho da pasta de downloads configurada no First Run Wizard existe e tem permissão de escrita.
-*   Consulte os logs do terminal de desenvolvimento (`pnpm run dev`) para analisar qualquer exceção disparada no Rust ou no SolidJS.
+## 6. Diagnóstico
+
+| Sintoma | Verificar |
+|---------|-----------|
+| 0 nodes online | Tracker up? URL correcta? WS/announce nos logs Rust |
+| Download falha | `onion_share_status`, pasta downloads existe, logs `onion_share_fetch` |
+| Lobby vazio | `share_publicly` true? ficheiros em `onion_share_list_local`? |
+| `.onion` tracker falha | Fallback `127.0.0.1:8080` ou Tor bootstrap completo |
+
+Logs: terminal `pnpm dev` + `RUST_LOG=info`.
+
+Sync diagnostics: `tracker_get_last_sync_diag` (UI futura em Configurations).
+
+---
+
+## 7. E2E automatizado
+
+Playwright **não** substitui este guia. Ver [E2E_TESTING_STRATEGY.md](./E2E_TESTING_STRATEGY.md) e `src-tauri/ONION_SHARE_MANUAL_E2E.md`.
+
+---
+
+## Dois nós no mesmo PC (smoke test)
+
+1. Tracker Docker :8080
+2. Uma instância dev do app (partilha ficheiro)
+3. Segunda instância **não** é suportada out-of-box (mesmo `node_id`/Tor) — use outro PC ou VM para teste real de peer distinto.
+
+Para smoke local basta: partilhar + ver lobby + download **de outro link** (outro ficheiro simulado noutro cliente quando disponível).

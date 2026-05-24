@@ -357,12 +357,16 @@ pnpm format           # Format all code
 
 ### Core Documentation
 
-- [📋 Project Overview](../DocsAndResearch_AlLibrary/Software%20Engineering/project_overview_nontechnical.md)
-- [🏗️ Technical Specifications](../DocsAndResearch_AlLibrary/Software%20Engineering/technical_specifications_overview.md)
-- [📊 System Architecture](../DocsAndResearch_AlLibrary/Software%20Engineering/diagrams/system_architecture_diagram.md)
+- [🏛️ Arquitetura de rede (estado atual)](docs/ARQUITETURA.md)
+- [🌐 Integração P2P / onion-share](docs/P2P_INTEGRATION.md)
+- [🧭 Tracker — protocolo e deploy](docs/TRACKER_SERVER.md)
+- [🔌 Plano de integração UI ↔ SQLite ↔ tracker](docs/integration/README.md)
+- [🧪 Testes P2P manuais](docs/TESTING_P2P.md)
+- [🏗️ Build & dev](docs/BUILD.md)
 
 ### Development Guides
 
+- [🔌 Integration Plan (frontend-driven, SQLite, tracker)](docs/integration/README.md)
 - [🛠️ Development Setup](docs/development/setup.md)
 - [🏛️ Architecture Guide](docs/architecture/README.md)
 - [🔧 API Reference](docs/api/README.md)

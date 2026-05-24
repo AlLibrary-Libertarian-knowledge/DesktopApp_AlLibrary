@@ -1,85 +1,132 @@
-# 🧭 Servidor Tracker: Funcionamento e Protocolo
+# Servidor tracker — protocolo e deploy
 
-Este documento detalha o funcionamento interno do **Servidor Tracker**, a estrutura de dados que ele gerencia, os protocolos de comunicação HTTP e WebSocket, e como extrair essa peça para um repositório independente no futuro.
+Coordenador de **presença** da rede AlLibrary. Não transfere ficheiros.
 
----
+Implementação canónica: **`TrackerRust_AlLibrary`** (`allibrary-tracker` **v0.7.4**, Axum + Tokio).
 
-## ❓ O que é o Tracker Server?
+Duplicatas no monorepo (evitar divergência):
 
-O Tracker é um servidor de coordenação centralizado de baixíssima pegada (footprint). Ele **não recebe, não armazena e não transmite os arquivos** compartilhados pelos usuários. 
-
-Sua única responsabilidade é responder à pergunta:
-> *"Quais nós (.onion) estão online agora e quais arquivos cada um está compartilhando?"*
+- `DesktopApp_AlLibrary/src-tauri/src/bin/tracker.rs` — binário embarcado dev
+- `DesktopApp_AlLibrary/deploy/` — Docker legado
 
 ---
 
-## 🛠️ Arquitetura Interna do Servidor
+## Responsabilidade
 
-O tracker roda em segundo plano em um contêiner Docker (geralmente sob a porta `8080`). Ele gerencia as conexões utilizando duas camadas de protocolo:
+> Quais nós `.onion` estão online e que ficheiros anunciam?
 
-1. **REST API (HTTP)**: Utilizado para consultas rápidas e compatibilidade de polling legada.
-2. **WebSocket (WS)**: Canal de comunicação bidirecional persistente. Mantém a presença do nó viva e atualiza o lobby em tempo real.
+- Estado **só em RAM** (sem DB no servidor)
+- TTL ~30s sem re-announce; remoção imediata ao fechar WebSocket
+- GC a cada 5s no loop background
 
-```mermaid
-graph TD
-    Client[Cliente AlLibrary] -->|1. Conexão WS| WS[WebSocket Endpoint /ws]
-    Client -->|2. HTTP GET| Lobby[Lobby Endpoint /lobby]
-    WS --> Memory[(Estado em Memória)]
-    Lobby --> Memory
+---
+
+## Endpoints
+
+Base: `http://0.0.0.0:8080` (container) / `.onion:80` (hidden service)
+
+| Método | Rota | Uso |
+|--------|------|-----|
+| `GET` | `/ws` | WebSocket — lobby push + `announce` |
+| `POST` | `/announce` | Fallback HTTP (mesmo JSON que WS) |
+| `GET` | `/lobby` | Snapshot `NetworkLobby` |
+| `GET` | `/swarm/:content_hash` | Peers com esse hash |
+| `GET` | `/debug/nodes` | Debug (sem auth — não expor publicamente) |
+
+---
+
+## Tipos JSON (snake_case)
+
+### Cliente → servidor (`WsClientMessage`)
+
+```json
+{
+  "type": "announce",
+  "node_id": "uuid",
+  "onion": "http://peer.onion",
+  "files": [{
+    "file_id": "uuid",
+    "name": "doc.pdf",
+    "size": 12345,
+    "link": "http://peer.onion/...",
+    "content_hash": "sha256..."
+  }]
+}
 ```
 
----
+### Servidor → cliente (`WsServerMessage`)
 
-## 📡 Protocolo e Endpoints do Servidor
+```json
+{
+  "type": "lobby",
+  "lobby": {
+    "online_nodes": 2,
+    "files": [{
+      "name": "doc.pdf",
+      "size": 12345,
+      "link": "http://peer.onion/...",
+      "content_hash": "sha256...",
+      "peer_count": 1,
+      "peers": [{ "node_id": "...", "onion": "...", "file_id": "...", "link": "..." }]
+    }]
+  }
+}
+```
 
-Se você decidir reescrever o Tracker Server em outra linguagem (como Node.js, Go ou Python) no futuro, seu servidor precisará expor os seguintes endpoints na porta configurada:
-
-### 1. `GET /lobby`
-Retorna a lista completa de arquivos compartilhados por todos os clientes online na rede, bem como a quantidade de nós conectados.
-
-*   **Resposta JSON esperada (`NetworkLobby`)**:
-    ```json
-    {
-      "online_nodes": 3,
-      "files": [
-        {
-          "name": "tcc_versao_final.pdf",
-          "size": 2458102,
-          "link": "http://3anhnwqwxmjo...onion/tcc_versao_final.pdf",
-          "content_hash": "a1b2c3d4e5f6...",
-          "peer_count": 1
-        }
-      ]
-    }
-    ```
-
-### 2. `GET /debug/nodes`
-Endpoint de depuração que retorna a lista crua de nós conhecidos pelo servidor e o status de suas conexões WebSocket.
-*   **Comando de execução (no contêiner)**:
-    ```bash
-    docker compose exec tracker curl -s http://localhost:8080/debug/nodes
-    ```
-
-### 3. `GET /ws` (WebSocket)
-O canal de presença oficial introduzido na versão `0.7.4`.
-*   **Handshake**: O cliente inicia uma conexão WebSocket.
-*   **Registro**: Ao conectar, o cliente envia uma mensagem JSON anunciando seu ID de Nó (`node_id`), seu link `.onion` público gerado pelo Tor e a lista de arquivos que está compartilhando.
-*   **Heartbeat / Ping**: O servidor envia pings periódicos (ex: a cada 30 segundos) para verificar se o cliente ainda está ativo.
-*   **Auto-Cleanup (Desconexão)**: Se o cliente fechar o aplicativo ou perder a conexão de internet, o canal WebSocket será fechado. O Tracker detecta isso imediatamente e remove todos os arquivos daquele nó da lista ativa, evitando links quebrados no lobby global.
+Espelho no cliente: `src-tauri/src/onion_share/tracker_proto.rs`.
 
 ---
 
-## 📦 Como Separar o Servidor Tracker do Repositório Principal
+## WebSocket — comportamento real
 
-Atualmente, os arquivos de deploy do Tracker estão na pasta `deploy/`. Para criar um repositório exclusivo para o Tracker:
+1. Cliente conecta (`/ws`); servidor envia lobby actual.
+2. Cliente envia `announce` (app re-envia ~5s no loop WS).
+3. Qualquer mudança → broadcast `lobby` a todos os WS.
+4. Disconnect → remove `node_id` e rebroadcast.
 
-1. **Crie um novo repositório git** (ex: `allibrary-tracker`).
-2. **Copie os arquivos da pasta `deploy/`**:
-   * `Dockerfile`: Que compila e expõe a aplicação Rust do Tracker.
-   * `Dockerfile.tor`: Contêiner auxiliar do Tor para prover o endereço oculto do Tracker.
-   * `docker-compose.yml`: Define a rede integrada entre o contêiner do Tracker e o contêiner do Tor.
-   * `tor-entrypoint.sh`: Shell script de inicialização do Tor Hidden Service.
-3. **Código-Fonte do Tracker**: Certifique-se de mover o subprojeto Rust responsável pelo servidor tracker (geralmente uma subpasta no workspace do Cargo ou um arquivo separado) para a raiz do novo repositório.
+**Correcção vs. docs antigos:** o servidor **não** envia pings periódicos de 30s; liveness = re-announce + TTL + disconnect WS. Responde a `Ping` frames do cliente.
 
-### Dica de Segurança e Endereço Onion Fixo
-As chaves do endereço `.onion` do seu Tracker ficam salvas no volume `tor_keys` do Docker. Faça o backup desse diretório sempre que migrar de servidor VPS. Sem ele, um novo endereço `.onion` será gerado, invalidando a URL do Tracker configurada no cliente compilado dos seus usuários.
+---
+
+## Cliente desktop
+
+| Peça | Ficheiro |
+|------|----------|
+| HTTP announce + retry | `tracker_client.rs` |
+| WS loop | `run_tracker_ws_loop` |
+| SOCKS WS para `.onion` | `tokio_socks` + `tokio-tungstenite` |
+| Config | `config.rs` — `normalize_tracker_url` remove `:8080` em `.onion` |
+| UI config | `/connection-manager` |
+
+Comandos: `tracker_get_config`, `tracker_set_config`, `tracker_refresh_lobby`, `tracker_get_cached_lobby_cmd`, `tracker_start_ws_loop`, `tracker_get_last_sync_diag`.
+
+---
+
+## Deploy Docker
+
+```bash
+cd TrackerRust_AlLibrary
+docker compose up -d --build
+docker compose exec tor_service cat /var/lib/tor/hidden_service/hostname
+```
+
+- Serviço `tracker`: porta 8080
+- `tor_service`: `network_mode: service:tracker`, `HiddenServicePort 80 → 127.0.0.1:8080`
+- Volume **`tor_keys`** — backup obrigatório; sem ele gera novo `.onion`
+
+Documentação interna: `TrackerRust_AlLibrary/docs/FUNCIONAMENTO_INTERNO.md`, `README.md`.
+
+---
+
+## Cache no cliente (planeado)
+
+Tracker permanece efémero; cada **nó** guardará snapshot do lobby em SQLite — ver [integration/01-data-model-and-node-directory.md](./integration/01-data-model-and-node-directory.md).
+
+---
+
+## Debug rápido
+
+```bash
+docker compose exec tracker curl -s http://localhost:8080/debug/nodes
+docker compose exec tracker curl -s http://localhost:8080/lobby
+```

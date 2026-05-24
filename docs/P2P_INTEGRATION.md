@@ -1,72 +1,117 @@
-# 🌐 AlLibrary P2P & Tor Onion-Share Integration
+# Integração P2P & onion-share (desktop)
 
-AlLibrary features a fully decentralized, censorship-resistant, and anonymous Peer-to-Peer (P2P) file sharing infrastructure powered by **Tor Hidden Services** (`.onion`) and a lightweight tracking protocol.
-
-This integration allows users to discover and transfer documents securely and anonymously without relying on a centralized file storage database.
+Como o **cliente** AlLibrary usa Tor e o tracker — alinhado ao código atual.
 
 ---
 
-## 🛠️ Architecture Overview
+## Três peças
 
-The P2P network is composed of three main components:
-1. **Desktop App (Tauri + Rust + SolidJS)**: Each client runs an embedded Tor daemon and starts a local share server to host files over hidden services.
-2. **Tor Network**: Provides anonymity and NAT traversal. All transfers happen via `.onion` links.
-3. **Tracker Server**: A simple coordination lobby (running in Docker) that holds a directory of active nodes and online files. It does *not* host the files, but acts as a bulletin board.
+1. **Cliente (Tauri)** — Tor embarcado, servidor de share, cliente tracker, downloads SOCKS.
+2. **Rede Tor** — Hidden services `.onion`, NAT traversal.
+3. **Tracker** — Repo **`TrackerRust_AlLibrary`** (Docker). Só metadados em RAM.
 
 ```mermaid
 graph TD
-    ClientA[Client A] -->|1. Setup Tor Onion Service| Tor[Tor Network]
-    ClientA -->|2. Register Onion Link & Hash| Tracker[Tracker Server]
-    ClientB[Client B] -->|3. Get Available Files / Lobby| Tracker
-    ClientB -->|4. Download File via Onion Link| Tor
-    Tor -->|Direct Connection| ClientA
+  App[DesktopApp] -->|announce / lobby| Tracker[allibrary-tracker]
+  App -->|fetch file| Tor[Tor]
+  Tor --> Peer[Peer .onion]
 ```
 
 ---
 
-## 📋 Key Features & Implementations
+## Boot do cliente (`App.tsx`)
 
-### 1. `FirstRunWizard` Setup
-When starting AlLibrary for the first time, users go through a premium step-by-step configuration wizard:
-- **Welcome Page**: Overview of privacy and sharing settings.
-- **Tor Setup**: Connecting to the Tor network.
-- **Share Folder**: Pick the local directory to share (seeded files).
-- **Download Folder**: Pick a dedicated destination folder for received files.
-- **Ready Screen**: Starts the background services.
+Ordem aproximada:
 
-Paths are persisted locally and sent to the Tauri backend using the `save_app_settings` command.
+1. First-run wizard (pasta projeto)
+2. `initialize_app` + splash
+3. `ensure_tor_for_onion_share`
+4. `bootstrapOnionOverlay` — Tor + share + announce
+5. Restore paths partilhados (`localStorage` `allibrary_shared_paths`)
+6. `init_tor_node` — opcional/legado
 
-### 2. Zero-Search Discovery (`GlobalAcervo`)
-A dashboard displaying all files currently shared on the network.
-- **Automatic Sync**: Reads the cached lobby from the tracker (`trackerGetCachedLobby()`).
-- **Live Counters**: Displays online node counts and active documents.
-- **One-click Download**: Downloads files directly to the safe directory configured in the wizard.
-
-### 3. Unified `DownloadManager`
-To coordinate downloads across pages (e.g., triggering from `GlobalAcervo` and viewing progress in `PeerTransfers`):
-- Acts as a singleton state manager for all Tor transfers.
-- Simulates step-by-step progress updates for long-running Tor transfers.
-- Listens to Rust backend events (`onion-share-fetch-done`) to flag downloads as `completed` or `failed`.
-- Persists history in `localStorage`.
-
-### 4. Real-time Monitoring (`Sidebar` & Network status)
-- A background poller runs every 15 seconds to fetch the active node count from the lobby.
-- Displays network status dynamically in the Sidebar and Footer.
+Progresso: evento Tauri `init-progress`.
 
 ---
 
-## ⚙️ Running Locally & Docker Tracker
+## API frontend → Rust
 
-### Tracker Status Checks
-To check tracker nodes via curl:
+| TS (`onionShareService`) | Comando Tauri |
+|--------------------------|---------------|
+| `bootstrapOnionOverlay` | `bootstrap_onion_overlay` |
+| `onionShareAddFile` | `onion_share_add_file` |
+| `onionShareListLocal` | `onion_share_list_local` |
+| `onionShareFetch` | `onion_share_fetch` |
+| `trackerRefreshLobby` | `tracker_refresh_lobby` |
+| `trackerGetCachedLobby` | `tracker_get_cached_lobby_cmd` |
+| `trackerSetConfig` | `tracker_set_config` |
+
+Config default Rust: `src-tauri/src/onion_share/config.rs`.
+
+---
+
+## O que está integrado vs. shell UI
+
+| Funcional | Parcial / mock |
+|-----------|----------------|
+| Start Tor + share no boot | Throughput Mbps no Home |
+| Announce + lobby cache | Peer Network page (peers fictícios) |
+| Add/remove local shares | Trending, Browse, Favorites, Recent |
+| Download via `downloadManager` | Search Network “download result” |
+| Tracker URL em Configurations | Settings route (`/settings` missing) |
+| Global Acervo (POC) | Network graphs mock |
+
+Roadmap: [integration/README.md](./integration/README.md).
+
+---
+
+## FirstRunWizard
+
+- Pasta de projeto (biblioteca local)
+- Download folder (via settings — alinhar com Rust `FolderStructure`)
+- Persistência: `save_app_settings` + `settingsService`
+
+---
+
+## DownloadManager
+
+- Singleton TS
+- Progresso intermediário simulado (Tor não envia chunks)
+- Conclusão: evento `onion-share-fetch-done`
+- Histórico: `localStorage` → migrar para SQLite `transfers`
+
+---
+
+## Sidebar / footer
+
+- `fetchNetworkPresence` / `trackerGetCachedLobby` — nós online
+- `get_disk_space_info` — barra de storage
+
+Badges “12” / “8” no menu: **hardcoded** — ignorar como métrica real.
+
+---
+
+## Tracker local
+
 ```bash
-docker compose exec tracker curl -s http://localhost:8080/debug/nodes
+cd TrackerRust_AlLibrary
+docker compose up -d --build
 ```
 
-### Starting the Client
-To run the Desktop App in development:
-```bash
-pnpm install
-pnpm run dev
-```
-Tauri will bootstrap the frontend, launch the embedded Tor binary, and initialize the P2P connection automatically.
+Teste: `http://127.0.0.1:8080/lobby` ou Configurations com URL localhost.
+
+Legado: `DesktopApp_AlLibrary/deploy/` — mesma ideia, manter um só repo.
+
+---
+
+## libp2p / IPFS
+
+Comandos Tauri (`init_p2p_node`, `search_p2p_network`, Kademlia em `network_shell.rs`) **não** alimentam as páginas Discovery actuais. Não documentar como caminho do utilizador até re-ligação explícita.
+
+---
+
+## Referências
+
+- [TRACKER_SERVER.md](./TRACKER_SERVER.md)
+- [TESTING_P2P.md](./TESTING_P2P.md)
+- [DETALHAMENTO_P2P_E_DESCOBRIMENTO.md](./DETALHAMENTO_P2P_E_DESCOBRIMENTO.md)

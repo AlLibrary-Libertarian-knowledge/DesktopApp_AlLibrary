@@ -1,70 +1,86 @@
-# 📂 Mapeamento de Arquivos P2P (Código-Fonte)
+# Mapeamento de ficheiros — rede P2P (estado atual)
 
-Este documento detalha o papel de cada arquivo criado ou modificado no AlLibrary para suportar o compartilhamento P2P, a descoberta zero-search e a interface de carregamento de downloads.
-
----
-
-## 🏗️ Estrutura de Pastas e Localização de Arquivos
-
-No ecossistema de desenvolvimento do Tauri, o projeto é dividido em:
-1. **`src-tauri/`**: Código nativo (Rust). Executa com privilégios de sistema, interage diretamente com o daemon do Tor, gerencia arquivos locais e executa a lógica de baixo nível de rede.
-2. **`src/`**: Interface de Usuário (SolidJS + TypeScript). Executa dentro do contexto webview, consumindo as APIs do Rust via comandos Tauri (`invoke`).
+Onde vive cada peça do stack **onion-share + tracker**, e o que ainda é POC ou mock.
 
 ---
 
-## 📄 Detalhamento dos Arquivos
+## Repositórios
 
-### 🌐 Camada de Redes e Serviços (`src/services/network/`)
-
-#### 1. [`src/services/network/downloadManager.ts`](file:///home/eduardo/Documentos/tcc/DesktopApp_AlLibrary/src/services/network/downloadManager.ts)
-*   **Importância**: É o cérebro do gerenciamento de transferências ativas e completadas no frontend.
-*   **Por que existe**: Como os downloads sobre Tor podem levar minutos, e o backend Rust só emite um evento final de conclusão (`onion-share-fetch-done`), a interface precisa de um intermediário para:
-    *   Manter a lista global de downloads ativos e históricos.
-    *   Simular o progresso gradualmente (de 10% a 90%) para dar feedback visual ao usuário enquanto o arquivo é baixado no backend.
-    *   Notificar instantaneamente qualquer tela do aplicativo (como `GlobalAcervo` ou `PeerTransfers`) sobre alterações de status.
-    *   Persistir downloads finalizados (com sucesso ou erro) no `localStorage` sob a chave `allibrary_completed_downloads`.
-
-#### 2. [`src/services/network/onionShareService.ts`](file:///home/eduardo/Documentos/tcc/DesktopApp_AlLibrary/src/services/network/onionShareService.ts)
-*   **Importância**: Ponte direta com o backend Rust.
-*   **Função**: Contém as chamadas `invoke` do Tauri para os comandos declarados no Rust, tais como:
-    *   `onionShareFetch(link, outDir)`: Solicita ao Rust que faça o download de um link `.onion`.
-    *   `listenOnionShareFetchDone(callback)`: Escuta o evento assíncrono disparado pelo Rust ao finalizar uma transferência.
-    *   `trackerGetCachedLobby()`: Solicita a lista atualizada de arquivos e nós online cadastrados no Tracker.
-
-#### 3. [`src/services/network/p2pNetworkService.ts`](file:///home/eduardo/Documentos/tcc/DesktopApp_AlLibrary/src/services/network/p2pNetworkService.ts)
-*   **Importância**: Coordena ações de alto nível de rede.
-*   **Função**: Centraliza regras de negócios como publicar novos conteúdos e verificar hashes de integridade.
+| Repo / pasta | Conteúdo |
+|--------------|----------|
+| `DesktopApp_AlLibrary/` | Cliente Tauri + UI |
+| `TrackerRust_AlLibrary/` | Servidor tracker (`allibrary-tracker` 0.7.4) — **canónico** |
+| `DesktopApp_AlLibrary/deploy/` | Docker tracker **legado** (duplicata); preferir repo standalone |
 
 ---
 
-### 🎨 Componentes e Telas de Interface (`src/pages/` & `src/components/`)
+## Rust — cliente (`src-tauri/`)
 
-#### 4. [`src/pages/GlobalAcervo/`](file:///home/eduardo/Documentos/tcc/DesktopApp_AlLibrary/src/pages/GlobalAcervo/)
-*   **Arquivos**: `GlobalAcervo.tsx` e `GlobalAcervo.module.css`.
-*   **Importância**: Tela de descoberta automática ("Zero-Search").
-*   **Função**: Lista automaticamente todos os documentos que estão sendo anunciados na rede pelo Tracker. Permite ao usuário clicar em "Download" e acompanhar o progresso em tempo real sem precisar saber o link `.onion` de antemão.
+| Caminho | Função |
+|---------|--------|
+| `src/onion_share/mod.rs` | Módulo onion-share |
+| `src/onion_share/server.rs` | Servidor HTTP de ficheiros + hidden service |
+| `src/onion_share/tracker_client.rs` | HTTP announce, WS loop, pull `/lobby` |
+| `src/onion_share/tracker_proto.rs` | `AnnouncedFile`, `NetworkLobby`, mensagens WS |
+| `src/onion_share/config.rs` | `tracker_url`, `node_id`, `share_publicly` |
+| `src/onion_share/fetch.rs` | Download via SOCKS para peer `.onion` |
+| `src/commands/onion_bridge.rs` | Comandos Tauri expostos à UI |
+| `src/bin/tracker.rs` | Servidor tracker embarcado (dev/duplicata) |
+| `src/commands/collections.rs` | SQLite coleções em `{documents}/allibrary.db` |
+| `src/commands/network_shell.rs` | Kademlia/libp2p — **legado**, fora da UI principal |
 
-#### 5. [`src/pages/PeerTransfers/PeerTransfers.tsx`](file:///home/eduardo/Documentos/tcc/DesktopApp_AlLibrary/src/pages/PeerTransfers/PeerTransfers.tsx)
-*   **Importância**: Centralizador de transferências e compartilhamentos do usuário.
-*   **Função**: Exibe tabelas detalhadas de compartilhamentos locais (outbound) e downloads ativos/finalizados (inbound) assinando o `DownloadManager`. Permite a inserção manual de links Onion externos.
-
-#### 6. [`src/components/composite/FirstRunWizard/`](file:///home/eduardo/Documentos/tcc/DesktopApp_AlLibrary/src/components/composite/FirstRunWizard/)
-*   **Arquivos**: `FirstRunWizard.tsx` e `FirstRunWizard.module.css`.
-*   **Importância**: Onboarding inicial obrigatório do usuário.
-*   **Função**: Guia o usuário na primeira inicialização para:
-    1.  Verificar o status de inicialização do Tor.
-    2.  Selecionar a pasta que deseja compartilhar (arquivos lidos por padrão).
-    3.  Selecionar a pasta onde deseja salvar arquivos baixados.
-    Evita que o app inicie compartilhando pastas incorretas ou misturando downloads com o código do sistema.
-
-#### 7. [`src/components/layout/Sidebar.tsx`](file:///home/eduardo/Documentos/tcc/DesktopApp_AlLibrary/src/components/layout/Sidebar.tsx)
-*   **Importância**: Menu de navegação lateral.
-*   **Função**: Modificado para incluir um polling em segundo plano (a cada 15 segundos) que lê a contagem de nós ativos no Tracker e exibe o indicador "X nós online" no rodapé, dando feedback de conexão global ao usuário.
+Comandos onion registrados em `lib.rs`: `bootstrap_onion_overlay`, `onion_share_*`, `tracker_*`, `onion_share_fetch`.
 
 ---
 
-### 💾 Camada de Persistência (`src/services/storage/`)
+## TypeScript — serviços (`src/services/network/`)
 
-#### 8. [`src/services/storage/settingsService.ts`](file:///home/eduardo/Documentos/tcc/DesktopApp_AlLibrary/src/services/storage/settingsService.ts)
-*   **Importância**: Gerenciamento de configurações.
-*   **Função**: Persiste as preferências do usuário (caminhos de compartilhamento e downloads separados) no armazenamento local e sincroniza-as com o backend Rust por meio da API do Tauri.
+| Ficheiro | Função | Notas |
+|----------|--------|-------|
+| `onionShareService.ts` | `invoke` + tipos `NetworkLobby` | Ponte oficial |
+| `downloadManager.ts` | Fila downloads, progresso simulado 10–90%, evento `onion-share-fetch-done` | Histórico em `localStorage` (migrar SQLite) |
+| `p2pNetworkService.ts` | Facade: `searchNetwork` = filtrar lobby; `discoverPeers` = peers do lobby | Muitos métodos no-op |
+| `torAdapter.ts` | Status = onion share a correr | Não control plane Tor completo |
+| `bootstrap.ts` | `enableTorAndP2P` para algumas páginas | |
+
+Persistência projeto: `src/services/storage/settingsService.ts` (localStorage + `save_app_settings`).
+
+---
+
+## UI — telas
+
+| Rota | Ficheiro | Integração real |
+|------|----------|-----------------|
+| `/transfers` | `pages/PeerTransfers/` | Shares + downloads **sim**; gráficos **mock**; painel **Onion mesh (live)** POC |
+| `/acervo` | `pages/GlobalAcervo/` | Lobby + download **sim** — **POC a apagar** |
+| `/search-network` | `pages/SearchNetwork/` | Busca lobby **sim**; download resultado **quebrado** |
+| `/connection-manager` | `pages/ConnectionManager/` | `tracker_url` **sim** |
+| `/peers` | `pages/Peers/PeerNetworkPage.tsx` | Lista **mock** |
+| `/` | `pages/Home/` | Stats parciais; atividades **mock** |
+
+Componentes transversais:
+
+| Ficheiro | Função |
+|----------|--------|
+| `components/layout/Sidebar.tsx` | Poll lobby 15s, disco via `get_disk_space_info` |
+| `components/composite/FirstRunWizard/` | Pasta projeto |
+| `App.tsx` | Bootstrap onion + restore shares (`localStorage`) |
+
+---
+
+## Protocolo (espelho tracker ↔ cliente)
+
+Definido em:
+
+- `TrackerRust_AlLibrary/src/protocol.rs`
+- `src-tauri/src/onion_share/tracker_proto.rs`
+
+Documentação: [TRACKER_SERVER.md](./TRACKER_SERVER.md), `TrackerRust_AlLibrary/docs/FUNCIONAMENTO_INTERNO.md`.
+
+---
+
+## Plano de consolidação
+
+[integration/](./integration/) — facades, SQLite cache, remoção Global Acervo / Onion mesh panel.
+
+Não duplicar lógica de lobby em novas páginas; consumir serviço unificado quando existir.
