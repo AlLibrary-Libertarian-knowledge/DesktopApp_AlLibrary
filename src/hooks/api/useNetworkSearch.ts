@@ -7,6 +7,7 @@
 
 import { createSignal, onCleanup } from 'solid-js';
 import { torAdapter } from '@/services/network/torAdapter';
+import { transferFacade } from '@/services/network/transferFacade';
 import { p2pNetworkService } from '@/services/network/p2pNetworkService';
 import type { Document } from '@/types/core';
 
@@ -243,25 +244,7 @@ export const useNetworkSearch = (): UseNetworkSearchReturn => {
 
   // Download document from peer
   const downloadFromPeer = async (result: NetworkSearchResult) => {
-    try {
-      // Mock download implementation (would use actual Tauri commands)
-      console.log(`Downloading ${result.document.title} from peer ${result.peerId}`);
-
-      // In real implementation, this would:
-      // 1. Establish connection with peer
-      // 2. Verify document integrity
-      // 3. Download with progress tracking
-      // 4. Validate cultural context information
-      // 5. Add to local library with educational resources
-
-      // Simulate download delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      console.log(`Download completed: ${result.document.title}`);
-    } catch (err) {
-      console.error('Download failed:', err);
-      throw err;
-    }
+    await transferFacade.downloadLink(result.document.filePath, result.document.title);
   };
 
   // Cleanup on unmount

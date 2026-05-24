@@ -1,6 +1,6 @@
 import { createSignal } from 'solid-js';
 import { enableTorAndP2P } from '@/services/network/bootstrap';
-import { p2pNetworkService } from '@/services/network/p2pNetworkService';
+import { transferFacade } from '@/services/network/transferFacade';
 
 export function useP2PTransfers() {
   const [enabled, setEnabled] = createSignal(false);
@@ -14,8 +14,8 @@ export function useP2PTransfers() {
     try {
       await enableTorAndP2P();
       setEnabled(true);
-    } catch (e: any) {
-      setError(String(e));
+    } catch (e: unknown) {
+      setError(String(e instanceof Error ? e.message : e));
     } finally {
       setBusy(false);
     }
@@ -26,12 +26,9 @@ export function useP2PTransfers() {
     setError(null);
     setLastOp('seed:file');
     try {
-      await p2pNetworkService.publishContent({
-        id: `seed-${Date.now()}`,
-        title: path.split('/').pop() || path,
-      } as any);
-    } catch (e: any) {
-      setError(String(e));
+      await transferFacade.addShare(path);
+    } catch (e: unknown) {
+      setError(String(e instanceof Error ? e.message : e));
     } finally {
       setBusy(false);
     }
@@ -43,36 +40,24 @@ export function useP2PTransfers() {
     setLastOp('seed:folder');
     try {
       for (const f of files) {
-        await p2pNetworkService.publishContent({
-          id: `seed-${Date.now()}-${f}`,
-          title: `${dir}/${f}`,
-        } as any);
+        await transferFacade.addShare(`${dir}/${f}`);
       }
-    } catch (e: any) {
-      setError(String(e));
+    } catch (e: unknown) {
+      setError(String(e instanceof Error ? e.message : e));
     } finally {
       setBusy(false);
     }
   };
 
-  const downloadByHash = async (hash: string, outDir: string) => {
+  const downloadByHash = async (hash: string, outDir: string, fileName?: string) => {
     setBusy(true);
     setError(null);
     setLastOp('download');
     try {
-      void outDir;
-      await p2pNetworkService.requestContent(
-        {
-          ipfsHash: hash,
-          contentType: 'document',
-          size: 0,
-          verificationHash: hash,
-          createdAt: new Date(),
-        },
-        undefined
-      );
-    } catch (e: any) {
-      setError(String(e));
+      await transferFacade.downloadByHashOrLink(hash, fileName || hash, outDir);
+    } catch (e: unknown) {
+      setError(String(e instanceof Error ? e.message : e));
+      throw e;
     } finally {
       setBusy(false);
     }

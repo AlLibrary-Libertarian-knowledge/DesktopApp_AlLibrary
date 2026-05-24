@@ -27,6 +27,7 @@ import { SearchNetworkPage } from './pages/SearchNetwork';
 import { DocumentReader } from './pages/DocumentReader';
 import PeerTransfers from './pages/PeerTransfers';
 import { GlobalAcervo } from './pages/GlobalAcervo';
+import { SettingsPage } from './pages/Settings/SettingsPage';
 
 interface InitProgress {
   phase: string;
@@ -464,6 +465,15 @@ const App: Component = () => {
             component={() => (
               <RouteWrapper>
                 <PeerTransfers />
+              </RouteWrapper>
+            )}
+          />
+
+          <Route
+            path="/settings"
+            component={() => (
+              <RouteWrapper>
+                <SettingsPage />
               </RouteWrapper>
             )}
           />

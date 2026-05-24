@@ -68,7 +68,7 @@ export const networkFacade = {
 
 ---
 
-## `transferFacade.ts` (to create)
+## `transferFacade.ts` (created)
 
 ### Responsibilities
 
@@ -116,8 +116,8 @@ export const transferFacade = {
 
 ### Implementation notes
 
-- [ ] Wrap `onionShareService` + `downloadManager` + `settingsService.getDownloadFolder`
-- [ ] Self-download guard from Global Acervo → keep in `downloadLink`
+- [x] Wrap `onionShareService` + `downloadManager` + `settingsService.getDownloadFolder`
+- [x] Self-download guard from Global Acervo → keep in `downloadLink`
 - [ ] `PeerTransfers` and **Home** use only this module
 - [ ] Remove direct `onionShare.*` imports from pages except Connection Manager config
 
@@ -142,7 +142,8 @@ Today implements 20+ methods; most are no-ops. Target:
 | `getNetworkMetrics` | Until backend implements; return from transfer stats |
 
 - [ ] Slim interface documented in this file
-- [ ] Update `useNetworkSearch`, `useP2PTransfers`, `networkStore` to use facades
+- [x] Update `useNetworkSearch`, `useP2PTransfers` to use facades
+- [ ] Update `networkStore` to use facades
 
 ---
 
@@ -177,7 +178,7 @@ await transferFacade.downloadLink(
 );
 ```
 
-- [ ] Remove mock delay block in `useNetworkSearch.ts`
+- [x] Remove mock delay block in `useNetworkSearch.ts`
 
 ---
 
@@ -206,8 +207,8 @@ Ensure saved config duplicates into SQLite `node_config` when backend ready.
 ## Testing (Vitest)
 
 - [ ] `networkFacade.searchFiles` filters correctly (mock Tauri invoke)
-- [ ] `transferFacade.downloadLink` rejects self-onion URL
-- [ ] `useNetworkSearch` download calls transferFacade
+- [x] `transferFacade.downloadLink` rejects self-onion URL
+- [x] `useNetworkSearch` download calls transferFacade
 
 Existing: `tracker_proto` serde test in Rust; add TS JSON fixture test matching `announce` / `lobby` wire format.
 

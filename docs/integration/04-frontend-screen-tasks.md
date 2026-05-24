@@ -29,7 +29,7 @@ Each section lists **UI intent** (from existing design), **current state**, and 
 
 | Route | Status | Task |
 |-------|--------|------|
-| `/settings` | ❌ Missing (404 from Home) | [ ] Register `SettingsPage`; link project/download folders |
+| `/settings` | ✅ Registered | [x] Register `SettingsPage`; link project/download folders |
 | `/new-arrivals` | ❌ Placeholder div | [ ] Register `NewArrivalsPage` when data wired |
 | `/acervo` | POC | [ ] **Remove** after Search Network default browse works |
 
@@ -106,7 +106,7 @@ Each section lists **UI intent** (from existing design), **current state**, and 
 | Title search | ✅ Tracker lobby filter | [ ] Also query SQLite cache when offline |
 | Empty query = all files | ⚠️ Partial | [ ] Auto-run on mount (replaces Global Acervo) |
 | Tor gate | ⚠️ `torAdapter` | [ ] Gate on `onionShareStatus` + tracker reachability |
-| Download result | ❌ `downloadByHash` throws | [ ] `downloadManager.startDownload(result.document.filePath as link, name, downloadFolder)` |
+| Download result | ✅ `transferFacade.downloadLink` | [x] Onion link via transferFacade + hash resolution |
 | Open result | ❌ `/document/:hash` | [ ] Download-first or open network link; local docs → reader |
 | Download All | ❌ No handler | [ ] Queue all result links |
 | Scope / type filters | ❌ UI only | [ ] Apply to search query (extension filter minimum) |
@@ -180,9 +180,9 @@ Each section lists **UI intent** (from existing design), **current state**, and 
 
 | Feature | Current | Task |
 |---------|---------|------|
-| Route | ❌ | [ ] Add to `App.tsx` |
+| Route | ✅ | [x] Add to `App.tsx` |
 | Theme / i18n | UI | [ ] `save_app_settings` |
-| Library paths | Partial | [ ] Full folder picker integration |
+| Library paths | ✅ | [x] Full folder picker integration |
 
 ---
 
@@ -208,7 +208,7 @@ Each section lists **UI intent** (from existing design), **current state**, and 
 - [ ] `Home.tsx`: `recentDownloads`, `networkActivity` arrays
 - [ ] `useDocuments.ts`: hardcoded two documents
 - [ ] `documentApi.ts`: mock invoke — delete or make dev-only
-- [ ] `useNetworkSearch.downloadFromPeer`: timeout mock
+- [x] `useNetworkSearch.downloadFromPeer`: timeout mock
 - [ ] `ConnectionManager`: `MockUsageMetric` static values (or label “preview”)
 
 ---

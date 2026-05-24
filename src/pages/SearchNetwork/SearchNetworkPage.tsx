@@ -25,9 +25,9 @@ import { NetworkStatus } from '../../components/domain/network/NetworkStatus';
 import { useNetworkSearch } from '../../hooks/api/useNetworkSearch';
 import { enableTorAndP2P } from '../../services/network/bootstrap';
 import { useP2PTransfers } from '@/hooks/api/useP2PTransfers';
+import { transferFacade } from '@/services/network/transferFacade';
 import { torAdapter } from '../../services/network/torAdapter';
 import { useNetworkStore } from '@/stores/network/networkStore';
-import { settingsService } from '@/services/storage/settingsService';
 
 // Types
 import type { Document } from '@/types/core';
@@ -44,8 +44,9 @@ export interface SearchNetworkPageProps {
 
 export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
   const navigate = useNavigate();
-  const { enabled, busy, enable, downloadByHash } = useP2PTransfers();
+  const { enabled, busy, enable, downloadByHash, error: transferError } = useP2PTransfers();
   const [hash, setHash] = createSignal('');
+  const [downloadError, setDownloadError] = createSignal<string | null>(null);
 
   // State Management
   const [searchQuery, setSearchQuery] = createSignal(props.initialQuery || '');
@@ -206,16 +207,23 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
                         variant="outline"
                         size="sm"
                         disabled={!enabled() || busy() || !hash().trim()}
-                        onClick={() =>
-                          downloadByHash(
-                            hash().trim(),
-                            (window as any).api?.downloadsDir ?? 'downloads'
-                          )
-                        }
+                        onClick={async () => {
+                          setDownloadError(null);
+                          try {
+                            await downloadByHash(hash().trim(), '', hash().trim());
+                          } catch (e) {
+                            setDownloadError(e instanceof Error ? e.message : String(e));
+                          }
+                        }}
                       >
                         <Download size={14} class="mr-2" />
                         Download
                       </Button>
+                      <Show when={downloadError() || transferError()}>
+                        <p class={styles['download-error']} role="alert">
+                          {downloadError() || transferError()}
+                        </p>
+                      </Show>
                     </div>
                     <Button
                       variant="ghost"
@@ -401,6 +409,12 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
               </div>
             </Show>
 
+            <Show when={downloadError() && activeTab() === 'results'}>
+              <p class={styles['download-error']} role="alert">
+                {downloadError()}
+              </p>
+            </Show>
+
             <Show when={results() && results()!.length > 0}>
               <div class={styles['results-grid']}>
                 <For each={results()}>
@@ -409,14 +423,18 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
                       document={result.document}
                       onOpen={() => handleDocumentOpen(result.document)}
                       onDownload={async doc => {
+                        setDownloadError(null);
                         try {
-                          const dDir =
-                            (await settingsService.getDownloadFolder()) ||
-                            (await settingsService.getProjectFolder()) ||
-                            '.';
-                          await downloadByHash(doc.id, dDir);
+                          const result = results()?.find(r => r.document.id === doc.id);
+                          const link = result?.document.filePath || '';
+                          if (link) {
+                            await transferFacade.downloadLink(link, doc.title);
+                          } else {
+                            await transferFacade.downloadByHashOrLink(doc.id, doc.title);
+                          }
                         } catch (e) {
-                          console.error('Download failed:', e);
+                          const msg = e instanceof Error ? e.message : String(e);
+                          setDownloadError(msg);
                         }
                       }}
                       showCulturalContext={true}

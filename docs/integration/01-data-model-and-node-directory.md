@@ -45,7 +45,7 @@ After first run (auto-created when `autoCreateSubfolders` is true):
 - [x] **Single download folder** — Store `downloadFolderPath` in `settings.json`; default `{projectFolder}/downloads`. All network downloads use this unless overridden per transfer.
 - [ ] **Move onion `AppConfig` under project or app_data** — Stop using orphan `onion_poc` namespace; store `tracker_url`, `node_id`, `share_publicly`, `try_local_tracker_fallback` next to `settings.json` or in SQLite `node_config` table.
 - [x] **First-run creates downloads subfolder** — Rust `apply_project_paths` bootstraps `FolderStructure` plus `{project}/downloads`.
-- [ ] **Expose folder paths in Configurations** — Project folder, download folder, read-only display of DB path (`documents/allibrary.db`).
+- [x] **Expose folder paths in Configurations** — Project folder, download folder, read-only display of DB path (`documents/allibrary.db`).
 
 ## SQLite: one database per node
 

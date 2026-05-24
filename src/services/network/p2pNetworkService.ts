@@ -1,13 +1,6 @@
-import {
-  onionShareStart,
-  onionShareAddFile,
-  onionShareRemoveFile,
-  onionShareListLocal,
-  onionShareStatus,
-  onionShareFetch,
-  trackerGetConfig,
-} from './onionShareService';
+import { onionShareStart, onionShareStatus, trackerGetConfig } from './onionShareService';
 import { networkFacade } from './networkFacade';
+import { transferFacade } from './transferFacade';
 import type {
   P2PNode,
   Peer,
@@ -204,11 +197,11 @@ class P2PNetworkServiceImpl implements P2PNetworkService {
     _metadata?: CulturalMetadata
   ): Promise<ContentHash> {
     if ('filePath' in content && content.filePath) {
-      const res = await onionShareAddFile(content.filePath);
+      const res = await transferFacade.addShare(content.filePath);
       return {
         ipfsHash: res.contentHash,
         contentType: 'document',
-        size: res.fileSize,
+        size: res.size,
         verificationHash: res.contentHash,
         createdAt: new Date(),
       };
@@ -217,8 +210,12 @@ class P2PNetworkServiceImpl implements P2PNetworkService {
   }
 
   async requestContent(contentHash: ContentHash, _peerId?: string): Promise<Document | Collection> {
-    // This would use onionShareFetch in a more complex workflow
-    throw new Error('Use the specific download UI for content requests');
+    const link = contentHash.ipfsHash;
+    if (link && (link.includes('.onion') || link.startsWith('http'))) {
+      await transferFacade.downloadLink(link, link.split('/').pop() || 'download');
+      throw new Error('Download started — check Sharing & Downloads for progress');
+    }
+    throw new Error('Use transferFacade.downloadLink for network downloads');
   }
 
   async syncContent(_syncRequest: SyncRequest): Promise<void> {}
@@ -268,7 +265,7 @@ class P2PNetworkServiceImpl implements P2PNetworkService {
   }
 
   async seedLibraryFolder(): Promise<{ seeded: number; errors: number }> {
-    const local = await onionShareListLocal();
+    const local = await transferFacade.listShares();
     return { seeded: local.length, errors: 0 };
   }
 
