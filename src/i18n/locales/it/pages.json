@@ -535,6 +535,10 @@
     }
   },
   "documentDetail": {
+    "toggleHud": {
+      "show": "Mostra dettagli",
+      "hide": "Modalità lettura"
+    },
     "toasts": {
       "commentPosted": "Commento pubblicato",
       "commentPostFailed": "Impossibile pubblicare il commento",

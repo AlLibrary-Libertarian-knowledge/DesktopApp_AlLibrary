@@ -198,5 +198,24 @@
     "backup": "النسخ الاحتياطي",
     "restore": "الاستعادة",
     "archive": "الأرشيف"
+  },
+  "documentDetail": {
+    "toggleHud": {
+      "show": "عرض التفاصيل",
+      "hide": "وضع القراءة"
+    },
+    "toasts": {
+      "commentPosted": "تم نشر التعليق",
+      "commentPostFailed": "فشل نشر التعليق",
+      "commentUpdated": "تم تحديث التعليق",
+      "commentUpdateFailed": "فشل تحديث التعليق",
+      "commentDeleted": "تم حذف التعليق",
+      "commentDeleteFailed": "فشل حذف التعليق",
+      "sharedToPeers": "تمت المشاركة مع الأقران",
+      "shareToPeersFailed": "فشلت المشاركة",
+      "shareLinkCopied": "تم نسخ رابط المشاركة",
+      "addedToFavorites": "تمت الإضافة إلى المفضلة",
+      "removedFromFavorites": "تمت الإزالة من المفضلة"
+    }
   }
 }

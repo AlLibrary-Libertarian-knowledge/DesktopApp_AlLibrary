@@ -64,15 +64,12 @@ const FavoritesPage: Component = () => {
   const openDocument = (item: FavoriteDocument) => {
     const doc = item.resolved;
     if (!doc) return;
-    if (doc.source === 'local') {
-      documentService.openInReader(navigate, doc);
-      return;
-    }
-    navigate(`/document/${encodeURIComponent(item.id)}`);
-  };
-
-  const viewDetails = (item: FavoriteDocument) => {
-    navigate(`/document/${encodeURIComponent(item.id)}`);
+    documentService.openInReader(navigate, {
+      id: item.id,
+      filePath: doc.filePath,
+      format: doc.format,
+      title: doc.title,
+    });
   };
 
   const removeFavorite = async (item: FavoriteDocument) => {
@@ -230,9 +227,6 @@ const FavoritesPage: Component = () => {
                     <Show when={favorite.resolved}>
                       <Button variant="primary" size="sm" onClick={() => openDocument(favorite)}>
                         {t('favorites.actions.open')}
-                      </Button>
-                      <Button variant="secondary" size="sm" onClick={() => viewDetails(favorite)}>
-                        {t('favorites.actions.viewDetails')}
                       </Button>
                     </Show>
                     <Button

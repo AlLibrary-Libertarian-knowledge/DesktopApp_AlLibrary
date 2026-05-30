@@ -138,18 +138,13 @@ const RecentPage: Component = () => {
   const openDocument = (item: ActivityDocument) => {
     const doc = item.resolved;
     const id = item.entry.documentId;
-    if (!id) return;
-    if (doc?.source === 'local') {
-      documentService.openInReader(navigate, doc);
-      return;
-    }
-    navigate(`/document/${encodeURIComponent(id)}`);
-  };
-
-  const viewDetails = (item: ActivityDocument) => {
-    const id = item.entry.documentId;
-    if (!id) return;
-    navigate(`/document/${encodeURIComponent(id)}`);
+    if (!id || !doc) return;
+    documentService.openInReader(navigate, {
+      id,
+      filePath: doc.filePath,
+      format: doc.format,
+      title: doc.title,
+    });
   };
 
   const removeFromHistory = async (item: ActivityDocument) => {
@@ -308,9 +303,6 @@ const RecentPage: Component = () => {
                       <Show when={activity.resolved && activity.entry.documentId}>
                         <Button variant="primary" size="sm" onClick={() => openDocument(activity)}>
                           {t('recent.actions.open')}
-                        </Button>
-                        <Button variant="secondary" size="sm" onClick={() => viewDetails(activity)}>
-                          {t('recent.actions.viewDetails')}
                         </Button>
                       </Show>
                       <Button

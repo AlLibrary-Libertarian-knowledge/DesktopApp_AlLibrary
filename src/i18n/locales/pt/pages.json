@@ -349,6 +349,19 @@
     "sensitivityLevels": "Níveis de Sensibilidade"
   },
   "documentDetail": {
+    "loading": "A carregar documento…",
+    "loadingContent": "A carregar conteúdo…",
+    "notFound": "Documento não encontrado",
+    "loader": {
+      "eyebrowResolve": "Leitor · Sincronização",
+      "eyebrowContent": "Leitor · Fluxo de dados",
+      "hintResolve": "A identificar o documento",
+      "hintContent": "A preparar páginas no visualizador"
+    },
+    "toggleHud": {
+      "show": "Ver detalhes",
+      "hide": "Modo leitura"
+    },
     "toasts": {
       "commentPosted": "Comentário publicado",
       "commentPostFailed": "Falha ao publicar comentário",
@@ -360,7 +373,8 @@
       "shareToPeersFailed": "Falha ao compartilhar com os pares",
       "shareLinkCopied": "Link de compartilhamento copiado",
       "addedToFavorites": "Adicionado aos favoritos",
-      "removedFromFavorites": "Removido dos favoritos"
+      "removedFromFavorites": "Removido dos favoritos",
+      "alreadyLocal": "Este ficheiro já está na biblioteca local."
     }
   }
 }

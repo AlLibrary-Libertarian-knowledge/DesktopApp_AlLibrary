@@ -348,6 +348,19 @@
     "sensitivityLevels": "Sensitivity Levels"
   },
   "documentDetail": {
+    "loading": "Loading document…",
+    "loadingContent": "Loading file content…",
+    "notFound": "Document not found",
+    "loader": {
+      "eyebrowResolve": "Reader · Signal lock",
+      "eyebrowContent": "Reader · Data stream",
+      "hintResolve": "Resolving document identity",
+      "hintContent": "Buffering pages into viewer"
+    },
+    "toggleHud": {
+      "show": "Show details",
+      "hide": "Focus view"
+    },
     "toasts": {
       "commentPosted": "Comment posted",
       "commentPostFailed": "Failed to post comment",
@@ -359,7 +372,8 @@
       "shareToPeersFailed": "Failed to share to peers",
       "shareLinkCopied": "Share link copied to clipboard",
       "addedToFavorites": "Added to favorites",
-      "removedFromFavorites": "Removed from favorites"
+      "removedFromFavorites": "Removed from favorites",
+      "alreadyLocal": "This file is already in your local library."
     }
   }
 }

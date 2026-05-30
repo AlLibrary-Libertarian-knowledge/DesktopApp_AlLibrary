@@ -1,83 +1,59 @@
-import { type Component, Show, createMemo, createSignal, onMount } from 'solid-js';
-import { useSearchParams } from '@solidjs/router';
-import { convertFileSrc } from '@tauri-apps/api/core';
-import { DocumentViewer } from '@/components/composite/DocumentViewer';
+import { type Component, Show, onMount, createSignal } from 'solid-js';
+import { useSearchParams, useNavigate } from '@solidjs/router';
 import { documentService } from '@/services/documentService';
+import { DocumentViewerLoader } from '@/components/composite/DocumentViewerLoader';
+import ErrorMessage from '@/components/foundation/ErrorMessage/ErrorMessage';
+import { useTranslation } from '@/i18n';
 import styles from './DocumentReader.module.css';
 
-type Annotation = {
-  id: string;
-  page: number;
-  type: 'note' | 'highlight';
-  content: string;
-  createdAt: Date;
-};
-
-const detectType = (pathOrExt: string): 'pdf' | 'epub' | 'text' | 'markdown' => {
-  const p = pathOrExt.toLowerCase();
-  if (p.endsWith('.pdf') || p === 'pdf') return 'pdf';
-  if (p.endsWith('.epub') || p === 'epub') return 'epub';
-  if (p.endsWith('.md') || p === 'markdown') return 'markdown';
-  if (p.endsWith('.txt') || p === 'text') return 'text';
-  return 'pdf';
-};
-
+/**
+ * Legacy `/reader?path=` route — redirects to unified `/document/:id` page.
+ */
 export const DocumentReader: Component = () => {
   const [params] = useSearchParams();
+  const navigate = useNavigate();
+  const [error, setError] = createSignal<string | null>(null);
+  const { t } = useTranslation();
+  const tf = t as unknown as (key: string) => string;
+
   const paramValue = (value: string | string[] | undefined): string =>
     Array.isArray(value) ? (value[0] ?? '') : (value ?? '');
 
-  const filePath = () => decodeURIComponent(paramValue(params.path));
-  const providedType = () => paramValue(params.type);
-  const title = () => decodeURIComponent(paramValue(params.title));
-  const type = createMemo(() => detectType(providedType() || filePath()));
-  const url = createMemo(() => (filePath() ? convertFileSrc(filePath()) : undefined));
-  const [bytes, setBytes] = createSignal<Uint8Array | undefined>();
-
-  const [currentPage, setCurrentPage] = createSignal(1);
-  const [zoom, setZoom] = createSignal(100);
-  const [annotations, setAnnotations] = createSignal<Annotation[]>([]);
-  // Page-level quick annotations removed; use the viewer toolbar
-
-  // Load metadata (optional, for sidebar)
-  const [metaLanguage, setMetaLanguage] = createSignal<string | undefined>();
-  const [fileSize, setFileSize] = createSignal<number | undefined>();
   onMount(async () => {
+    const path = decodeURIComponent(paramValue(params.path));
+    if (!path) {
+      setError('No document path provided.');
+      return;
+    }
+
     try {
-      if (filePath()) {
-        const info = await documentService.getDocumentInfo(filePath());
-        setMetaLanguage(info.metadata.language);
-        setFileSize(info.file_size);
-        // Fetch raw bytes from backend so viewer doesn't rely on fetch filesystem
-        const content = await documentService.openDocument(filePath());
-        setBytes(content);
-      }
-    } catch (e) {
-      console.warn('Reader: metadata load skipped', e);
+      const info = await documentService.getDocumentInfo(path);
+      navigate(documentService.buildDocumentUrl(info.id), { replace: true });
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Failed to resolve document.');
     }
   });
 
   return (
-    <div class={styles.readerLayout}>
-      <div class={styles.contentArea}>
-        <div class={styles.viewerPane}>
-          <Show when={type() === 'pdf' || type() === 'epub' ? bytes() : url()}>
-            <DocumentViewer
-              documentUrl={type() === 'pdf' || type() === 'epub' ? undefined : (url() as string)}
-              documentBytes={type() === 'pdf' || type() === 'epub' ? bytes() : undefined}
-              documentType={type()}
-              title={title()}
-              currentPage={currentPage()}
-              zoomLevel={zoom()}
-              onPageChange={p => setCurrentPage(p)}
-              onZoomChange={z => setZoom(z)}
-              showCulturalContext={true}
-              showHeader={false}
-              annotations={annotations()}
-            />
-          </Show>
-        </div>
-      </div>
+    <div class={`document-reader-page ${styles.readerLayout}`}>
+      <Show
+        when={!error()}
+        fallback={
+          <ErrorMessage
+            message="Could not open document"
+            description={error() ?? undefined}
+            onRetry={() => navigate('/documents')}
+          />
+        }
+      >
+        <DocumentViewerLoader
+          fullscreen
+          phase="resolve"
+          message={tf('pages.documentDetail.loading')}
+          eyebrow={tf('pages.documentDetail.loader.eyebrowResolve')}
+          hint={tf('pages.documentDetail.loader.hintResolve')}
+        />
+      </Show>
     </div>
   );
 };

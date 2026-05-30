@@ -431,5 +431,24 @@
       "data": "数据加载中...",
       "ready": "准备就绪！"
     }
+  },
+  "documentDetail": {
+    "toggleHud": {
+      "show": "查看详情",
+      "hide": "阅读模式"
+    },
+    "toasts": {
+      "commentPosted": "评论已发布",
+      "commentPostFailed": "发布评论失败",
+      "commentUpdated": "评论已更新",
+      "commentUpdateFailed": "更新评论失败",
+      "commentDeleted": "评论已删除",
+      "commentDeleteFailed": "删除评论失败",
+      "sharedToPeers": "已分享给所选节点",
+      "shareToPeersFailed": "分享给节点失败",
+      "shareLinkCopied": "分享链接已复制",
+      "addedToFavorites": "已添加到收藏",
+      "removedFromFavorites": "已从收藏中移除"
+    }
   }
 }

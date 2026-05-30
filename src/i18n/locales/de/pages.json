@@ -346,6 +346,10 @@
     "sensitivityLevels": "Sensitivitätsstufen"
   },
   "documentDetail": {
+    "toggleHud": {
+      "show": "Details anzeigen",
+      "hide": "Lesemodus"
+    },
     "toasts": {
       "commentPosted": "Kommentar veröffentlicht",
       "commentPostFailed": "Kommentar konnte nicht veröffentlicht werden",

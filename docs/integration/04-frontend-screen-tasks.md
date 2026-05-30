@@ -54,23 +54,25 @@ Each section lists **UI intent** (from existing design), **current state**, and 
 | Scan / list / search local | ✅ `documentService`, `searchService` | [ ] Sync list with `documents` table |
 | Upload + validation | ✅ | — |
 | Share action | ✅ `transferFacade.addShare` + toast | [x] `onionShareAddFile(doc.filePath)` + toast with onion link |
-| Download action | ✅ Opens `/reader` for local files | [x] Open local file or network fetch if remote |
+| Download action | ✅ Opens unified document page | [x] Open local file or network fetch if remote |
 | Delete | ✅ `delete_local_document` | [x] Tauri delete + DB row remove |
 | Network results tab (optional) | ❌ | [ ] Embed `useNetworkLobby` search results alongside local library |
 
-### Document Detail `/document/:id`
+### Document Detail `/document/:id` (unified reader + HUD)
 
 | Feature | Current | Task |
 |---------|---------|------|
 | Load by id | ✅ `documentService.resolveDocumentById` | [x] `documentService` hash/path resolver (not legacy DB UUID) |
 | Download / share / favorites | ✅ Real services | [x] Real services |
-| Open in reader | ✅ Header action + `/reader?path=` | [x] Link `/reader?path=` with encoded path |
+| Focus vs HUD toggle | ✅ Default focus; `?hud=1` for details sidebar | [x] Single page replaces separate reader route |
+| Local PDF/EPUB bytes | ✅ `openDocument` → `DocumentViewer` | [x] Port byte loading from legacy reader |
 
-### Document Reader `/reader`
+### Document Reader `/reader` (legacy redirect)
 
 | Feature | Current | Task |
 |---------|---------|------|
-| View PDF/EPUB | ✅ | — |
+| Route | ✅ Redirects to `/document/:id` | [x] Resolve path → content hash id |
+| View PDF/EPUB | ✅ Via unified document page | — |
 | Annotations persist | ❌ | [ ] SQLite or metadata sidecar (P2) |
 
 ### Collections `/collections`
@@ -107,7 +109,7 @@ Each section lists **UI intent** (from existing design), **current state**, and 
 | Empty query = all files | ✅ | [x] Auto-run on mount when Tor ready (replaces Global Acervo) |
 | Tor gate | ⚠️ `torAdapter` | [ ] Gate on `onionShareStatus` + tracker reachability |
 | Download result | ✅ `transferFacade.downloadLink` | [x] Onion link via transferFacade + hash resolution |
-| Open result | ✅ `/document/:hash` detail + download | [x] Download-first or open network link; local docs → reader |
+| Open result | ✅ `/document/:hash` unified page | [x] Single document page with focus/HUD toggle |
 | Download All | ❌ No handler | [ ] Queue all result links |
 | Scope / type filters | ❌ UI only | [ ] Apply to search query (extension filter minimum) |
 | Stats ribbon | ✅ Partial | [ ] Add total size from lobby |

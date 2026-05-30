@@ -9,6 +9,17 @@
   gap: 1.5rem;
 }
 
+.main-column {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+}
+
+.bottom-panel {
+  width: 100%;
+  flex-shrink: 0;
+}
+
 /* Enhanced Page Header */
 .page-header {
   display: flex;

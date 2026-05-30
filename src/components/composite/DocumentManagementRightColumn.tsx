@@ -21,6 +21,8 @@ interface Props {
   storage: StorageInfo;
   formats: string[];
   recentUploads: string[];
+  /** sidebar = legacy right rail; bottom = full-width strip under library */
+  layout?: 'sidebar' | 'bottom';
 }
 
 interface StorageStatusInfo {
@@ -56,22 +58,26 @@ const DocumentManagementRightColumn: Component<Props> = props => {
   const StatusIcon = storageStatus().icon;
 
   return (
-    <aside class={styles.rightColumn}>
-      <div class={styles.header}>
-        <div class={styles.titleWrapper}>
-          <h2 class={styles.title}>
-            <span class={styles.gradientText}>Document</span>
-            <span class={styles.gradientText}>Management</span>
-          </h2>
-          <div class={styles.badge}>
-            <Upload size={14} />
-            <span>Ready for Upload</span>
+    <aside class={`${styles.rightColumn} ${props.layout === 'bottom' ? styles.bottomLayout : ''}`}>
+      <Show when={props.layout !== 'bottom'}>
+        <div class={styles.header}>
+          <div class={styles.titleWrapper}>
+            <h2 class={styles.title}>
+              <span class={styles.gradientText}>Document</span>
+              <span class={styles.gradientText}>Management</span>
+            </h2>
+            <div class={styles.badge}>
+              <Upload size={14} />
+              <span>Ready for Upload</span>
+            </div>
           </div>
+          <p class={styles.subtitle}>
+            Upload, organize, and manage your cultural heritage documents
+          </p>
         </div>
-        <p class={styles.subtitle}>Upload, organize, and manage your cultural heritage documents</p>
-      </div>
+      </Show>
 
-      <div class={styles.grid}>
+      <div class={`${styles.grid} ${props.layout === 'bottom' ? styles.gridBottom : ''}`}>
         <div class={`${styles.section} ${styles.storageSection}`}>
           <div class={styles.sectionHeader}>
             <div class={styles.sectionTitle}>

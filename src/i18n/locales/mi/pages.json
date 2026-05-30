@@ -343,5 +343,24 @@
     "educationalResources": "Rauemi Mātauranga",
     "culturalOrigins": "Take Ahurea",
     "sensitivityLevels": "Taumata Māharahara"
+  },
+  "documentDetail": {
+    "toggleHud": {
+      "show": "Whakaatu taipitopito",
+      "hide": "Aratau pānui"
+    },
+    "toasts": {
+      "commentPosted": "Kua tukuna te kōrero",
+      "commentPostFailed": "I rahua te tuku kōrero",
+      "commentUpdated": "Kua whakahoutia te kōrero",
+      "commentUpdateFailed": "I rahua te whakahou",
+      "commentDeleted": "Kua mukua te kōrero",
+      "commentDeleteFailed": "I rahua te muku",
+      "sharedToPeers": "Kua tiritiria ki ngā hoa",
+      "shareToPeersFailed": "I rahua te tiri",
+      "shareLinkCopied": "Kua tāruatia te hono",
+      "addedToFavorites": "Kua tāpiritia ki ngā makau",
+      "removedFromFavorites": "Kua tangohia mai i ngā makau"
+    }
   }
 }

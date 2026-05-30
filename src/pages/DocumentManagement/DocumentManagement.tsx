@@ -1186,11 +1186,8 @@ const DocumentManagement: Component = () => {
   };
 
   return (
-    <div
-      class={styles['document-management']}
-      style={{ display: 'flex', 'flex-direction': 'row', gap: '2rem' }}
-    >
-      <div style={{ flex: 1, 'min-width': 0 }}>
+    <div class={styles['document-management']}>
+      <div class={styles['main-column']}>
         {/* Reusable Top Card Component */}
         <TopCard
           title="Document Management"
@@ -2239,8 +2236,10 @@ const DocumentManagement: Component = () => {
           </Show>
         </div>
       </div>
-      <div style={{ width: '370px', 'flex-shrink': 0 }}>
+
+      <div class={styles['bottom-panel']}>
         <DocumentManagementRightColumn
+          layout="bottom"
           storage={{ used: 156.85, total: 931.41 }}
           formats={['PDF', 'EPUB']}
           recentUploads={[]}

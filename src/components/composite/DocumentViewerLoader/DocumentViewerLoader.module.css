@@ -1,0 +1,396 @@
+/* DocumentViewerLoader — archival scanner / reader boot HUD */
+
+.loader {
+  --loader-accent: var(--color-primary-400, #60a5fa);
+  --loader-accent-dim: color-mix(in srgb, var(--loader-accent) 35%, transparent);
+  --loader-glow: color-mix(in srgb, var(--loader-accent) 55%, #a855f7);
+  --loader-surface: color-mix(in srgb, var(--bg-secondary, #1e293b) 88%, transparent);
+  --loader-border: color-mix(in srgb, var(--loader-accent) 28%, var(--border-color, #334155));
+
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: clamp(220px, 42vh, 420px);
+  padding: clamp(1.5rem, 4vw, 3rem);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.loader.compact {
+  min-height: 200px;
+  padding: 1.5rem;
+}
+
+.loader.fullscreen {
+  flex: 1;
+  align-self: stretch;
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  padding: clamp(1rem, 3vh, 2rem);
+}
+
+/* Ambient field */
+.field {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.grid {
+  position: absolute;
+  inset: -20%;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--loader-accent) 8%, transparent) 1px, transparent 1px),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--loader-accent) 8%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 28px 28px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, black 20%, transparent 72%);
+  animation: gridDrift 18s linear infinite;
+}
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(48px);
+  opacity: 0.45;
+  animation: orbPulse 6s ease-in-out infinite;
+}
+
+.orbPrimary {
+  width: 220px;
+  height: 220px;
+  top: 18%;
+  left: 22%;
+  background: color-mix(in srgb, var(--loader-accent) 40%, transparent);
+}
+
+.orbAccent {
+  width: 180px;
+  height: 180px;
+  bottom: 12%;
+  right: 18%;
+  background: color-mix(in srgb, var(--accent-color, #a855f7) 35%, transparent);
+  animation-delay: -2.5s;
+}
+
+/* HUD panel */
+.panel {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  width: min(100%, 380px);
+  padding: 1.75rem 1.5rem 1.5rem;
+  border-radius: var(--radius-lg, 12px);
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--loader-surface) 95%, white 5%),
+      var(--loader-surface)
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--loader-accent) 6%, transparent),
+      transparent 40%
+    );
+  border: 1px solid var(--loader-border);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--loader-accent) 12%, transparent) inset,
+    0 24px 48px -24px rgba(0, 0, 0, 0.55),
+    0 0 40px -12px var(--loader-accent-dim);
+  backdrop-filter: blur(12px);
+}
+
+.panel::before,
+.panel::after {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-color: var(--loader-accent);
+  border-style: solid;
+  opacity: 0.85;
+}
+
+.panel::before {
+  top: 10px;
+  left: 10px;
+  border-width: 2px 0 0 2px;
+}
+
+.panel::after {
+  bottom: 10px;
+  right: 10px;
+  border-width: 0 2px 2px 0;
+}
+
+/* Scanner core */
+.scanner {
+  position: relative;
+  width: 112px;
+  height: 112px;
+  display: grid;
+  place-items: center;
+}
+
+.ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px dashed color-mix(in srgb, var(--loader-accent) 45%, transparent);
+}
+
+.ringOuter {
+  inset: 0;
+  animation: ringSpin 14s linear infinite;
+}
+
+.ringMid {
+  inset: 12px;
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--loader-accent) 22%, transparent);
+  animation: ringSpin 9s linear infinite reverse;
+}
+
+.ringInner {
+  inset: 24px;
+  border-style: dotted;
+  border-color: color-mix(in srgb, var(--accent-color, #a855f7) 35%, transparent);
+  animation: ringSpin 6s linear infinite;
+}
+
+.glyph {
+  position: relative;
+  z-index: 2;
+  width: 44px;
+  height: 54px;
+  border-radius: 4px 8px 4px 4px;
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--loader-accent) 25%, var(--bg-tertiary, #334155)),
+    var(--bg-primary, #0f172a)
+  );
+  border: 1px solid color-mix(in srgb, var(--loader-accent) 50%, transparent);
+  box-shadow:
+    0 0 20px var(--loader-accent-dim),
+    8px 8px 0 -2px color-mix(in srgb, var(--loader-accent) 15%, transparent);
+}
+
+.glyph::before {
+  content: "";
+  position: absolute;
+  top: 10px;
+  left: 8px;
+  right: 8px;
+  height: 2px;
+  border-radius: 1px;
+  background: color-mix(in srgb, var(--loader-accent) 70%, transparent);
+  box-shadow:
+    0 8px 0 color-mix(in srgb, var(--loader-accent) 35%, transparent),
+    0 16px 0 color-mix(in srgb, var(--loader-accent) 20%, transparent);
+}
+
+.scanBeam {
+  position: absolute;
+  left: 50%;
+  top: 18%;
+  width: 72%;
+  height: 2px;
+  transform: translateX(-50%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--loader-glow),
+    var(--loader-accent),
+    var(--loader-glow),
+    transparent
+  );
+  box-shadow: 0 0 16px var(--loader-glow);
+  animation: scanSweep 2.2s ease-in-out infinite;
+  z-index: 3;
+}
+
+/* Copy */
+.copy {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  width: 100%;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--loader-accent) 85%, var(--text-secondary, #94a3b8));
+  animation: textPulse 2.4s ease-in-out infinite;
+}
+
+.message {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--text-primary, #f1f5f9);
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--text-secondary, #94a3b8);
+  opacity: 0.85;
+}
+
+/* Progress rail */
+.rail {
+  width: 100%;
+  height: 3px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--loader-accent) 12%, var(--bg-tertiary, #334155));
+  overflow: hidden;
+  position: relative;
+}
+
+.railFill {
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--loader-accent),
+    color-mix(in srgb, var(--accent-color, #a855f7) 80%, white),
+    var(--loader-accent),
+    transparent
+  );
+  animation: railSlide 1.8s ease-in-out infinite;
+}
+
+/* Phase dots */
+.phases {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.phaseDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--loader-accent) 25%, var(--bg-tertiary, #334155));
+  transition:
+    background 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.3s ease;
+}
+
+.phaseDotActive {
+  background: var(--loader-accent);
+  box-shadow: 0 0 10px var(--loader-glow);
+  transform: scale(1.15);
+}
+
+@keyframes gridDrift {
+  from {
+    transform: translate(0, 0);
+  }
+  to {
+    transform: translate(28px, 28px);
+  }
+}
+
+@keyframes orbPulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes ringSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes scanSweep {
+  0%,
+  100% {
+    top: 18%;
+    opacity: 0.55;
+  }
+  50% {
+    top: 72%;
+    opacity: 1;
+  }
+}
+
+@keyframes railSlide {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(320%);
+  }
+}
+
+@keyframes textPulse {
+  0%,
+  100% {
+    opacity: 0.65;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grid,
+  .orb,
+  .ringOuter,
+  .ringMid,
+  .ringInner,
+  .scanBeam,
+  .railFill,
+  .eyebrow {
+    animation: none;
+  }
+
+  .scanBeam {
+    top: 45%;
+    opacity: 0.8;
+  }
+
+  .railFill {
+    width: 100%;
+    transform: none;
+    opacity: 0.6;
+  }
+}
+
+@media (max-width: 480px) {
+  .panel {
+    padding: 1.25rem 1rem 1rem;
+  }
+
+  .scanner {
+    width: 96px;
+    height: 96px;
+  }
+}

@@ -332,6 +332,19 @@
     "advanced": "Avanzado"
   },
   "documentDetail": {
+    "loading": "Cargando documento…",
+    "loadingContent": "Cargando contenido…",
+    "notFound": "Documento no encontrado",
+    "loader": {
+      "eyebrowResolve": "Lector · Enlace de señal",
+      "eyebrowContent": "Lector · Flujo de datos",
+      "hintResolve": "Resolviendo identidad del documento",
+      "hintContent": "Preparando páginas en el visor"
+    },
+    "toggleHud": {
+      "show": "Ver detalles",
+      "hide": "Modo lectura"
+    },
     "toasts": {
       "commentPosted": "Comentario publicado",
       "commentPostFailed": "Error al publicar el comentario",
@@ -343,7 +356,8 @@
       "shareToPeersFailed": "Error al compartir con los pares",
       "shareLinkCopied": "Enlace de compartición copiado",
       "addedToFavorites": "Añadido a favoritos",
-      "removedFromFavorites": "Eliminado de favoritos"
+      "removedFromFavorites": "Eliminado de favoritos",
+      "alreadyLocal": "Este archivo ya está en tu biblioteca local."
     }
   }
 }

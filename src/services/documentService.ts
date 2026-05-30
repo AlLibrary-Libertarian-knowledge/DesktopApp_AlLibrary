@@ -366,19 +366,21 @@ class DocumentService {
     return null;
   }
 
-  buildReaderUrl(doc: { filePath: string; format: string; title: string }): string {
-    const qs = `path=${encodeURIComponent(doc.filePath)}&type=${encodeURIComponent(doc.format)}&title=${encodeURIComponent(doc.title)}`;
-    return `/reader?${qs}`;
+  buildDocumentUrl(id: string, opts?: { hud?: boolean }): string {
+    const base = `/document/${encodeURIComponent(id)}`;
+    return opts?.hud ? `${base}?hud=1` : base;
+  }
+
+  /** @deprecated Use buildDocumentUrl */
+  buildReaderUrl(doc: { id: string; filePath: string; format: string; title: string }): string {
+    return this.buildDocumentUrl(doc.id);
   }
 
   openInReader(
     navigate: (path: string) => void,
-    doc: { filePath: string; format: string; title: string; id?: string }
+    doc: { filePath: string; format: string; title: string; id: string }
   ): void {
-    navigate(this.buildReaderUrl(doc));
-    void import('@/services/activityService').then(({ activityService }) => {
-      void activityService.logActivity('view', doc.id ?? doc.filePath, { title: doc.title });
-    });
+    navigate(this.buildDocumentUrl(doc.id));
   }
 
   async deleteLocalDocument(filePath: string): Promise<void> {

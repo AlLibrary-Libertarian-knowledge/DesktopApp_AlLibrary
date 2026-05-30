@@ -343,5 +343,24 @@
     "educationalResources": "Educacional Recursos",
     "culturalOrigins": "Cultural Orígenes",
     "sensitivityLevels": "Sensibilidad Niveles"
+  },
+  "documentDetail": {
+    "toggleHud": {
+      "show": "Ver Detalles",
+      "hide": "Modo lectura"
+    },
+    "toasts": {
+      "commentPosted": "Comentario publicado",
+      "commentPostFailed": "Error al publicar comentario",
+      "commentUpdated": "Comentario actualizado",
+      "commentUpdateFailed": "Error al actualizar comentario",
+      "commentDeleted": "Comentario eliminado",
+      "commentDeleteFailed": "Error al eliminar comentario",
+      "sharedToPeers": "Compartido con peers",
+      "shareToPeersFailed": "Error al compartir",
+      "shareLinkCopied": "Enlace copiado",
+      "addedToFavorites": "Añadido a favoritos",
+      "removedFromFavorites": "Eliminado de favoritos"
+    }
   }
 }
