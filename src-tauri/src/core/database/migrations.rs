@@ -276,6 +276,20 @@ fn get_migrations() -> Vec<Migration> {
                 CREATE INDEX idx_activity_log_kind ON activity_log(kind);
             "#.to_string(),
         },
+        Migration {
+            version: "006_content_pipeline".to_string(),
+            description: "Content pipeline fields: is_treated, canonical_name, hash_scheme".to_string(),
+            sql: r#"
+                ALTER TABLE documents ADD COLUMN is_treated BOOLEAN NOT NULL DEFAULT 0;
+                ALTER TABLE documents ADD COLUMN original_filename TEXT;
+                ALTER TABLE documents ADD COLUMN canonical_name TEXT;
+                ALTER TABLE documents ADD COLUMN chunk_count INTEGER NOT NULL DEFAULT 0;
+                ALTER TABLE documents ADD COLUMN hash_scheme TEXT NOT NULL DEFAULT 'none';
+
+                CREATE INDEX idx_documents_is_treated ON documents(is_treated);
+                CREATE INDEX idx_documents_local_path ON documents(local_path);
+            "#.to_string(),
+        },
     ]
 }
 

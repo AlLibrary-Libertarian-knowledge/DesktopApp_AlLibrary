@@ -1,18 +1,22 @@
 /* --- FUTURISTIC MINIMAL FAVORITES STYLES --- */
 .favoritesPage {
+  width: 100%;
+  max-width: none;
+  margin: 0;
   padding: var(--spacing-6);
-  max-width: 1400px;
-  margin: 0 auto;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #181f2a 0%, #232946 100%);
+  min-height: auto;
+  flex: 1 1 auto;
+  align-self: stretch;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-6);
+  background: linear-gradient(135deg, #181f2a 0%, #232946 100%);
 }
 
 .header {
-  margin-bottom: var(--spacing-8);
+  width: 100%;
+  margin-bottom: 0;
   padding: var(--spacing-8) var(--spacing-6);
   background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(30, 41, 59, 0.85) 100%);
   border-radius: 2rem;
@@ -80,8 +84,10 @@
 .controls {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   gap: var(--spacing-4);
   align-items: center;
+  width: 100%;
   position: relative;
   z-index: 2;
   background: rgba(30, 41, 59, 0.7);
@@ -93,8 +99,9 @@
 }
 .searchContainer {
   position: relative;
-  flex: 1;
-  max-width: 400px;
+  flex: 1 1 280px;
+  min-width: 0;
+  max-width: none;
 }
 .searchIcon {
   position: absolute;
@@ -131,6 +138,7 @@
   gap: 1rem;
   align-items: center;
   flex-wrap: wrap;
+  margin-left: auto;
 }
 .filterSelect {
   position: relative;
@@ -261,7 +269,8 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: var(--spacing-6);
-  margin-bottom: var(--spacing-8);
+  width: 100%;
+  margin-bottom: 0;
 }
 .statCard {
   display: flex;
@@ -338,12 +347,16 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 280px;
   padding: var(--spacing-12);
   gap: var(--spacing-6);
   background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(51, 65, 85, 0.8) 100%);
   border-radius: 2rem;
   border: 1.5px solid rgba(168, 85, 247, 0.1);
   box-shadow: 0 4px 24px rgba(124, 58, 237, 0.07);
+  box-sizing: border-box;
 }
 .spinner {
   width: 40px;
@@ -384,13 +397,15 @@
 /* --- FAVORITES GRID & CARD --- */
 .favoritesGridGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: var(--spacing-6);
+  width: 100%;
 }
 .favoritesGridList {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-4);
+  width: 100%;
 }
 .favoriteCard {
   background: linear-gradient(135deg, rgba(30, 41, 59, 0.92) 0%, rgba(51, 65, 85, 0.88) 100%);
@@ -600,10 +615,10 @@
     padding: var(--spacing-6);
   }
   .stats {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .favoritesGridGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   }
 }
 @media (max-width: 600px) {

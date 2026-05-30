@@ -1,13 +1,18 @@
 use serde::{Deserialize, Serialize};
 use std::fs;
-use std::io::Read;
 use std::path::{Path, PathBuf};
 use tracing::info;
 use crate::core::document::type_detection::TypeDetection;
 use crate::core::document::file_operations::FileOperations;
-use lopdf::Document as LoDocument;
-use zip::ZipArchive;
-use tauri::AppHandle;
+use crate::core::document::pipeline::{
+    compute_fingerprint_from_bytes, is_treated_file, legacy_full_file_hash, read_sidecar,
+    run_pipeline_to_file, PipelineProgress,
+};
+use crate::core::database::{
+    delete_document_by_id_pool, remap_document_id_pool, upsert_treated_document_pool,
+    TreatedDocumentRow,
+};
+use tauri::{AppHandle, Emitter};
 use crate::commands::settings::load_app_settings;
 use crate::core::database::node_db::ensure_node_database;
 use crate::core::database::delete_local_share_by_path_pool;
@@ -24,6 +29,17 @@ pub struct DocumentInfo {
     pub modified_at: String,
     pub cultural_context: Option<CulturalContext>,
     pub metadata: DocumentMetadata,
+    #[serde(default)]
+    pub is_treated: bool,
+    #[serde(default = "default_processing_status")]
+    pub processing_status: String,
+    pub content_hash: Option<String>,
+    pub canonical_name: Option<String>,
+    pub original_filename: Option<String>,
+}
+
+fn default_processing_status() -> String {
+    "unknown".to_string()
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -194,86 +210,236 @@ pub async fn list_documents_in_folder(folder_path: String) -> Result<Vec<Documen
     Ok(documents)
 }
 
-/// Securely import a document (PDF/EPUB) into the library folder
-/// - Validates extension and size
-/// - Strips JavaScript actions from PDFs
-/// - Validates EPUB structure (zip) and rejects scripts in OPF/HTML
-/// - Saves to target_dir with original filename
+/// Full pipeline treatment + save to library (steps 0–7).
+#[tauri::command]
+pub async fn process_document(
+    app_handle: AppHandle,
+    target_dir: String,
+    source_path: String,
+    user_title: Option<String>,
+    expected_content_hash: Option<String>,
+) -> Result<DocumentInfo, String> {
+    let src = PathBuf::from(&source_path);
+    let dst_dir = PathBuf::from(&target_dir);
+    if !dst_dir.exists() {
+        fs::create_dir_all(&dst_dir).map_err(|e| e.to_string())?;
+    }
+    if !src.exists() || !src.is_file() {
+        return Err("Source file not found".into());
+    }
+
+    let filename = src
+        .file_name()
+        .and_then(|n| n.to_str())
+        .ok_or("Bad filename")?
+        .to_string();
+    let dest_path = dst_dir.join(&filename);
+    let dest_for_pipeline = dest_path.clone();
+
+    let app_emit = app_handle.clone();
+    let progress_cb: Option<Box<dyn Fn(PipelineProgress) + Send + Sync>> =
+        Some(Box::new(move |p: PipelineProgress| {
+            let _ = app_emit.emit(
+                "document-pipeline-progress",
+                serde_json::json!({
+                    "step": p.step,
+                    "label": p.label,
+                    "percent": p.percent,
+                }),
+            );
+        }));
+
+    let pipeline_out = tokio::task::spawn_blocking(move || {
+        run_pipeline_to_file(&src, &dest_for_pipeline, progress_cb)
+    })
+    .await
+    .map_err(|e| format!("Pipeline join error: {e}"))??;
+
+    if let Some(expected) = expected_content_hash {
+        if pipeline_out.fingerprint.content_hash != expected {
+            let _ = fs::remove_file(&dest_path);
+            return Err(format!(
+                "Content hash mismatch: expected {expected}, got {}",
+                pipeline_out.fingerprint.content_hash
+            ));
+        }
+    }
+
+    let canonical_name = resolve_canonical_name(&app_handle, &pipeline_out.fingerprint.content_hash, &filename).await;
+
+    let info = build_document_info_from_treated(
+        &dest_path,
+        &pipeline_out.fingerprint,
+        &filename,
+        &canonical_name,
+        user_title,
+        pipeline_out.page_count,
+    )
+    .await?;
+
+    if let Ok(pool) = ensure_node_database(&app_handle).await {
+        upsert_treated_document_pool(
+            &pool,
+            &TreatedDocumentRow {
+                id: info.id.clone(),
+                content_hash: info.content_hash.clone().unwrap_or_default(),
+                local_path: info.file_path.clone(),
+                title: info.metadata.title.clone().unwrap_or(filename.clone()),
+                original_filename: filename,
+                canonical_name,
+                file_type: info.document_type.clone(),
+                file_size: info.file_size as i64,
+                page_count: pipeline_out.page_count as i32,
+                chunk_count: pipeline_out.fingerprint.chunk_count as i32,
+                hash_scheme: pipeline_out.fingerprint.hash_scheme.clone(),
+                is_treated: true,
+                processing_status: "treated".to_string(),
+            },
+        )
+        .await?;
+
+        let payload = serde_json::json!({
+            "title": info.metadata.title,
+            "contentHash": info.content_hash,
+        })
+        .to_string();
+        let _ = insert_activity_pool(&pool, "upload", Some(&info.id), Some(&payload)).await;
+    }
+
+    Ok(info)
+}
+
+/// Securely import a document — runs full treatment pipeline.
 #[tauri::command]
 pub async fn import_document(
     app_handle: AppHandle,
     target_dir: String,
     source_path: String,
 ) -> Result<DocumentInfo, String> {
-    let src = PathBuf::from(&source_path);
-    let dst_dir = PathBuf::from(&target_dir);
-    if !dst_dir.exists() { fs::create_dir_all(&dst_dir).map_err(|e| e.to_string())?; }
-    if !src.exists() || !src.is_file() { return Err("Source file not found".into()); }
+    process_document(app_handle, target_dir, source_path, None, None).await
+}
 
-    let ext = src.extension().and_then(|e| e.to_str()).unwrap_or("").to_lowercase();
-    if ext != "pdf" && ext != "epub" { return Err("Only PDF and EPUB are allowed".into()); }
+/// Re-process library files with whiteboard-v2 hashes; remap favorites/activity ids.
+#[tauri::command]
+pub async fn migrate_library_hashes(
+    app_handle: AppHandle,
+    folder_path: Option<String>,
+) -> Result<serde_json::Value, String> {
+    let folder = if let Some(p) = folder_path {
+        PathBuf::from(p)
+    } else {
+        let settings = load_app_settings(app_handle.clone())
+            .await
+            .map_err(|e| e.to_string())?;
+        PathBuf::from(settings.folder_structure.documents_folder)
+    };
 
-    // size limit 200MB
-    let meta = fs::metadata(&src).map_err(|e| e.to_string())?;
-    if meta.len() > 200 * 1024 * 1024 { return Err("File too large (>200MB)".into()); }
+    let pool = ensure_node_database(&app_handle).await?;
+    let mut migrated = 0u32;
+    let mut errors: Vec<String> = Vec::new();
 
-    let sanitized_path = dst_dir.join(src.file_name().ok_or("Bad filename")?);
-
-    if ext == "pdf" {
-        // Strip JavaScript from PDF
-        let mut doc = LoDocument::load(&src).map_err(|e| format!("PDF parse failed: {}", e))?;
-        // Remove names that often hold JS (OpenAction, AA, Names/JavaScript, etc.)
-        if let Some(cat_id) = doc.trailer.get(b"Root").and_then(|r| r.as_reference()).ok() {
-            if let Ok(catalog) = doc.get_object_mut(cat_id) {
-                if let Ok(dict) = catalog.as_dict_mut() {
-                    dict.remove(b"OpenAction");
-                    dict.remove(b"AA");
-                    dict.remove(b"Names");
+    let entries = collect_pdf_epub_files(&folder);
+    for path in entries {
+        let old_id = legacy_full_file_hash(&fs::read(&path).unwrap_or_default());
+        match process_document(
+            app_handle.clone(),
+            folder.to_string_lossy().to_string(),
+            path.to_string_lossy().to_string(),
+            None,
+            None,
+        )
+        .await
+        {
+            Ok(info) => {
+                if old_id != info.id {
+                    let _ = remap_document_id_pool(&pool, &old_id, &info.id).await;
+                    let _ = delete_document_by_id_pool(&pool, &old_id).await;
                 }
+                migrated += 1;
             }
+            Err(e) => errors.push(format!("{}: {e}", path.display())),
         }
-        // Also scrub any JavaScript actions in annotations
-        for (_, obj) in doc.objects.iter_mut() {
-            if let Ok(dict) = obj.as_dict_mut() {
-                dict.remove(b"JS");
-                dict.remove(b"JavaScript");
-                dict.remove(b"S"); // remove action type references
-            }
-        }
-        doc.compress();
-        doc.save(&sanitized_path).map_err(|e| format!("Save failed: {}", e))?;
-    } else { // epub
-        // Basic EPUB validation: ensure it's a zip and entries do not include .js
-        let file = fs::File::open(&src).map_err(|e| e.to_string())?;
-        let mut zip = ZipArchive::new(file).map_err(|e| format!("Invalid EPUB (zip): {}", e))?;
-        for i in 0..zip.len() {
-            let mut f = zip.by_index(i).map_err(|e| e.to_string())?;
-            let name = f.name().to_lowercase();
-            if name.ends_with(".js") { return Err("EPUB contains JavaScript; rejected".into()); }
-            // rudimentary scan for <script>
-            if name.ends_with(".html") || name.ends_with(".xhtml") || name.ends_with(".opf") {
-                let mut buf = String::new();
-                let mut reader = std::io::BufReader::new(&mut f);
-                let _ = reader.read_to_string(&mut buf); // ignore non-utf8
-                if buf.contains("<script") { return Err("EPUB contains script tags; rejected".into()); }
-            }
-        }
-        // If passes, copy original file as-is
-        fs::copy(&src, &sanitized_path).map_err(|e| e.to_string())?;
     }
 
-    // Return DocumentInfo for the imported file
-    let info = create_document_info(&sanitized_path).await?;
-    if let Ok(pool) = ensure_node_database(&app_handle).await {
-        let title = info
-            .metadata
-            .title
-            .clone()
-            .unwrap_or_else(|| info.filename.clone());
-        let payload = serde_json::json!({ "title": title }).to_string();
-        let _ = insert_activity_pool(&pool, "upload", Some(&info.id), Some(&payload)).await;
+    Ok(serde_json::json!({
+        "migrated": migrated,
+        "errors": errors,
+    }))
+}
+
+fn collect_pdf_epub_files(dir: &Path) -> Vec<PathBuf> {
+    let mut out = Vec::new();
+    if let Ok(entries) = fs::read_dir(dir) {
+        for entry in entries.flatten() {
+            let p = entry.path();
+            if p.is_file() {
+                let ext = p
+                    .extension()
+                    .and_then(|e| e.to_str())
+                    .unwrap_or("")
+                    .to_lowercase();
+                if ext == "pdf" || ext == "epub" {
+                    out.push(p);
+                }
+            } else if p.is_dir() {
+                out.extend(collect_pdf_epub_files(&p));
+            }
+        }
     }
-    Ok(info)
+    out
+}
+
+async fn resolve_canonical_name(
+    app: &AppHandle,
+    content_hash: &str,
+    fallback: &str,
+) -> String {
+    if let Ok(pool) = ensure_node_database(app).await {
+        if let Ok(Some(name)) = sqlx::query_scalar::<_, String>(
+            "SELECT name FROM network_files WHERE content_hash = ? LIMIT 1",
+        )
+        .bind(content_hash)
+        .fetch_optional(&pool)
+        .await
+        {
+            return name;
+        }
+    }
+    fallback.to_string()
+}
+
+/// Process a downloaded raw file into the library (post-fetch pipeline).
+pub async fn process_downloaded_file_internal(
+    app_handle: &AppHandle,
+    raw_path: PathBuf,
+    library_dir: PathBuf,
+    expected_content_hash: Option<String>,
+    user_title: Option<String>,
+) -> Result<DocumentInfo, String> {
+    process_document(
+        app_handle.clone(),
+        library_dir.to_string_lossy().to_string(),
+        raw_path.to_string_lossy().to_string(),
+        user_title,
+        expected_content_hash,
+    )
+    .await
+}
+
+pub async fn ensure_seeding_allowed(path: &Path) -> Result<(), String> {
+    if !is_treated_file(path) {
+        return Err(
+            "File is untreated. It must pass the 0–7 treatment pipeline before seeding."
+                .into(),
+        );
+    }
+    let fp = crate::core::document::pipeline::fingerprint_for_treated_path(path)?;
+    let bytes = fs::read(path).map_err(|e| e.to_string())?;
+    let verify = compute_fingerprint_from_bytes(&bytes, fp.page_count);
+    if verify.content_hash != fp.content_hash {
+        return Err("Content hash verification failed for treated file".into());
+    }
+    Ok(())
 }
 
 /// Get detailed information about a specific document
@@ -420,105 +586,170 @@ async fn scan_directory_recursive(
     Ok(())
 }
 
-// Helper: blake3 content hash (same algorithm as onion-share network files)
-fn file_content_hash(file_path: &Path) -> Result<String, String> {
-    let mut file = fs::File::open(file_path).map_err(|e| format!("Failed to open file: {e}"))?;
-    let mut hasher = blake3::Hasher::new();
-    let mut buf = [0u8; 65536];
-    loop {
-        let n = file
-            .read(&mut buf)
-            .map_err(|e| format!("Failed to read file: {e}"))?;
-        if n == 0 {
-            break;
-        }
-        hasher.update(&buf[..n]);
-    }
-    Ok(hasher.finalize().to_hex().to_string())
+// Staging id for untreated files (path-based, not content identity).
+fn path_staging_id(file_path: &Path) -> String {
+    format!(
+        "untreated:{}",
+        blake3::hash(file_path.to_string_lossy().as_bytes()).to_hex()
+    )
 }
 
-// Helper function to create DocumentInfo from a file path
-async fn create_document_info(file_path: &Path) -> Result<DocumentInfo, String> {
-    let filename = file_path.file_name()
-        .and_then(|name| name.to_str())
-        .ok_or_else(|| "Invalid filename".to_string())?
-        .to_string();
-    
-    let file_path_str = file_path.to_string_lossy().to_string();
-    
-    // Get file metadata
-    let metadata = fs::metadata(file_path).map_err(|e| format!("Failed to get file metadata: {}", e))?;
-    
+async fn build_document_info_from_treated(
+    file_path: &Path,
+    fp: &crate::core::document::pipeline::ContentFingerprint,
+    original_filename: &str,
+    canonical_name: &str,
+    user_title: Option<String>,
+    page_count: u32,
+) -> Result<DocumentInfo, String> {
+    let base = file_metadata_fields(file_path)?;
+    let title = user_title.unwrap_or_else(|| original_filename.to_string());
+
+    Ok(DocumentInfo {
+        id: fp.content_hash.clone(),
+        filename: canonical_name.to_string(),
+        file_path: base.file_path,
+        file_size: base.file_size,
+        document_type: base.document_type,
+        created_at: base.created_at,
+        modified_at: base.modified_at,
+        cultural_context: default_cultural_context(),
+        metadata: DocumentMetadata {
+            title: Some(title),
+            author: None,
+            description: None,
+            tags: Vec::new(),
+            categories: Vec::new(),
+            language: None,
+            page_count: Some(page_count),
+            word_count: None,
+        },
+        is_treated: true,
+        processing_status: "treated".to_string(),
+        content_hash: Some(fp.content_hash.clone()),
+        canonical_name: Some(canonical_name.to_string()),
+        original_filename: Some(original_filename.to_string()),
+    })
+}
+
+struct FileMetaFields {
+    file_path: String,
+    file_size: u64,
+    document_type: String,
+    created_at: String,
+    modified_at: String,
+}
+
+fn file_metadata_fields(file_path: &Path) -> Result<FileMetaFields, String> {
+    let metadata = fs::metadata(file_path).map_err(|e| format!("Failed to get file metadata: {e}"))?;
     let file_size = metadata.len();
-    let created_at = metadata.created()
+    let created_at = metadata
+        .created()
         .unwrap_or_else(|_| metadata.modified().unwrap_or_else(|_| std::time::SystemTime::now()))
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap_or_default()
         .as_secs();
-    
-    let modified_at = metadata.modified()
+    let modified_at = metadata
+        .modified()
         .unwrap_or_else(|_| std::time::SystemTime::now())
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap_or_default()
         .as_secs();
-    
-    // Detect document type
+
     let mut document_type = TypeDetection::detect_from_path(file_path).to_string();
-    
-    // If type is unknown, try to detect from filename
     if document_type == "UNKNOWN" {
-        let filename = file_path.file_name()
+        let filename = file_path
+            .file_name()
             .and_then(|name| name.to_str())
             .unwrap_or("")
             .to_lowercase();
-        
-        if filename.contains("pdf") || filename.contains(".pdf") {
+        if filename.contains("pdf") {
             document_type = "PDF".to_string();
-        } else if filename.contains("epub") || filename.contains(".epub") {
+        } else if filename.contains("epub") {
             document_type = "EPUB".to_string();
-        } else if filename.contains("txt") || filename.contains(".txt") {
-            document_type = "TXT".to_string();
-        } else if filename.contains("md") || filename.contains("markdown") {
-            document_type = "MD".to_string();
-        } else if filename.contains("html") || filename.contains("htm") {
-            document_type = "HTML".to_string();
         }
     }
-    
-    // Document ID = content hash (aligns with network files and favorites)
-    let id = file_content_hash(file_path)?;
-    
-    // Create basic metadata
-    let metadata = DocumentMetadata {
-        title: Some(filename.clone()),
-        author: None,
-        description: None,
-        tags: Vec::new(),
-        categories: Vec::new(),
-        language: None,
-        page_count: None,
-        word_count: None,
-    };
-    
-    // Create cultural context (default to level 1 - general access)
-    let cultural_context = Some(CulturalContext {
+
+    Ok(FileMetaFields {
+        file_path: file_path.to_string_lossy().to_string(),
+        file_size,
+        document_type,
+        created_at: created_at.to_string(),
+        modified_at: modified_at.to_string(),
+    })
+}
+
+fn default_cultural_context() -> Option<CulturalContext> {
+    Some(CulturalContext {
         sensitivity_level: 1,
         cultural_origin: None,
         traditional_knowledge: false,
         educational_resources: Vec::new(),
         community_acknowledgment: None,
-    });
-    
+    })
+}
+
+// Helper function to create DocumentInfo from a file path
+async fn create_document_info(file_path: &Path) -> Result<DocumentInfo, String> {
+    let filename = file_path
+        .file_name()
+        .and_then(|name| name.to_str())
+        .ok_or_else(|| "Invalid filename".to_string())?
+        .to_string();
+
+    let base = file_metadata_fields(file_path)?;
+
+    if is_treated_file(file_path) {
+        if let Some(fp) = read_sidecar(file_path) {
+            return build_document_info_from_treated(
+                file_path,
+                &fp,
+                &filename,
+                &filename,
+                None,
+                fp.page_count,
+            )
+            .await;
+        }
+        let bytes = fs::read(file_path).map_err(|e| e.to_string())?;
+        let fp = compute_fingerprint_from_bytes(&bytes, 0);
+        return build_document_info_from_treated(
+            file_path,
+            &fp,
+            &filename,
+            &filename,
+            None,
+            fp.page_count,
+        )
+        .await;
+    }
+
+    let id = path_staging_id(file_path);
+
     Ok(DocumentInfo {
         id,
-        filename,
-        file_path: file_path_str,
-        file_size,
-        document_type,
-        created_at: created_at.to_string(),
-        modified_at: modified_at.to_string(),
-        cultural_context,
-        metadata,
+        filename: filename.clone(),
+        file_path: base.file_path,
+        file_size: base.file_size,
+        document_type: base.document_type,
+        created_at: base.created_at,
+        modified_at: base.modified_at,
+        cultural_context: default_cultural_context(),
+        metadata: DocumentMetadata {
+            title: Some(filename.clone()),
+            author: None,
+            description: None,
+            tags: Vec::new(),
+            categories: Vec::new(),
+            language: None,
+            page_count: None,
+            word_count: None,
+        },
+        is_treated: false,
+        processing_status: "untreated".to_string(),
+        content_hash: None,
+        canonical_name: None,
+        original_filename: Some(filename),
     })
 }
 

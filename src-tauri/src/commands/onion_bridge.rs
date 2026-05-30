@@ -26,7 +26,12 @@ use crate::core::database::activity_log::insert_activity_pool;
 use crate::core::database::models::LocalShareRow;
 use chrono::Utc;
 use std::collections::HashSet;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+
+use crate::commands::documents::{ensure_seeding_allowed, process_downloaded_file_internal};
+use crate::commands::settings::load_app_settings;
+use crate::core::document::pipeline::is_treated_file;
+use crate::onion_share::link::parse_any;
 
 const DEFAULT_CHUNK: usize = 256 * 1024;
 /// Re-announce before tracker `last_seen` TTL (30s in POC) when not using WS.
@@ -149,6 +154,11 @@ async fn restore_local_shares_from_db(app: &AppHandle, state: &OnionShareState) 
             } else {
                 warn!("Removed stale local_share (missing file): {}", row.disk_path);
             }
+            continue;
+        }
+
+        if !is_treated_file(&pb) {
+            warn!("Skipping restore of untreated file: {}", row.disk_path);
             continue;
         }
 
@@ -500,12 +510,21 @@ pub async fn onion_share_add_file(
     path: String,
     state: State<'_, OnionShareState>,
 ) -> Result<serde_json::Value, String> {
+    add_treated_share(&app, state.inner(), &path).await
+}
+
+async fn add_treated_share(
+    app: &AppHandle,
+    state: &OnionShareState,
+    path: &str,
+) -> Result<serde_json::Value, String> {
     let guard = state.handle.lock().await;
     let Some(ref srv) = *guard else {
         return Err("Onion sharing not running. Run onion_share_start first.".to_string());
     };
-    let disk_path = path.clone();
-    let p = PathBuf::from(&path);
+    let disk_path = path.to_string();
+    let p = PathBuf::from(path);
+    ensure_seeding_allowed(&p).await?;
     let share = srv
         .add_file(p, DEFAULT_CHUNK)
         .await
@@ -514,7 +533,7 @@ pub async fn onion_share_add_file(
     drop(guard);
 
     persist_share_to_db(
-        &app,
+        app,
         &disk_path,
         &share.file_id.to_string(),
         &share.file_name,
@@ -524,7 +543,7 @@ pub async fn onion_share_add_file(
     )
     .await?;
 
-    if let Ok(pool) = ensure_node_database(&app).await {
+    if let Ok(pool) = ensure_node_database(app).await {
         let payload = serde_json::json!({
             "title": share.file_name,
             "link": link,
@@ -726,33 +745,79 @@ pub async fn onion_share_fetch(
     let out = std::path::PathBuf::from(out_dir);
     let link_owned = link;
     let app_for_fetch = app.clone();
+    let share_state = state.inner().clone();
     tokio::spawn(async move {
-        let res = fetch::fetch_to_directory(&link_owned, Some(socks), out).await;
+        let res = fetch::fetch_to_directory(&link_owned, Some(socks), out.clone()).await;
 
         match res {
-            Ok(path) => {
-                if let Ok(pool) = ensure_node_database(&app_for_fetch).await {
-                    let payload = serde_json::json!({
-                        "link": link_owned,
-                        "path": path.to_string_lossy(),
-                    })
-                    .to_string();
-                    let _ = insert_activity_pool(
-                        &pool,
-                        "download",
-                        Some(&link_owned),
-                        Some(&payload),
-                    )
-                    .await;
-                }
-                let _ = app_for_fetch.emit(
-                    "onion-share-fetch-done",
-                    json!({
-                        "ok": true,
-                        "path": path.to_string_lossy().to_string(),
-                        "link": link_owned,
-                    }),
+            Ok(raw_path) => {
+                let expected_hash = parse_any(&link_owned)
+                    .ok()
+                    .and_then(|p| match p {
+                        crate::onion_share::link::ParsedLink::Swarm(s) => Some(s.content_hash),
+                        _ => None,
+                    });
+
+                let settings = load_app_settings(app_for_fetch.clone()).await.ok();
+                let library_dir = settings
+                    .map(|s| PathBuf::from(s.folder_structure.documents_folder))
+                    .unwrap_or_else(|| out.clone());
+
+                let incoming = library_dir.join("incoming");
+                let _ = std::fs::create_dir_all(&incoming);
+                let staged = incoming.join(
+                    raw_path
+                        .file_name()
+                        .unwrap_or_default(),
                 );
+                let _ = std::fs::copy(&raw_path, &staged);
+
+                match process_downloaded_file_internal(
+                    &app_for_fetch,
+                    staged.clone(),
+                    library_dir.clone(),
+                    expected_hash.clone(),
+                    raw_path
+                        .file_name()
+                        .and_then(|n| n.to_str())
+                        .map(String::from),
+                )
+                .await
+                {
+                    Ok(info) => {
+                        let _ = add_treated_share(&app_for_fetch, &share_state, &info.file_path).await;
+
+                        if let Ok(pool) = ensure_node_database(&app_for_fetch).await {
+                            let payload = serde_json::json!({
+                                "link": link_owned,
+                                "path": info.file_path,
+                                "contentHash": info.content_hash,
+                            })
+                            .to_string();
+                            let _ = insert_activity_pool(
+                                &pool,
+                                "download",
+                                info.content_hash.as_deref(),
+                                Some(&payload),
+                            )
+                            .await;
+                        }
+                        let _ = app_for_fetch.emit(
+                            "onion-share-fetch-done",
+                            json!({
+                                "ok": true,
+                                "path": info.file_path,
+                                "link": link_owned,
+                            }),
+                        );
+                    }
+                    Err(e) => {
+                        let _ = app_for_fetch.emit(
+                            "onion-share-fetch-done",
+                            json!({"ok": false, "error": e, "link": link_owned}),
+                        );
+                    }
+                }
             }
             Err(e) => {
                 let _ = app_for_fetch.emit(

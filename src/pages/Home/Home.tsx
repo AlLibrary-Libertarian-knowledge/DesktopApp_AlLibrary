@@ -293,20 +293,19 @@ const HomePage: Component = () => {
           </span>
         </button>
       </div>
-
       <div class={styles['dashboard-content']} id="main-content">
         {/* Overview Tab */}
         {activeTab() === 'overview' && (
           <div role="tabpanel" id="overview-panel" aria-labelledby="overview-tab">
             {/* Enhanced Stats Section */}
-            <section aria-labelledby="stats-title">
+            <section
+              class={`${styles['stats-section']} ${styles.enhanced}`}
+              aria-labelledby="stats-title"
+            >
               <h2 id="stats-title" class="sr-only">
                 {t('home.stats.documentsShared')}
               </h2>
-              <div
-                class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-                data-testid="stats-section"
-              >
+              <div class={styles.grid} data-testid="stats-section">
                 <StatCard
                   type="documents"
                   icon={<BookOpen size={24} />}
@@ -592,8 +591,10 @@ const HomePage: Component = () => {
         )}
       </div>
 
-      {/* Status Bar */}
-      <StatusBar />
+      {/* Status Bar — page-level metrics above app footer */}
+      <section class={styles['home-status-bar']}>
+        <StatusBar />
+      </section>
 
       {/* Enhanced Welcome Modal */}
       <Modal

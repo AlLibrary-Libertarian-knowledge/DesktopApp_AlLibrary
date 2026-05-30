@@ -14,6 +14,9 @@ export interface DocumentViewerLoaderProps {
   hint?: string;
   /** Fill available viewport and center (document page overlay) */
   fullscreen?: boolean;
+  /** Pipeline step 0–7 label when processing documents */
+  pipelineStep?: number;
+  pipelineLabel?: string;
   /** Smaller layout for redirects / embedded areas */
   compact?: boolean;
   class?: string;
@@ -37,14 +40,21 @@ export const DocumentViewerLoader: Component<DocumentViewerLoaderProps> = props 
     'eyebrow',
     'hint',
     'fullscreen',
+    'pipelineStep',
+    'pipelineLabel',
     'compact',
     'class',
     'data-testid',
   ]);
 
   const phase = () => local.phase ?? 'content';
-  const eyebrow = createMemo(() => local.eyebrow ?? PHASE_LABELS[phase()]);
-  const hint = createMemo(() => local.hint ?? PHASE_HINTS[phase()]);
+  const eyebrow = createMemo(() => {
+    if (local.pipelineStep != null) {
+      return `Treatment · Step ${local.pipelineStep}/7`;
+    }
+    return local.eyebrow ?? PHASE_LABELS[phase()];
+  });
+  const hint = createMemo(() => local.pipelineLabel ?? local.hint ?? PHASE_HINTS[phase()]);
 
   return (
     <div

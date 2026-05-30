@@ -1,9 +1,5 @@
 import { listen } from '@tauri-apps/api/event';
-import {
-  onionShareFetch,
-  onionShareAddFile,
-  type OnionShareFetchDonePayload,
-} from './onionShareService';
+import { onionShareFetch, type OnionShareFetchDonePayload } from './onionShareService';
 
 export interface DownloadItem {
   id: string;
@@ -98,18 +94,7 @@ class DownloadManager {
       this.completed.unshift(completedItem);
       this.saveCompleted();
       this.notify();
-
-      // Automatically add to local shares (seeding) if download was successful
-      if (payload.ok && payload.path) {
-        const filePath = payload.path;
-        void onionShareAddFile(filePath)
-          .then(() => {
-            console.log(`Auto-seeding started for downloaded file: ${filePath}`);
-          })
-          .catch(err => {
-            console.error('Failed to auto-seed completed download:', err);
-          });
-      }
+      // Seeding handled by backend after download pipeline + auto-seed
     }
   }
 

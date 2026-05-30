@@ -1,6 +1,8 @@
 import { createSignal } from 'solid-js';
+import { invoke } from '@tauri-apps/api/core';
 import { enableTorAndP2P } from '@/services/network/bootstrap';
 import { transferFacade } from '@/services/network/transferFacade';
+import type { DocumentInfo } from '@/services/documentService';
 
 export function useP2PTransfers() {
   const [enabled, setEnabled] = createSignal(false);
@@ -26,6 +28,10 @@ export function useP2PTransfers() {
     setError(null);
     setLastOp('seed:file');
     try {
+      const info = await invoke<DocumentInfo>('get_document_info', { filePath: path });
+      if (!info.is_treated) {
+        throw new Error('Document must complete treatment (steps 0–7) before seeding.');
+      }
       await transferFacade.addShare(path);
     } catch (e: unknown) {
       setError(String(e instanceof Error ? e.message : e));

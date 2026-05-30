@@ -6,6 +6,7 @@ import {
   Show,
   For,
   onMount,
+  onCleanup,
   createEffect,
 } from 'solid-js';
 import { Button, Card, Modal } from '../../components/foundation';
@@ -52,6 +53,8 @@ import {
 } from 'lucide-solid';
 import { validationService } from '../../services';
 import { invoke } from '@tauri-apps/api/core';
+import { listen } from '@tauri-apps/api/event';
+import { DocumentViewerLoader } from '@/components/composite/DocumentViewerLoader';
 import { searchService } from '../../services/searchService';
 import { projectService } from '../../services/projectService';
 import {
@@ -103,6 +106,22 @@ const DocumentManagement: Component = () => {
   };
   const [treatmentItems, setTreatmentItems] = createSignal<TreatmentItem[]>([]);
   const [activeTreatmentTab, setActiveTreatmentTab] = createSignal(0);
+  const [pipelineStep, setPipelineStep] = createSignal<number | null>(null);
+  const [pipelineLabel, setPipelineLabel] = createSignal<string>('');
+  const [isProcessing, setIsProcessing] = createSignal(false);
+
+  onMount(() => {
+    const unlistenPromise = listen<{ step: number; label: string; percent: number }>(
+      'document-pipeline-progress',
+      e => {
+        setPipelineStep(e.payload.step);
+        setPipelineLabel(e.payload.label);
+      }
+    );
+    onCleanup(() => {
+      void unlistenPromise.then(fn => fn());
+    });
+  });
 
   // Enhanced state for new features
   const [selectedDocuments, setSelectedDocuments] = createSignal<Set<string>>(new Set());
@@ -747,6 +766,7 @@ const DocumentManagement: Component = () => {
       if (format === 'txt') tags.push('text', 'plain');
       if (format === 'md' || format === 'markdown') tags.push('markdown', 'formatted');
       if (format === 'html' || format === 'htm') tags.push('web', 'html');
+      if (docInfo.is_treated === false) tags.push('untreated');
 
       return tags;
     };
@@ -769,11 +789,11 @@ const DocumentManagement: Component = () => {
       description: getDescription(),
       format: docInfo.document_type.toLowerCase() as any,
       contentType: 'document' as any,
-      status: 'active' as any,
+      status: (docInfo.is_treated === false ? 'draft' : 'active') as any,
       filePath: docInfo.file_path,
-      originalFilename: docInfo.filename,
+      originalFilename: docInfo.original_filename || docInfo.filename,
       fileSize: docInfo.file_size,
-      fileHash: docInfo.id,
+      fileHash: docInfo.content_hash || docInfo.id,
       mimeType: `application/${docInfo.document_type.toLowerCase()}`,
       createdAt: new Date(parseInt(docInfo.created_at) * 1000),
       updatedAt: new Date(parseInt(docInfo.modified_at) * 1000),
@@ -2114,6 +2134,14 @@ const DocumentManagement: Component = () => {
                   title="Treatment Station"
                   size="xl"
                 >
+                  <Show when={isProcessing()}>
+                    <DocumentViewerLoader
+                      message="Running treatment pipeline…"
+                      pipelineStep={pipelineStep() ?? 0}
+                      pipelineLabel={pipelineLabel()}
+                      compact
+                    />
+                  </Show>
                   <div class={styles['ts-tabs']}>
                     <div class={styles['ts-tabbar']}>
                       <For each={treatmentItems()}>
@@ -2173,9 +2201,11 @@ const DocumentManagement: Component = () => {
                               <div class={styles['treatment-hint']}>{item.filename}</div>
                               <div class={styles['treatment-actions']}>
                                 <Button
+                                  disabled={isProcessing()}
                                   onClick={async () => {
                                     try {
-                                      // Now perform secure import to target dir using backend (copies and sanitizes)
+                                      setIsProcessing(true);
+                                      setPipelineStep(0);
                                       const settingsSvc = (
                                         await import('@/services/storage/settingsService')
                                       ).settingsService;
@@ -2185,14 +2215,15 @@ const DocumentManagement: Component = () => {
                                         setShowFolderSetup(true);
                                         return;
                                       }
-                                      const info = await invoke<any>('import_document', {
+                                      const info = await invoke<DocumentInfo>('process_document', {
                                         targetDir: projectPath,
                                         sourcePath: item.filePath,
+                                        userTitle: item.title,
+                                        expectedContentHash: null,
                                       });
-                                      if (enabled() && info?.file_path) {
+                                      if (enabled() && info?.file_path && info.is_treated) {
                                         await seedFile(info.file_path);
                                       }
-                                      // Robust update: find by tempId to avoid stale index after async
                                       setTreatmentItems(prev =>
                                         prev.map(it =>
                                           it.tempId === item.tempId
@@ -2202,6 +2233,10 @@ const DocumentManagement: Component = () => {
                                       );
                                     } catch (e) {
                                       console.error('Process failed', e);
+                                    } finally {
+                                      setIsProcessing(false);
+                                      setPipelineStep(null);
+                                      setPipelineLabel('');
                                     }
                                   }}
                                 >

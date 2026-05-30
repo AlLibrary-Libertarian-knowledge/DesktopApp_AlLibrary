@@ -11,35 +11,50 @@ use desktopapp_allibrary_lib::onion_share::tracker_proto::{AnnouncedFile, Networ
 use serde::Serialize;
 use uuid::Uuid;
 use std::collections::HashMap;
+use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tokio::sync::{broadcast, Mutex};
 
-#[derive(Clone, Debug)]
-struct Node {
-    last_seen: Instant,
-    onion: String,
-    files: Vec<AnnouncedFile>,
-}
+const CANONICAL_STORE: &str = "tracker_canonical_names.json";
 
 #[derive(Clone)]
 struct TrackerState {
     nodes: Arc<Mutex<HashMap<String, Node>>>,
     lobby_tx: broadcast::Sender<String>,
+    canonical_names: Arc<Mutex<HashMap<String, String>>>,
+    store_path: PathBuf,
 }
 
-#[derive(Serialize)]
-struct SwarmLookupResponse {
-    file: Option<NetworkFile>,
+async fn load_canonical_store(path: &PathBuf) -> HashMap<String, String> {
+    tokio::fs::read_to_string(path)
+        .await
+        .ok()
+        .and_then(|s| serde_json::from_str(&s).ok())
+        .unwrap_or_default()
 }
 
-fn aggregate_lobby(nodes: &HashMap<String, Node>) -> NetworkLobby {
+async fn save_canonical_store(path: &PathBuf, map: &HashMap<String, String>) {
+    if let Ok(json) = serde_json::to_string_pretty(map) {
+        let _ = tokio::fs::write(path, json).await;
+    }
+}
+
+fn aggregate_lobby(
+    nodes: &HashMap<String, Node>,
+    canonical: &HashMap<String, String>,
+) -> NetworkLobby {
     let mut by_hash: HashMap<String, NetworkFile> = HashMap::new();
 
     for (node_id, node) in nodes {
         for file in &node.files {
+            let canonical_name = canonical
+                .get(&file.content_hash)
+                .cloned()
+                .unwrap_or_else(|| file.name.clone());
+
             let entry = by_hash.entry(file.content_hash.clone()).or_insert_with(|| NetworkFile {
-                name: file.name.clone(),
+                name: canonical_name.clone(),
                 size: file.size,
                 link: file.link.clone(),
                 content_hash: file.content_hash.clone(),
@@ -63,10 +78,37 @@ fn aggregate_lobby(nodes: &HashMap<String, Node>) -> NetworkLobby {
     }
 }
 
+async fn register_canonical_names(state: &TrackerState, files: &[AnnouncedFile]) {
+    let mut canonical = state.canonical_names.lock().await;
+    let mut changed = false;
+    for file in files {
+        if !canonical.contains_key(&file.content_hash) {
+            canonical.insert(file.content_hash.clone(), file.name.clone());
+            changed = true;
+        }
+    }
+    if changed {
+        save_canonical_store(&state.store_path, &canonical).await;
+    }
+}
+
+#[derive(Clone, Debug)]
+struct Node {
+    last_seen: Instant,
+    onion: String,
+    files: Vec<AnnouncedFile>,
+}
+
+#[derive(Serialize)]
+struct SwarmLookupResponse {
+    file: Option<NetworkFile>,
+}
+
 async fn push_lobby(state: &TrackerState) {
     let mut nodes = state.nodes.lock().await;
     nodes.retain(|_, node| node.last_seen.elapsed() < Duration::from_secs(30));
-    let lobby = aggregate_lobby(&nodes);
+    let canonical = state.canonical_names.lock().await.clone();
+    let lobby = aggregate_lobby(&nodes, &canonical);
     if let Ok(payload) = serde_json::to_string(&WsServerMessage::Lobby { lobby }) {
         let _ = state.lobby_tx.send(payload);
     }
@@ -75,7 +117,8 @@ async fn push_lobby(state: &TrackerState) {
 async fn lobby(State(state): State<TrackerState>) -> Json<NetworkLobby> {
     let mut nodes = state.nodes.lock().await;
     nodes.retain(|_, node| node.last_seen.elapsed() < Duration::from_secs(30));
-    Json(aggregate_lobby(&nodes))
+    let canonical = state.canonical_names.lock().await.clone();
+    Json(aggregate_lobby(&nodes, &canonical))
 }
 
 async fn swarm_lookup(
@@ -84,7 +127,8 @@ async fn swarm_lookup(
 ) -> Json<SwarmLookupResponse> {
     let mut nodes = state.nodes.lock().await;
     nodes.retain(|_, node| node.last_seen.elapsed() < Duration::from_secs(30));
-    let lobby = aggregate_lobby(&nodes);
+    let canonical = state.canonical_names.lock().await.clone();
+    let lobby = aggregate_lobby(&nodes, &canonical);
     let file = lobby.files.into_iter().find(|f| f.content_hash == content_hash);
     Json(SwarmLookupResponse { file })
 }
@@ -124,6 +168,7 @@ async fn announce_http(
     if let WsClientMessage::Announce { node_id, onion, files } = msg {
         tracing::info!("HTTP Announce: node_id={}, onion={}, files={}", node_id, onion, files.len());
         let mut nodes = state.nodes.lock().await;
+        register_canonical_names(&state, &files).await;
         nodes.insert(node_id, Node {
             last_seen: Instant::now(),
             onion,
@@ -150,7 +195,8 @@ async fn handle_socket(socket: WebSocket, state: TrackerState) {
         lobby: {
             let mut nodes = state.nodes.lock().await;
             nodes.retain(|_, node| node.last_seen.elapsed() < Duration::from_secs(30));
-            aggregate_lobby(&nodes)
+            let canonical = state.canonical_names.lock().await.clone();
+            aggregate_lobby(&nodes, &canonical)
         },
     }) {
         let _ = sender.send(Message::Text(initial.into())).await;
@@ -165,6 +211,7 @@ async fn handle_socket(socket: WebSocket, state: TrackerState) {
                             Ok(WsClientMessage::Announce { node_id, onion, files }) => {
                                 tracing::info!("Announce: node_id={}, onion={}, files={}", node_id, onion, files.len());
                                 current_node_id = Some(node_id.clone());
+                                register_canonical_names(&state, &files).await;
                                 let mut nodes = state.nodes.lock().await;
                                 nodes.insert(node_id, Node {
                                     last_seen: Instant::now(),
@@ -212,9 +259,16 @@ async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt::init();
 
     let (lobby_tx, _) = broadcast::channel(64);
+    let store_path = PathBuf::from(
+        std::env::var("TRACKER_CANONICAL_PATH").unwrap_or_else(|_| CANONICAL_STORE.to_string()),
+    );
+    let canonical_names = Arc::new(Mutex::new(load_canonical_store(&store_path).await));
+
     let state = TrackerState {
         nodes: Arc::new(Mutex::new(HashMap::new())),
         lobby_tx,
+        canonical_names,
+        store_path,
     };
 
 

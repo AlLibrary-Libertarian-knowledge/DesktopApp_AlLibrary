@@ -64,7 +64,7 @@ pub async fn sync_lobby_to_pool(pool: &SqlitePool, lobby: &NetworkLobby) -> Resu
                 content_hash, name, size, canonical_link, peer_count, first_seen_at, last_seen_at
             ) VALUES (?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(content_hash) DO UPDATE SET
-                name = excluded.name,
+                name = COALESCE(network_files.name, excluded.name),
                 size = excluded.size,
                 canonical_link = excluded.canonical_link,
                 peer_count = excluded.peer_count,

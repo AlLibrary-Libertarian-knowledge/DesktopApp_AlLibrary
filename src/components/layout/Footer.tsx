@@ -1,9 +1,20 @@
 import { type Component, createMemo } from 'solid-js';
 import './Footer.css';
 import { useNetworkStore } from '@/stores/network/networkStore';
+import { useNetworkLobby } from '@/hooks/api/useNetworkLobby';
+import { useNetworkPresenceResource } from '@/hooks/network/useNetworkPresence';
 
 const Footer: Component = () => {
   const store = useNetworkStore();
+  const lobby = useNetworkLobby();
+  const presence = useNetworkPresenceResource();
+
+  const connectedPeers = createMemo(() => Math.max(store.connectedPeers(), lobby.onlineNodes()));
+
+  const torLabel = createMemo(() => {
+    if (presence().onionActive) return 'Onion Active';
+    return store.labelTorMode();
+  });
   const lastSyncText = createMemo(() => {
     const ts = store.lastSyncAt();
     if (!ts) return '—';
@@ -20,8 +31,8 @@ const Footer: Component = () => {
         <div class="footer-left">
           <div class="network-info">
             <span class="network-label">P2P Network:</span>
-            <span class="peer-count">{store.connectedPeers()} peers connected</span>
-            <span class="network-type">{store.labelTorMode()}</span>
+            <span class="peer-count">{connectedPeers()} peers connected</span>
+            <span class="network-type">{torLabel()}</span>
           </div>
 
           <div class="sync-info">

@@ -70,6 +70,11 @@ export interface DocumentInfo {
   modified_at: string;
   cultural_context?: CulturalContext;
   metadata: DocumentMetadata;
+  is_treated?: boolean;
+  processing_status?: string;
+  content_hash?: string;
+  canonical_name?: string;
+  original_filename?: string;
 }
 
 export interface CulturalContext {
