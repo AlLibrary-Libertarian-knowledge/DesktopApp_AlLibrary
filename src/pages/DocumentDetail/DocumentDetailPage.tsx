@@ -71,14 +71,42 @@ import { useToast } from '@/hooks/ui/useToast';
 import { useTranslation } from '@/i18n';
 
 // Import services
-import { documentApi, culturalApi } from '@/services/api';
-import { commentService, shareService } from '@/services';
-import { p2pNetworkService } from '@/services/network/p2pNetworkService';
-// import type { Document } from '@/types/core';
+import { culturalApi } from '@/services/api';
+import { commentService, favoriteService } from '@/services';
+import { documentService, type DocumentDetailModel } from '@/services/documentService';
+import { transferFacade } from '@/services/network/transferFacade';
+import { shareWithToast, copyNetworkLinkWithToast } from '@/utils/documentActions';
 
 // Import styles
 import styles from './DocumentDetailPage.module.css';
 import { useP2PTransfers } from '@/hooks/api/useP2PTransfers';
+
+type DetailDocument = DocumentDetailModel & {
+  fileType?: string;
+  author?: string;
+  publishedDate?: string;
+  tags?: string[];
+  viewCount?: number;
+  favoriteCount?: number;
+  commentCount?: number;
+  culturalMetadata?: { sensitivityLevel: number };
+  language?: string;
+  category?: string;
+  culturalOrigin?: string;
+  metadata?: { totalPages?: number };
+};
+
+function mapToDetailDocument(model: DocumentDetailModel): DetailDocument {
+  return {
+    ...model,
+    fileType: model.format,
+    tags: [],
+    viewCount: 0,
+    favoriteCount: 0,
+    commentCount: 0,
+    culturalMetadata: { sensitivityLevel: 0 },
+  };
+}
 
 type DocumentDetailPageProps = {};
 
@@ -99,31 +127,16 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
   const [searchTerm, setSearchTerm] = createSignal('');
   const [comments, setComments] = createSignal<Awaited<ReturnType<typeof commentService.list>>>([]);
   const [newComment, setNewComment] = createSignal('');
-  const [peers, setPeers] = createSignal<any[]>([]);
-  const [selectedPeerIds, setSelectedPeerIds] = createSignal<string[]>([]);
   const toast = useToast();
   const { t } = useTranslation();
   const tf = t as unknown as (key: string) => string;
 
   // Data fetching
-  const document = createAsync(async () => {
+  const document = createAsync(async (): Promise<DetailDocument | null> => {
     if (!params.id) return null;
-    try {
-      const response = await documentApi.getDocument(params.id);
-      if (!response.success || !response.document) return null;
-      // Fire-and-forget increment view
-      documentApi.incrementViewCount(params.id);
-      // Merge stats if available
-      try {
-        const stats = await documentApi.getDocumentStats(params.id);
-        return { ...response.document, ...stats } as any;
-      } catch {
-        return response.document;
-      }
-    } catch {
-      // ignore
-      return null;
-    }
+    const resolved = await documentService.resolveDocumentById(params.id);
+    if (!resolved) return null;
+    return mapToDetailDocument(resolved);
   });
 
   const culturalContext = createAsync(async () => {
@@ -155,20 +168,11 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
   createEffect(() => {
     const doc = document();
     if (doc) {
-      // Load initial comments
+      void favoriteService.isFavorite(doc.id).then(setIsBookmarked);
       commentService
         .list(doc.id)
         .then(list => setComments(list))
         .catch(() => setComments([]));
-    }
-  });
-
-  createEffect(() => {
-    if (showShareModal()) {
-      p2pNetworkService
-        .getConnectedPeers()
-        .then(list => setPeers(list || []))
-        .catch(() => setPeers([]));
     }
   });
 
@@ -189,7 +193,6 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
   const handleBookmark = async () => {
     const doc = document();
     if (!doc) return;
-    const { favoriteService } = await import('@/services');
     const res = await favoriteService.toggleFavorite(doc.id);
     setIsBookmarked(res.isFavorite);
     toast.success(
@@ -202,11 +205,16 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
   const handleShare = async () => {
     const doc = document();
     if (!doc) return;
-    // Default to link sharing for now; P2P share can be added with peer selection UI
-    const link = await shareService.createShareLink(doc.id);
-    if (link?.url) {
-      await window.navigator.clipboard.writeText(link.url);
-      toast.success(tf('pages.documentDetail.toasts.shareLinkCopied'));
+    try {
+      if (doc.source === 'network' && doc.networkLink) {
+        await copyNetworkLinkWithToast(doc.networkLink, doc.title, toast);
+      } else if (doc.filePath && doc.source === 'local') {
+        await shareWithToast(doc, toast);
+      } else {
+        throw new Error('No shareable path for this document.');
+      }
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : String(e));
     }
   };
 
@@ -215,17 +223,35 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
     if (!doc) return;
 
     try {
-      const downloadUrl = await documentApi.getDownloadUrl(doc.id);
-      if (downloadUrl) {
-        // Create a temporary link and trigger download
-        const link = window.document.createElement('a');
-        link.href = downloadUrl;
-        link.download = doc.title || 'document';
-        link.click();
+      if (doc.source === 'local' && doc.filePath) {
+        documentService.openInReader(navigate, {
+          filePath: doc.filePath,
+          format: doc.format,
+          title: doc.title,
+        });
+        return;
       }
-    } catch {
-      // ignore
+      const link = doc.networkLink || doc.filePath;
+      if (link) {
+        await transferFacade.downloadLink(link, doc.title);
+        toast.success('Download started — check Sharing & downloads for progress.');
+      }
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : String(e));
     }
+  };
+
+  const handleOpenInReader = () => {
+    const doc = document();
+    if (!doc || doc.source !== 'local' || !doc.filePath) {
+      toast.info('Open in reader is available for local library files.');
+      return;
+    }
+    documentService.openInReader(navigate, {
+      filePath: doc.filePath,
+      format: doc.format,
+      title: doc.title,
+    });
   };
 
   const handleZoom = (direction: 'in' | 'out') => {
@@ -275,7 +301,11 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
                     <span class={styles.date}>{doc().publishedDate}</span>
                     <Show when={culturalLevel() > 0}>
                       <span class={styles.separator}>•</span>
-                      <CulturalIndicator level={culturalLevel()} size="sm" informationOnly={true} />
+                      <CulturalIndicator
+                        level={(Math.min(3, Math.max(1, culturalLevel())) || 1) as 1 | 2 | 3}
+                        size="sm"
+                        informationOnly={true}
+                      />
                     </Show>
                   </div>
                 )}
@@ -316,6 +346,17 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
               </Button>
             </Tooltip>
 
+            <Tooltip content="Open in reader">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleOpenInReader}
+                class={styles.actionButton || ''}
+              >
+                <BookOpen size={16} />
+              </Button>
+            </Tooltip>
+
             <Tooltip content="Share Document">
               <Button
                 variant="ghost"
@@ -334,7 +375,9 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
                 disabled={!enabled() || busy()}
                 onClick={() => {
                   const doc = document();
-                  if (doc) seedFile((doc as any).path || (doc as any).filePath);
+                  if (doc?.source === 'local' && doc.filePath) {
+                    void seedFile(doc.filePath);
+                  }
                 }}
                 class={styles.actionButton || ''}
               >
@@ -404,8 +447,16 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
                         </div>
                         <div class={styles.metadataItem}>
                           <span class={styles.label}>File Size:</span>
-                          <span class={styles.value}>{doc().fileSize}</span>
+                          <span class={styles.value}>
+                            {documentService.formatFileSize(doc().fileSize)}
+                          </span>
                         </div>
+                        <Show when={doc().source === 'network'}>
+                          <div class={styles.metadataItem}>
+                            <span class={styles.label}>Peers:</span>
+                            <span class={styles.value}>{doc().peerCount ?? 0}</span>
+                          </div>
+                        </Show>
                         <div class={styles.metadataItem}>
                           <span class={styles.label}>Pages:</span>
                           <span class={styles.value}>{doc().metadata?.totalPages}</span>
@@ -584,18 +635,39 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
 
               {/* Document Viewer Component */}
               <div class={styles.viewerContainer}>
-                <Show when={document()} fallback={<Loading />}>
-                  {doc => (
-                    <DocumentViewer
-                      documentType={(doc() as any).fileType?.toLowerCase?.() || 'pdf'}
-                      title={(doc() as any).title}
-                      currentPage={currentPage()}
-                      zoomLevel={zoomLevel()}
-                      searchTerm={searchTerm()}
-                      onPageChange={setCurrentPage}
-                      culturalContext={culturalContext() as any}
-                    />
-                  )}
+                <Show
+                  when={document()?.source === 'local'}
+                  fallback={
+                    <Card title="Network document" padding="lg">
+                      <p>
+                        This file is on the network. Use Download to fetch it locally, then open it
+                        from Sharing & downloads or your download folder.
+                      </p>
+                      <Button variant="primary" size="sm" onClick={() => void handleDownload()}>
+                        Download from network
+                      </Button>
+                    </Card>
+                  }
+                >
+                  <Show when={document()} fallback={<Loading />}>
+                    {doc => (
+                      <DocumentViewer
+                        documentType={
+                          (doc().fileType?.toLowerCase?.() || doc().format || 'pdf') as
+                            | 'pdf'
+                            | 'epub'
+                            | 'text'
+                            | 'markdown'
+                        }
+                        title={doc().title}
+                        currentPage={currentPage()}
+                        zoomLevel={zoomLevel()}
+                        searchTerm={searchTerm()}
+                        onPageChange={setCurrentPage}
+                        culturalContext={culturalContext() as any}
+                      />
+                    )}
+                  </Show>
                 </Show>
               </div>
             </Show>
@@ -750,15 +822,7 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
             </Show>
             <Button
               variant="outline"
-              onClick={() => handleShare()}
-              class={styles.shareButton || ''}
-            >
-              <Users size={16} />
-              Share via P2P Network
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => handleShare()}
+              onClick={() => void handleShare()}
               class={styles.shareButton || ''}
             >
               <Share2 size={16} />
@@ -766,50 +830,12 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
             </Button>
             <Button
               variant="outline"
-              onClick={() => handleShare()}
+              onClick={() => void handleDownload()}
               class={styles.shareButton || ''}
             >
               <Download size={16} />
-              Export with Metadata
+              Download
             </Button>
-            <div class={styles.peerList}>
-              <h4>Connected Peers</h4>
-              <For each={peers()}>
-                {p => (
-                  <label class={styles.peerItem}>
-                    <input
-                      type="checkbox"
-                      checked={selectedPeerIds().includes((p as any).id)}
-                      onChange={e => {
-                        const id = (p as any).id;
-                        setSelectedPeerIds(
-                          e.currentTarget.checked
-                            ? [...selectedPeerIds(), id]
-                            : selectedPeerIds().filter(x => x !== id)
-                        );
-                      }}
-                    />
-                    <span>{(p as any).name || (p as any).id}</span>
-                  </label>
-                )}
-              </For>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={async () => {
-                  const doc = document();
-                  if (!doc) return;
-                  const ok = await shareService.shareViaP2P(doc.id, selectedPeerIds());
-                  if (ok) {
-                    toast.success(tf('pages.documentDetail.toasts.sharedToPeers'));
-                  } else {
-                    toast.error(tf('pages.documentDetail.toasts.shareToPeersFailed'));
-                  }
-                }}
-              >
-                Share to selected peers
-              </Button>
-            </div>
           </div>
         </Modal>
       </div>

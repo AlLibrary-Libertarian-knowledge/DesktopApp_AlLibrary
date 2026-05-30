@@ -53,18 +53,18 @@ Each section lists **UI intent** (from existing design), **current state**, and 
 |---------|---------|------|
 | Scan / list / search local | ✅ `documentService`, `searchService` | [ ] Sync list with `documents` table |
 | Upload + validation | ✅ | — |
-| Share action | ❌ `alert()` | [ ] `onionShareAddFile(doc.filePath)` + toast with onion link |
-| Download action | ❌ `alert()` | [ ] Open local file or network fetch if remote |
-| Delete | ❌ `alert()` | [ ] Tauri delete + DB row remove |
+| Share action | ✅ `transferFacade.addShare` + toast | [x] `onionShareAddFile(doc.filePath)` + toast with onion link |
+| Download action | ✅ Opens `/reader` for local files | [x] Open local file or network fetch if remote |
+| Delete | ✅ `delete_local_document` | [x] Tauri delete + DB row remove |
 | Network results tab (optional) | ❌ | [ ] Embed `useNetworkLobby` search results alongside local library |
 
 ### Document Detail `/document/:id`
 
 | Feature | Current | Task |
 |---------|---------|------|
-| Load by id | ❌ `documentApi` mock | [ ] `documentService` / `get_document` Tauri |
-| Download / share / favorites | ❌ Mock API | [ ] Real services |
-| Open in reader | ⚠️ | [ ] Link `/reader?path=` with encoded path |
+| Load by id | ✅ `documentService.resolveDocumentById` | [x] `documentService` hash/path resolver (not legacy DB UUID) |
+| Download / share / favorites | ✅ Real services | [x] Real services |
+| Open in reader | ✅ Header action + `/reader?path=` | [x] Link `/reader?path=` with encoded path |
 
 ### Document Reader `/reader`
 
@@ -86,7 +86,7 @@ Each section lists **UI intent** (from existing design), **current state**, and 
 | Feature | Current | Task |
 |---------|---------|------|
 | List | ❌ Mock data in page | [ ] `favoriteService.listFavorites` + resolve document metadata |
-| Toggle from other pages | ⚠️ Service exists | [ ] Wire DocumentCard heart icon |
+| Toggle from other pages | ✅ DocumentDetail bookmark | [x] Wire DocumentCard heart icon (Detail page; card TBD) |
 
 ### Recent `/recent`
 
@@ -107,7 +107,7 @@ Each section lists **UI intent** (from existing design), **current state**, and 
 | Empty query = all files | ✅ | [x] Auto-run on mount when Tor ready (replaces Global Acervo) |
 | Tor gate | ⚠️ `torAdapter` | [ ] Gate on `onionShareStatus` + tracker reachability |
 | Download result | ✅ `transferFacade.downloadLink` | [x] Onion link via transferFacade + hash resolution |
-| Open result | ❌ `/document/:hash` | [ ] Download-first or open network link; local docs → reader |
+| Open result | ✅ `/document/:hash` detail + download | [x] Download-first or open network link; local docs → reader |
 | Download All | ❌ No handler | [ ] Queue all result links |
 | Scope / type filters | ❌ UI only | [ ] Apply to search query (extension filter minimum) |
 | Stats ribbon | ✅ Partial | [ ] Add total size from lobby |

@@ -5,6 +5,7 @@ pub mod operations;
 pub mod node_db;
 pub mod network_cache;
 pub mod local_shares;
+pub mod favorites;
 
 pub use connection::*;
 pub use models::*;

@@ -9,6 +9,7 @@ pub mod network_shell;
 pub mod onion_bridge;
 pub mod network_cache;
 pub mod tor_setup;
+pub mod favorites;
 
 pub use app::{initialize_app, get_app_ready_state, close_splash_screen, InitProgress};
 pub use security::{get_security_info, refresh_security_info, SecurityInfo};
@@ -29,6 +30,7 @@ pub use documents::{
   pdf_get_page_count,
   pdf_render_page_png,
   import_document,
+  delete_local_document,
   DocumentInfo,
   ScanResult,
   FolderInfo
@@ -85,3 +87,4 @@ pub use onion_bridge::{
     TrackerNetworkConfig,
 };
 pub use network_cache::{list_network_peers, search_network_cached};
+pub use favorites::{is_favorite, toggle_favorite, list_favorites, FavoriteToggleResult};

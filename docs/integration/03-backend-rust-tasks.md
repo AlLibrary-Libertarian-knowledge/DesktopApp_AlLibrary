@@ -52,8 +52,9 @@ Existing commands in `onion_bridge.rs` / `tracker_client.rs`:
 Already registered: `scan_documents_folder`, `get_document_info`, `open_document`, `import_document`, etc.
 
 - [ ] **P0** Ensure scan results upsert `documents` table (when table exists)
-- [ ] **P0** Implement missing favorites commands: `is_favorite`, `toggle_favorite`, `list_favorites`
-- [ ] **P1** `get_document` by id for **DocumentDetail** (replace frontend mock API)
+- [x] **P0** Implement missing favorites commands: `is_favorite`, `toggle_favorite`, `list_favorites`
+- [x] **P0** `delete_local_document` — permanent file delete under project root + local_shares cleanup
+- [x] **P1** DocumentDetail load via frontend `resolveDocumentById` (hash/path; not legacy `get_document` UUID pool)
 
 ### Network metrics (Home, Network Health)
 

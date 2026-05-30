@@ -3,9 +3,14 @@ use std::path::{Path, PathBuf};
 use std::fs;
 use tracing::info;
 use crate::core::document::type_detection::TypeDetection;
+use crate::core::document::file_operations::FileOperations;
 use std::io::Read;
 use lopdf::Document as LoDocument;
 use zip::ZipArchive;
+use tauri::AppHandle;
+use crate::commands::settings::load_app_settings;
+use crate::core::database::node_db::ensure_node_database;
+use crate::core::database::delete_local_share_by_path_pool;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DocumentInfo {
@@ -777,4 +782,91 @@ pub async fn export_annotated_pngs(
     .map_err(|e| format!("Join error: {}", e))??;
 
     Ok(page_file_paths)
+}
+
+fn is_protected_project_path(relative: &str) -> bool {
+    let norm = relative.replace('\\', "/").to_lowercase();
+    if norm.ends_with("allibrary.db") {
+        return true;
+    }
+    if norm.starts_with("search_index/") || norm == "search_index" {
+        return true;
+    }
+    if norm.starts_with("documents/allibrary.db") {
+        return true;
+    }
+    false
+}
+
+fn validate_deletable_path(project_root: &Path, file_path: &Path) -> Result<PathBuf, String> {
+    if !file_path.exists() {
+        return Err(format!("File does not exist: {}", file_path.display()));
+    }
+    if !file_path.is_file() {
+        return Err(format!("Path is not a file: {}", file_path.display()));
+    }
+
+    let project_canon = project_root
+        .canonicalize()
+        .map_err(|e| format!("Invalid project folder: {e}"))?;
+    let file_canon = file_path
+        .canonicalize()
+        .map_err(|e| format!("Invalid file path: {e}"))?;
+
+    if !file_canon.starts_with(&project_canon) {
+        return Err("File must be inside the project folder".into());
+    }
+
+    let relative = file_canon
+        .strip_prefix(&project_canon)
+        .map_err(|_| "Failed to resolve path relative to project")?
+        .to_string_lossy();
+
+    if is_protected_project_path(relative.as_ref()) {
+        return Err("This file is protected and cannot be deleted".into());
+    }
+
+    Ok(file_canon)
+}
+
+/// Permanently delete a local document file under the project folder.
+#[tauri::command]
+pub async fn delete_local_document(
+    app_handle: AppHandle,
+    file_path: String,
+) -> Result<(), String> {
+    let settings = load_app_settings(app_handle.clone()).await?;
+    let project_root = PathBuf::from(settings.project.project_folder_path.trim());
+    if project_root.as_os_str().is_empty() {
+        return Err("Project folder is not configured".into());
+    }
+
+    let target = PathBuf::from(file_path.trim());
+    let validated = validate_deletable_path(&project_root, &target)?;
+
+    if let Ok(pool) = ensure_node_database(&app_handle).await {
+        let path_str = validated.to_string_lossy().to_string();
+        let _ = delete_local_share_by_path_pool(&pool, &path_str).await;
+    }
+
+    FileOperations::delete_file(&validated)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    info!("Deleted local document: {}", validated.display());
+    Ok(())
+}
+
+#[cfg(test)]
+mod delete_path_tests {
+    use super::*;
+
+    #[test]
+    fn protected_paths_are_blocked() {
+        assert!(is_protected_project_path("documents/allibrary.db"));
+        assert!(is_protected_project_path("search_index/index_info.json"));
+        assert!(is_protected_project_path("Search_Index/foo"));
+        assert!(!is_protected_project_path("tor-design.pdf"));
+        assert!(!is_protected_project_path("documents/report.pdf"));
+    }
 }

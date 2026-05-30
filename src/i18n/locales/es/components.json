@@ -29,6 +29,16 @@
     "cancel": "Cancelar",
     "closeModal": "Cerrar modal"
   },
+  "confirmDeleteModal": {
+    "titleSingle": "¿Eliminar documento permanentemente?",
+    "titleBatch": "¿Eliminar {{count}} documentos?",
+    "messageSingle": "Esto eliminará permanentemente \"{{title}}\" del disco. Si está compartido, se eliminará de la red. Esta acción no se puede deshacer.",
+    "messageBatch": "Esto eliminará permanentemente {{count}} archivo(s) del disco. Las copias compartidas se eliminarán de la red. Esta acción no se puede deshacer.",
+    "confirmSingle": "Eliminar permanentemente",
+    "confirmBatch": "Eliminar {{count}}",
+    "deleting": "Eliminando…",
+    "andMore": "…y {{count}} más"
+  },
   "input": {
     "required": "Este campo es obligatorio",
     "invalid": "Entrada inválida",

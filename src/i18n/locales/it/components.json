@@ -29,6 +29,16 @@
     "cancel": "Annulla",
     "closeModal": "Chiudi modale"
   },
+  "confirmDeleteModal": {
+    "titleSingle": "Eliminare il documento definitivamente?",
+    "titleBatch": "Eliminare {{count}} documenti?",
+    "messageSingle": "Questo rimuoverà permanentemente \"{{title}}\" dal disco. Se condiviso, verrà rimosso dalla rete. Questa azione non può essere annullata.",
+    "messageBatch": "Questo rimuoverà permanentemente {{count}} file dal disco. Le copie condivise verranno rimosse dalla rete. Questa azione non può essere annullata.",
+    "confirmSingle": "Elimina definitivamente",
+    "confirmBatch": "Elimina {{count}}",
+    "deleting": "Eliminazione…",
+    "andMore": "…e altri {{count}}"
+  },
   "input": {
     "required": "Questo campo è obbligatorio",
     "invalid": "Input non valido",

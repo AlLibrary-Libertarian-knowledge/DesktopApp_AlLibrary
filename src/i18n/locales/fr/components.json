@@ -29,6 +29,16 @@
     "cancel": "Annuler",
     "closeModal": "Fermer modal"
   },
+  "confirmDeleteModal": {
+    "titleSingle": "Supprimer le document définitivement ?",
+    "titleBatch": "Supprimer {{count}} documents ?",
+    "messageSingle": "Cela supprimera définitivement « {{title}} » du disque. S'il est partagé, il sera retiré du réseau. Cette action est irréversible.",
+    "messageBatch": "Cela supprimera définitivement {{count}} fichier(s) du disque. Les copies partagées seront retirées du réseau. Cette action est irréversible.",
+    "confirmSingle": "Supprimer définitivement",
+    "confirmBatch": "Supprimer {{count}}",
+    "deleting": "Suppression…",
+    "andMore": "…et {{count}} de plus"
+  },
   "input": {
     "required": "Ce champ est obligatoire",
     "invalid": "Saisie invalide",

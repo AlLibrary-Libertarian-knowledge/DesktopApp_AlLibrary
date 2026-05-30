@@ -29,6 +29,16 @@
     "cancel": "Qichuy",
     "closeModal": "Wichqay modal"
   },
+  "confirmDeleteModal": {
+    "titleSingle": "¿Documentota wiñaypaq qulluy?",
+    "titleBatch": "¿{{count}} documentokunata qulluy?",
+    "messageSingle": "Kayqa \"{{title}}\" discomanta wiñaypaq qullunqa. Rakinakusqa kasqa, llikamanta hurqukunqa. Manam kutichiyta atikunmanchu.",
+    "messageBatch": "Kayqa {{count}} willay(kuna) discomanta wiñaypaq qullunqa. Rakinakusqa kopiakuna llikamanta hurqukunqa. Manam kutichiyta atikunmanchu.",
+    "confirmSingle": "Wiñaypaq qulluy",
+    "confirmBatch": "{{count}} qulluy",
+    "deleting": "Qulluchkan…",
+    "andMore": "…{{count}} aswan"
+  },
   "input": {
     "required": "Kay pata necesaria",
     "invalid": "Mana allin input",

@@ -160,7 +160,7 @@ CREATE TABLE activity_log (
 - [ ] **Query commands for UI** — `search_network_cached`, `list_network_peers` registered; full screen wiring in Task 4.
 - [ ] **Persist transfers** — Rust owns transfer rows; emit events to frontend; remove `localStorage` `allibrary_completed_downloads`.
 - [ ] **Mirror local shares** — On `onion_share_add_file` / `remove`, upsert/delete `local_shares`.
-- [ ] **Favorites commands** — Implement `list_favorites`, `toggle_favorite`, `is_favorite` against SQLite (frontend already calls them).
+- [x] **Favorites commands** — Implement `list_favorites`, `toggle_favorite`, `is_favorite` against SQLite (frontend already calls them).
 - [ ] **Activity log** — Record view/download/share for Recent page.
 
 ## Mapping UI metrics to data

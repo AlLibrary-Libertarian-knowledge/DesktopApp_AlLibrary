@@ -29,6 +29,16 @@
     "cancel": "Cancel",
     "closeModal": "Close modal"
   },
+  "confirmDeleteModal": {
+    "titleSingle": "Delete document permanently?",
+    "titleBatch": "Delete {{count}} documents?",
+    "messageSingle": "This will permanently remove \"{{title}}\" from disk. If it is shared, it will be removed from the network. This cannot be undone.",
+    "messageBatch": "This will permanently remove {{count}} file(s) from disk. Shared copies will be removed from the network. This cannot be undone.",
+    "confirmSingle": "Delete permanently",
+    "confirmBatch": "Delete {{count}}",
+    "deleting": "Deleting…",
+    "andMore": "…and {{count}} more"
+  },
   "input": {
     "required": "This field is required",
     "invalid": "Invalid input",

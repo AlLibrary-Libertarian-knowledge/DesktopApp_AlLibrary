@@ -70,6 +70,10 @@ import type {
 import styles from './DocumentManagement.module.css';
 import { useNavigate } from '@solidjs/router';
 import { useP2PTransfers } from '@/hooks/api/useP2PTransfers';
+import { useToast } from '@/hooks/ui/useToast';
+import { shareWithToast } from '@/utils/documentActions';
+import { transferFacade } from '@/services/network/transferFacade';
+import { ConfirmDeleteModal } from '@/components/composite/ConfirmDeleteModal';
 
 const DocumentManagement: Component = () => {
   // Initialize i18n translation hook
@@ -113,8 +117,16 @@ const DocumentManagement: Component = () => {
   const [showSmartSuggestions, setShowSmartSuggestions] = createSignal(false);
   const [autoTaggingEnabled, setAutoTaggingEnabled] = createSignal(true);
 
+  type DeleteConfirmState =
+    | { mode: 'single'; document: Document }
+    | { mode: 'batch'; documents: Document[] }
+    | null;
+  const [deleteConfirm, setDeleteConfirm] = createSignal<DeleteConfirmState>(null);
+  const [deleteBusy, setDeleteBusy] = createSignal(false);
+
   // P2P transfers
   const { enabled, busy, enable, seedFile, error, lastOp } = useP2PTransfers();
+  const toastUi = useToast();
 
   // Advanced Document Features - Task 0.3 Implementation
   const [showDocumentViewer, setShowDocumentViewer] = createSignal(false);
@@ -891,22 +903,105 @@ const DocumentManagement: Component = () => {
     setShowPreview(true);
   };
 
-  const handleDocumentAction = (action: string, document: Document) => {
+  const removeDocumentFromList = (documentId: string) => {
+    setScannedDocuments(prev => prev.filter(d => d.id !== documentId));
+  };
+
+  const removeSharedCopyIfAny = async (filePath: string) => {
+    try {
+      const shares = await transferFacade.listShares();
+      const match = shares.find(s => s.diskPath === filePath);
+      if (match) {
+        await transferFacade.removeShare(match.fileId);
+      }
+    } catch {
+      /* best effort */
+    }
+  };
+
+  const performDeleteDocuments = async (docs: Document[]) => {
+    let deleted = 0;
+    for (const doc of docs) {
+      try {
+        await removeSharedCopyIfAny(doc.filePath);
+        await documentService.deleteLocalDocument(doc.filePath);
+        removeDocumentFromList(doc.id);
+        deleted += 1;
+      } catch (e: unknown) {
+        toastUi.show({
+          type: 'error',
+          title: 'Delete failed',
+          message: `${doc.title}: ${e instanceof Error ? e.message : String(e)}`,
+        });
+      }
+    }
+    return deleted;
+  };
+
+  const closeDeleteConfirm = () => {
+    if (!deleteBusy()) setDeleteConfirm(null);
+  };
+
+  const confirmDelete = async () => {
+    const target = deleteConfirm();
+    if (!target) return;
+
+    const docs = target.mode === 'single' ? [target.document] : target.documents;
+    setDeleteBusy(true);
+    try {
+      const deleted = await performDeleteDocuments(docs);
+      if (target.mode === 'single' && deleted === 1) {
+        const doc = target.document;
+        if (selectedDocument()?.id === doc.id) {
+          setSelectedDocument(null);
+          setShowPreview(false);
+        }
+      }
+      if (target.mode === 'batch') {
+        clearSelection();
+      }
+      if (deleted > 0) {
+        toastUi.show({
+          type: 'success',
+          title: 'Deleted',
+          message:
+            deleted === 1
+              ? `"${docs[0]?.title}" was removed from disk.`
+              : `${deleted} document(s) removed from disk.`,
+        });
+      }
+      setDeleteConfirm(null);
+    } finally {
+      setDeleteBusy(false);
+    }
+  };
+
+  const deleteDocumentPermanently = async (document: Document) => {
+    setDeleteConfirm({ mode: 'single', document });
+  };
+
+  const handleDocumentAction = async (action: string, document: Document) => {
     switch (action) {
       case 'edit':
         setSelectedDocument(document);
         setShowMetadataEditor(true);
         break;
       case 'share':
-        alert(`Share functionality for "${document.title}" would open here.`);
+        try {
+          await shareWithToast(document, toastUi);
+        } catch (e: unknown) {
+          toastUi.show({
+            type: 'error',
+            title: 'Share failed',
+            message: e instanceof Error ? e.message : String(e),
+          });
+        }
         break;
       case 'download':
-        alert(`Download "${document.title}" would start here.`);
+        openDocumentViewer(document);
         break;
       case 'delete':
-        if (confirm(`Are you sure you want to delete "${document.title}"?`)) {
-          alert('Document deleted successfully.');
-        }
+        await deleteDocumentPermanently(document);
         break;
       case 'analyze':
         setSelectedDocument(document);
@@ -943,12 +1038,11 @@ const DocumentManagement: Component = () => {
     const selectedDocs = displayDocuments().filter(doc => selectedIds.includes(doc.id));
 
     switch (action) {
-      case 'delete':
-        if (confirm(`Are you sure you want to delete ${selectedIds.length} documents?`)) {
-          alert(`${selectedIds.length} documents deleted successfully.`);
-          clearSelection();
-        }
+      case 'delete': {
+        if (selectedDocs.length === 0) break;
+        setDeleteConfirm({ mode: 'batch', documents: selectedDocs });
         break;
+      }
       case 'tag': {
         const tag = prompt('Enter tag to add to selected documents:');
         if (tag) {
@@ -2591,6 +2685,29 @@ const DocumentManagement: Component = () => {
           </div>
         </Modal>
       </Show>
+
+      <ConfirmDeleteModal
+        isOpen={deleteConfirm() !== null}
+        onClose={closeDeleteConfirm}
+        onConfirm={confirmDelete}
+        busy={deleteBusy()}
+        itemLabel={(() => {
+          const target = deleteConfirm();
+          if (!target) return '';
+          if (target.mode === 'single') return target.document.title;
+          return `${target.documents.length} selected documents`;
+        })()}
+        count={(() => {
+          const target = deleteConfirm();
+          if (!target) return undefined;
+          return target.mode === 'batch' ? target.documents.length : 1;
+        })()}
+        itemNames={(() => {
+          const target = deleteConfirm();
+          if (target?.mode === 'batch') return target.documents.map(d => d.title);
+          return undefined;
+        })()}
+      />
     </div>
   );
 };

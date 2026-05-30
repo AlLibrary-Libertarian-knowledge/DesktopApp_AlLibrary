@@ -248,6 +248,18 @@ fn get_migrations() -> Vec<Migration> {
                 CREATE INDEX idx_local_shares_disk_path ON local_shares(disk_path);
             "#.to_string(),
         },
+        Migration {
+            version: "004_favorites".to_string(),
+            description: "Create favorites table for bookmarked documents".to_string(),
+            sql: r#"
+                CREATE TABLE favorites (
+                    document_id TEXT PRIMARY KEY,
+                    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+                );
+
+                CREATE INDEX idx_favorites_created_at ON favorites(created_at);
+            "#.to_string(),
+        },
     ]
 }
 
@@ -319,6 +331,8 @@ mod tests {
         assert!(applied.contains(&"001_initial_schema".to_string()));
         assert!(applied.contains(&"002_network_cache".to_string()));
         assert!(applied.contains(&"003_local_shares".to_string()));
+        assert!(applied.contains(&"004_favorites".to_string()));
         assert!(table_exists(&pool, "local_shares").await);
+        assert!(table_exists(&pool, "favorites").await);
     }
 }

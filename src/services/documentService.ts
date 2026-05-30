@@ -1,5 +1,64 @@
 import { invoke } from '@tauri-apps/api/core';
 import { settingsService } from '@/services/storage/settingsService';
+import { networkFacade } from '@/services/network/networkFacade';
+import { transferFacade } from '@/services/network/transferFacade';
+
+export interface DocumentDetailModel {
+  id: string;
+  title: string;
+  filePath: string;
+  format: string;
+  fileSize: number;
+  source: 'local' | 'network';
+  networkLink?: string;
+  contentHash?: string;
+  peerCount?: number;
+}
+
+interface CachedFileWire {
+  name: string;
+  size: number;
+  link: string;
+  content_hash: string;
+  peer_count: number;
+}
+
+function looksLikeFilesystemPath(value: string): boolean {
+  const v = value.trim();
+  return v.includes('/') || v.includes('\\') || /^[a-zA-Z]:/.test(v);
+}
+
+function docInfoToDetailModel(info: DocumentInfo): DocumentDetailModel {
+  return {
+    id: info.id,
+    title: info.metadata.title || info.filename,
+    filePath: info.file_path,
+    format: info.document_type.toLowerCase(),
+    fileSize: info.file_size,
+    source: 'local',
+    contentHash: info.id,
+  };
+}
+
+function networkFileToDetailModel(file: {
+  contentHash: string;
+  name: string;
+  size: number;
+  link: string;
+  peerCount: number;
+}): DocumentDetailModel {
+  return {
+    id: file.contentHash,
+    title: file.name,
+    filePath: file.link,
+    format: file.name.split('.').pop()?.toLowerCase() || 'unknown',
+    fileSize: file.size,
+    source: 'network',
+    networkLink: file.link,
+    contentHash: file.contentHash,
+    peerCount: file.peerCount,
+  };
+}
 
 export interface DocumentInfo {
   id: string;
@@ -304,6 +363,96 @@ class DocumentService {
     }
 
     console.log('No AlLibrary folder found in common locations');
+    return null;
+  }
+
+  buildReaderUrl(doc: { filePath: string; format: string; title: string }): string {
+    const qs = `path=${encodeURIComponent(doc.filePath)}&type=${encodeURIComponent(doc.format)}&title=${encodeURIComponent(doc.title)}`;
+    return `/reader?${qs}`;
+  }
+
+  openInReader(
+    navigate: (path: string) => void,
+    doc: { filePath: string; format: string; title: string }
+  ): void {
+    navigate(this.buildReaderUrl(doc));
+  }
+
+  async deleteLocalDocument(filePath: string): Promise<void> {
+    await invoke('delete_local_document', { filePath });
+  }
+
+  async shareLocalDocument(filePath: string): Promise<{
+    link: string;
+    contentHash: string;
+    name: string;
+  }> {
+    return transferFacade.addShare(filePath);
+  }
+
+  async resolveDocumentById(id: string): Promise<DocumentDetailModel | null> {
+    const rawId = id.trim();
+    if (!rawId) return null;
+
+    let decoded = rawId;
+    try {
+      decoded = decodeURIComponent(rawId);
+    } catch {
+      decoded = rawId;
+    }
+
+    if (looksLikeFilesystemPath(decoded)) {
+      try {
+        const info = await this.getDocumentInfo(decoded);
+        return docInfoToDetailModel(info);
+      } catch {
+        /* fall through */
+      }
+    }
+
+    try {
+      const scan = await this.scanDocumentsFolder();
+      const localHit = scan.documents.find(d => d.id === rawId || d.id === decoded);
+      if (localHit) {
+        return docInfoToDetailModel(localHit);
+      }
+    } catch {
+      /* fall through */
+    }
+
+    try {
+      const lobbyFiles = await networkFacade.searchFiles('');
+      const lobbyHit = lobbyFiles.find(
+        f => f.contentHash === rawId || f.link === rawId || f.link === decoded
+      );
+      if (lobbyHit) {
+        return networkFileToDetailModel(lobbyHit);
+      }
+    } catch {
+      /* fall through */
+    }
+
+    try {
+      const cached = await invoke<CachedFileWire[]>('search_network_cached', {
+        query: rawId,
+        limit: 20,
+      });
+      const cacheHit = cached.find(
+        f => f.content_hash === rawId || f.link === rawId || f.name.includes(rawId)
+      );
+      if (cacheHit) {
+        return networkFileToDetailModel({
+          contentHash: cacheHit.content_hash,
+          name: cacheHit.name,
+          size: cacheHit.size,
+          link: cacheHit.link,
+          peerCount: cacheHit.peer_count,
+        });
+      }
+    } catch {
+      /* fall through */
+    }
+
     return null;
   }
 }

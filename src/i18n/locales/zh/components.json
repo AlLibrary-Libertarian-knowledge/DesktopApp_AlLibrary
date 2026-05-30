@@ -29,6 +29,16 @@
     "cancel": "取消",
     "closeModal": "关闭模态框"
   },
+  "confirmDeleteModal": {
+    "titleSingle": "永久删除文档？",
+    "titleBatch": "删除 {{count}} 个文档？",
+    "messageSingle": "这将从磁盘永久删除“{{title}}”。若已共享，将从网络中移除。此操作无法撤销。",
+    "messageBatch": "这将从磁盘永久删除 {{count}} 个文件。共享副本将从网络中移除。此操作无法撤销。",
+    "confirmSingle": "永久删除",
+    "confirmBatch": "删除 {{count}} 个",
+    "deleting": "正在删除…",
+    "andMore": "…还有 {{count}} 个"
+  },
   "input": {
     "required": "此字段为必填项",
     "invalid": "输入无效",
