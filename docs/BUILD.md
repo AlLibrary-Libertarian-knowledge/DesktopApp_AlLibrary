@@ -85,7 +85,7 @@ Legado local (cópia no monorepo): `DesktopApp_AlLibrary/deploy/` — preferir *
 
 ## Versão
 
-Versão do app: campo `version` em `package.json` (ex.: **1.0.12**). Tracker standalone: `allibrary-tracker` **0.7.4** em `TrackerRust_AlLibrary/Cargo.toml`.
+Versão do app: campo `version` em `package.json` (ex.: **1.0.13**). Tracker standalone: `allibrary-tracker` **0.7.4** em `TrackerRust_AlLibrary/Cargo.toml`.
 
 ---
 

@@ -1,6 +1,6 @@
 {
   "name": "desktopapp-allibrary",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "AlLibrary - Decentralized Knowledge Sharing Platform",
   "packageManager": "pnpm@9.15.9",
   "type": "module",
@@ -96,7 +96,9 @@
       "lodash": ">=4.18.0",
       "@xmldom/xmldom": ">=0.8.13",
       "postcss": ">=8.5.10",
-      "vite": ">=6.4.2"
+      "vite": ">=6.4.2",
+      "ws": ">=8.20.1",
+      "brace-expansion": ">=5.0.6"
     }
   }
 }
