@@ -287,14 +287,13 @@ export const PeerNetworkPage: Component = () => {
             <Show
               when={networkPeers.peers().length > 0}
               fallback={
-                <Card
-                  class={styles['peer-card']}
-                  style={{ padding: '2rem', 'text-align': 'center' }}
-                >
-                  <p>No peers in cache yet.</p>
-                  <p style={{ opacity: 0.75, 'margin-top': '0.5rem' }}>
-                    Start onion share and sync the tracker from Configurations → Sync now.
-                  </p>
+                <Card class={styles['peer-card']}>
+                  <div style={{ padding: '2rem', 'text-align': 'center' }}>
+                    <p>No peers in cache yet.</p>
+                    <p style={{ opacity: 0.75, 'margin-top': '0.5rem' }}>
+                      Start onion share and sync the tracker from Configurations → Sync now.
+                    </p>
+                  </div>
                 </Card>
               }
             >

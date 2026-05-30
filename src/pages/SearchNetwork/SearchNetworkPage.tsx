@@ -67,7 +67,7 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
 
   // Hooks
   const { results, isSearching, search } = useNetworkSearch();
-  const lobby = useNetworkLobby({ pollIntervalMs: 30000 });
+  const lobby = useNetworkLobby();
   const net = useNetworkStore();
   let searchInputEl: HTMLInputElement | undefined;
   const onEnableTorClick = async () => {

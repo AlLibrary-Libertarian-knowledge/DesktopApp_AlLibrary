@@ -48,8 +48,9 @@ describe('useNetworkPeers', () => {
         globalThis.setTimeout(() => {
           expect(peerState.peerCount()).toBe(1);
           const row = peerState.peers()[0];
-          expect(row.nodeId).toBe('node-abc123456789');
-          expect(row.fileCount).toBe(1);
+          expect(row).toBeDefined();
+          expect(row!.nodeId).toBe('node-abc123456789');
+          expect(row!.fileCount).toBe(1);
           dispose();
           resolve();
         }, 20);
