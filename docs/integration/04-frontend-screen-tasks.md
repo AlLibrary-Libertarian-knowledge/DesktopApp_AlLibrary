@@ -43,7 +43,7 @@ Each section lists **UI intent** (from existing design), **current state**, and 
 |-------|---------|------|
 | Peers / health / Mbps | ⚠️ Peers OK; Mbps 0 | [ ] Mbps from `get_network_metrics` when backend ready |
 | NetworkGraph | ❌ Mock data | [ ] Nodes from cached peers or simplified peer count viz |
-| Activity lists | ❌ Hardcoded | [ ] `activity_log` + active transfers |
+| Activity lists | ⚠️ downloadManager + activity_log | [x] `activity_log` + active transfers |
 | DownloadManager tab | ⚠️ Empty transfers | [ ] Bind to shared `downloadManager` + outbound shares |
 | Quick action Share | ⚠️ Navigates only | [ ] Pick file → `onionShareAddFile` or open Documents upload |
 
@@ -85,15 +85,15 @@ Each section lists **UI intent** (from existing design), **current state**, and 
 
 | Feature | Current | Task |
 |---------|---------|------|
-| List | ❌ Mock data in page | [ ] `favoriteService.listFavorites` + resolve document metadata |
-| Toggle from other pages | ✅ DocumentDetail bookmark | [x] Wire DocumentCard heart icon (Detail page; card TBD) |
+| List | ✅ `favoriteService.listFavorites` + resolve | [x] `favoriteService.listFavorites` + resolve document metadata |
+| Toggle from other pages | ✅ DocumentDetail + Documents grid | [x] Wire DocumentCard heart icon (Detail page; card TBD) |
 
 ### Recent `/recent`
 
 | Feature | Current | Task |
 |---------|---------|------|
-| Timeline | ❌ Mock | [ ] `activity_log` query by date |
-| Filters | UI only | [ ] Pass filters to query |
+| Timeline | ✅ `activityService` + SQLite | [x] `activity_log` query by date |
+| Filters | ✅ Server + client filters | [x] Pass filters to query |
 
 ---
 
@@ -203,9 +203,9 @@ Each section lists **UI intent** (from existing design), **current state**, and 
 - [x] `PeerNetworkPage`: `mockConnectedPeers`, fake `networkStats`
 - [ ] `Browse.tsx`: mock categories `createEffect`
 - [ ] `Trending.tsx`: `generateMockData`
-- [ ] `Favorites.tsx`: inline mock array
-- [ ] `Recent.tsx`: `mockDocuments`
-- [ ] `Home.tsx`: `recentDownloads`, `networkActivity` arrays
+- [x] `Favorites.tsx`: inline mock array
+- [x] `Recent.tsx`: `mockDocuments`
+- [x] `Home.tsx`: `recentDownloads`, `networkActivity` arrays
 - [ ] `useDocuments.ts`: hardcoded two documents
 - [ ] `documentApi.ts`: mock invoke — delete or make dev-only
 - [x] `useNetworkSearch.downloadFromPeer`: timeout mock

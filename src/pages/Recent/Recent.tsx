@@ -1,237 +1,72 @@
 import { type Component, createSignal, createEffect, For, Show } from 'solid-js';
+import { useNavigate } from '@solidjs/router';
 import { Card } from '../../components/foundation/Card';
 import { Button } from '../../components/foundation/Button';
 import { Input } from '../../components/foundation/Input';
 import {
-  Clock,
   Eye,
   Download,
-  FileText,
   Search,
   Calendar,
   Filter,
   Upload,
   Share2,
   Heart,
-  ShieldCheck,
-  Fingerprint,
   History,
 } from 'lucide-solid';
-import {
-  type Document,
-  DocumentFormat,
-  DocumentContentType,
-  DocumentStatus,
-} from '../../types/Document';
-import { CulturalSensitivityLevel } from '../../types/Cultural';
 import styles from './Recent.module.css';
 import { CustomDropdown, type DropdownOption } from './CustomDropdown';
-
-interface RecentActivity {
-  id: string;
-  type: 'view' | 'download' | 'upload' | 'share' | 'favorite';
-  document: Document;
-  timestamp: Date;
-  duration?: number; // in seconds for view activities
-  deviceName?: string;
-}
-
-const mockDocuments: Document[] = [
-  {
-    id: 'doc1',
-    title: 'Traditional Weaving Techniques',
-    description: 'Ancient textile creation methods from indigenous communities.',
-    format: DocumentFormat.PDF,
-    contentType: DocumentContentType.TRADITIONAL_KNOWLEDGE,
-    status: DocumentStatus.ACTIVE,
-    filePath: '/documents/weaving.pdf',
-    originalFilename: 'weaving.pdf',
-    fileSize: 3200000,
-    fileHash: 'hash1',
-    mimeType: 'application/pdf',
-    createdAt: new Date('2024-01-15'),
-    updatedAt: new Date(),
-    createdBy: 'user1',
-    version: 1,
-    culturalMetadata: {
-      sensitivityLevel: CulturalSensitivityLevel.EDUCATIONAL,
-      culturalOrigin: 'Andean Communities',
-    },
-    tags: ['weaving', 'textile', 'traditional-craft'],
-    categories: ['Crafts'],
-    language: 'en',
-    authors: [{ name: 'Community Elders', role: 'Custodian' }],
-    accessHistory: [],
-    relationships: [],
-    securityValidation: {
-      validatedAt: new Date(),
-      passed: true,
-      issues: [],
-      malwareScanResult: {
-        clean: true,
-        threats: [],
-        scanEngine: 'Internal',
-        scanDate: new Date(),
-      },
-      integrityCheck: {
-        valid: true,
-        expectedHash: 'hash1',
-        actualHash: 'hash1',
-        algorithm: 'SHA-256',
-      },
-      legalCompliance: {
-        compliant: true,
-        issues: [],
-        jurisdiction: 'Global',
-      },
-    },
-    contentVerification: {
-      signature: 'sig1',
-      algorithm: 'ECDSA',
-      verifiedAt: new Date(),
-      chainOfCustody: [],
-      authentic: true,
-      verificationProvider: 'CommunitySign',
-      publicKey: 'key1',
-    },
-    sourceAttribution: {
-      originalSource: 'Andean Community Archive',
-      sourceType: 'community',
-      credibilityIndicators: ['Community Verified'],
-      sourceVerified: true,
-      attributionRequirements: ['Credit community'],
-    },
-  },
-  {
-    id: 'doc2',
-    title: 'Sacred Plant Ceremonies',
-    description: 'Spiritual practices and traditional plant use.',
-    format: DocumentFormat.PDF,
-    contentType: DocumentContentType.CEREMONIAL,
-    status: DocumentStatus.ACTIVE,
-    filePath: '/documents/plant-ceremonies.pdf',
-    originalFilename: 'plant-ceremonies.pdf',
-    fileSize: 2100000,
-    fileHash: 'hash3',
-    mimeType: 'application/pdf',
-    createdAt: new Date('2024-01-18'),
-    updatedAt: new Date(),
-    createdBy: 'user3',
-    version: 1,
-    culturalMetadata: {
-      sensitivityLevel: CulturalSensitivityLevel.COMMUNITY,
-      culturalOrigin: 'Indigenous Communities',
-    },
-    tags: ['ceremony', 'plants', 'spiritual'],
-    categories: ['Spirituality'],
-    language: 'es',
-    authors: [{ name: 'Tribal Council', role: 'Guardian' }],
-    accessHistory: [],
-    relationships: [],
-    securityValidation: {
-      validatedAt: new Date(),
-      passed: true,
-      issues: [],
-      malwareScanResult: {
-        clean: true,
-        threats: [],
-        scanEngine: 'Internal',
-        scanDate: new Date(),
-      },
-      integrityCheck: {
-        valid: true,
-        expectedHash: 'hash3',
-        actualHash: 'hash3',
-        algorithm: 'SHA-256',
-      },
-      legalCompliance: {
-        compliant: true,
-        issues: [],
-        jurisdiction: 'Global',
-      },
-    },
-    contentVerification: {
-      signature: 'sig3',
-      algorithm: 'ECDSA',
-      verifiedAt: new Date(),
-      chainOfCustody: [],
-      authentic: true,
-      verificationProvider: 'GuardianSign',
-      publicKey: 'key3',
-    },
-    sourceAttribution: {
-      originalSource: 'Sacred Knowledge Keepers',
-      sourceType: 'traditional',
-      credibilityIndicators: ['Guardian Endorsed'],
-      sourceVerified: true,
-      attributionRequirements: ['Respectful use only'],
-    },
-  },
-];
+import {
+  activityService,
+  type ActivityDocument,
+  type ActivityKind,
+  type ActivityTimeframe,
+} from '@/services/activityService';
+import { documentService } from '@/services/documentService';
+import { useTranslation } from '@/i18n/hooks';
+import { useToast } from '@/hooks/ui/useToast';
 
 const RecentPage: Component = () => {
-  const [activities, setActivities] = createSignal<RecentActivity[]>([]);
+  const navigate = useNavigate();
+  const toast = useToast();
+  const { t } = useTranslation('pages');
+
+  const [activities, setActivities] = createSignal<ActivityDocument[]>([]);
   const [searchQuery, setSearchQuery] = createSignal('');
-  const [selectedType, setSelectedType] = createSignal<
-    'all' | 'view' | 'download' | 'upload' | 'share' | 'favorite'
-  >('all');
-  const [selectedTimeframe, setSelectedTimeframe] = createSignal<
-    'today' | 'week' | 'month' | 'all'
-  >('all');
+  const [selectedType, setSelectedType] = createSignal<ActivityKind | 'all'>('all');
+  const [selectedTimeframe, setSelectedTimeframe] = createSignal<ActivityTimeframe>('all');
   const [loading, setLoading] = createSignal(true);
+  const [removingId, setRemovingId] = createSignal<number | null>(null);
+
+  const loadActivities = async () => {
+    setLoading(true);
+    try {
+      const since = activityService.sinceFromTimeframe(selectedTimeframe());
+      const kind = selectedType() === 'all' ? undefined : selectedType();
+      const items = await activityService.loadActivityDocuments({
+        kind,
+        since,
+        limit: 500,
+      });
+      setActivities(items);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   createEffect(() => {
-    setTimeout(() => {
-      setActivities([
-        {
-          id: 'act1',
-          type: 'view',
-          timestamp: new Date(Date.now() - 2 * 36e5),
-          duration: 1200,
-          deviceName: 'Desktop',
-          document: mockDocuments[0]!,
-        },
-        {
-          id: 'act3',
-          type: 'favorite',
-          timestamp: new Date(Date.now() - 24 * 36e5),
-          deviceName: 'Desktop',
-          document: mockDocuments[1]!,
-        },
-      ]);
-      setLoading(false);
-    }, 1000);
+    selectedType();
+    selectedTimeframe();
+    void loadActivities();
   });
 
   const filteredActivities = () => {
-    return activities().filter(activity => {
-      const doc = activity.document;
-      const matchesSearch =
-        doc.title.toLowerCase().includes(searchQuery().toLowerCase()) ||
-        (doc.description ?? '').toLowerCase().includes(searchQuery().toLowerCase()) ||
-        doc.tags.some(tag => tag.toLowerCase().includes(searchQuery().toLowerCase()));
-
-      const matchesType = selectedType() === 'all' || activity.type === selectedType();
-
-      const now = new Date();
-      const activityDate = activity.timestamp;
-      let matchesTimeframe = true;
-
-      if (selectedTimeframe() === 'today') {
-        matchesTimeframe = activityDate.toDateString() === now.toDateString();
-      } else if (selectedTimeframe() === 'week') {
-        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        matchesTimeframe = activityDate >= weekAgo;
-      } else if (selectedTimeframe() === 'month') {
-        const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-        matchesTimeframe = activityDate >= monthAgo;
-      }
-
-      return matchesSearch && matchesType && matchesTimeframe;
-    });
+    const query = searchQuery().trim().toLowerCase();
+    if (!query) return activities();
+    return activities().filter(item => item.title.toLowerCase().includes(query));
   };
 
-  const getActivityIcon = (type: RecentActivity['type']) => {
+  const getActivityIcon = (type: ActivityKind) => {
     switch (type) {
       case 'view':
         return Eye;
@@ -248,23 +83,6 @@ const RecentPage: Component = () => {
     }
   };
 
-  const getSensitivityColor = (level: CulturalSensitivityLevel) => {
-    switch (level) {
-      case CulturalSensitivityLevel.PUBLIC:
-        return 'var(--color-success)';
-      case CulturalSensitivityLevel.EDUCATIONAL:
-        return 'var(--color-info)';
-      case CulturalSensitivityLevel.COMMUNITY:
-        return 'var(--color-warning)';
-      case CulturalSensitivityLevel.GUARDIAN:
-        return 'var(--color-danger)';
-      case CulturalSensitivityLevel.SACRED:
-        return 'var(--color-sacred)';
-      default:
-        return 'var(--color-info)';
-    }
-  };
-
   const formatTimeAgo = (date: Date): string => {
     const now = new Date();
     const diff = now.getTime() - date.getTime();
@@ -277,12 +95,6 @@ const RecentPage: Component = () => {
     return `${days}d ago`;
   };
 
-  const formatDuration = (seconds: number): string => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
-
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -292,20 +104,68 @@ const RecentPage: Component = () => {
   };
 
   const activityTypeOptions: DropdownOption[] = [
-    { value: 'all', label: 'All Activities', icon: <Filter size={18} /> },
-    { value: 'view', label: 'Views', icon: <Eye size={18} color="#3498db" /> },
-    { value: 'download', label: 'Downloads', icon: <Download size={18} color="#27ae60" /> },
-    { value: 'upload', label: 'Uploads', icon: <Upload size={18} color="#f39c12" /> },
-    { value: 'share', label: 'Shares', icon: <Share2 size={18} color="#9b59b6" /> },
-    { value: 'favorite', label: 'Favorites', icon: <Heart size={18} color="#e74c3c" /> },
+    { value: 'all', label: t('recent.filters.allTypes'), icon: <Filter size={18} /> },
+    { value: 'view', label: t('recent.filters.views'), icon: <Eye size={18} color="#3498db" /> },
+    {
+      value: 'download',
+      label: t('recent.filters.downloads'),
+      icon: <Download size={18} color="#27ae60" />,
+    },
+    {
+      value: 'upload',
+      label: t('recent.filters.uploads'),
+      icon: <Upload size={18} color="#f39c12" />,
+    },
+    {
+      value: 'share',
+      label: t('recent.filters.shares'),
+      icon: <Share2 size={18} color="#9b59b6" />,
+    },
+    {
+      value: 'favorite',
+      label: t('recent.filters.favorites'),
+      icon: <Heart size={18} color="#e74c3c" />,
+    },
   ];
 
   const timeFrameOptions: DropdownOption[] = [
-    { value: 'all', label: 'All Time', icon: <Calendar size={18} /> },
-    { value: 'today', label: 'Today', icon: <Calendar size={18} /> },
-    { value: 'week', label: 'This Week', icon: <Calendar size={18} /> },
-    { value: 'month', label: 'This Month', icon: <Calendar size={18} /> },
+    { value: 'all', label: t('recent.timeframes.all'), icon: <Calendar size={18} /> },
+    { value: 'today', label: t('recent.timeframes.today'), icon: <Calendar size={18} /> },
+    { value: 'week', label: t('recent.timeframes.week'), icon: <Calendar size={18} /> },
+    { value: 'month', label: t('recent.timeframes.month'), icon: <Calendar size={18} /> },
   ];
+
+  const openDocument = (item: ActivityDocument) => {
+    const doc = item.resolved;
+    const id = item.entry.documentId;
+    if (!id) return;
+    if (doc?.source === 'local') {
+      documentService.openInReader(navigate, doc);
+      return;
+    }
+    navigate(`/document/${encodeURIComponent(id)}`);
+  };
+
+  const viewDetails = (item: ActivityDocument) => {
+    const id = item.entry.documentId;
+    if (!id) return;
+    navigate(`/document/${encodeURIComponent(id)}`);
+  };
+
+  const removeFromHistory = async (item: ActivityDocument) => {
+    setRemovingId(item.entry.id);
+    try {
+      await activityService.deleteActivity(item.entry.id);
+      setActivities(prev => prev.filter(a => a.entry.id !== item.entry.id));
+      toast.success(t('recent.toasts.removed'));
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : t('recent.toasts.removeFailed'));
+    } finally {
+      setRemovingId(null);
+    }
+  };
+
+  const kindLabel = (kind: ActivityKind) => t(`recent.kinds.${kind}`);
 
   return (
     <div class={styles.recentPage}>
@@ -313,9 +173,9 @@ const RecentPage: Component = () => {
         <div class={styles.titleSection}>
           <h1>
             <History class={styles.headerIcon || ''} />
-            Recent Activity
+            {t('recent.title')}
           </h1>
-          <p>Your recent document interactions and activities</p>
+          <p>{t('recent.subtitle')}</p>
         </div>
 
         <div class={styles.controls}>
@@ -323,7 +183,7 @@ const RecentPage: Component = () => {
             <Search class={styles.searchIcon || ''} />
             <Input
               type="search"
-              placeholder="Search recent activities..."
+              placeholder={t('recent.searchPlaceholder')}
               value={searchQuery()}
               onInput={setSearchQuery}
               class={styles.searchInput || ''}
@@ -334,14 +194,14 @@ const RecentPage: Component = () => {
             <CustomDropdown
               options={activityTypeOptions}
               value={selectedType()}
-              onChange={setSelectedType as (val: string) => void}
-              ariaLabel="Filter by activity type"
+              onChange={v => setSelectedType(v as ActivityKind | 'all')}
+              ariaLabel={t('recent.filters.typeAria')}
             />
             <CustomDropdown
               options={timeFrameOptions}
               value={selectedTimeframe()}
-              onChange={setSelectedTimeframe as (val: string) => void}
-              ariaLabel="Filter by timeframe"
+              onChange={v => setSelectedTimeframe(v as ActivityTimeframe)}
+              ariaLabel={t('recent.filters.timeAria')}
             />
           </div>
         </div>
@@ -351,29 +211,29 @@ const RecentPage: Component = () => {
         <div class={styles.statCard}>
           <Eye class={styles.statIcon || ''} />
           <div>
-            <h3>{activities().filter(a => a.type === 'view').length}</h3>
-            <p>Documents Viewed</p>
+            <h3>{activities().filter(a => a.entry.kind === 'view').length}</h3>
+            <p>{t('recent.stats.views')}</p>
           </div>
         </div>
         <div class={styles.statCard}>
           <Download class={styles.statIcon || ''} />
           <div>
-            <h3>{activities().filter(a => a.type === 'download').length}</h3>
-            <p>Downloads</p>
+            <h3>{activities().filter(a => a.entry.kind === 'download').length}</h3>
+            <p>{t('recent.stats.downloads')}</p>
           </div>
         </div>
         <div class={styles.statCard}>
           <Upload class={styles.statIcon || ''} />
           <div>
-            <h3>{activities().filter(a => a.type === 'upload').length}</h3>
-            <p>Uploads</p>
+            <h3>{activities().filter(a => a.entry.kind === 'upload').length}</h3>
+            <p>{t('recent.stats.uploads')}</p>
           </div>
         </div>
         <div class={styles.statCard}>
           <Filter class={styles.statIcon || ''} />
           <div>
             <h3>{filteredActivities().length}</h3>
-            <p>Filtered Results</p>
+            <p>{t('recent.stats.filtered')}</p>
           </div>
         </div>
       </div>
@@ -383,7 +243,7 @@ const RecentPage: Component = () => {
         fallback={
           <div class={styles.loading}>
             <div class={styles.spinner} />
-            <p>Loading recent activities...</p>
+            <p>{t('recent.loading')}</p>
           </div>
         }
       >
@@ -392,14 +252,14 @@ const RecentPage: Component = () => {
           fallback={
             <div class={styles.emptyState}>
               <History class={styles.emptyIcon || ''} />
-              <h3>No recent activities found</h3>
+              <h3>{t('recent.emptyTitle')}</h3>
               <p>
                 {searchQuery() || selectedType() !== 'all' || selectedTimeframe() !== 'all'
-                  ? 'Try adjusting your filters to see more activities.'
-                  : 'Start exploring documents to see your activity history here!'}
+                  ? t('recent.emptyFiltered')
+                  : t('recent.emptyDefault')}
               </p>
-              <Button variant="primary" onClick={() => (window.location.href = '/documents')}>
-                Explore Documents
+              <Button variant="primary" onClick={() => navigate('/documents')}>
+                {t('recent.exploreDocuments')}
               </Button>
             </div>
           }
@@ -407,7 +267,8 @@ const RecentPage: Component = () => {
           <div class={styles.activitiesList}>
             <For each={filteredActivities()}>
               {activity => {
-                const IconComponent = getActivityIcon(activity.type);
+                const IconComponent = getActivityIcon(activity.entry.kind);
+                const timestamp = new Date(activity.entry.createdAt);
                 return (
                   <Card class={styles.activityCard || ''}>
                     <div class={styles.activityHeader}>
@@ -416,72 +277,49 @@ const RecentPage: Component = () => {
                           <IconComponent size={20} />
                         </div>
                         <div class={styles.activityInfo}>
-                          <span class={styles.activityTitle}>
-                            {activity.type.charAt(0).toUpperCase() + activity.type.slice(1)}
-                          </span>
-                          <span class={styles.activityTime}>
-                            {formatTimeAgo(activity.timestamp)}
-                          </span>
+                          <span class={styles.activityTitle}>{kindLabel(activity.entry.kind)}</span>
+                          <span class={styles.activityTime}>{formatTimeAgo(timestamp)}</span>
                         </div>
                       </div>
-                      <div
-                        class={styles.sensitivityBadge}
-                        style={{
-                          'background-color': getSensitivityColor(
-                            activity.document.culturalMetadata.sensitivityLevel
-                          ),
-                        }}
-                      >
-                        {
-                          CulturalSensitivityLevel[
-                            activity.document.culturalMetadata.sensitivityLevel
-                          ]
-                        }
-                      </div>
+                      <Show when={activity.resolved}>
+                        <div class={styles.sensitivityBadge}>
+                          {activity.resolved!.source === 'local'
+                            ? t('recent.sourceLocal')
+                            : t('recent.sourceNetwork')}
+                        </div>
+                      </Show>
                     </div>
 
                     <div class={styles.documentInfo}>
-                      <h3 class={styles.documentTitle}>{activity.document.title}</h3>
-                      <p class={styles.documentDescription}>
-                        {activity.document.description ?? ''}
-                      </p>
-
-                      <div class={styles.documentMeta}>
-                        <span class={styles.culturalOrigin}>
-                          📍 {activity.document.culturalMetadata.culturalOrigin}
-                        </span>
-                        <span class={styles.fileSize}>
-                          {formatFileSize(activity.document.fileSize)}
-                        </span>
-                        {activity.duration && (
-                          <span class={styles.duration}>⏱️ {formatDuration(activity.duration)}</span>
-                        )}
-                        {activity.deviceName && (
-                          <span class={styles.device}>💻 {activity.deviceName}</span>
-                        )}
-                      </div>
-
-                      <div class={styles.tags}>
-                        <For each={(activity.document.tags ?? []).slice(0, 3)}>
-                          {tag => <span class={styles.tag}>#{tag}</span>}
-                        </For>
-                        {(activity.document.tags ?? []).length > 3 && (
-                          <span class={styles.tagMore}>
-                            +{(activity.document.tags ?? []).length - 3}
+                      <h3 class={styles.documentTitle}>{activity.title}</h3>
+                      <Show when={activity.resolved}>
+                        <div class={styles.documentMeta}>
+                          <span class={styles.fileSize}>
+                            {formatFileSize(activity.resolved!.fileSize)}
                           </span>
-                        )}
-                      </div>
+                          <span class={styles.fileSize}>
+                            {activity.resolved!.format.toUpperCase()}
+                          </span>
+                        </div>
+                      </Show>
                     </div>
 
                     <div class={styles.activityActions}>
-                      <Button variant="primary" size="sm">
-                        Open Document
-                      </Button>
-                      <Button variant="secondary" size="sm">
-                        View Details
-                      </Button>
-                      <Button variant="ghost" size="sm">
-                        Remove from History
+                      <Show when={activity.resolved && activity.entry.documentId}>
+                        <Button variant="primary" size="sm" onClick={() => openDocument(activity)}>
+                          {t('recent.actions.open')}
+                        </Button>
+                        <Button variant="secondary" size="sm" onClick={() => viewDetails(activity)}>
+                          {t('recent.actions.viewDetails')}
+                        </Button>
+                      </Show>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={removingId() === activity.entry.id}
+                        onClick={() => void removeFromHistory(activity)}
+                      >
+                        {t('recent.actions.remove')}
                       </Button>
                     </div>
                   </Card>

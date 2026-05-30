@@ -233,6 +233,64 @@
       "preview": "预览"
     }
   },
+  "favorites": {
+    "title": "我的收藏",
+    "subtitle": "您已书签的文档",
+    "searchPlaceholder": "搜索收藏...",
+    "loading": "正在加载收藏...",
+    "emptyTitle": "未找到收藏",
+    "emptyFiltered": "尝试调整筛选条件以找到更多收藏。",
+    "emptyDefault": "开始探索文档并添加您的第一个收藏！",
+    "exploreDocuments": "探索文档",
+    "statsTotal": "总计",
+    "statsFiltered": "已筛选",
+    "unavailableTitle": "文档不可用",
+    "unavailableDescription": "无法解析此收藏。请移除以清理列表。",
+    "sourceLocal": "本地",
+    "sourceNetwork": "网络",
+    "actions": {
+      "open": "打开文档",
+      "viewDetails": "查看详情",
+      "remove": "移除"
+    },
+    "toasts": {
+      "removed": "已从收藏中移除",
+      "removeFailed": "移除收藏失败"
+    }
+  },
+  "recent": {
+    "title": "最近活动",
+    "subtitle": "您最近的文档交互和活动",
+    "searchPlaceholder": "搜索最近活动...",
+    "loading": "正在加载活动...",
+    "emptyTitle": "未找到最近活动",
+    "emptyFiltered": "尝试调整筛选条件。",
+    "emptyDefault": "开始探索文档以查看活动历史！",
+    "exploreDocuments": "探索文档",
+    "sourceLocal": "本地",
+    "sourceNetwork": "网络",
+    "stats": { "views": "已查看", "downloads": "下载", "uploads": "上传", "filtered": "筛选结果" },
+    "filters": {
+      "allTypes": "全部活动",
+      "views": "查看",
+      "downloads": "下载",
+      "uploads": "上传",
+      "shares": "分享",
+      "favorites": "收藏",
+      "typeAria": "按类型筛选",
+      "timeAria": "按时间筛选"
+    },
+    "timeframes": { "all": "全部", "today": "今天", "week": "本周", "month": "本月" },
+    "kinds": {
+      "view": "查看",
+      "download": "下载",
+      "upload": "上传",
+      "share": "分享",
+      "favorite": "收藏"
+    },
+    "actions": { "open": "打开文档", "viewDetails": "查看详情", "remove": "从历史中移除" },
+    "toasts": { "removed": "已从历史中移除", "removeFailed": "移除失败" }
+  },
   "collections": {
     "title": "收藏",
     "subtitle": "有组织的文档收藏",

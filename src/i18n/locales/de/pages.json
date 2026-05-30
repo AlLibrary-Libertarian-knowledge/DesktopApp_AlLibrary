@@ -238,6 +238,78 @@
     "sensitivityLevel": "Sensitivitätsstufe",
     "searchPlaceholder": "In Ihren Dokumenten suchen..."
   },
+  "favorites": {
+    "title": "Meine Favoriten",
+    "subtitle": "Dokumente, die Sie markiert haben",
+    "searchPlaceholder": "Favoriten durchsuchen...",
+    "loading": "Favoriten werden geladen...",
+    "emptyTitle": "Keine Favoriten gefunden",
+    "emptyFiltered": "Passen Sie die Filter an, um mehr Favoriten zu finden.",
+    "emptyDefault": "Entdecken Sie Dokumente und fügen Sie Ihre ersten Favoriten hinzu!",
+    "exploreDocuments": "Dokumente erkunden",
+    "statsTotal": "Gesamt",
+    "statsFiltered": "Gefiltert",
+    "unavailableTitle": "Dokument nicht verfügbar",
+    "unavailableDescription": "Dieser Favorit konnte nicht aufgelöst werden. Entfernen Sie ihn, um die Liste zu bereinigen.",
+    "sourceLocal": "Lokal",
+    "sourceNetwork": "Netzwerk",
+    "actions": {
+      "open": "Dokument öffnen",
+      "viewDetails": "Details anzeigen",
+      "remove": "Entfernen"
+    },
+    "toasts": {
+      "removed": "Aus Favoriten entfernt",
+      "removeFailed": "Favorit konnte nicht entfernt werden"
+    }
+  },
+  "recent": {
+    "title": "Letzte Aktivität",
+    "subtitle": "Ihre recenten Dokumentinteraktionen",
+    "searchPlaceholder": "Aktivitäten suchen...",
+    "loading": "Aktivitäten werden geladen...",
+    "emptyTitle": "Keine recenten Aktivitäten",
+    "emptyFiltered": "Passen Sie die Filter an.",
+    "emptyDefault": "Entdecken Sie Dokumente, um Ihren Verlauf zu sehen!",
+    "exploreDocuments": "Dokumente erkunden",
+    "sourceLocal": "Lokal",
+    "sourceNetwork": "Netzwerk",
+    "stats": {
+      "views": "Angesehen",
+      "downloads": "Downloads",
+      "uploads": "Uploads",
+      "filtered": "Gefiltert"
+    },
+    "filters": {
+      "allTypes": "Alle Aktivitäten",
+      "views": "Ansichten",
+      "downloads": "Downloads",
+      "uploads": "Uploads",
+      "shares": "Freigaben",
+      "favorites": "Favoriten",
+      "typeAria": "Nach Typ filtern",
+      "timeAria": "Nach Zeitraum filtern"
+    },
+    "timeframes": {
+      "all": "Gesamt",
+      "today": "Heute",
+      "week": "Diese Woche",
+      "month": "Dieser Monat"
+    },
+    "kinds": {
+      "view": "Ansicht",
+      "download": "Download",
+      "upload": "Upload",
+      "share": "Freigabe",
+      "favorite": "Favorit"
+    },
+    "actions": {
+      "open": "Dokument öffnen",
+      "viewDetails": "Details",
+      "remove": "Aus Verlauf entfernen"
+    },
+    "toasts": { "removed": "Aus Verlauf entfernt", "removeFailed": "Entfernen fehlgeschlagen" }
+  },
   "collections": {
     "title": "Sammlungen",
     "subtitle": "Organisierte Dokumentensammlungen",

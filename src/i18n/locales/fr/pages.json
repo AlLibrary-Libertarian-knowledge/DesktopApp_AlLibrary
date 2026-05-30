@@ -238,6 +238,74 @@
     "sensitivityLevel": "Niveau de Sensibilité",
     "searchPlaceholder": "Rechercher dans vos documents..."
   },
+  "favorites": {
+    "title": "Mes Favoris",
+    "subtitle": "Documents que vous avez marqués",
+    "searchPlaceholder": "Rechercher dans les favoris...",
+    "loading": "Chargement des favoris...",
+    "emptyTitle": "Aucun favori trouvé",
+    "emptyFiltered": "Essayez d'ajuster les filtres pour trouver plus de favoris.",
+    "emptyDefault": "Explorez les documents et ajoutez vos premiers favoris !",
+    "exploreDocuments": "Explorer les Documents",
+    "statsTotal": "Total",
+    "statsFiltered": "Filtrés",
+    "unavailableTitle": "Document indisponible",
+    "unavailableDescription": "Ce favori n'a pas pu être résolu. Supprimez-le pour nettoyer la liste.",
+    "sourceLocal": "Local",
+    "sourceNetwork": "Réseau",
+    "actions": {
+      "open": "Ouvrir le Document",
+      "viewDetails": "Voir les Détails",
+      "remove": "Supprimer"
+    },
+    "toasts": {
+      "removed": "Retiré des favoris",
+      "removeFailed": "Échec de la suppression du favori"
+    }
+  },
+  "recent": {
+    "title": "Activité Récente",
+    "subtitle": "Vos interactions récentes avec les documents",
+    "searchPlaceholder": "Rechercher des activités...",
+    "loading": "Chargement des activités...",
+    "emptyTitle": "Aucune activité récente",
+    "emptyFiltered": "Essayez d'ajuster les filtres.",
+    "emptyDefault": "Explorez les documents pour voir votre historique !",
+    "exploreDocuments": "Explorer les Documents",
+    "sourceLocal": "Local",
+    "sourceNetwork": "Réseau",
+    "stats": {
+      "views": "Consultés",
+      "downloads": "Téléchargements",
+      "uploads": "Envoi",
+      "filtered": "Filtrés"
+    },
+    "filters": {
+      "allTypes": "Toutes",
+      "views": "Vues",
+      "downloads": "Téléchargements",
+      "uploads": "Envoi",
+      "shares": "Partages",
+      "favorites": "Favoris",
+      "typeAria": "Filtrer par type",
+      "timeAria": "Filtrer par période"
+    },
+    "timeframes": {
+      "all": "Tout",
+      "today": "Aujourd'hui",
+      "week": "Cette semaine",
+      "month": "Ce mois"
+    },
+    "kinds": {
+      "view": "Vue",
+      "download": "Téléchargement",
+      "upload": "Envoi",
+      "share": "Partage",
+      "favorite": "Favori"
+    },
+    "actions": { "open": "Ouvrir", "viewDetails": "Détails", "remove": "Retirer de l'historique" },
+    "toasts": { "removed": "Retiré de l'historique", "removeFailed": "Échec de la suppression" }
+  },
   "collections": {
     "title": "Collections",
     "subtitle": "Collections de documents organisés",

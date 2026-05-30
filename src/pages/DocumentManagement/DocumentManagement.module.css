@@ -1040,6 +1040,24 @@
   background: rgba(239, 68, 68, 0.1) !important;
 }
 
+.favorite-button {
+  color: rgba(148, 163, 184, 0.9) !important;
+}
+
+.favorite-button:hover {
+  color: rgba(244, 63, 94, 0.9) !important;
+  background: rgba(244, 63, 94, 0.08) !important;
+}
+
+.favorite-button-active {
+  color: rgba(244, 63, 94, 1) !important;
+}
+
+.favorite-button-active:hover {
+  color: rgba(225, 29, 72, 1) !important;
+  background: rgba(244, 63, 94, 0.12) !important;
+}
+
 .document-content {
   padding: 0 1.25rem 1.25rem;
 }

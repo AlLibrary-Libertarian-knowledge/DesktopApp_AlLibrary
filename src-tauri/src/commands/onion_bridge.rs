@@ -22,6 +22,7 @@ use crate::core::database::{
     list_local_shares_pool, load_lobby_from_db, local_share_disk_path_map_pool,
     sync_lobby_to_db, upsert_local_share_pool,
 };
+use crate::core::database::activity_log::insert_activity_pool;
 use crate::core::database::models::LocalShareRow;
 use chrono::Utc;
 use std::collections::HashSet;
@@ -523,6 +524,22 @@ pub async fn onion_share_add_file(
     )
     .await?;
 
+    if let Ok(pool) = ensure_node_database(&app).await {
+        let payload = serde_json::json!({
+            "title": share.file_name,
+            "link": link,
+            "name": share.file_name,
+        })
+        .to_string();
+        let _ = insert_activity_pool(
+            &pool,
+            "share",
+            Some(&share.content_hash),
+            Some(&payload),
+        )
+        .await;
+    }
+
     Ok(json!({
         "fileId": share.file_id.to_string(),
         "fileName": share.file_name,
@@ -708,12 +725,27 @@ pub async fn onion_share_fetch(
 
     let out = std::path::PathBuf::from(out_dir);
     let link_owned = link;
+    let app_for_fetch = app.clone();
     tokio::spawn(async move {
         let res = fetch::fetch_to_directory(&link_owned, Some(socks), out).await;
 
         match res {
             Ok(path) => {
-                let _ = app.emit(
+                if let Ok(pool) = ensure_node_database(&app_for_fetch).await {
+                    let payload = serde_json::json!({
+                        "link": link_owned,
+                        "path": path.to_string_lossy(),
+                    })
+                    .to_string();
+                    let _ = insert_activity_pool(
+                        &pool,
+                        "download",
+                        Some(&link_owned),
+                        Some(&payload),
+                    )
+                    .await;
+                }
+                let _ = app_for_fetch.emit(
                     "onion-share-fetch-done",
                     json!({
                         "ok": true,
@@ -723,7 +755,7 @@ pub async fn onion_share_fetch(
                 );
             }
             Err(e) => {
-                let _ = app.emit(
+                let _ = app_for_fetch.emit(
                     "onion-share-fetch-done",
                     json!({"ok": false, "error": e.to_string(), "link": link_owned}),
                 );

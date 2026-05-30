@@ -1,16 +1,17 @@
 use serde::{Deserialize, Serialize};
-use std::path::{Path, PathBuf};
 use std::fs;
+use std::io::Read;
+use std::path::{Path, PathBuf};
 use tracing::info;
 use crate::core::document::type_detection::TypeDetection;
 use crate::core::document::file_operations::FileOperations;
-use std::io::Read;
 use lopdf::Document as LoDocument;
 use zip::ZipArchive;
 use tauri::AppHandle;
 use crate::commands::settings::load_app_settings;
 use crate::core::database::node_db::ensure_node_database;
 use crate::core::database::delete_local_share_by_path_pool;
+use crate::core::database::activity_log::insert_activity_pool;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DocumentInfo {
@@ -199,7 +200,11 @@ pub async fn list_documents_in_folder(folder_path: String) -> Result<Vec<Documen
 /// - Validates EPUB structure (zip) and rejects scripts in OPF/HTML
 /// - Saves to target_dir with original filename
 #[tauri::command]
-pub async fn import_document(target_dir: String, source_path: String) -> Result<DocumentInfo, String> {
+pub async fn import_document(
+    app_handle: AppHandle,
+    target_dir: String,
+    source_path: String,
+) -> Result<DocumentInfo, String> {
     let src = PathBuf::from(&source_path);
     let dst_dir = PathBuf::from(&target_dir);
     if !dst_dir.exists() { fs::create_dir_all(&dst_dir).map_err(|e| e.to_string())?; }
@@ -258,7 +263,17 @@ pub async fn import_document(target_dir: String, source_path: String) -> Result<
     }
 
     // Return DocumentInfo for the imported file
-    create_document_info(&sanitized_path).await
+    let info = create_document_info(&sanitized_path).await?;
+    if let Ok(pool) = ensure_node_database(&app_handle).await {
+        let title = info
+            .metadata
+            .title
+            .clone()
+            .unwrap_or_else(|| info.filename.clone());
+        let payload = serde_json::json!({ "title": title }).to_string();
+        let _ = insert_activity_pool(&pool, "upload", Some(&info.id), Some(&payload)).await;
+    }
+    Ok(info)
 }
 
 /// Get detailed information about a specific document
@@ -405,6 +420,23 @@ async fn scan_directory_recursive(
     Ok(())
 }
 
+// Helper: blake3 content hash (same algorithm as onion-share network files)
+fn file_content_hash(file_path: &Path) -> Result<String, String> {
+    let mut file = fs::File::open(file_path).map_err(|e| format!("Failed to open file: {e}"))?;
+    let mut hasher = blake3::Hasher::new();
+    let mut buf = [0u8; 65536];
+    loop {
+        let n = file
+            .read(&mut buf)
+            .map_err(|e| format!("Failed to read file: {e}"))?;
+        if n == 0 {
+            break;
+        }
+        hasher.update(&buf[..n]);
+    }
+    Ok(hasher.finalize().to_hex().to_string())
+}
+
 // Helper function to create DocumentInfo from a file path
 async fn create_document_info(file_path: &Path) -> Result<DocumentInfo, String> {
     let filename = file_path.file_name()
@@ -453,8 +485,8 @@ async fn create_document_info(file_path: &Path) -> Result<DocumentInfo, String> 
         }
     }
     
-    // Generate document ID (hash of file path)
-    let id = format!("{:x}", md5::compute(file_path_str.as_bytes()));
+    // Document ID = content hash (aligns with network files and favorites)
+    let id = file_content_hash(file_path)?;
     
     // Create basic metadata
     let metadata = DocumentMetadata {

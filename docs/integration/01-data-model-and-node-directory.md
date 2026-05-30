@@ -161,7 +161,7 @@ CREATE TABLE activity_log (
 - [ ] **Persist transfers** — Rust owns transfer rows; emit events to frontend; remove `localStorage` `allibrary_completed_downloads`.
 - [ ] **Mirror local shares** — On `onion_share_add_file` / `remove`, upsert/delete `local_shares`.
 - [x] **Favorites commands** — Implement `list_favorites`, `toggle_favorite`, `is_favorite` against SQLite (frontend already calls them).
-- [ ] **Activity log** — Record view/download/share for Recent page.
+- [x] **Activity log** — Record view/download/share for Recent page.
 
 ## Mapping UI metrics to data
 

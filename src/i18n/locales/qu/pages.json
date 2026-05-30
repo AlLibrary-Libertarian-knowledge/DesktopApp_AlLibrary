@@ -237,6 +237,78 @@
     "sensitivityLevel": "Sensibilidad Nivel",
     "searchPlaceholder": "Maskay tus documentos..."
   },
+  "favorites": {
+    "title": "Favoritosniy",
+    "subtitle": "Marcasqayki documentokuna",
+    "searchPlaceholder": "Maskay favoritosniykiman...",
+    "loading": "Favoritos cargachkan...",
+    "emptyTitle": "Manam favoritos tarikurqachu",
+    "emptyFiltered": "Aswan favoritos tarinaykipaq filtrota allichay.",
+    "emptyDefault": "Documentokunata maskay hinaspa ñawpaq favoritosniykita yapay!",
+    "exploreDocuments": "Documentokunata Maskay",
+    "statsTotal": "Tukuy",
+    "statsFiltered": "Filtrasqa",
+    "unavailableTitle": "Documento mana kanchu",
+    "unavailableDescription": "Kay favoritota manam tarinichu. Qichuy listamanta.",
+    "sourceLocal": "Lokal",
+    "sourceNetwork": "Llikamanta",
+    "actions": {
+      "open": "Documentota Kichay",
+      "viewDetails": "Detalleskuna",
+      "remove": "Qichuy"
+    },
+    "toasts": {
+      "removed": "Favoritosmanta qichusqa",
+      "removeFailed": "Favoritota qichuyta manam atinichu"
+    }
+  },
+  "recent": {
+    "title": "Recent Activity",
+    "subtitle": "Your recent document interactions and activities",
+    "searchPlaceholder": "Search recent activities...",
+    "loading": "Loading recent activities...",
+    "emptyTitle": "No recent activities found",
+    "emptyFiltered": "Try adjusting your filters to see more activities.",
+    "emptyDefault": "Start exploring documents to see your activity history here!",
+    "exploreDocuments": "Explore Documents",
+    "sourceLocal": "Local",
+    "sourceNetwork": "Network",
+    "stats": {
+      "views": "Documents Viewed",
+      "downloads": "Downloads",
+      "uploads": "Uploads",
+      "filtered": "Filtered Results"
+    },
+    "filters": {
+      "allTypes": "All Activities",
+      "views": "Views",
+      "downloads": "Downloads",
+      "uploads": "Uploads",
+      "shares": "Shares",
+      "favorites": "Favorites",
+      "typeAria": "Filter by activity type",
+      "timeAria": "Filter by timeframe"
+    },
+    "timeframes": {
+      "all": "All Time",
+      "today": "Today",
+      "week": "This Week",
+      "month": "This Month"
+    },
+    "kinds": {
+      "view": "View",
+      "download": "Download",
+      "upload": "Upload",
+      "share": "Share",
+      "favorite": "Favorite"
+    },
+    "actions": {
+      "open": "Open Document",
+      "viewDetails": "View Details",
+      "remove": "Remove from History"
+    },
+    "toasts": { "removed": "Removed from history", "removeFailed": "Failed to remove activity" }
+  },
   "collections": {
     "title": "Colecciones",
     "subtitle": "Organizadas documento colecciones",

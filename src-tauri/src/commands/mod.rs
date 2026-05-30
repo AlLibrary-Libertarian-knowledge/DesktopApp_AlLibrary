@@ -10,6 +10,7 @@ pub mod onion_bridge;
 pub mod network_cache;
 pub mod tor_setup;
 pub mod favorites;
+pub mod activity;
 
 pub use app::{initialize_app, get_app_ready_state, close_splash_screen, InitProgress};
 pub use security::{get_security_info, refresh_security_info, SecurityInfo};
@@ -88,3 +89,4 @@ pub use onion_bridge::{
 };
 pub use network_cache::{list_network_peers, search_network_cached};
 pub use favorites::{is_favorite, toggle_favorite, list_favorites, FavoriteToggleResult};
+pub use activity::{log_activity, list_activity, delete_activity};

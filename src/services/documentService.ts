@@ -373,9 +373,12 @@ class DocumentService {
 
   openInReader(
     navigate: (path: string) => void,
-    doc: { filePath: string; format: string; title: string }
+    doc: { filePath: string; format: string; title: string; id?: string }
   ): void {
     navigate(this.buildReaderUrl(doc));
+    void import('@/services/activityService').then(({ activityService }) => {
+      void activityService.logActivity('view', doc.id ?? doc.filePath, { title: doc.title });
+    });
   }
 
   async deleteLocalDocument(filePath: string): Promise<void> {

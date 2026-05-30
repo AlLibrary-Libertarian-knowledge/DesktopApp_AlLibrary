@@ -36,6 +36,7 @@ import {
   Edit,
   Share,
   Trash2,
+  Heart,
   AlertCircle,
   Tag,
   Calendar,
@@ -73,6 +74,7 @@ import { useP2PTransfers } from '@/hooks/api/useP2PTransfers';
 import { useToast } from '@/hooks/ui/useToast';
 import { shareWithToast } from '@/utils/documentActions';
 import { transferFacade } from '@/services/network/transferFacade';
+import { favoriteService } from '@/services/favoriteService';
 import { ConfirmDeleteModal } from '@/components/composite/ConfirmDeleteModal';
 
 const DocumentManagement: Component = () => {
@@ -441,8 +443,12 @@ const DocumentManagement: Component = () => {
   // Enhanced document viewer -> open full-screen reader route
   const navigate = useNavigate();
   const openDocumentViewer = (document: Document) => {
-    const qs = `path=${encodeURIComponent(document.filePath)}&type=${encodeURIComponent(String(document.format))}&title=${encodeURIComponent(document.title)}`;
-    navigate(`/reader?${qs}`);
+    documentService.openInReader(navigate, {
+      id: document.id,
+      filePath: document.filePath,
+      format: String(document.format),
+      title: document.title,
+    });
   };
 
   const closeDocumentViewer = () => {
@@ -1138,6 +1144,46 @@ const DocumentManagement: Component = () => {
       return sortOrder() === 'desc' ? -comparison : comparison;
     });
   });
+
+  const [favoriteIds, setFavoriteIds] = createSignal<Set<string>>(new Set());
+
+  createEffect(() => {
+    const docs = sortedAndFilteredDocuments();
+    if (docs.length === 0) {
+      setFavoriteIds(new Set<string>());
+      return;
+    }
+    void Promise.all(
+      docs.map(async doc => {
+        const isFav = await favoriteService.isFavorite(doc.id);
+        return isFav ? doc.id : null;
+      })
+    ).then(results => {
+      setFavoriteIds(new Set(results.filter((id): id is string => id !== null)));
+    });
+  });
+
+  const toggleDocumentFavorite = async (document: Document, event?: Event) => {
+    event?.stopPropagation();
+    try {
+      const res = await favoriteService.toggleFavorite(document.id);
+      setFavoriteIds(prev => {
+        const next = new Set(prev);
+        if (res.isFavorite) {
+          next.add(document.id);
+        } else {
+          next.delete(document.id);
+        }
+        return next;
+      });
+    } catch (e: unknown) {
+      toastUi.show({
+        type: 'error',
+        title: 'Favorite failed',
+        message: e instanceof Error ? e.message : String(e),
+      });
+    }
+  };
 
   return (
     <div
@@ -1885,6 +1931,26 @@ const DocumentManagement: Component = () => {
                                 title="Document Analytics"
                               >
                                 <Settings size={16} />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={e => void toggleDocumentFavorite(document, e)}
+                                title={
+                                  favoriteIds().has(document.id)
+                                    ? 'Remove from favorites'
+                                    : 'Add to favorites'
+                                }
+                                class={
+                                  favoriteIds().has(document.id)
+                                    ? styles['favorite-button-active'] || 'favorite-button-active'
+                                    : styles['favorite-button'] || 'favorite-button'
+                                }
+                              >
+                                <Heart
+                                  size={16}
+                                  fill={favoriteIds().has(document.id) ? 'currentColor' : 'none'}
+                                />
                               </Button>
                               <Button
                                 variant="ghost"

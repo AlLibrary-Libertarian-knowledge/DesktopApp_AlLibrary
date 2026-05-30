@@ -1,4 +1,12 @@
+use serde::Serialize;
 use sqlx::SqlitePool;
+use crate::core::database::activity_log::insert_activity_pool;
+
+#[derive(Debug, Clone, Serialize)]
+pub struct FavoriteEntry {
+    pub document_id: String,
+    pub created_at: String,
+}
 
 pub async fn is_favorite_pool(pool: &SqlitePool, document_id: &str) -> Result<bool, String> {
     let count = sqlx::query_scalar::<_, i64>(
@@ -30,6 +38,7 @@ pub async fn toggle_favorite_pool(
         .execute(pool)
         .await
         .map_err(|e| format!("Failed to add favorite: {e}"))?;
+        let _ = insert_activity_pool(pool, "favorite", Some(document_id), None).await;
         Ok(true)
     }
 }
@@ -37,15 +46,23 @@ pub async fn toggle_favorite_pool(
 pub async fn list_favorites_pool(
     pool: &SqlitePool,
     limit: Option<u32>,
-) -> Result<Vec<String>, String> {
+) -> Result<Vec<FavoriteEntry>, String> {
     let lim = limit.unwrap_or(500).min(5000) as i64;
-    sqlx::query_scalar::<_, String>(
-        "SELECT document_id FROM favorites ORDER BY created_at DESC LIMIT ?",
+    let rows = sqlx::query_as::<_, (String, String)>(
+        "SELECT document_id, created_at FROM favorites ORDER BY created_at DESC LIMIT ?",
     )
     .bind(lim)
     .fetch_all(pool)
     .await
-    .map_err(|e| format!("Failed to list favorites: {e}"))
+    .map_err(|e| format!("Failed to list favorites: {e}"))?;
+
+    Ok(rows
+        .into_iter()
+        .map(|(document_id, created_at)| FavoriteEntry {
+            document_id,
+            created_at,
+        })
+        .collect())
 }
 
 #[cfg(test)]
@@ -86,13 +103,15 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn list_favorites_returns_ids() {
+    async fn list_favorites_returns_entries() {
         let pool = test_pool().await;
         toggle_favorite_pool(&pool, "a").await.unwrap();
         toggle_favorite_pool(&pool, "b").await.unwrap();
         let list = list_favorites_pool(&pool, None).await.unwrap();
         assert_eq!(list.len(), 2);
-        assert!(list.contains(&"a".to_string()));
-        assert!(list.contains(&"b".to_string()));
+        let ids: Vec<&str> = list.iter().map(|e| e.document_id.as_str()).collect();
+        assert!(ids.contains(&"a"));
+        assert!(ids.contains(&"b"));
+        assert!(list.iter().all(|e| !e.created_at.is_empty()));
     }
 }

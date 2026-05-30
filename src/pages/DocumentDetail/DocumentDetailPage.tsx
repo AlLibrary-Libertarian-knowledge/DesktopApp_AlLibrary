@@ -72,7 +72,7 @@ import { useTranslation } from '@/i18n';
 
 // Import services
 import { culturalApi } from '@/services/api';
-import { commentService, favoriteService } from '@/services';
+import { commentService, favoriteService, activityService } from '@/services';
 import { documentService, type DocumentDetailModel } from '@/services/documentService';
 import { transferFacade } from '@/services/network/transferFacade';
 import { shareWithToast, copyNetworkLinkWithToast } from '@/utils/documentActions';
@@ -168,6 +168,7 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
   createEffect(() => {
     const doc = document();
     if (doc) {
+      void activityService.logActivity('view', doc.id, { title: doc.title });
       void favoriteService.isFavorite(doc.id).then(setIsBookmarked);
       commentService
         .list(doc.id)

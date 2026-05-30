@@ -1,8 +1,20 @@
 import { invoke } from '@tauri-apps/api/core';
+import { documentService, type DocumentDetailModel } from '@/services/documentService';
 
 export interface FavoriteToggleResult {
   success: boolean;
   isFavorite: boolean;
+}
+
+export interface FavoriteEntry {
+  documentId: string;
+  createdAt: string;
+}
+
+export interface FavoriteDocument {
+  id: string;
+  favoriteDate: Date;
+  resolved: DocumentDetailModel | null;
 }
 
 class FavoriteServiceImpl {
@@ -54,13 +66,41 @@ class FavoriteServiceImpl {
     }
   }
 
-  async listFavorites(): Promise<string[]> {
+  async listFavoriteEntries(limit?: number): Promise<FavoriteEntry[]> {
     try {
-      const result = await invoke<{ documentIds: string[] }>('list_favorites');
-      return result.documentIds || [];
+      const result = await invoke<FavoriteEntry[]>('list_favorites', { limit: limit ?? null });
+      if (!Array.isArray(result)) return [];
+      return result.map(entry => ({
+        documentId: entry.documentId,
+        createdAt: entry.createdAt,
+      }));
     } catch {
-      return Array.from(this.readLocal());
+      const ids = Array.from(this.readLocal());
+      return ids.map(documentId => ({
+        documentId,
+        createdAt: new Date().toISOString(),
+      }));
     }
+  }
+
+  async listFavorites(): Promise<string[]> {
+    const entries = await this.listFavoriteEntries();
+    return entries.map(entry => entry.documentId);
+  }
+
+  async loadFavoriteDocuments(): Promise<FavoriteDocument[]> {
+    const entries = await this.listFavoriteEntries();
+    const resolved = await Promise.all(
+      entries.map(async entry => {
+        const doc = await documentService.resolveDocumentById(entry.documentId);
+        return {
+          id: entry.documentId,
+          favoriteDate: new Date(entry.createdAt),
+          resolved: doc,
+        };
+      })
+    );
+    return resolved;
   }
 
   async getFavoriteCount(documentId: string): Promise<number> {
@@ -68,7 +108,6 @@ class FavoriteServiceImpl {
       const result = await invoke<{ count: number }>('get_favorite_count', { documentId });
       return result.count ?? 0;
     } catch {
-      // Local fallback cannot know others' favorites; use 0/1 based on local state
       return (await this.isFavorite(documentId)) ? 1 : 0;
     }
   }

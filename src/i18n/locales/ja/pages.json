@@ -258,6 +258,69 @@
       "educationalUse": "教育的使用"
     }
   },
+  "favorites": {
+    "title": "お気に入り",
+    "subtitle": "ブックマークしたドキュメント",
+    "searchPlaceholder": "お気に入りを検索...",
+    "loading": "お気に入りを読み込み中...",
+    "emptyTitle": "お気に入りが見つかりません",
+    "emptyFiltered": "フィルターを調整して、より多くのお気に入りを見つけてください。",
+    "emptyDefault": "ドキュメントを探索して、最初のお気に入りを追加しましょう！",
+    "exploreDocuments": "ドキュメントを探索",
+    "statsTotal": "合計",
+    "statsFiltered": "フィルター済み",
+    "unavailableTitle": "ドキュメントを利用できません",
+    "unavailableDescription": "このお気に入りを解決できませんでした。リストから削除してください。",
+    "sourceLocal": "ローカル",
+    "sourceNetwork": "ネットワーク",
+    "actions": {
+      "open": "ドキュメントを開く",
+      "viewDetails": "詳細を見る",
+      "remove": "削除"
+    },
+    "toasts": {
+      "removed": "お気に入りから削除しました",
+      "removeFailed": "お気に入りの削除に失敗しました"
+    }
+  },
+  "recent": {
+    "title": "最近のアクティビティ",
+    "subtitle": "最近のドキュメント操作",
+    "searchPlaceholder": "アクティビティを検索...",
+    "loading": "読み込み中...",
+    "emptyTitle": "最近のアクティビティがありません",
+    "emptyFiltered": "フィルターを調整してください。",
+    "emptyDefault": "ドキュメントを探索して履歴を表示しましょう！",
+    "exploreDocuments": "ドキュメントを探索",
+    "sourceLocal": "ローカル",
+    "sourceNetwork": "ネットワーク",
+    "stats": {
+      "views": "閲覧",
+      "downloads": "ダウンロード",
+      "uploads": "アップロード",
+      "filtered": "フィルター結果"
+    },
+    "filters": {
+      "allTypes": "すべて",
+      "views": "閲覧",
+      "downloads": "ダウンロード",
+      "uploads": "アップロード",
+      "shares": "共有",
+      "favorites": "お気に入り",
+      "typeAria": "種類でフィルター",
+      "timeAria": "期間でフィルター"
+    },
+    "timeframes": { "all": "すべて", "today": "今日", "week": "今週", "month": "今月" },
+    "kinds": {
+      "view": "閲覧",
+      "download": "ダウンロード",
+      "upload": "アップロード",
+      "share": "共有",
+      "favorite": "お気に入り"
+    },
+    "actions": { "open": "開く", "viewDetails": "詳細", "remove": "履歴から削除" },
+    "toasts": { "removed": "履歴から削除しました", "removeFailed": "削除に失敗しました" }
+  },
   "collections": {
     "title": "コレクション",
     "subtitle": "整理されたドキュメントコレクション",

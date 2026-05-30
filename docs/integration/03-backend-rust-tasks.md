@@ -150,6 +150,6 @@ Commands exist (`init_p2p_node`, `search_p2p_network`, Kademlia helpers) but UI 
 - [ ] Restart app → `tracker_get_cached_lobby_cmd` returns last cache when Tor offline
 - [ ] Add share → `local_shares` + tracker announce includes file
 - [ ] Fetch completes → `transfers` row terminal state + event fired
-- [ ] Favorites round-trip via Tauri commands
+- [x] Favorites round-trip via Tauri commands
 
 See also: `src-tauri/ONION_SHARE_MANUAL_E2E.md`, `docs/TESTING_P2P.md`.

@@ -260,6 +260,22 @@ fn get_migrations() -> Vec<Migration> {
                 CREATE INDEX idx_favorites_created_at ON favorites(created_at);
             "#.to_string(),
         },
+        Migration {
+            version: "005_activity_log".to_string(),
+            description: "Create activity_log table for recent user actions".to_string(),
+            sql: r#"
+                CREATE TABLE activity_log (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    kind TEXT NOT NULL,
+                    document_id TEXT,
+                    payload_json TEXT,
+                    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+                );
+
+                CREATE INDEX idx_activity_log_created_at ON activity_log(created_at);
+                CREATE INDEX idx_activity_log_kind ON activity_log(kind);
+            "#.to_string(),
+        },
     ]
 }
 
@@ -332,7 +348,9 @@ mod tests {
         assert!(applied.contains(&"002_network_cache".to_string()));
         assert!(applied.contains(&"003_local_shares".to_string()));
         assert!(applied.contains(&"004_favorites".to_string()));
+        assert!(applied.contains(&"005_activity_log".to_string()));
         assert!(table_exists(&pool, "local_shares").await);
         assert!(table_exists(&pool, "favorites").await);
+        assert!(table_exists(&pool, "activity_log").await);
     }
 }
