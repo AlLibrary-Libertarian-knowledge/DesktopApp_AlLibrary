@@ -45,7 +45,7 @@ fn emit_progress(cb: &Option<ProgressCallback>, step: u8, label: &str, percent: 
 }
 
 /// Run full pipeline on source file; returns treated bytes + fingerprint (steps 0–7).
-pub fn run_pipeline(source: &Path, progress: Option<ProgressCallback>) -> Result<PipelineOutput, String> {
+pub fn run_pipeline(source: &Path, progress: &Option<ProgressCallback>) -> Result<PipelineOutput, String> {
     if !source.exists() || !source.is_file() {
         return Err("Source file not found".into());
     }
@@ -112,8 +112,6 @@ pub fn run_pipeline(source: &Path, progress: Option<ProgressCallback>) -> Result
     emit_progress(&progress, 7, "Hash generation", 95);
     let fingerprint = compute_fingerprint_from_bytes(&treated, page_count);
 
-    emit_progress(&progress, 7, "Complete", 100);
-
     Ok(PipelineOutput {
         treated_bytes: treated,
         fingerprint,
@@ -131,10 +129,11 @@ pub fn run_pipeline_to_file(
     dest: &Path,
     progress: Option<ProgressCallback>,
 ) -> Result<PipelineOutput, String> {
-    let out = run_pipeline(source, progress)?;
+    let out = run_pipeline(source, &progress)?;
     if let Some(parent) = dest.parent() {
         fs::create_dir_all(parent).map_err(|e| e.to_string())?;
     }
+    emit_progress(&progress, 7, "Writing to library", 97);
     let tmp = dest.with_extension("tmp-treating");
     fs::write(&tmp, &out.treated_bytes).map_err(|e| e.to_string())?;
     fs::rename(&tmp, dest).map_err(|e| e.to_string())?;
@@ -164,6 +163,15 @@ pub fn read_sidecar(file_path: &Path) -> Option<ContentFingerprint> {
 
 pub fn is_treated_file(file_path: &Path) -> bool {
     read_sidecar(file_path).is_some()
+}
+
+/// Returns true for AlLibrary metadata sidecars (e.g. `doc.allibrary.json`), not user documents.
+pub fn is_sidecar_file(file_path: &Path) -> bool {
+    file_path
+        .file_name()
+        .and_then(|name| name.to_str())
+        .map(|name| name.ends_with(".allibrary.json"))
+        .unwrap_or(false)
 }
 
 fn treat_pdf(source: &Path) -> Result<Vec<u8>, String> {
@@ -394,11 +402,18 @@ mod tests {
     use super::*;
 
     #[test]
+    fn sidecar_file_detection() {
+        assert!(is_sidecar_file(Path::new("TCC WORD_rev2.allibrary.json")));
+        assert!(!is_sidecar_file(Path::new("TCC WORD_rev2.pdf")));
+        assert!(!is_sidecar_file(Path::new("notes.json")));
+    }
+
+    #[test]
     fn pipeline_rejects_non_pdf_epub() {
         let dir = std::env::temp_dir();
         let txt = dir.join(format!("al-test-{}.txt", uuid::Uuid::new_v4()));
         fs::write(&txt, b"hello").unwrap();
-        assert!(run_pipeline(&txt, None).is_err());
+        assert!(run_pipeline(&txt, &None).is_err());
         let _ = fs::remove_file(&txt);
     }
 }

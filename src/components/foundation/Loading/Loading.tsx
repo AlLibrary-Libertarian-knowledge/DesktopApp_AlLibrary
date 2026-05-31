@@ -30,16 +30,14 @@ interface LoadingScreenProps {
 const LoadingScreen: Component<LoadingScreenProps> = props => {
   const [loadingProgress, setLoadingProgress] = createSignal(0);
   const [currentPhase, setCurrentPhase] = createSignal(0);
-  const [currentMessage, setCurrentMessage] = createSignal(
-    'Initializing Cultural Heritage Network...'
-  );
+  const [currentMessage, setCurrentMessage] = createSignal('Initializing network services...');
   const [currentIcon, setCurrentIcon] = createSignal<any>(Globe);
 
   const loadingPhases = [
-    { text: 'Initializing Cultural Heritage Network...', icon: Globe },
+    { text: 'Initializing network services...', icon: Globe },
     { text: 'Connecting to Preservation Nodes...', icon: Users },
     { text: 'Loading Knowledge Archives...', icon: BookOpen },
-    { text: 'Securing Cultural Wisdom...', icon: Shield },
+    { text: 'Securing connections...', icon: Shield },
     { text: 'Preparing Sacred Stories...', icon: Sparkles },
     { text: 'Welcome to AlLibrary', icon: Heart },
   ];
@@ -152,7 +150,7 @@ const LoadingScreen: Component<LoadingScreenProps> = props => {
             </div>
           </div>
           <h1 class={styles.appTitle}>AlLibrary</h1>
-          <p class={styles.appSubtitle}>Preserving Cultural Heritage for Future Generations</p>
+          <p class={styles.appSubtitle}>Your decentralized document library</p>
         </div>
 
         {/* Loading Progress */}

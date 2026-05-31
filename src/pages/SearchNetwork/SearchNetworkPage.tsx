@@ -18,8 +18,9 @@ import LoadingSpinner from '@/components/foundation/LoadingSpinner/LoadingSpinne
 // Removed mocked stat/activity components; we will show only real metrics
 
 // Domain Components
-import { DocumentCard } from '../../components/domain/document/DocumentCard';
+import { NetworkFileCard } from '../../components/domain/network/NetworkFileCard';
 import { NetworkStatus } from '../../components/domain/network/NetworkStatus';
+import { OnionStatusBar } from '../../components/domain/network/OnionStatusBar';
 
 // Hooks and Services
 import { useNetworkSearch } from '../../hooks/api/useNetworkSearch';
@@ -27,8 +28,8 @@ import { useNetworkLobby } from '../../hooks/api/useNetworkLobby';
 import { enableTorAndP2P } from '../../services/network/bootstrap';
 import { useP2PTransfers } from '@/hooks/api/useP2PTransfers';
 import { transferFacade } from '@/services/network/transferFacade';
-import { torAdapter } from '../../services/network/torAdapter';
 import { useNetworkStore } from '@/stores/network/networkStore';
+import { useNetworkPresenceResource } from '@/hooks/network/useNetworkPresence';
 
 // Types
 import type { Document } from '@/types/core';
@@ -55,11 +56,11 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
   // const [viewMode, setViewMode] = createSignal<'grid' | 'list'>(props.initialViewMode || 'grid');
   const [showFilters, setShowFilters] = createSignal(false);
   const [anonymousMode, setAnonymousMode] = createSignal(props.anonymousMode || false);
-  const [searchScope, setSearchScope] = createSignal<'all' | 'trusted' | 'nearby'>('all');
-  // const [sortBy, setSortBy] = createSignal<'relevance' | 'date' | 'peers'>('relevance');
-  const [torReady, setTorReady] = createSignal(false);
   const [torEstablishing, setTorEstablishing] = createSignal(false);
   const [autoSearchDone, setAutoSearchDone] = createSignal(false);
+  const [downloadingAll, setDownloadingAll] = createSignal(false);
+
+  const { presence } = useNetworkPresenceResource();
 
   // Search filters
   const [fileTypes, setFileTypes] = createSignal<string[]>([]);
@@ -73,34 +74,15 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
   const onEnableTorClick = async () => {
     try {
       setTorEstablishing(true);
-      const result = await enableTorAndP2P();
-      setTorReady(result.torConnected && result.p2pStarted);
-    } catch (e) {
-      void e;
-      setTorReady(false);
+      await enableTorAndP2P();
+    } catch {
+      /* surfaced via presence hook */
     } finally {
       setTorEstablishing(false);
     }
   };
 
-  // Periodically poll tor status for header pill and circuit banner
   onMount(() => {
-    let timer = 0 as unknown as number; // initialized for cleanup
-    const tick = async () => {
-      try {
-        const status = await torAdapter.status();
-        setTorReady(!!status?.circuitEstablished);
-      } catch (e) {
-        void e;
-      }
-    };
-    tick();
-    timer = globalThis.setInterval(tick, 4000) as unknown as number;
-    const handler = () => {
-      /* event -> refresh */ void tick();
-    };
-    window.addEventListener('tor-status-updated', handler as any);
-    // Global shortcut: Ctrl/Cmd+K focuses search
     const keyHandler = (ev: KeyboardEvent) => {
       const isMac = navigator.platform.includes('Mac');
       if ((isMac ? ev.metaKey : ev.ctrlKey) && ev.key.toLowerCase() === 'k') {
@@ -109,41 +91,69 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
       }
     };
     window.addEventListener('keydown', keyHandler);
-
     return () => {
-      globalThis.clearInterval(timer);
-      window.removeEventListener('tor-status-updated', handler as any);
       window.removeEventListener('keydown', keyHandler);
     };
   });
 
   createEffect(() => {
-    if (torReady() && !autoSearchDone()) {
+    if (!autoSearchDone()) {
       setAutoSearchDone(true);
       void handleSearch();
     }
   });
 
-  const formatTotalSize = () => {
-    const bytes = lobby.totalBytes();
+  createEffect(() => {
+    fileTypes();
+    if (autoSearchDone()) {
+      void handleSearch();
+    }
+  });
+
+  const formatTotalSize = (bytes: number) => {
     if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KiB`;
     return `${(bytes / (1024 * 1024)).toFixed(1)} MiB`;
   };
 
-  // Removed mocked activity/stats
+  const lobbyTotalSize = () => formatTotalSize(lobby.totalBytes());
 
-  // Title-only, Tor-gated search interface
+  const resultsTotalSize = () => {
+    const bytes = (results() ?? []).reduce((sum, r) => sum + (r.document.fileSize || 0), 0);
+    return formatTotalSize(bytes);
+  };
+
+  const canDownload = () => presence().onionActive && presence().online;
+
   const handleSearch = async () => {
-    // if (!searchQuery().trim()) return;
-    if (!torReady()) return;
     setActiveTab('results');
     try {
-      await search({ query: searchQuery().trim() }, { anonymous: anonymousMode() });
-      // Smooth-scroll to results
+      await search(
+        {
+          query: searchQuery().trim(),
+          extensions: fileTypes().length ? fileTypes() : undefined,
+        },
+        { anonymous: anonymousMode() }
+      );
       document.getElementById('resultsTop')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (e) {
-      // surface via store
       void e;
+    }
+  };
+
+  const handleDownloadAll = async () => {
+    if (!canDownload() || !results()?.length) return;
+    setDownloadingAll(true);
+    setDownloadError(null);
+    try {
+      const items = (results() ?? []).map(r => ({
+        link: r.document.filePath || '',
+        name: r.document.title || r.document.id,
+      }));
+      await transferFacade.downloadAll(items);
+    } catch (e) {
+      setDownloadError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setDownloadingAll(false);
     }
   };
 
@@ -162,13 +172,15 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
       {/* Futuristic header using existing TopCard component */}
       <TopCard
         title="Network Search Hub"
-        subtitle="Distributed search across decentralized cultural heritage network"
+        subtitle="Distributed search across the P2P network"
         rightContent={
           <div class={styles['network-status-enhanced']}>
             <NetworkStatus variant="default" />
-            <div class={styles['tor-pill']} data-on={torReady() ? '1' : '0'}>
-              {torReady() ? 'Onion' : 'No Onion'}
-            </div>
+            <OnionStatusBar
+              variant="toolbar"
+              onStartOnion={onEnableTorClick}
+              startingOnion={torEstablishing()}
+            />
           </div>
         }
       />
@@ -248,7 +260,7 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
                   <Search size={20} />
                   <Input
                     type="text"
-                    placeholder="Search cultural heritage documents across P2P network..."
+                    placeholder="Search documents across the P2P network..."
                     value={searchQuery()}
                     onInput={handleSearchInput}
                     onKeyDown={(e: any) => {
@@ -260,11 +272,7 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
                     class={styles['searchInput'] as unknown as string}
                   />
                   <div class={styles['searchActions']}>
-                    <Button
-                      variant="primary"
-                      onClick={handleSearch}
-                      disabled={isSearching() || !torReady()}
-                    >
+                    <Button variant="primary" onClick={handleSearch} disabled={isSearching()}>
                       {isSearching() ? 'Searching...' : 'Search Network'}
                     </Button>
                   </div>
@@ -279,26 +287,29 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
                 >
                   <div class={styles['searchOptions']}>
                     <div class={styles['searchOptionsLeft']}>
-                      <label>Scope</label>
+                      <label>Scope (coming soon)</label>
                       <div>
                         <Button
-                          variant={searchScope() === 'all' ? 'primary' : 'outline'}
+                          variant="outline"
                           size="sm"
-                          onClick={() => setSearchScope('all')}
+                          disabled
+                          title="Peer trust filtering is not available yet"
                         >
                           All Peers
                         </Button>
                         <Button
-                          variant={searchScope() === 'trusted' ? 'primary' : 'outline'}
+                          variant="outline"
                           size="sm"
-                          onClick={() => setSearchScope('trusted')}
+                          disabled
+                          title="Peer trust filtering is not available yet"
                         >
                           Trusted Only
                         </Button>
                         <Button
-                          variant={searchScope() === 'nearby' ? 'primary' : 'outline'}
+                          variant="outline"
                           size="sm"
-                          onClick={() => setSearchScope('nearby')}
+                          disabled
+                          title="Peer trust filtering is not available yet"
                         >
                           Nearby Peers
                         </Button>
@@ -365,8 +376,8 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
               <StatCard
                 type="documents"
                 icon={<BookOpen size={20} />}
-                number={String(lobby.files().length || results()?.length || 0)}
-                label="Network Files"
+                number={String(lobby.files().length)}
+                label="Lobby Files"
                 trendType="neutral"
                 trendIcon={<ArrowRight size={12} />}
                 trendValue="cached"
@@ -375,11 +386,11 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
               <StatCard
                 type="health"
                 icon={<Shield size={20} />}
-                number={formatTotalSize()}
-                label="Total Size"
-                trendType={torReady() ? 'positive' : 'neutral'}
+                number={lobbyTotalSize()}
+                label="Lobby Total Size"
+                trendType={presence().onionActive ? 'positive' : 'neutral'}
                 trendIcon={<ArrowRight size={12} />}
-                trendValue={torReady() ? 'Onion' : 'No Onion'}
+                trendValue={presence().onionActive ? 'Live' : 'Cached'}
                 graphType="health"
               />
             </div>
@@ -396,12 +407,25 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
             <div class={styles['section-header']}>
               <h2>Search Results</h2>
               <div class={styles['result-controls']}>
-                <Button variant="outline" size="sm">
+                <span>
+                  {results()?.length ?? 0} files · {resultsTotalSize()}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={!results()?.length || busy() || downloadingAll() || !canDownload()}
+                  onClick={() => void handleDownloadAll()}
+                >
                   <Download size={14} class="mr-2" />
-                  Download All
+                  {downloadingAll() ? 'Queueing…' : 'Download All'}
                 </Button>
               </div>
             </div>
+            <Show when={!canDownload() && (results()?.length ?? 0) > 0}>
+              <p class={styles['download-error']}>
+                Start onion share from Sharing &amp; Downloads to download network files.
+              </p>
+            </Show>
 
             <Show when={isSearching()}>
               <div class={styles['search-progress']}>
@@ -427,26 +451,14 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
               <div class={styles['results-grid']}>
                 <For each={results()}>
                   {(result: any) => (
-                    <DocumentCard
-                      document={result.document}
+                    <NetworkFileCard
+                      contentHash={result.document.id}
+                      name={result.document.title}
+                      size={result.document.fileSize}
+                      link={result.document.filePath || ''}
+                      canDownload={canDownload()}
                       onOpen={() => handleDocumentOpen(result.document)}
-                      onDownload={async doc => {
-                        setDownloadError(null);
-                        try {
-                          const result = results()?.find(r => r.document.id === doc.id);
-                          const link = result?.document.filePath || '';
-                          if (link) {
-                            await transferFacade.downloadLink(link, doc.title);
-                          } else {
-                            await transferFacade.downloadByHashOrLink(doc.id, doc.title);
-                          }
-                        } catch (e) {
-                          const msg = e instanceof Error ? e.message : String(e);
-                          setDownloadError(msg);
-                        }
-                      }}
-                      showCulturalContext={true}
-                      variant="default"
+                      onDownloadError={msg => setDownloadError(msg)}
                     />
                   )}
                 </For>

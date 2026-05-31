@@ -50,8 +50,9 @@ pub fn detect_tor(configured_path: &str) -> Option<String> {
 }
 
 fn try_run(bin: &str) -> bool {
-    std::process::Command::new(bin)
-        .arg("--version")
+    let mut cmd = std::process::Command::new(bin);
+    crate::onion_share::platform::hide_console(&mut cmd);
+    cmd.arg("--version")
         .stdout(std::process::Stdio::null())
         .stderr(std::process::Stdio::null())
         .status()

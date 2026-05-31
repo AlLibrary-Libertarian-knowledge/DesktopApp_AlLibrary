@@ -80,7 +80,6 @@ import { useP2PTransfers } from '@/hooks/api/useP2PTransfers';
 import { useToast } from '@/hooks/ui/useToast';
 import { shareWithToast } from '@/utils/documentActions';
 import { transferFacade } from '@/services/network/transferFacade';
-import { onionShareListLocal, syncAllEnabledSeeds } from '@/services/network/onionShareService';
 import { favoriteService } from '@/services/favoriteService';
 import { ConfirmDeleteModal } from '@/components/composite/ConfirmDeleteModal';
 
@@ -229,7 +228,7 @@ const DocumentManagement: Component = () => {
 
   const refreshLocalShares = async () => {
     try {
-      const shares = await onionShareListLocal();
+      const shares = await transferFacade.listShares();
       const paths = new Set(
         shares
           .map(s => s.diskPath)
@@ -321,7 +320,7 @@ const DocumentManagement: Component = () => {
       setProjectFolderPath(folderPath);
       await settingsSvc.setProjectFolder(folderPath);
       try {
-        await syncAllEnabledSeeds();
+        await transferFacade.syncAllEnabledSeeds();
         await refreshLocalShares();
       } catch {
         /* onion may still be bootstrapping */
@@ -355,7 +354,7 @@ const DocumentManagement: Component = () => {
         setScanResult(result);
         setScannedDocuments(result.documents);
         try {
-          await syncAllEnabledSeeds();
+          await transferFacade.syncAllEnabledSeeds();
           await refreshLocalShares();
         } catch {
           /* onion may still be bootstrapping */
@@ -2323,7 +2322,6 @@ const DocumentManagement: Component = () => {
                                         userTitle: item.title,
                                         expectedContentHash: null,
                                       });
-                                      await refreshLocalShares();
                                       setTreatmentItems(prev =>
                                         prev.map(it =>
                                           it.tempId === item.tempId
@@ -2331,8 +2329,12 @@ const DocumentManagement: Component = () => {
                                             : it
                                         )
                                       );
+                                      void refreshLocalShares();
                                     } catch (e) {
                                       console.error('Process failed', e);
+                                      toastUi.error(
+                                        `Processing failed: ${e instanceof Error ? e.message : String(e)}`
+                                      );
                                     } finally {
                                       setIsProcessing(false);
                                       setPipelineStep(null);

@@ -933,11 +933,8 @@ class P2PServiceImpl implements P2PService {
   /**
    * Check if collection requires cultural validation
    */
-  private requiresCulturalValidation(collection: Collection): boolean {
-    return (
-      collection.culturalMetadata.sensitivityLevel >= CulturalSensitivityLevel.COMMUNITY ||
-      (collection.culturalMetadata.traditionalProtocols?.length || 0) > 0
-    );
+  private requiresCulturalValidation(_collection: Collection): boolean {
+    return false;
   }
 
   /**
@@ -947,16 +944,15 @@ class P2PServiceImpl implements P2PService {
     const request: CulturalValidationRequest = {
       id: crypto.randomUUID(),
       collectionId: collection.id,
-      culturalOrigin: collection.culturalMetadata.culturalOrigin || 'unknown',
+      culturalOrigin: 'unknown',
       type: 'content_appropriateness',
       description: `Validation requested for collection: ${collection.name}`,
       requestingPeer: 'self',
       targetValidators: [],
       deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
       priority: 'medium',
-      culturalContext: collection.culturalMetadata.culturalContext || '',
-      educationalPurpose:
-        collection.culturalMetadata.educationalContext || 'General educational use',
+      culturalContext: '',
+      educationalPurpose: 'General educational use',
     };
 
     await this.requestCulturalValidation(request);

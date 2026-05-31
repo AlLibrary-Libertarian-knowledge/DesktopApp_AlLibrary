@@ -8,8 +8,8 @@ Tasks derived from frontend screens and from retiring POC flows. Priority: **P0*
 
 ### Settings & paths
 
-- [ ] **P0** Align `save_app_settings` payload with frontend `settingsService` (project + download paths, folder creation) — done via `apply_project_paths` (Task 1)
-- [ ] **P0** Return resolved paths in `load_app_settings` for UI display (documents, downloads, db file)
+- [x] **P0** Align `save_app_settings` payload with frontend `settingsService` (project + download paths, folder creation) — done via `apply_project_paths`
+- [x] **P0** Return resolved paths in `load_app_settings` for UI display (documents, downloads, db file)
 - [ ] **P0** Relocate `onion_share/config.rs` `AppConfig` persistence into app settings or SQLite `node_config`
 
 ### Tracker integration (improve POC backend)
@@ -44,23 +44,22 @@ Existing commands in `onion_bridge.rs` / `tracker_client.rs`:
 | `onion_share_fetch` | Done | Record row in `transfers`; emit progress events |
 | `ensure_tor_for_onion_share` | Done | — |
 
-- [ ] **P0** `onion_share_fetch`: emit granular progress events (not only done/fail) for UI progress bars
-- [ ] **P1** Persist completed transfers in SQLite
+- [x] **P0** `onion_share_fetch`: emit granular progress events (not only done/fail) for UI progress bars
+- [x] **P1** Persist completed transfers in SQLite
+- [x] **P1** `list_recent_transfers(limit)` — frontend `downloadManager` hydrates completed on init (May 2026)
 
 ### Documents (local library)
 
 Already registered: `scan_documents_folder`, `get_document_info`, `open_document`, `import_document`, etc.
 
-- [ ] **P0** Ensure scan results upsert `documents` table (when table exists)
+- [x] **P0** Ensure scan results upsert `documents` table (when table exists)
 - [x] **P0** Implement missing favorites commands: `is_favorite`, `toggle_favorite`, `list_favorites`
 - [x] **P0** `delete_local_document` — permanent file delete under project root + local_shares cleanup
 - [x] **P1** DocumentDetail load via frontend `resolveDocumentById` (hash/path; not legacy `get_document` UUID pool)
 
 ### Network metrics (Home, Network Health)
 
-Frontend reads `get_network_metrics` / `p2pNetworkService.getNetworkMetrics()` but implementation returns **zeros**.
-
-- [ ] **P1** `get_network_metrics` populated from:
+- [x] **P1** `get_network_metrics` populated from:
   - active fetch count / bytes moved (transfers table)
   - tracker `online_nodes`
   - onion share running state
@@ -103,9 +102,10 @@ Ensure these endpoints are used and cached:
 
 Frontend `collectionService` invokes many commands **not** in `lib.rs`. Registered today: `create_collection`, `get_collections`, `get_collection`, `update_collection`, `delete_collection`.
 
-- [ ] **P1** Audit `collectionService.ts` invoke list vs `lib.rs`
-- [ ] **P1** Either implement or remove from UI: `add_documents_to_collection`, `enable_p2p_sharing`, `sync_collection`, collaborators, export, etc.
-- [ ] **P2** `enable_p2p_sharing` → adds collection manifest files to onion share (design TBD)
+- [x] **P1** Audit `collectionService.ts` invoke list vs `lib.rs` — **May 2026**: minimal CRUD + document membership implemented; P2P/collaborators/export removed from service/UI
+- [x] **P1** `add_documents_to_collection`, `remove_documents_from_collection`, `get_collection_documents` registered
+- [x] **P1** Real `update_collection` / `delete_collection` (no longer mocked)
+- [ ] **P2** `enable_p2p_sharing` → adds collection manifest files to onion share (design TBD; UI hidden)
 
 ---
 
@@ -114,9 +114,9 @@ Frontend `collectionService` invokes many commands **not** in `lib.rs`. Register
 Browse / Trending / New Arrivals need **time and taxonomy** not present on tracker today.
 
 - [ ] **P2** Extend tracker protocol (optional) with `announced_at` on files — or infer `first_seen_at` locally on cache insert
-- [ ] **P2** `list_recent_network_files(since: DateTime)` from SQLite
-- [ ] **P2** `list_trending_network_files` — local heuristic: `peer_count` delta + download count from `activity_log`
-- [ ] **P2** Categories — map file extensions / user tags on local documents; network files use filename heuristics until metadata protocol exists
+- [x] **P2** `list_recent_network_files(since: DateTime)` from SQLite
+- [x] **P2** `list_trending_network_files` — local heuristic: `peer_count` delta + download count from `activity_log`
+- [x] **P2** Categories — map file extensions / user tags on local documents; network files use filename heuristics until metadata protocol exists
 
 ---
 
@@ -139,8 +139,8 @@ Commands exist (`init_p2p_node`, `search_p2p_network`, Kademlia helpers) but UI 
 | **New:** `lobby-updated` | `{ online_nodes, file_count }` | Sidebar, Home, Search Network |
 | **New:** `transfer-progress` | id, progress | Sharing & downloads, Home |
 
-- [ ] **P1** Emit `lobby-updated` after DB sync
-- [ ] **P0** Emit `transfer-progress` during fetch
+- [x] **P1** Emit `lobby-updated` after DB sync
+- [x] **P0** Emit `transfer-progress` during fetch
 
 ---
 
@@ -149,7 +149,7 @@ Commands exist (`init_p2p_node`, `search_p2p_network`, Kademlia helpers) but UI 
 - [ ] Tracker announce + lobby refresh persists rows in SQLite
 - [ ] Restart app → `tracker_get_cached_lobby_cmd` returns last cache when Tor offline
 - [ ] Add share → `local_shares` + tracker announce includes file
-- [ ] Fetch completes → `transfers` row terminal state + event fired
+- [x] Fetch completes → `transfers` row terminal state + event fired
 - [x] Favorites round-trip via Tauri commands
 
 See also: `src-tauri/ONION_SHARE_MANUAL_E2E.md`, `docs/TESTING_P2P.md`.

@@ -7,9 +7,6 @@ export * from './domain';
 // Composite components
 export * from './composite';
 
-// Cultural components
-export * from './cultural';
-
 // Layout components - TODO: Implement layout components
 // export * from './layout';
 

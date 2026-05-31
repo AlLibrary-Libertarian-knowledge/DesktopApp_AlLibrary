@@ -113,6 +113,7 @@ mod tests {
                 educational_level: "beginner".into(),
                 community_memberships: vec![],
             },
+            resolved_paths: None,
         }
     }
 

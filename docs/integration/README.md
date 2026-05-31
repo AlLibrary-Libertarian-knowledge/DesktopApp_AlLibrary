@@ -24,28 +24,29 @@ Frontend-driven integration tasks to connect the designed UI to a **per-node SQL
 
 ### Phase A — Foundation (blocking)
 
-- Unify project path: first-run wizard → Rust `save_app_settings` → SQLite path `{documentsFolder}/allibrary.db`
-- Persist tracker lobby cache + sync diagnostics in SQLite (not only in-memory `RwLock`)
-- Expose one TS module `networkFacade` (see doc 05) used by Search Network, Peers, Home, Sidebar
-- Fix broken paths: `documentApi` mock, `/settings` route, Search Network download
+- [x] Unify project path: first-run wizard → Rust `save_app_settings` → SQLite path `{documentsFolder}/allibrary.db`
+- [x] Persist tracker lobby cache + sync diagnostics in SQLite (not only in-memory `RwLock`)
+- [x] Expose one TS module `networkFacade` (see doc 05) used by Search Network, Peers, Home, Sidebar
+- [x] Fix broken paths: `/settings` route, Search Network download, `documentApi` mock removed — **May 2026**
 
 ### Phase B — Screen integration
 
-- Wire Discovery screens to **cached lobby + local library** (Search Network, Browse, Trending, New Arrivals)
-- Wire P2P screens to **real transfers + tracker peers** (Peer Network, Network Health, Sharing & downloads tables)
-- Wire Library actions (share/download/delete) to Tauri + onion share
+- [x] Wire Discovery screens to **cached lobby + local library** (Search Network, Browse, Trending, New Arrivals) — **done** (May 2026): offline cache search, extension filters, Download All, stats ribbon
+- [~] Wire P2P screens to **real transfers + tracker peers** (Peer Network, Network Health, Sharing & downloads tables) — **Network Health + transfers/peers done** (May 2026); latency/upload backend still P2
+- [x] Wire Library actions (share/download/delete) to Tauri + onion share — **Home quick-share + useTransferState on Home** (May 2026)
 
 ### Phase C — POC removal
 
-- Delete route `/acervo` and `GlobalAcervo` page
-- Remove **Onion mesh (live)** card from `PeerTransfers`; keep polished transfer UI only
-- Remove duplicate tracker debug controls from UI (keep in dev tools or Connection Manager advanced section)
+- [x] Delete route `/acervo` and `GlobalAcervo` page
+- [x] Remove **Onion mesh (live)** card from `PeerTransfers`; keep polished transfer UI only
+- [x] Remove duplicate tracker debug controls from UI (manual sync in Connection Manager Advanced; retry only on sync error in Peer Network)
 
 ### Phase D — Depth
 
-- Collection/favorites Tauri commands matching `collectionService` surface
-- Network metrics (throughput, active transfers) from Rust → `networkStore`
-- Optional: tracker timestamps for Trending / New Arrivals
+- [x] Collections — minimal CRUD + document membership (`add_documents_to_collection`, etc.) — **May 2026**
+- [x] Cultural sensitivity UI removed from product (components/hooks deleted; copy neutralized)
+- [~] Network metrics (throughput, active transfers) from Rust → `networkStore` — **basic `get_network_metrics` done**; `networkStore.refreshOnce` uses facades (May 2026)
+- [ ] Optional: tracker timestamps for Trending / New Arrivals (history-based charts)
 
 ## Related existing docs
 
@@ -58,3 +59,69 @@ Frontend-driven integration tasks to connect the designed UI to a **per-node SQL
 - `[ ]` Not started
 - `[~]` Partial (POC or mock in place)
 - `[x]` Done
+
+---
+
+## Recently completed — Collections + cultural removal (May 2026)
+
+| Area | Done |
+|------|------|
+| Collections backend | Real update/delete; `document_collections` junction ops; `add_documents_to_collection`, `remove_documents_from_collection`, `get_collection_documents` |
+| Collections UI | Minimal list/create/edit/detail; add/remove docs from library scan |
+| `collectionService` | Slim CRUD + membership only; tests rewritten |
+| Cultural removal | Deleted `src/components/cultural/`, `hooks/cultural/`; neutral branding; footer/shell copy updated |
+
+---
+
+## Recently completed — Network Health + Home quick-share (May 2026)
+
+| Area | Done |
+|------|------|
+| Home quick-share | `pickAnyFiles` + `shareWithToast`; no navigate-only stub |
+| Network Health | `networkStore.metricsHistory`; real peer/download/transfer cards; rolling charts; mock topology/latency/storage removed |
+| Dashboard | `NetworkHealthDashboard` reads store; performance-over-time chart with series toggles |
+
+---
+
+## Recently completed — Search Network polish + mock cleanup (May 2026)
+
+| Area | Done |
+|------|------|
+| Mock cleanup | Removed `Browse.tsx`, `documentApi.ts`, `NetworkSettingsPanel.tsx`; trimmed Connection Manager simulation UI |
+| Transfers persistence | `list_recent_transfers` Tauri command; `downloadManager` hydrates completed from SQLite (no localStorage) |
+| Search Network | Tor gate via `networkFacade.getPresence`; cache-only search offline; extension filters; Download All; lobby vs results stats |
+| Tracker sync UX | Manual refresh in Connection Manager **Advanced**; Peer Network retry only when `syncError` |
+
+See [04-frontend-screen-tasks.md](./04-frontend-screen-tasks.md) mock checklist and Search Network table for detail.
+
+---
+
+## Recently completed — Network UI consolidation (May 2026)
+
+| Area | Done |
+|------|------|
+| `NetworkFileCard` | Shared card for Search Network results; download via `transferFacade` |
+| `OnionStatusBar` | compact / sidebar / toolbar / actions variants; Header, Sidebar, Search Network, PeerTransfers |
+| `useTransferState` | Home recent downloads + activity strip (was `downloadManager.subscribe`) |
+| Facades | `transferFacade.syncAllEnabledSeeds`, `setDocumentSeedEnabled`; `networkStore` → `networkFacade`; `useNetworkSearch` → `networkFacade.searchFiles` |
+
+---
+
+## Recommended next steps
+
+Priority order for the next integration slice(s):
+
+1. **Phase B — remaining polish**
+   - Home `NetworkGraph` mock → cached peer viz
+   - Documents list UI sync after scan (optional)
+   - Global top search bar → `/search-network?q=`
+
+2. **Shared stats UI**
+   - `LobbyStatsRibbon` for Search Network + Peer Network stat grids
+
+3. **P2 / optional**
+   - Collection P2P sharing / export (cancelled for minimal scope)
+   - `get_swarm` / parallel download peer list
+   - Trending charts (cache history / `first_seen_at` deltas)
+   - Settings theme/i18n → `save_app_settings`
+   - Global top search bar → `/search-network?q=`

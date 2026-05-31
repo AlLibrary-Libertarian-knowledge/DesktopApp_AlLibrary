@@ -88,7 +88,11 @@ export const SettingsPage: Component<SettingsPageProps> = props => {
   const [pathError, setPathError] = createSignal<string | null>(null);
   const [pathsLoading, setPathsLoading] = createSignal(true);
 
+  const [databasePathResolved, setDatabasePathResolved] = createSignal('');
+
   const databasePath = createMemo(() => {
+    const resolved = databasePathResolved().trim();
+    if (resolved) return resolved;
     const project = projectFolder().trim();
     if (!project) return '';
     const sep = project.includes('\\') ? '\\' : '/';
@@ -104,6 +108,15 @@ export const SettingsPage: Component<SettingsPageProps> = props => {
       const download = (await settingsService.getDownloadFolder()) || '';
       setProjectFolder(project);
       setDownloadFolder(download);
+      try {
+        const { invoke } = await import('@tauri-apps/api/core');
+        const rust = await invoke<import('@/types/Settings').AppSettings>('load_app_settings');
+        if (rust.resolvedPaths?.databaseFile) {
+          setDatabasePathResolved(rust.resolvedPaths.databaseFile);
+        }
+      } catch {
+        // non-Tauri env
+      }
     } catch (e) {
       setPathError(e instanceof Error ? e.message : 'Failed to load library paths');
     } finally {

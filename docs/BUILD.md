@@ -85,7 +85,9 @@ Legado local (cópia no monorepo): `DesktopApp_AlLibrary/deploy/` — preferir *
 
 ## Versão
 
-Versão do app: campo `version` em `package.json` (ex.: **1.0.13**). Tracker standalone: `allibrary-tracker` **0.7.4** em `TrackerRust_AlLibrary/Cargo.toml`.
+Versão do app: **`APP_VERSION` em `.env`** (copie de `.env.example`). Esse valor é propagado automaticamente para `package.json`, `src-tauri/Cargo.toml` e `src-tauri/tauri.conf.json` via `pnpm run sync:version` (executado antes de `dev`/`build`).
+
+Tracker standalone: `allibrary-tracker` **0.7.4** em `TrackerRust_AlLibrary/Cargo.toml`.
 
 ---
 

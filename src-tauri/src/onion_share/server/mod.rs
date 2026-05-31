@@ -21,6 +21,8 @@ use state::AppState;
 pub struct ShareServerStartOptions {
     pub bridges: Vec<String>,
     pub progress_tx: Option<watch::Sender<u8>>,
+    /// Reuse a previously successful overlay data dir when set.
+    pub preferred_data_dir: Option<PathBuf>,
 }
 
 pub struct ShareServerHandle {
@@ -37,15 +39,25 @@ pub struct ShareServerHandle {
 impl ShareServerHandle {
     pub async fn start(tor_path: &str, opts: ShareServerStartOptions) -> anyhow::Result<Self> {
         let default_dir = TorProcess::default_overlay_dir()?;
-        let warm = TorProcess::dir_has_cache(&default_dir);
+        let attempt1_dir = opts
+            .preferred_data_dir
+            .clone()
+            .filter(|p| p.exists())
+            .unwrap_or_else(|| default_dir.clone());
+        let warm = TorProcess::dir_has_cache(&attempt1_dir);
         let first_timeout = if warm {
-            Duration::from_secs(120)
+            Duration::from_secs(90)
         } else {
-            Duration::from_secs(180)
+            Duration::from_secs(120)
+        };
+        let attempt1_override = if attempt1_dir != default_dir {
+            Some(attempt1_dir)
+        } else {
+            None
         };
 
-        // Attempt 1: default dir
-        match Self::start_once(tor_path, first_timeout, None, opts.clone()).await {
+        // Attempt 1: preferred or default dir
+        match Self::start_once(tor_path, first_timeout, attempt1_override, opts.clone()).await {
             Ok(handle) => return Ok(handle),
             Err(e) => {
                 let msg = e.to_string();
@@ -85,11 +97,15 @@ impl ShareServerHandle {
         );
         Self::start_once(
             tor_path,
-            Duration::from_secs(240),
+            Duration::from_secs(180),
             Some(fresh),
             opts,
         )
         .await
+    }
+
+    pub fn tor_data_dir(&self) -> PathBuf {
+        self.tor_proc.data_dir().to_path_buf()
     }
 
     async fn start_once(

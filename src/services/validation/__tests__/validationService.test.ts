@@ -159,7 +159,7 @@ describe('ValidationService Integration', () => {
       expect(result.detectedLevel).toBeGreaterThan(0);
       expect(result.confidence).toBeGreaterThanOrEqual(0);
       expect(result.suggestedContext).toContain('accessible');
-      expect(result.analysisMetadata.reviewRequired).toBe(false);
+      expect(result.analysisMetadata?.reviewRequired).toBe(false);
     });
 
     it('should provide cultural information for all sensitivity levels', async () => {

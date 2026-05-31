@@ -25,80 +25,90 @@
     "sort": "ترتيب المستندات"
   },
   "favorites": {
-    "title": "مفضلاتي",
-    "subtitle": "المستندات التي قمت بوضع إشارة عليها",
-    "searchPlaceholder": "البحث في المفضلات...",
-    "loading": "جاري تحميل المفضلات...",
-    "emptyTitle": "لم يتم العثور على مفضلات",
-    "emptyFiltered": "حاول تعديل عوامل التصفية للعثور على المزيد.",
-    "emptyDefault": "ابدأ باستكشاف المستندات وأضف مفضلاتك الأولى!",
-    "exploreDocuments": "استكشاف المستندات",
-    "statsTotal": "الإجمالي",
-    "statsFiltered": "المصفاة",
-    "unavailableTitle": "المستند غير متاح",
-    "unavailableDescription": "تعذر حل هذا المفضل. قم بإزالته لتنظيف القائمة.",
-    "sourceLocal": "محلي",
-    "sourceNetwork": "شبكة",
-    "actions": {
-      "open": "فتح المستند",
-      "viewDetails": "عرض التفاصيل",
-      "remove": "إزالة"
-    },
-    "toasts": {
-      "removed": "تمت الإزالة من المفضلات",
-      "removeFailed": "فشل في إزالة المفضل"
-    }
+    "title": "المفضلة",
+    "subtitle": "مستنداتك المفضلة",
+    "addToFavorites": "إضافة إلى المفضلة",
+    "removeFromFavorites": "إزالة من المفضلة"
   },
   "recent": {
-    "title": "النشاط الأخير",
-    "subtitle": "تفاعلاتك الأخيرة مع المستندات",
-    "searchPlaceholder": "البحث في الأنشطة...",
-    "loading": "جاري تحميل الأنشطة...",
-    "emptyTitle": "لا توجد أنشطة حديثة",
-    "emptyFiltered": "حاول تعديل عوامل التصفية.",
-    "emptyDefault": "ابدأ باستكشاف المستندات لرؤية سجل نشاطك!",
-    "exploreDocuments": "استكشاف المستندات",
-    "sourceLocal": "محلي",
-    "sourceNetwork": "شبكة",
-    "stats": {
-      "views": "المشاهدات",
-      "downloads": "التنزيلات",
-      "uploads": "الرفع",
-      "filtered": "المصفاة"
-    },
-    "filters": {
-      "allTypes": "جميع الأنشطة",
-      "views": "المشاهدات",
-      "downloads": "التنزيلات",
-      "uploads": "الرفع",
-      "shares": "المشاركات",
-      "favorites": "المفضلات",
-      "typeAria": "تصفية حسب النوع",
-      "timeAria": "تصفية حسب الوقت"
-    },
-    "timeframes": {
-      "all": "كل الوقت",
-      "today": "اليوم",
-      "week": "هذا الأسبوع",
-      "month": "هذا الشهر"
-    },
-    "kinds": {
-      "view": "عرض",
-      "download": "تنزيل",
-      "upload": "رفع",
-      "share": "مشاركة",
-      "favorite": "مفضل"
-    },
-    "actions": { "open": "فتح المستند", "viewDetails": "عرض التفاصيل", "remove": "إزالة من السجل" },
-    "toasts": { "removed": "تمت الإزالة من السجل", "removeFailed": "فشل في الإزالة" }
+    "title": "الأحدث",
+    "subtitle": "المستندات المضافة حديثاً",
+    "today": "اليوم",
+    "thisWeek": "هذا الأسبوع",
+    "thisMonth": "هذا الشهر"
   },
   "collections": {
     "title": "المجموعات",
-    "subtitle": "تنظيم معرفتك",
-    "create": "إنشاء مجموعة",
-    "myCollections": "مجموعاتي",
-    "shared": "المجموعات المشتركة",
-    "organize": "تنظيم المستندات"
+    "subtitle": "جمّع المستندات المحلية في مجموعات",
+    "newCollection": "مجموعة جديدة",
+    "searchPlaceholder": "البحث في المجموعات...",
+    "loading": "جاري تحميل المجموعات...",
+    "empty": {
+      "title": "لا توجد مجموعات بعد",
+      "cta": "أنشئ مجموعتك الأولى"
+    },
+    "card": {
+      "docs": "{{count}} docs",
+      "updated": "Updated {{date}}"
+    },
+    "actions": {
+      "open": "فتح",
+      "edit": "تعديل",
+      "delete": "حذف"
+    },
+    "create": {
+      "title": "مجموعة جديدة",
+      "subtitle": "Group related documents together for quick access.",
+      "submit": "إنشاء"
+    },
+    "edit": {
+      "title": "تعديل المجموعة",
+      "subtitle": "Update the name or description for this collection.",
+      "submit": "حفظ التغييرات"
+    },
+    "form": {
+      "name": "Name",
+      "namePlaceholder": "e.g. Research papers, Field notes",
+      "nameHint": "A short, recognizable title for this group.",
+      "description": "Description",
+      "optional": "Optional",
+      "descriptionPlaceholder": "What belongs in this collection?",
+      "bufLabel": "BUF",
+      "nameLabel": "NAME",
+      "charCount": "{{current}} / {{max}}"
+    },
+    "detail": {
+      "fallbackTitle": "Collection",
+      "subtitle": "{{count}} documents · updated {{date}}",
+      "detailsFallback": "Collection details",
+      "docsBadge": "DOCS",
+      "addFromLibrary": "إضافة من المكتبة",
+      "syncing": "Syncing document index...",
+      "emptyTitle": "No documents in this collection yet.",
+      "emptyHint": "Use \"Add from library\" to attach scanned files.",
+      "remove": "إزالة"
+    },
+    "addDocs": {
+      "title": "إضافة مستندات من المكتبة",
+      "subtitle": "Select scanned documents to include in this collection.",
+      "loading": "Loading library...",
+      "empty": "No scanned documents found. Scan your library first.",
+      "hint": "{{toAdd}} to add · {{inCollection}} already in collection",
+      "addSelected": "إضافة المحدد ({{count}})",
+      "inCollection": "في المجموعة"
+    },
+    "confirmDelete": "حذف \"{{name}}\"؟ لن يتم حذف المستندات.",
+    "errors": {
+      "createFailed": "Failed to create collection",
+      "updateFailed": "Failed to update collection",
+      "deleteFailed": "Failed to delete collection",
+      "removeDocFailed": "Failed to remove document",
+      "addDocsFailed": "Failed to add documents"
+    },
+    "createNew": "Create New Collection",
+    "manageExisting": "Manage Collections",
+    "collaborativeCollections": "Collaborative Collections",
+    "culturalCollections": "Collections"
   },
   "search": {
     "title": "البحث",
@@ -116,25 +126,12 @@
     "new": "الجديد",
     "featured": "المميز"
   },
-  "recent": {
-    "title": "الأحدث",
-    "subtitle": "المستندات المضافة حديثاً",
-    "today": "اليوم",
-    "thisWeek": "هذا الأسبوع",
-    "thisMonth": "هذا الشهر"
-  },
   "trending": {
     "title": "الرائج",
     "subtitle": "المحتوى الشائع",
     "popular": "الشائع",
     "trending": "الرائج",
     "featured": "المميز"
-  },
-  "favorites": {
-    "title": "المفضلة",
-    "subtitle": "مستنداتك المفضلة",
-    "addToFavorites": "إضافة إلى المفضلة",
-    "removeFromFavorites": "إزالة من المفضلة"
   },
   "peers": {
     "title": "الأقران",

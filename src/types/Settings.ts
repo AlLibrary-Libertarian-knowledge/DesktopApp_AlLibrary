@@ -76,6 +76,13 @@ export interface AppSettings {
     educationalLevel: 'beginner' | 'intermediate' | 'advanced';
     communityMemberships: string[];
   };
+
+  /** Populated by load_app_settings / apply_project_paths (not persisted). */
+  resolvedPaths?: {
+    databaseFile: string;
+    documentsFolder: string;
+    downloadFolder: string;
+  };
 }
 
 export interface ProjectFolderInfo {

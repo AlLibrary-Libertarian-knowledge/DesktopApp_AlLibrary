@@ -8,6 +8,7 @@ import Button from '@/components/foundation/Button/Button';
 import { pickAnyFiles } from '@/services/system/fileDialogs';
 import { Card } from '@/components/foundation/Card';
 import { Badge } from '@/components/foundation/Badge';
+import { OnionStatusBar } from '@/components/domain/network/OnionStatusBar';
 import { Input } from '@/components/foundation/Input';
 import { Upload, Download, Activity, Plus, Trash2, Link2 } from 'lucide-solid';
 import { useTransferState } from '@/hooks/api/useTransferState';
@@ -83,54 +84,30 @@ const PeerTransfers: Component = () => {
       </header>
 
       <Card class={styles.statusBar}>
-        <div class={styles.statusRow}>
-          <div class={styles.statusInfo}>
-            <strong>Onion share:</strong>{' '}
-            <Badge variant={transfer.onionRunning() ? 'success' : 'secondary'}>
-              {transfer.onionRunning() ? (transfer.onionAddress() ?? 'starting…') : 'stopped'}
-            </Badge>
-          </div>
-          <div class={styles.statusActions}>
-            <Button
-              variant="primary"
-              size="sm"
-              disabled={transfer.busy() || transfer.onionRunning()}
-              loading={transfer.busy()}
-              onClick={() => void transfer.startOnionShare()}
-            >
-              Start
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              disabled={transfer.busy() || !transfer.onionRunning()}
-              onClick={() => void transfer.stopOnionShare()}
-            >
-              Stop
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={!transfer.onionRunning()}
-              onClick={handleAddFiles}
-            >
-              <Plus size={14} /> Add files
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={!transfer.onionRunning()}
-              onClick={() => {
-                setFetchSuccess('');
-                setShowDownloadModal(true);
-              }}
-            >
-              <Link2 size={14} /> Download from link
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => void transfer.refreshAll()}>
-              Refresh
-            </Button>
-          </div>
+        <OnionStatusBar variant="actions" />
+        <div class={styles.statusActionsExtra}>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!transfer.onionRunning()}
+            onClick={handleAddFiles}
+          >
+            <Plus size={14} /> Add files
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!transfer.onionRunning()}
+            onClick={() => {
+              setFetchSuccess('');
+              setShowDownloadModal(true);
+            }}
+          >
+            <Link2 size={14} /> Download from link
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => void transfer.refreshAll()}>
+            Refresh
+          </Button>
         </div>
         <Show when={transfer.error()}>
           <p class={styles.onionError} role="alert">

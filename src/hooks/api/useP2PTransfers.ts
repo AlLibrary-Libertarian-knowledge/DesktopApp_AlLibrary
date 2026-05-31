@@ -1,5 +1,4 @@
 import { createSignal } from 'solid-js';
-import { invoke } from '@tauri-apps/api/core';
 import { transferFacade } from '@/services/network/transferFacade';
 import type { DocumentInfo } from '@/services/documentService';
 
@@ -13,10 +12,7 @@ export function useP2PTransfers() {
     setError(null);
     setLastOp(enabled ? 'seed:on' : 'seed:off');
     try {
-      return await invoke<DocumentInfo>('set_document_seed_enabled', {
-        filePath: path,
-        enabled,
-      });
+      return await transferFacade.setDocumentSeedEnabled(path, enabled);
     } catch (e: unknown) {
       const msg = String(e instanceof Error ? e.message : e);
       setError(msg);
