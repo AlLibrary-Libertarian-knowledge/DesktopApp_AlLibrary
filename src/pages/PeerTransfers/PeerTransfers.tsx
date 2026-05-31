@@ -21,6 +21,7 @@ import styles from './PeerTransfers.module.css';
 const PeerTransfers: Component = () => {
   const transfer = useTransferState();
   const toast = useToast();
+  const [hubTab, setHubTab] = createSignal<'downloads' | 'sharing'>('downloads');
   const [showDownloadModal, setShowDownloadModal] = createSignal(false);
   const [fetchLink, setFetchLink] = createSignal('');
   const [fetchName, setFetchName] = createSignal('');
@@ -95,38 +96,82 @@ const PeerTransfers: Component = () => {
         </p>
       </header>
 
-      <Card class={styles.statusBar}>
-        <OnionStatusBar variant="actions" />
-        <div class={styles.statusActionsExtra}>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={!transfer.canDownload()}
-            onClick={() => void handleAddFiles()}
-          >
-            <Plus size={14} /> Add files
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={!transfer.canDownload()}
-            onClick={() => {
-              setResolveHint('');
-              setShowDownloadModal(true);
-            }}
-          >
-            <Link2 size={14} /> Download from link
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => void transfer.refreshAll()}>
-            Refresh
-          </Button>
-        </div>
-        <Show when={transfer.error()}>
-          <p class={styles.onionError} role="alert">
-            {transfer.error()}
-          </p>
-        </Show>
-      </Card>
+      <div class={styles.hubTabs}>
+        <button
+          type="button"
+          class={hubTab() === 'downloads' ? styles.hubTabActive : styles.hubTab}
+          onClick={() => setHubTab('downloads')}
+        >
+          Downloads
+        </button>
+        <button
+          type="button"
+          class={hubTab() === 'sharing' ? styles.hubTabActive : styles.hubTab}
+          onClick={() => setHubTab('sharing')}
+        >
+          Sharing
+        </button>
+      </div>
+
+      <Show when={hubTab() === 'downloads'}>
+        <Card class={styles.statusBar}>
+          <div class={styles.statusActionsExtra}>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={!transfer.canDownload()}
+              onClick={() => {
+                setResolveHint('');
+                setShowDownloadModal(true);
+              }}
+            >
+              <Link2 size={14} /> Add download
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => void transfer.refreshAll()}>
+              Refresh
+            </Button>
+          </div>
+          <Show when={transfer.error()}>
+            <p class={styles.onionError} role="alert">
+              {transfer.error()}
+            </p>
+          </Show>
+        </Card>
+
+        <TransferQueuePanel variant="full" showOutbound={false} showDownloads showCompleted />
+      </Show>
+
+      <Show when={hubTab() === 'sharing'}>
+        <Card class={styles.statusBar}>
+          <OnionStatusBar variant="actions" />
+          <div class={styles.statusActionsExtra}>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={!transfer.canDownload()}
+              onClick={() => void handleAddFiles()}
+            >
+              <Plus size={14} /> Add files
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => void transfer.refreshAll()}>
+              Refresh
+            </Button>
+          </div>
+          <Show when={transfer.error()}>
+            <p class={styles.onionError} role="alert">
+              {transfer.error()}
+            </p>
+          </Show>
+        </Card>
+
+        <TransferQueuePanel
+          variant="full"
+          showOutbound
+          showDownloads={false}
+          showCompleted={false}
+          onAddShare={() => void handleAddFiles()}
+        />
+      </Show>
 
       <Show when={showDownloadModal()}>
         <div
@@ -137,7 +182,7 @@ const PeerTransfers: Component = () => {
           onClick={() => setShowDownloadModal(false)}
         >
           <div class={styles.modalCard} onClick={(e: MouseEvent) => e.stopPropagation()}>
-            <h2 class={styles.modalTitle}>Download from network</h2>
+            <h2 class={styles.modalTitle}>Add download</h2>
             <p class={styles.modalHint}>
               Paste a content hash, opoc link, or opocswarm link. Swarm downloads try all online
               peers automatically.
@@ -176,14 +221,12 @@ const PeerTransfers: Component = () => {
                 disabled={!fetchLink().trim() || !transfer.canDownload()}
                 onClick={() => void handleDownloadFromLink()}
               >
-                Start download
+                Add to queue
               </Button>
             </div>
           </div>
         </div>
       </Show>
-
-      <TransferQueuePanel variant="full" showOutbound onAddShare={() => void handleAddFiles()} />
     </div>
   );
 };

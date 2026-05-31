@@ -8,6 +8,7 @@ import { Bell, Menu, Search as SearchIcon, Settings as SettingsIcon } from 'luci
 import { useNetworkPresenceResource } from '@/hooks/network/useNetworkPresence';
 import { TorBootstrapStatus } from '@/components/domain/network/TorBootstrapStatus';
 import { OnionStatusBar } from '@/components/domain/network/OnionStatusBar';
+import { DownloadStatusPill } from '@/components/domain/network/DownloadStatusPill';
 
 interface HeaderProps {
   sidebarCollapsed?: boolean;
@@ -78,6 +79,8 @@ const Header: Component<HeaderProps> = props => {
       </div>
 
       <div class="header-right">
+        <DownloadStatusPill />
+
         <LanguageSwitcher
           variant="compact"
           showFlags={true}

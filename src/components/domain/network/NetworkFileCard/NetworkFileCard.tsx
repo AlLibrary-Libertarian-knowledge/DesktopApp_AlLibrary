@@ -3,6 +3,7 @@ import { BookOpen, Download, ExternalLink, FileText } from 'lucide-solid';
 import { Button } from '@/components/foundation/Button';
 import { Badge } from '@/components/foundation/Badge';
 import { transferFacade } from '@/services/network/transferFacade';
+import type { TransferView } from '@/services/network/transferFacade';
 import styles from './NetworkFileCard.module.css';
 
 export interface NetworkFileCardProps {
@@ -13,6 +14,7 @@ export interface NetworkFileCardProps {
   peerCount?: number;
   canDownload?: boolean;
   downloadProgress?: number;
+  downloadStatus?: TransferView['status'];
   onOpen?: () => void;
   onDownload?: () => Promise<void>;
   onDownloadError?: (message: string) => void;
@@ -37,30 +39,36 @@ function fileTypeFromName(name: string): string {
 }
 
 export const NetworkFileCard: Component<NetworkFileCardProps> = props => {
-  const [downloading, setDownloading] = createSignal(false);
+  const [submitting, setSubmitting] = createSignal(false);
   const [statusMessage, setStatusMessage] = createSignal<string | null>(null);
 
+  const inQueue = () =>
+    props.downloadStatus === 'queued' ||
+    props.downloadStatus === 'resolving' ||
+    props.downloadStatus === 'active';
+
   const peersAvailable = () => (props.peerCount ?? 1) > 0;
-  const canDownloadNow = () => props.canDownload !== false && peersAvailable() && !downloading();
+  const canDownloadNow = () => props.canDownload !== false && peersAvailable() && !inQueue();
 
   const handleDownload = async () => {
-    if (!canDownloadNow() && !downloading()) return;
+    if (!canDownloadNow() && !submitting()) return;
     setStatusMessage(null);
-    setDownloading(true);
+    setSubmitting(true);
     try {
       if (props.onDownload) {
         await props.onDownload();
-        setStatusMessage('Download started');
+        setStatusMessage('Added to downloads');
         return;
       }
-      await transferFacade.downloadByHashOrLink(props.contentHash, props.name);
-      setStatusMessage('Download started');
+      const { id } = await transferFacade.beginDownload(props.contentHash, props.name);
+      void transferFacade.runDownload(id);
+      setStatusMessage('Added to downloads');
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
       setStatusMessage(msg);
       props.onDownloadError?.(msg);
     } finally {
-      setDownloading(false);
+      setSubmitting(false);
     }
   };
 
@@ -72,8 +80,19 @@ export const NetworkFileCard: Component<NetworkFileCardProps> = props => {
 
   const progressPct = () => {
     const p = props.downloadProgress;
-    if (p == null) return null;
+    if (p == null || !inQueue()) return null;
     return Math.round(Math.min(1, Math.max(0, p)) * 100);
+  };
+
+  const buttonLabel = () => {
+    if (submitting()) return 'Adding…';
+    if (props.downloadStatus === 'queued' || props.downloadStatus === 'resolving')
+      return 'In queue';
+    if (props.downloadStatus === 'active') {
+      const pct = progressPct();
+      return pct != null && pct > 0 ? `${pct}%` : 'Downloading…';
+    }
+    return 'Download';
   };
 
   return (
@@ -105,12 +124,16 @@ export const NetworkFileCard: Component<NetworkFileCardProps> = props => {
                 {statusMessage()}
               </p>
             </Show>
-            <Show when={progressPct() != null}>
+            <Show when={inQueue()}>
               <div class={styles.progressWrap}>
                 <div class={styles.progressBar}>
-                  <div class={styles.progressFill} style={{ width: `${progressPct()}%` }} />
+                  <div class={styles.progressFill} style={{ width: `${progressPct() ?? 0}%` }} />
                 </div>
-                <span class={styles.progressLabel}>{progressPct()}%</span>
+                <span class={styles.progressLabel}>
+                  {props.downloadStatus === 'queued' || props.downloadStatus === 'resolving'
+                    ? 'Queued'
+                    : `${progressPct() ?? 0}%`}
+                </span>
               </div>
             </Show>
           </div>
@@ -127,12 +150,12 @@ export const NetworkFileCard: Component<NetworkFileCardProps> = props => {
           variant="primary"
           size="sm"
           disabled={!canDownloadNow()}
-          loading={downloading()}
+          loading={submitting()}
           onClick={() => void handleDownload()}
           aria-label={`Download ${props.name}`}
         >
           <Download size={14} />
-          &nbsp;{downloading() ? 'Starting…' : 'Download'}
+          &nbsp;{buttonLabel()}
         </Button>
       </div>
     </article>

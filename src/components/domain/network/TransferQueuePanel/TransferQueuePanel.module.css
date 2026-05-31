@@ -124,3 +124,21 @@
   opacity: 0.85;
   word-break: break-all;
 }
+
+.emptyLink {
+  display: inline-block;
+  margin-left: 0.35rem;
+  color: var(--primary-color, #22d3ee);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.emptyLink:hover {
+  text-decoration: underline;
+}
+
+.rowActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}

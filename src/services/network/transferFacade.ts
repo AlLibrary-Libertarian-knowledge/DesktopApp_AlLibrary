@@ -30,9 +30,10 @@ export interface TransferView {
   id: string;
   direction: 'inbound' | 'outbound';
   name: string;
-  status: 'active' | 'queued' | 'completed' | 'failed' | 'seeding';
+  status: 'active' | 'queued' | 'resolving' | 'completed' | 'failed' | 'seeding';
   progress: number;
   link?: string;
+  sourceInput?: string;
   localPath?: string;
   error?: string;
 }
@@ -93,11 +94,6 @@ function looksLikeDownloadLink(value: string): boolean {
   );
 }
 
-function isLikelyContentHash(value: string): boolean {
-  const v = value.trim();
-  return v.length >= 32 && /^[a-fA-F0-9]+$/.test(v);
-}
-
 function mapShare(entry: LocalShareEntry): ShareEntryView {
   return {
     fileId: entry.fileId,
@@ -114,12 +110,27 @@ function mapDownloadItem(item: DownloadItem): TransferView {
     id: item.id,
     direction: 'inbound',
     name: item.name,
-    status: item.status === 'active' ? 'active' : item.status,
+    status: item.status,
     progress: item.progress,
     link: item.link,
+    sourceInput: item.sourceInput,
     localPath: item.outDir || undefined,
     error: item.error,
   };
+}
+
+async function assertCanDownload(resolvedLink: string): Promise<void> {
+  const status = await onionShareStatus();
+  if (!status.running) {
+    throw new Error(
+      'Tor onion sharing service is not running. Start it from Sharing & Downloads first.'
+    );
+  }
+  if (status.onion && resolvedLink.includes(status.onion)) {
+    throw new Error(
+      'You are already sharing this file locally. The Tor network cannot download from yourself without creating a circuit loop.'
+    );
+  }
 }
 
 function mapResolved(wire: ResolvedDownloadLinkWire): ResolvedDownloadLink {
@@ -263,35 +274,53 @@ export const transferFacade = {
 
   resolveDownloadLinkFull,
 
-  async downloadLink(link: string, fileName: string, outDir?: string): Promise<string> {
-    let trimmedLink = link.trim();
-    if (!trimmedLink) {
-      throw new Error('File download link is empty or missing.');
+  async beginDownload(
+    linkOrHash: string,
+    fileName: string,
+    outDir?: string
+  ): Promise<{ id: string }> {
+    const targetDir = await resolveOutputDir(outDir);
+    const id = downloadManager.enqueueDownload(fileName, linkOrHash, targetDir);
+    return { id };
+  },
+
+  async runDownload(id: string): Promise<string> {
+    const item = downloadManager.getById(id);
+    if (!item) {
+      throw new Error('Download not found in queue.');
     }
 
-    if (isLikelyContentHash(trimmedLink) || !looksLikeDownloadLink(trimmedLink)) {
-      const resolved = await resolveDownloadLinkFull(trimmedLink, true);
-      if (!resolved.available) {
+    downloadManager.updateItem(id, { status: 'resolving' });
+
+    try {
+      const resolved = await resolveDownloadLinkFull(item.sourceInput || item.link, true);
+      if (
+        !resolved.available &&
+        resolved.peerCount === 0 &&
+        !looksLikeDownloadLink(resolved.link)
+      ) {
         throw new Error('No online peers are seeding this file.');
       }
-      trimmedLink = resolved.link;
-    }
 
-    const status = await onionShareStatus();
-    if (!status.running) {
-      throw new Error(
-        'Tor onion sharing service is not running. Start it from Sharing & Downloads first.'
-      );
-    }
+      const trimmedLink = resolved.link.trim();
+      if (!trimmedLink) {
+        throw new Error('Could not resolve a download link for this file.');
+      }
 
-    if (status.onion && trimmedLink.includes(status.onion)) {
-      throw new Error(
-        'You are already sharing this file locally. The Tor network cannot download from yourself without creating a circuit loop.'
-      );
+      await assertCanDownload(trimmedLink);
+      downloadManager.updateItem(id, { link: trimmedLink, status: 'active', progress: 0 });
+      return await downloadManager.executeFetch(id);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      downloadManager.updateItem(id, { status: 'failed', error: msg });
+      downloadManager.removeActive(id);
+      throw err;
     }
+  },
 
-    const targetDir = await resolveOutputDir(outDir);
-    return downloadManager.startDownload(trimmedLink, fileName, targetDir);
+  async downloadLink(link: string, fileName: string, outDir?: string): Promise<string> {
+    const { id } = await this.beginDownload(link, fileName, outDir);
+    return this.runDownload(id);
   },
 
   async downloadByHashOrLink(
@@ -299,11 +328,8 @@ export const transferFacade = {
     fileName: string,
     outDir?: string
   ): Promise<string> {
-    const resolved = await resolveDownloadLinkFull(contentHashOrLink, true);
-    if (!resolved.available && resolved.peerCount === 0 && !looksLikeDownloadLink(resolved.link)) {
-      throw new Error('No online peers are seeding this file.');
-    }
-    return this.downloadLink(resolved.link, fileName, outDir);
+    const { id } = await this.beginDownload(contentHashOrLink, fileName, outDir);
+    return this.runDownload(id);
   },
 
   listTransfers(): { active: TransferView[]; completed: TransferView[] } {
@@ -328,10 +354,16 @@ export const transferFacade = {
     for (const item of items) {
       const link = item.link.trim();
       if (!link && !item.name) continue;
-      const key = link || item.name;
-      if (downloadManager.getActive().some(a => a.link === key || a.name === item.name)) continue;
+      if (
+        downloadManager
+          .getActive()
+          .some(a => a.sourceInput === link || a.link === link || a.name === item.name)
+      ) {
+        continue;
+      }
       if (link && completedLinks.has(link)) continue;
-      await this.downloadByHashOrLink(link || item.name, item.name || link, outDir);
+      const { id } = await this.beginDownload(link || item.name, item.name || link, outDir);
+      void this.runDownload(id);
     }
   },
 

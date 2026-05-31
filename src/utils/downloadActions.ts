@@ -1,4 +1,3 @@
-import { transferFacade } from '@/services/network/transferFacade';
 import type { ToastActions } from '@/hooks/ui/useToast';
 
 export async function downloadWithToast(
@@ -10,10 +9,10 @@ export async function downloadWithToast(
     await startDownload();
     toast.show({
       type: 'success',
-      title: 'Download started',
-      message: `"${fileName}" is downloading. Track progress in Sharing & downloads.`,
+      title: 'Added to downloads',
+      message: `"${fileName}" was added to your download queue. Track progress in Sharing & downloads.`,
       duration: 8000,
-      actionLabel: 'Open transfers',
+      actionLabel: 'View queue',
       onAction: () => {
         if (window.location.pathname !== '/transfers') {
           window.history.pushState({}, '', '/transfers');
@@ -28,19 +27,18 @@ export async function downloadWithToast(
   }
 }
 
-export async function downloadNetworkFileWithToast(
-  linkOrHash: string,
+export async function enqueueDownloadWithToast(
   fileName: string,
-  toast: Pick<ToastActions, 'show' | 'error'>,
-  outDir?: string
+  enqueue: () => Promise<string>,
+  toast: Pick<ToastActions, 'show' | 'error'>
 ): Promise<string> {
-  let result = '';
+  let id = '';
   await downloadWithToast(
     fileName,
     async () => {
-      result = await transferFacade.downloadByHashOrLink(linkOrHash, fileName, outDir);
+      id = await enqueue();
     },
     toast
   );
-  return result;
+  return id;
 }

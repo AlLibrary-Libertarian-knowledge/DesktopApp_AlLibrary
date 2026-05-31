@@ -560,19 +560,14 @@ const HomePage: Component = () => {
                     <Plus size={14} aria-hidden="true" />
                     {t('home.downloadsSection.addDownload')}
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    aria-label={t('home.downloadsSection.queue')}
-                    onClick={() => navigate('/transfers')}
-                  >
+                  <Button variant="primary" size="sm" onClick={() => navigate('/transfers')}>
                     <ClipboardList size={14} aria-hidden="true" />
-                    {t('home.downloadsSection.queue')}
+                    Open full queue
                     <Show when={transfer.activeCount() > 0}> ({transfer.activeCount()})</Show>
                   </Button>
                 </div>
               </div>
-              <TransferQueuePanel variant="full" showOutbound={false} />
+              <TransferQueuePanel variant="compact" showOutbound={false} />
             </section>
           </div>
         )}

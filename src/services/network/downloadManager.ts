@@ -7,12 +7,15 @@ import {
   type TransferProgressPayload,
 } from './onionShareService';
 
+export type DownloadItemStatus = 'queued' | 'resolving' | 'active' | 'completed' | 'failed';
+
 export interface DownloadItem {
   id: string;
   link: string;
+  sourceInput: string;
   name: string;
   outDir: string;
-  status: 'active' | 'queued' | 'completed' | 'failed';
+  status: DownloadItemStatus;
   progress: number;
   sizeBytes?: number;
   error?: string;
@@ -45,6 +48,7 @@ async function loadCompletedFromDb(): Promise<DownloadItem[]> {
       .map(r => ({
         id: r.id,
         link: r.link,
+        sourceInput: r.link,
         name: r.name?.trim() || r.link,
         outDir: r.localPath ?? '',
         status: r.status === 'completed' ? 'completed' : 'failed',
@@ -64,7 +68,6 @@ class DownloadManager {
   private completed: DownloadItem[] = [];
   private listeners: Set<Listener> = new Set();
   private initialized = false;
-  private hydrated = false;
 
   constructor() {
     void this.hydrateCompleted();
@@ -72,7 +75,6 @@ class DownloadManager {
 
   private async hydrateCompleted() {
     this.completed = await loadCompletedFromDb();
-    this.hydrated = true;
     this.notify();
     try {
       globalThis.localStorage?.removeItem('allibrary_completed_downloads');
@@ -87,12 +89,20 @@ class DownloadManager {
     }
   }
 
+  private findActiveIndex(id: string): number {
+    return this.active.findIndex(item => item.id === id);
+  }
+
   private handleProgress(payload: TransferProgressPayload) {
-    const item = this.active.find(i => i.link === payload.link || i.id === payload.id);
+    const item =
+      this.active.find(i => i.id === payload.id) ?? this.active.find(i => i.link === payload.link);
     if (!item) return;
     item.progress = Math.min(1, Math.max(0, payload.progress));
     if (payload.bytesMoved != null) {
       item.sizeBytes = payload.bytesMoved;
+    }
+    if (item.status === 'queued' || item.status === 'resolving') {
+      item.status = 'active';
     }
     this.notify();
   }
@@ -122,43 +132,100 @@ class DownloadManager {
   }
 
   private handleFetchDone(payload: OnionShareFetchDonePayload) {
-    const idx = this.active.findIndex(item => item.link === payload.link);
+    const idx = this.active.findIndex(
+      item =>
+        item.link === payload.link || (payload.transferId != null && item.id === payload.transferId)
+    );
     if (idx !== -1) {
       this.active.splice(idx, 1);
       void this.refreshCompletedFromDb();
     }
   }
 
-  public async startDownload(link: string, name: string, outDir: string): Promise<string> {
-    const existing = this.active.find(item => item.link === link);
+  public getById(id: string): DownloadItem | undefined {
+    return this.active.find(item => item.id === id);
+  }
+
+  public enqueueDownload(name: string, linkOrHash: string, outDir: string): string {
+    const input = linkOrHash.trim();
+    const existing = this.active.find(
+      item =>
+        item.sourceInput === input ||
+        item.link === input ||
+        (item.name === name && item.status !== 'failed')
+    );
     if (existing) {
-      throw new Error('Download is already in progress');
+      return existing.id;
     }
 
+    const id = `dl-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
     const newItem: DownloadItem = {
-      id: `dl-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      link,
+      id,
+      link: input,
+      sourceInput: input,
       name,
       outDir,
-      status: 'active',
+      status: 'queued',
       progress: 0,
       timestamp: Date.now(),
     };
 
     this.active.push(newItem);
     this.notify();
+    return id;
+  }
+
+  public updateItem(
+    id: string,
+    patch: Partial<Pick<DownloadItem, 'link' | 'status' | 'progress' | 'error' | 'sizeBytes'>>
+  ): void {
+    const item = this.getById(id);
+    if (!item) return;
+    Object.assign(item, patch);
+    this.notify();
+  }
+
+  public removeActive(id: string): void {
+    const idx = this.findActiveIndex(id);
+    if (idx !== -1) {
+      this.active.splice(idx, 1);
+      this.notify();
+    }
+  }
+
+  public async executeFetch(id: string): Promise<string> {
+    const item = this.getById(id);
+    if (!item) {
+      throw new Error('Download not found in queue.');
+    }
+
+    const link = item.link.trim();
+    if (!link) {
+      throw new Error('Download link is empty.');
+    }
+
+    item.status = 'active';
+    item.progress = 0;
+    this.notify();
 
     try {
-      const path = await onionShareFetch(link, outDir, name);
+      const path = await onionShareFetch(link, item.outDir, item.name);
       return path;
     } catch (err) {
-      const idx = this.active.findIndex(item => item.link === link);
-      if (idx !== -1) {
-        this.active.splice(idx, 1);
-        void this.refreshCompletedFromDb();
-      }
+      const msg = err instanceof Error ? err.message : String(err);
+      item.status = 'failed';
+      item.error = msg;
+      this.removeActive(id);
+      void this.refreshCompletedFromDb();
       throw err;
     }
+  }
+
+  /** Legacy blocking path: enqueue + caller must run pipeline separately. */
+  public async startDownload(link: string, name: string, outDir: string): Promise<string> {
+    const id = this.enqueueDownload(name, link, outDir);
+    this.updateItem(id, { link, status: 'active' });
+    return this.executeFetch(id);
   }
 
   public getActive(): DownloadItem[] {

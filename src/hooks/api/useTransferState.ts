@@ -15,7 +15,11 @@ export function useTransferState() {
   const [busy, setBusy] = createSignal(false);
 
   const activeCount = createMemo(() => activeDownloads().length);
+  const pendingCount = createMemo(
+    () => activeDownloads().filter(d => d.status === 'queued' || d.status === 'resolving').length
+  );
   const hasActiveDownloads = createMemo(() => activeCount() > 0);
+  const hasPendingOrActive = createMemo(() => activeCount() > 0);
   const canDownload = createMemo(() => onionRunning() && Boolean(onionAddress()));
 
   const refreshOnionStatus = async () => {
@@ -99,23 +103,25 @@ export function useTransferState() {
   };
 
   const startDownload = async (linkOrHash: string, fileName: string, outDir?: string) => {
-    setBusy(true);
     setError(null);
-    try {
-      await refreshOnionStatus();
-      if (!onionRunning() || !onionAddress()) {
-        throw new Error(
-          'Tor onion sharing is not ready. Open Sharing & downloads and wait for Onion status to turn ready.'
-        );
-      }
-      return await transferFacade.downloadByHashOrLink(linkOrHash, fileName, outDir);
-    } catch (e: unknown) {
+    await refreshOnionStatus();
+    if (!onionRunning() || !onionAddress()) {
+      const msg =
+        'Tor onion sharing is not ready. Open Sharing & downloads and wait for Onion status to turn ready.';
+      setError(msg);
+      throw new Error(msg);
+    }
+
+    const { id } = await transferFacade.beginDownload(linkOrHash, fileName, outDir);
+    void transferFacade.runDownload(id).catch((e: unknown) => {
       const msg = e instanceof Error ? e.message : String(e);
       setError(msg);
-      throw e;
-    } finally {
-      setBusy(false);
-    }
+    });
+    return id;
+  };
+
+  const retryDownload = async (linkOrHash: string, fileName: string, outDir?: string) => {
+    return startDownload(linkOrHash, fileName, outDir);
   };
 
   const startOnionShare = async () => {
@@ -151,16 +157,20 @@ export function useTransferState() {
     }
   };
 
-  const findActiveProgress = (linkOrHash: string) => {
+  const findActiveDownload = (linkOrHash: string) => {
     const key = linkOrHash.trim().toLowerCase();
-    const active = activeDownloads().find(
+    return activeDownloads().find(
       d =>
+        d.id.toLowerCase() === key ||
         d.link?.toLowerCase() === key ||
         d.link?.toLowerCase().includes(key) ||
+        d.sourceInput?.toLowerCase() === key ||
+        d.sourceInput?.toLowerCase().includes(key) ||
         d.name.toLowerCase() === key
     );
-    return active?.progress;
   };
+
+  const findActiveProgress = (linkOrHash: string) => findActiveDownload(linkOrHash)?.progress;
 
   return {
     shares,
@@ -171,7 +181,9 @@ export function useTransferState() {
     error,
     busy,
     activeCount,
+    pendingCount,
     hasActiveDownloads,
+    hasPendingOrActive,
     canDownload,
     refreshShares,
     refreshAll,
@@ -179,8 +191,10 @@ export function useTransferState() {
     removeShare,
     downloadLink,
     startDownload,
+    retryDownload,
     startOnionShare,
     stopOnionShare,
     findActiveProgress,
+    findActiveDownload,
   };
 }

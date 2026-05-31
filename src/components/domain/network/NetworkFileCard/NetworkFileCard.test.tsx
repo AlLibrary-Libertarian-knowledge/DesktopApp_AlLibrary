@@ -2,14 +2,17 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@solidjs/testing-library';
 import { NetworkFileCard } from './NetworkFileCard';
 
-vi.mock('@/services/network/transferFacade', () => ({
-  transferFacade: {
-    downloadLink: vi.fn().mockResolvedValue('/downloads/file.pdf'),
-    downloadByHashOrLink: vi.fn().mockResolvedValue('/downloads/file.pdf'),
-  },
+const { beginDownloadMock, runDownloadMock } = vi.hoisted(() => ({
+  beginDownloadMock: vi.fn().mockResolvedValue({ id: 'dl-1' }),
+  runDownloadMock: vi.fn().mockResolvedValue('/downloads/file.pdf'),
 }));
 
-import { transferFacade } from '@/services/network/transferFacade';
+vi.mock('@/services/network/transferFacade', () => ({
+  transferFacade: {
+    beginDownload: beginDownloadMock,
+    runDownload: runDownloadMock,
+  },
+}));
 
 describe('NetworkFileCard', () => {
   beforeEach(() => {
@@ -47,7 +50,7 @@ describe('NetworkFileCard', () => {
     expect(screen.getByText(/No peers online/i)).toBeInTheDocument();
   });
 
-  it('calls transferFacade.downloadByHashOrLink when download clicked (swarm-first)', async () => {
+  it('calls beginDownload and runDownload when download clicked', async () => {
     render(() => (
       <NetworkFileCard
         contentHash="content-hash-123"
@@ -59,12 +62,22 @@ describe('NetworkFileCard', () => {
     ));
     fireEvent.click(screen.getByRole('button', { name: /Download/i }));
     await waitFor(() => {
-      expect(transferFacade.downloadByHashOrLink).toHaveBeenCalledWith(
-        'content-hash-123',
-        'Doc.pdf'
-      );
+      expect(beginDownloadMock).toHaveBeenCalledWith('content-hash-123', 'Doc.pdf');
+      expect(runDownloadMock).toHaveBeenCalledWith('dl-1');
     });
-    expect(transferFacade.downloadLink).not.toHaveBeenCalled();
+  });
+
+  it('shows In queue when downloadStatus is queued', () => {
+    render(() => (
+      <NetworkFileCard
+        contentHash="hash"
+        name="Doc.pdf"
+        peerCount={1}
+        downloadStatus="queued"
+        canDownload
+      />
+    ));
+    expect(screen.getByRole('button', { name: /In queue/i })).toBeInTheDocument();
   });
 
   it('shows inline progress when downloadProgress is set', () => {
@@ -74,9 +87,10 @@ describe('NetworkFileCard', () => {
         name="Doc.pdf"
         peerCount={1}
         downloadProgress={0.42}
+        downloadStatus="active"
         canDownload
       />
     ));
-    expect(screen.getByText('42%')).toBeInTheDocument();
+    expect(screen.getAllByText('42%').length).toBeGreaterThan(0);
   });
 });

@@ -435,9 +435,7 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
                 <Button
                   variant="outline"
                   size="sm"
-                  disabled={
-                    !results()?.length || transfer.busy() || downloadingAll() || !canDownload()
-                  }
+                  disabled={!results()?.length || downloadingAll() || !canDownload()}
                   onClick={() => void handleDownloadAll()}
                 >
                   <Download size={14} class="mr-2" />
@@ -446,9 +444,15 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
               </div>
             </div>
             <Show when={!canDownload() && (results()?.length ?? 0) > 0}>
-              <p class={styles['download-error']}>
-                Start onion share from Sharing &amp; Downloads to download network files.
-              </p>
+              <div class={styles['download-error']}>
+                <p>
+                  Downloads need Tor onion sharing to be ready. You can browse cached results now;
+                  queue downloads once Onion status shows ready.
+                </p>
+                <Button variant="outline" size="sm" onClick={() => navigate('/transfers')}>
+                  Open Sharing &amp; downloads
+                </Button>
+              </div>
             </Show>
 
             <Show when={isSearching()}>
@@ -471,31 +475,35 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
               </p>
             </Show>
 
-            <Show when={transfer.hasActiveDownloads()}>
-              <TransferQueuePanel
-                variant="compact"
-                showOutbound={false}
-                class={styles['transfer-queue']}
-              />
-            </Show>
+            <TransferQueuePanel
+              variant="compact"
+              showOutbound={false}
+              class={styles['transfer-queue']}
+            />
 
             <Show when={results() && results()!.length > 0}>
               <div class={styles['results-grid']}>
                 <For each={results()}>
-                  {result => (
-                    <NetworkFileCard
-                      contentHash={result.document.id}
-                      name={result.document.title}
-                      size={result.document.fileSize}
-                      link={result.document.filePath || ''}
-                      peerCount={result.peerCount}
-                      canDownload={canDownload()}
-                      downloadProgress={transfer.findActiveProgress(result.document.id)}
-                      onOpen={() => handleDocumentOpen(result.document)}
-                      onDownload={() => handleFileDownload(result)}
-                      onDownloadError={msg => setDownloadError(msg)}
-                    />
-                  )}
+                  {result => {
+                    const target =
+                      result.swarmLink || result.document.filePath || result.document.id;
+                    const active = () => transfer.findActiveDownload(target);
+                    return (
+                      <NetworkFileCard
+                        contentHash={result.document.id}
+                        name={result.document.title}
+                        size={result.document.fileSize}
+                        link={result.document.filePath || ''}
+                        peerCount={result.peerCount}
+                        canDownload={canDownload()}
+                        downloadProgress={active()?.progress}
+                        downloadStatus={active()?.status}
+                        onOpen={() => handleDocumentOpen(result.document)}
+                        onDownload={() => handleFileDownload(result)}
+                        onDownloadError={msg => setDownloadError(msg)}
+                      />
+                    );
+                  }}
                 </For>
               </div>
             </Show>

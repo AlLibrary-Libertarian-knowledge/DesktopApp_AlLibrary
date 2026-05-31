@@ -21,6 +21,9 @@ const subscribeTransfersMock = vi.fn(
   }
 );
 
+const beginDownloadMock = vi.fn(async () => ({ id: 'dl-queued-1' }));
+const runDownloadMock = vi.fn(async () => '/downloads/file.pdf');
+
 vi.mock('@/services/network/transferFacade', () => ({
   transferFacade: {
     listShares: () => listSharesMock(),
@@ -30,7 +33,8 @@ vi.mock('@/services/network/transferFacade', () => ({
     addShare: vi.fn(),
     removeShare: vi.fn(),
     downloadLink: vi.fn(),
-    downloadByHashOrLink: vi.fn(async () => 'dl-1'),
+    beginDownload: beginDownloadMock,
+    runDownload: runDownloadMock,
     startOnionShare: vi.fn(),
     stopOnionShare: vi.fn(),
   },
@@ -40,6 +44,8 @@ describe('useTransferState', () => {
   beforeEach(() => {
     listSharesMock.mockClear();
     subscribeTransfersMock.mockClear();
+    beginDownloadMock.mockClear();
+    runDownloadMock.mockClear();
     globalThis.localStorage = {
       getItem: vi.fn(),
       setItem: vi.fn(),
@@ -67,19 +73,16 @@ describe('useTransferState', () => {
     });
   });
 
-  it('startDownload delegates to transferFacade.downloadByHashOrLink', async () => {
-    const { transferFacade } = await import('@/services/network/transferFacade');
+  it('startDownload enqueues immediately and runs fetch in background', async () => {
     const { useTransferState } = await import('../useTransferState');
 
     await new Promise<void>(resolve => {
       createRoot(async dispose => {
         const state = useTransferState();
-        await state.startDownload('hash-abc', 'file.pdf');
-        expect(transferFacade.downloadByHashOrLink).toHaveBeenCalledWith(
-          'hash-abc',
-          'file.pdf',
-          undefined
-        );
+        const id = await state.startDownload('hash-abc', 'file.pdf');
+        expect(id).toBe('dl-queued-1');
+        expect(beginDownloadMock).toHaveBeenCalledWith('hash-abc', 'file.pdf', undefined);
+        expect(runDownloadMock).toHaveBeenCalledWith('dl-queued-1');
         dispose();
         resolve();
       });
