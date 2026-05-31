@@ -16,6 +16,7 @@ import { Button } from '@/components/foundation/Button';
 import { Shield } from 'lucide-solid';
 import { torAdapter } from '@/services/network/torAdapter';
 import { p2pNetworkService } from '@/services/network/p2pNetworkService';
+import { transferFacade } from '@/services/network/transferFacade';
 
 /**
  * P2PSearch Page Component
@@ -32,7 +33,7 @@ export const P2PSearch: Component = () => {
       await torAdapter.start({ bridgeSupport: true });
       await p2pNetworkService.initializeNode({ torSupport: true });
       await p2pNetworkService.startNode();
-      await p2pNetworkService.enableTorRouting();
+      await transferFacade.startOnionShare();
       setTorReady(true);
     } catch (e) {
       console.error('Failed to enable TOR/P2P:', e);

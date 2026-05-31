@@ -6,11 +6,11 @@ import type { ConnectionManagerProps } from './types';
 import {
   trackerGetConfig,
   trackerSetConfig,
-  syncAllEnabledSeeds,
   trackerGetLastSyncDiag,
   type TrackerNetworkConfig,
   type TrackerSyncDiagnostics,
 } from '@/services/network/onionShareService';
+import { transferFacade } from '@/services/network/transferFacade';
 import { invoke } from '@tauri-apps/api/core';
 import { networkFacade } from '@/services/network/networkFacade';
 import type { AppSettings } from '@/types/Settings';
@@ -74,7 +74,7 @@ export const ConnectionManager: Component<ConnectionManagerProps> = props => {
         sharePublicly: !pauseAllSeeding(),
       };
       await trackerSetConfig(cfg);
-      await syncAllEnabledSeeds();
+      await transferFacade.syncAllEnabledSeeds();
       const diag = await trackerGetLastSyncDiag();
       setSyncDiag(diag);
       props.onConfigChange?.(cfg);

@@ -34,6 +34,7 @@ import {
 import './Sidebar.css';
 import { useNetworkPresenceResource } from '@/hooks/network/useNetworkPresence';
 import { TorBootstrapStatus } from '@/components/domain/network/TorBootstrapStatus';
+import { OnionStatusBar } from '@/components/domain/network/OnionStatusBar';
 import { useNetworkLobby } from '@/hooks/api/useNetworkLobby';
 import { useNetworkPeers } from '@/hooks/api/useNetworkPeers';
 
@@ -325,27 +326,7 @@ const Sidebar: Component<SidebarProps> = props => {
                     <div class="signal-dot" />
                     <div class="signal-dot" />
                   </div>
-                  <div
-                    class="tor-status-pill"
-                    title={
-                      presence().onionActive ? 'Onion routing active' : 'Onion routing inactive'
-                    }
-                  >
-                    <span class={`pill-dot ${presence().onionActive ? 'on' : 'off'}`} />
-                    <span class="pill-text">{presence().onionActive ? 'Onion' : 'No Onion'}</span>
-                  </div>
-                  <Show when={lobby.onlineNodes() > 0 || lobby.lastSyncAt()}>
-                    <div
-                      class="tor-status-pill"
-                      title="Nodes connected to the global tracker"
-                      style={{ 'margin-top': '4px', cursor: 'default' }}
-                    >
-                      <span class="pill-dot on" />
-                      <span class="pill-text">
-                        {lobby.onlineNodes()} node{lobby.onlineNodes() !== 1 ? 's' : ''} online
-                      </span>
-                    </div>
-                  </Show>
+                  <OnionStatusBar variant="sidebar" showNodeCount />
                 </Show>
               </div>
             </>

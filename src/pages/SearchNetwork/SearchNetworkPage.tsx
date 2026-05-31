@@ -18,8 +18,9 @@ import LoadingSpinner from '@/components/foundation/LoadingSpinner/LoadingSpinne
 // Removed mocked stat/activity components; we will show only real metrics
 
 // Domain Components
-import { DocumentCard } from '../../components/domain/document/DocumentCard';
+import { NetworkFileCard } from '../../components/domain/network/NetworkFileCard';
 import { NetworkStatus } from '../../components/domain/network/NetworkStatus';
+import { OnionStatusBar } from '../../components/domain/network/OnionStatusBar';
 
 // Hooks and Services
 import { useNetworkSearch } from '../../hooks/api/useNetworkSearch';
@@ -27,9 +28,8 @@ import { useNetworkLobby } from '../../hooks/api/useNetworkLobby';
 import { enableTorAndP2P } from '../../services/network/bootstrap';
 import { useP2PTransfers } from '@/hooks/api/useP2PTransfers';
 import { transferFacade } from '@/services/network/transferFacade';
-import { networkFacade } from '@/services/network/networkFacade';
-import { fetchNetworkPresence } from '@/services/network/onionShareService';
 import { useNetworkStore } from '@/stores/network/networkStore';
+import { useNetworkPresenceResource } from '@/hooks/network/useNetworkPresence';
 
 // Types
 import type { Document } from '@/types/core';
@@ -56,12 +56,11 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
   // const [viewMode, setViewMode] = createSignal<'grid' | 'list'>(props.initialViewMode || 'grid');
   const [showFilters, setShowFilters] = createSignal(false);
   const [anonymousMode, setAnonymousMode] = createSignal(props.anonymousMode || false);
-  const [onionRunning, setOnionRunning] = createSignal(false);
-  const [onionActive, setOnionActive] = createSignal(false);
-  const [syncStale, setSyncStale] = createSignal(false);
   const [torEstablishing, setTorEstablishing] = createSignal(false);
   const [autoSearchDone, setAutoSearchDone] = createSignal(false);
   const [downloadingAll, setDownloadingAll] = createSignal(false);
+
+  const { presence } = useNetworkPresenceResource();
 
   // Search filters
   const [fileTypes, setFileTypes] = createSignal<string[]>([]);
@@ -75,34 +74,15 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
   const onEnableTorClick = async () => {
     try {
       setTorEstablishing(true);
-      const result = await enableTorAndP2P();
-      setOnionRunning(result.torConnected && result.p2pStarted);
-      setOnionActive(result.torConnected && result.p2pStarted);
-    } catch (e) {
-      void e;
-      setOnionRunning(false);
-      setOnionActive(false);
+      await enableTorAndP2P();
+    } catch {
+      /* surfaced via presence hook */
     } finally {
       setTorEstablishing(false);
     }
   };
 
-  const refreshPresence = async () => {
-    try {
-      const p = await fetchNetworkPresence();
-      setOnionRunning(p.online);
-      setOnionActive(p.onionActive);
-      const diag = await networkFacade.getSyncDiagnostics();
-      setSyncStale(diag != null && !diag.ok);
-    } catch {
-      setOnionRunning(false);
-      setOnionActive(false);
-    }
-  };
-
   onMount(() => {
-    void refreshPresence();
-    const timer = globalThis.setInterval(() => void refreshPresence(), 4000) as unknown as number;
     const keyHandler = (ev: KeyboardEvent) => {
       const isMac = navigator.platform.includes('Mac');
       if ((isMac ? ev.metaKey : ev.ctrlKey) && ev.key.toLowerCase() === 'k') {
@@ -112,7 +92,6 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
     };
     window.addEventListener('keydown', keyHandler);
     return () => {
-      globalThis.clearInterval(timer);
       window.removeEventListener('keydown', keyHandler);
     };
   });
@@ -143,7 +122,7 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
     return formatTotalSize(bytes);
   };
 
-  const canDownload = () => onionRunning() && onionActive();
+  const canDownload = () => presence().onionActive && presence().online;
 
   const handleSearch = async () => {
     setActiveTab('results');
@@ -197,22 +176,11 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
         rightContent={
           <div class={styles['network-status-enhanced']}>
             <NetworkStatus variant="default" />
-            <div class={styles['tor-pill']} data-on={onionActive() ? '1' : '0'}>
-              {onionActive() ? 'Onion' : onionRunning() ? 'Bootstrapping' : 'Cache only'}
-            </div>
-            <Show when={!onionActive() && !torEstablishing()}>
-              <Button variant="outline" size="sm" onClick={() => void onEnableTorClick()}>
-                Start onion share
-              </Button>
-            </Show>
-            <Show when={torEstablishing()}>
-              <span class={styles['tor-pill']}>Starting…</span>
-            </Show>
-            <Show when={syncStale()}>
-              <span class={styles['tor-pill']} title="Lobby sync failed — showing cached results">
-                Stale cache
-              </span>
-            </Show>
+            <OnionStatusBar
+              variant="toolbar"
+              onStartOnion={onEnableTorClick}
+              startingOnion={torEstablishing()}
+            />
           </div>
         }
       />
@@ -420,9 +388,9 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
                 icon={<Shield size={20} />}
                 number={lobbyTotalSize()}
                 label="Lobby Total Size"
-                trendType={onionActive() ? 'positive' : 'neutral'}
+                trendType={presence().onionActive ? 'positive' : 'neutral'}
                 trendIcon={<ArrowRight size={12} />}
-                trendValue={onionActive() ? 'Live' : 'Cached'}
+                trendValue={presence().onionActive ? 'Live' : 'Cached'}
                 graphType="health"
               />
             </div>
@@ -483,25 +451,14 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
               <div class={styles['results-grid']}>
                 <For each={results()}>
                   {(result: any) => (
-                    <DocumentCard
-                      document={result.document}
+                    <NetworkFileCard
+                      contentHash={result.document.id}
+                      name={result.document.title}
+                      size={result.document.fileSize}
+                      link={result.document.filePath || ''}
+                      canDownload={canDownload()}
                       onOpen={() => handleDocumentOpen(result.document)}
-                      onDownload={async doc => {
-                        setDownloadError(null);
-                        try {
-                          const result = results()?.find(r => r.document.id === doc.id);
-                          const link = result?.document.filePath || '';
-                          if (link) {
-                            await transferFacade.downloadLink(link, doc.title);
-                          } else {
-                            await transferFacade.downloadByHashOrLink(doc.id, doc.title);
-                          }
-                        } catch (e) {
-                          const msg = e instanceof Error ? e.message : String(e);
-                          setDownloadError(msg);
-                        }
-                      }}
-                      variant="default"
+                      onDownloadError={msg => setDownloadError(msg)}
                     />
                   )}
                 </For>

@@ -5,9 +5,9 @@ import { LanguageSwitcher } from '@/components/foundation/LanguageSwitcher';
 import { ThemeSwitcher } from '@/components/foundation/ThemeSwitcher';
 import { useTranslation } from '@/i18n';
 import { Bell, Menu, Search as SearchIcon, Settings as SettingsIcon } from 'lucide-solid';
-import { Badge } from '@/components/foundation/Badge';
-import { useNetworkPresenceResource, onionBadgeLabel } from '@/hooks/network/useNetworkPresence';
+import { useNetworkPresenceResource } from '@/hooks/network/useNetworkPresence';
 import { TorBootstrapStatus } from '@/components/domain/network/TorBootstrapStatus';
+import { OnionStatusBar } from '@/components/domain/network/OnionStatusBar';
 
 interface HeaderProps {
   sidebarCollapsed?: boolean;
@@ -129,9 +129,7 @@ const Header: Component<HeaderProps> = props => {
                 <span class="network-text">
                   {presence().online ? t('common.status.online') : t('common.status.offline')}
                 </span>
-                <Badge variant={presence().onionActive ? 'success' : 'secondary'}>
-                  {onionBadgeLabel(presence())}
-                </Badge>
+                <OnionStatusBar variant="compact" />
               </>
             }
           >

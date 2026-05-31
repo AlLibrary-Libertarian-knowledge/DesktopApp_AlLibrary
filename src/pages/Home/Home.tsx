@@ -1,4 +1,4 @@
-import { type Component, createSignal, onMount, onCleanup } from 'solid-js';
+import { type Component, createSignal, onMount, createEffect } from 'solid-js';
 import { Button, Card, Modal } from '../../components/foundation';
 import {
   NetworkGraph,
@@ -30,19 +30,12 @@ import styles from './Home.module.css';
 import { useNavigate } from '@solidjs/router';
 import { settingsService } from '@/services/storage/settingsService';
 import { useNetworkStore } from '@/stores/network/networkStore';
-import { downloadManager } from '@/services/network/downloadManager';
 import { activityService } from '@/services/activityService';
+import { useTransferState } from '@/hooks/api/useTransferState';
+import type { TransferView } from '@/services/network/transferFacade';
 import { pickAnyFiles } from '@/services/system/fileDialogs';
 import { shareWithToast } from '@/utils/documentActions';
 import { useToast } from '@/hooks/ui/useToast';
-
-const formatDownloadBytes = (bytes?: number): string => {
-  if (!bytes) return '';
-  const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return `${parseFloat((bytes / k ** i).toFixed(1))} ${sizes[i]}`;
-};
 
 const HomePage: Component = () => {
   // Initialize i18n translation hooks
@@ -57,18 +50,18 @@ const HomePage: Component = () => {
   const net = useNetworkStore();
   const navigate = useNavigate();
   const toast = useToast();
+  const transfer = useTransferState();
 
   const [recentDownloads, setRecentDownloads] = createSignal<ActivityItemProps[]>([]);
   const [networkActivity, setNetworkActivity] = createSignal<ActivityItemProps[]>([]);
 
-  const mapDownloadItems = (
-    active: ReturnType<typeof downloadManager.getActive>,
-    completed: ReturnType<typeof downloadManager.getCompleted>
+  const mapTransferViews = (
+    active: TransferView[],
+    completed: TransferView[]
   ): ActivityItemProps[] => {
     const items: ActivityItemProps[] = active.map(item => ({
       type: 'downloading' as const,
       title: item.name,
-      fileSize: formatDownloadBytes(item.sizeBytes),
       progress: Math.round(item.progress * 100),
       status: tc('activityList.status.downloading'),
       metadata: tc('activityList.metadata.complete', {
@@ -79,12 +72,15 @@ const HomePage: Component = () => {
       items.push({
         type: 'completed',
         title: item.name,
-        fileSize: formatDownloadBytes(item.sizeBytes),
         status: tc('activityList.status.complete'),
       });
     }
     return items;
   };
+
+  createEffect(() => {
+    setRecentDownloads(mapTransferViews(transfer.activeDownloads(), transfer.completedDownloads()));
+  });
 
   const loadNetworkActivity = async () => {
     const entries = await activityService.loadActivityDocuments({ limit: 20 });
@@ -111,14 +107,6 @@ const HomePage: Component = () => {
       setShowModal(true);
       globalThis.localStorage?.setItem('allibrary-visited', 'true');
     }
-
-    setRecentDownloads(
-      mapDownloadItems(downloadManager.getActive(), downloadManager.getCompleted())
-    );
-    const unsubscribe = downloadManager.subscribe((active, completed) => {
-      setRecentDownloads(mapDownloadItems(active, completed));
-    });
-    onCleanup(() => unsubscribe());
 
     void loadNetworkActivity();
   });

@@ -7,7 +7,7 @@
 
 import { createSignal, onCleanup } from 'solid-js';
 import { transferFacade } from '@/services/network/transferFacade';
-import { p2pNetworkService } from '@/services/network/p2pNetworkService';
+import { networkFacade } from '@/services/network/networkFacade';
 import type { Document } from '@/types/core';
 
 export interface NetworkSearchFilters {
@@ -113,41 +113,31 @@ export const useNetworkSearch = (): UseNetworkSearchReturn => {
     _signal: AbortSignal
   ): Promise<NetworkSearchResult[]> => {
     const q = (filters.query || '').trim();
-    const raw = await p2pNetworkService.searchNetwork(q, {
-      type: 'content',
-      includeAnonymous: options.anonymous !== false,
-      includeCulturalContext: options.includeCulturalEducation !== false,
-      searchDepth: 'network',
-      maxResults: options.maxResults ?? 50,
-      enableEducationalContext: true,
-      supportAlternativeNarratives: true,
-      resistCensorship: true,
+    const matches = await networkFacade.searchFiles(q, {
       extensions: filters.extensions,
+      limit: options.maxResults ?? 50,
     });
-    const mapped: NetworkSearchResult[] = (raw || []).map((r: any) => ({
+    const mapped: NetworkSearchResult[] = matches.map(f => ({
       document: {
-        id: r.id,
-        title: r.title,
-        author: r.author || '',
-        description: r.description || '',
-        filePath: r.filePath || '',
-        fileSize: r.fileSize || 0,
-        fileType: r.fileType || 'pdf',
-        uploadDate: r.uploadDate ? new Date(r.uploadDate) : new Date(),
-        tags: r.tags || [],
-        culturalSensitivityLevel: r.culturalLevel || 1,
+        id: f.contentHash,
+        title: f.name,
+        author: 'P2P Network',
+        description: `Available via ${f.peerCount} peer(s)`,
+        filePath: f.link,
+        fileSize: f.size,
+        fileType: (f.name.split('.').pop() as string) || 'pdf',
+        uploadDate: new Date(),
+        tags: ['p2p', 'decentralized'],
+        culturalSensitivityLevel: 1,
         isLocal: false,
-        downloadCount: r.downloadCount || 0,
-        rating: r.rating || 0,
-        language: r.language || 'en',
-        culturalOrigin: r.culturalOrigin || '',
-      } as any,
-      peerId: r.peerId || '',
-      peerLocation: r.peerLocation,
-      peerReputation: r.peerReputation || 0,
-      culturalContext: options.includeCulturalEducation ? r.culturalContext : undefined,
-      relevanceScore: r.relevanceScore || 0,
-      estimatedDownloadTime: r.estimatedDownloadTime,
+        downloadCount: 0,
+        rating: 0,
+        language: 'en',
+        culturalOrigin: '',
+      } as unknown as Document,
+      peerId: f.peers[0]?.nodeId || '',
+      peerReputation: 5,
+      relevanceScore: 100,
     }));
     return mapped;
   };

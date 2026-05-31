@@ -196,12 +196,12 @@ Each section lists **UI intent** (from existing design), **current state**, and 
 
 ## Components to consolidate
 
-| New shared piece | Replaces |
-|------------------|----------|
-| `useNetworkLobby()` | Duplicate lobby fetch in Sidebar, Search Network, POC |
-| `useTransferState()` | downloadManager subscribe in multiple pages |
-| `NetworkFileCard` | Global Acervo card, Search Network result row |
-| `OnionStatusBar` | Repeated pills on many pages |
+| New shared piece | Replaces | Status |
+|------------------|----------|--------|
+| `useNetworkLobby()` | Duplicate lobby fetch in Sidebar, Search Network, POC | [x] Done |
+| `useTransferState()` | downloadManager subscribe in multiple pages | [x] PeerTransfers + Home |
+| `NetworkFileCard` | Global Acervo card, Search Network result row | [x] May 2026 |
+| `OnionStatusBar` | Repeated pills on many pages | [x] May 2026 |
 
 ---
 
@@ -239,6 +239,6 @@ Each section lists **UI intent** (from existing design), **current state**, and 
 
 ### Next
 
-1. Shared components: `NetworkFileCard`, `useTransferState`, `OnionStatusBar`
-2. Home NetworkGraph → cached peer viz
-3. `get_swarm` + optional parallel download UX
+1. Home NetworkGraph → cached peer viz
+2. `get_swarm` + optional parallel download UX
+3. `LobbyStatsRibbon` (shared lobby stats for Search Network + Peer Network)

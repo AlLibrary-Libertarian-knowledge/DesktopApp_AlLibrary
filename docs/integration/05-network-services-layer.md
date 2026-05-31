@@ -120,9 +120,10 @@ export const transferFacade = {
 - [x] Wrap `onionShareService` + `downloadManager` + `settingsService.getDownloadFolder`
 - [x] Self-download guard from Global Acervo → keep in `downloadLink`
 - [x] `PeerTransfers` uses `useTransferState` → `transferFacade`
-- [x] **Home** downloads tab uses `downloadManager` subscribe (same data as `useTransferState` target)
+- [x] **Home** downloads tab uses `useTransferState` (May 2026)
 - [x] `downloadAll` — sequential queue for Search Network Results tab (May 2026)
 - [x] Completed transfers loaded from SQLite on `downloadManager` init (not localStorage)
+- [x] `syncAllEnabledSeeds`, `setDocumentSeedEnabled` on transferFacade
 - [ ] Remove direct `onionShare.*` imports from pages except Connection Manager config
 
 ---
@@ -147,7 +148,7 @@ Today implements 20+ methods; most are no-ops. Target:
 
 - [ ] Slim interface documented in this file
 - [x] Update `useNetworkSearch`, `useP2PTransfers` to use facades
-- [ ] Update `networkStore` to use facades
+- [x] Update `networkStore` to use facades — `refreshOnce` uses `networkFacade.getPresence` + lobby store + `get_network_metrics` (May 2026)
 
 ---
 
@@ -155,7 +156,7 @@ Today implements 20+ methods; most are no-ops. Target:
 
 - [x] `downloadMbps` / `uploadMbps` from backend metrics — wired via `p2pNetworkService.getNetworkMetrics` → `get_network_metrics`
 - [x] `metricsHistory` rolling buffer — append on poll; `historyForRange` / `historySparkline` for Network Health charts (May 2026)
-- [ ] `refreshOnce()` calls `networkFacade.getLobby()` + `transferFacade` metrics (still uses `p2pNetworkService` today)
+- [ ] `refreshOnce()` calls `networkFacade.getLobby()` on force refresh only — uses cached lobby store for peer counts (May 2026 partial)
 
 ---
 

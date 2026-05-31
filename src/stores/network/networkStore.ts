@@ -1,5 +1,7 @@
 import { createSignal, onCleanup, onMount } from 'solid-js';
-import { p2pNetworkService } from '@/services/network/p2pNetworkService';
+import { invoke } from '@tauri-apps/api/core';
+import { networkFacade } from '@/services/network/networkFacade';
+import { getNetworkLobbyStore } from '@/services/network/networkLobbyStore';
 import { torAdapter } from '@/services/network/torAdapter';
 import type { NetworkStatus as P2PStatus, NetworkMetrics as P2PMetrics } from '@/types/Network';
 
@@ -102,17 +104,83 @@ export function historySparkline(
   return values.map(v => Math.round((v / max) * 100));
 }
 
+async function fetchNetworkMetrics(): Promise<P2PMetrics | null> {
+  try {
+    const raw = await invoke<{
+      active_downloads?: number;
+      active_seeding?: number;
+      active_discovery?: number;
+      download_rate?: number;
+      upload_rate?: number;
+      transfers?: unknown[];
+    }>('get_network_metrics', { nodeId: null });
+    if (!raw || typeof raw !== 'object') return null;
+    return {
+      performance: {
+        averageLatency: 0,
+        totalBandwidth: Number(raw.download_rate ?? 0) + Number(raw.upload_rate ?? 0),
+        messagesSent: 0,
+        messagesReceived: 0,
+        errorRate: 0,
+      },
+      ...(raw as object),
+    } as P2PMetrics;
+  } catch {
+    return null;
+  }
+}
+
+async function buildNodeStatus(presence: {
+  running: boolean;
+  onionActive: boolean;
+  onion: string | null;
+}): Promise<P2PStatus> {
+  const lobby = getNetworkLobbyStore();
+  return {
+    nodeStatus: presence.running ? 'online' : 'offline',
+    connectedPeers: lobby.onlineNodes(),
+    discoveredPeers: lobby.onlineNodes(),
+    torStatus: {
+      enabled: true,
+      connected: presence.running,
+      hiddenServices: presence.onion ? [presence.onion] : [],
+      circuitStatus: presence.running ? 'connected' : 'failed',
+    },
+    ipfsStatus: false,
+    networkHealth: presence.onionActive ? 0.9 : presence.running ? 0.5 : 0,
+    censorshipResistance: {
+      level: presence.running ? 5 : 0,
+      torConnectivity: presence.running,
+      hiddenServiceAccess: !!presence.onion,
+      contentFilteringBypass: presence.running,
+      culturalBlockingResistance: true,
+      alternativeNarrativeSupport: true,
+    },
+    activeCommunityNetworks: [],
+    contentStats: {
+      totalShared: 0,
+      totalReceived: 0,
+      culturalContentShared: 0,
+      educationalContentShared: 0,
+      alternativeNarrativesShared: 0,
+      communityContentShared: 0,
+    },
+  } as P2PStatus;
+}
+
 async function refreshOnce(): Promise<void> {
   try {
-    const [st, met, torSt] = await Promise.all([
-      p2pNetworkService.getNodeStatus().catch(() => null as P2PStatus | null),
-      p2pNetworkService.getNetworkMetrics().catch(() => null as P2PMetrics | null),
+    const [presence, met, torSt] = await Promise.all([
+      networkFacade.getPresence().catch(() => null),
+      fetchNetworkMetrics(),
       torAdapter.status().catch(() => null),
     ]);
-    if (st) setStatus(st);
+    if (presence) {
+      setStatus(await buildNodeStatus(presence));
+    }
     if (met) setMetrics(met);
     if (torSt) setTor({ enabled: !!torSt, circuitEstablished: !!torSt?.circuitEstablished });
-    appendHistory(st ?? status(), met ?? metrics());
+    appendHistory(status(), met ?? metrics());
     setLastSyncAt(Date.now());
   } catch {
     // best-effort

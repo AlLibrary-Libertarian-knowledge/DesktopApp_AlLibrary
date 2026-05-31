@@ -33,7 +33,7 @@ Frontend-driven integration tasks to connect the designed UI to a **per-node SQL
 
 - [x] Wire Discovery screens to **cached lobby + local library** (Search Network, Browse, Trending, New Arrivals) — **done** (May 2026): offline cache search, extension filters, Download All, stats ribbon
 - [~] Wire P2P screens to **real transfers + tracker peers** (Peer Network, Network Health, Sharing & downloads tables) — **Network Health + transfers/peers done** (May 2026); latency/upload backend still P2
-- [~] Wire Library actions (share/download/delete) to Tauri + onion share — **Home quick-share done** (May 2026); documents table list sync remain
+- [x] Wire Library actions (share/download/delete) to Tauri + onion share — **Home quick-share + useTransferState on Home** (May 2026)
 
 ### Phase C — POC removal
 
@@ -45,7 +45,7 @@ Frontend-driven integration tasks to connect the designed UI to a **per-node SQL
 
 - [x] Collections — minimal CRUD + document membership (`add_documents_to_collection`, etc.) — **May 2026**
 - [x] Cultural sensitivity UI removed from product (components/hooks deleted; copy neutralized)
-- [~] Network metrics (throughput, active transfers) from Rust → `networkStore` — **basic `get_network_metrics` done**; rolling window / facade consolidation remain
+- [~] Network metrics (throughput, active transfers) from Rust → `networkStore` — **basic `get_network_metrics` done**; `networkStore.refreshOnce` uses facades (May 2026)
 - [ ] Optional: tracker timestamps for Trending / New Arrivals (history-based charts)
 
 ## Related existing docs
@@ -96,17 +96,28 @@ See [04-frontend-screen-tasks.md](./04-frontend-screen-tasks.md) mock checklist 
 
 ---
 
+## Recently completed — Network UI consolidation (May 2026)
+
+| Area | Done |
+|------|------|
+| `NetworkFileCard` | Shared card for Search Network results; download via `transferFacade` |
+| `OnionStatusBar` | compact / sidebar / toolbar / actions variants; Header, Sidebar, Search Network, PeerTransfers |
+| `useTransferState` | Home recent downloads + activity strip (was `downloadManager.subscribe`) |
+| Facades | `transferFacade.syncAllEnabledSeeds`, `setDocumentSeedEnabled`; `networkStore` → `networkFacade`; `useNetworkSearch` → `networkFacade.searchFiles` |
+
+---
+
 ## Recommended next steps
 
 Priority order for the next integration slice(s):
 
-1. **Consolidation (lower risk, improves maintainability)**
-   - Shared `NetworkFileCard`, `useTransferState`, `OnionStatusBar` — [04 § Components to consolidate](./04-frontend-screen-tasks.md)
-   - Slim `p2pNetworkService` + finish `networkStore` facade consolidation — [05](./05-network-services-layer.md)
-
-2. **Phase B — remaining polish**
+1. **Phase B — remaining polish**
+   - Home `NetworkGraph` mock → cached peer viz
    - Documents list UI sync after scan (optional)
-   - Home NetworkGraph mock → cached peer viz
+   - Global top search bar → `/search-network?q=`
+
+2. **Shared stats UI**
+   - `LobbyStatsRibbon` for Search Network + Peer Network stat grids
 
 3. **P2 / optional**
    - Collection P2P sharing / export (cancelled for minimal scope)

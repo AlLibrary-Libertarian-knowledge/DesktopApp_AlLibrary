@@ -144,6 +144,7 @@ class P2PNetworkServiceImpl implements P2PNetworkService {
     console.log('P2PNetworkService: Node started successfully');
   }
 
+  /** @deprecated Legacy stub — use transferFacade.stopOnionShare instead. */
   async stopNode(): Promise<void> {}
 
   async getNodeStatus(): Promise<NetworkStatus> {

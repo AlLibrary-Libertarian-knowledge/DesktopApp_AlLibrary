@@ -13,8 +13,10 @@ import {
   onionShareStart,
   onionShareStatus,
   onionShareStop,
+  syncAllEnabledSeeds,
   type LocalShareEntry,
 } from './onionShareService';
+import type { DocumentInfo } from '@/services/documentService';
 
 export interface ShareEntryView {
   fileId: string;
@@ -196,5 +198,13 @@ export const transferFacade = {
       if (completedLinks.has(link)) continue;
       await this.downloadLink(link, item.name || link, outDir);
     }
+  },
+
+  async syncAllEnabledSeeds(): Promise<number> {
+    return syncAllEnabledSeeds();
+  },
+
+  async setDocumentSeedEnabled(filePath: string, enabled: boolean): Promise<DocumentInfo> {
+    return invoke<DocumentInfo>('set_document_seed_enabled', { filePath, enabled });
   },
 };
