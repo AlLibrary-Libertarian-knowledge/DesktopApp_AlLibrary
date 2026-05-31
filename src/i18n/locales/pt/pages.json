@@ -238,6 +238,81 @@
     "sensitivityLevel": "Nível de Sensibilidade",
     "searchPlaceholder": "Buscar seus documentos..."
   },
+  "favorites": {
+    "title": "Meus Favoritos",
+    "subtitle": "Documentos que você marcou",
+    "searchPlaceholder": "Buscar nos favoritos...",
+    "loading": "Carregando favoritos...",
+    "emptyTitle": "Nenhum favorito encontrado",
+    "emptyFiltered": "Tente ajustar os filtros para encontrar mais favoritos.",
+    "emptyDefault": "Explore documentos e adicione seus primeiros favoritos!",
+    "exploreDocuments": "Explorar Documentos",
+    "statsTotal": "Total",
+    "statsFiltered": "Filtrados",
+    "unavailableTitle": "Documento indisponível",
+    "unavailableDescription": "Este favorito não pôde ser resolvido. Remova-o para limpar a lista.",
+    "sourceLocal": "Local",
+    "sourceNetwork": "Rede",
+    "actions": {
+      "open": "Abrir Documento",
+      "viewDetails": "Ver Detalhes",
+      "remove": "Remover"
+    },
+    "toasts": {
+      "removed": "Removido dos favoritos",
+      "removeFailed": "Falha ao remover favorito"
+    }
+  },
+  "recent": {
+    "title": "Atividade Recente",
+    "subtitle": "Suas interações e atividades recentes com documentos",
+    "searchPlaceholder": "Buscar atividades recentes...",
+    "loading": "Carregando atividades recentes...",
+    "emptyTitle": "Nenhuma atividade recente encontrada",
+    "emptyFiltered": "Tente ajustar os filtros para ver mais atividades.",
+    "emptyDefault": "Explore documentos para ver seu histórico de atividades!",
+    "exploreDocuments": "Explorar Documentos",
+    "sourceLocal": "Local",
+    "sourceNetwork": "Rede",
+    "stats": {
+      "views": "Documentos Visualizados",
+      "downloads": "Downloads",
+      "uploads": "Envios",
+      "filtered": "Resultados Filtrados"
+    },
+    "filters": {
+      "allTypes": "Todas as Atividades",
+      "views": "Visualizações",
+      "downloads": "Downloads",
+      "uploads": "Envios",
+      "shares": "Compartilhamentos",
+      "favorites": "Favoritos",
+      "typeAria": "Filtrar por tipo de atividade",
+      "timeAria": "Filtrar por período"
+    },
+    "timeframes": {
+      "all": "Todo o Período",
+      "today": "Hoje",
+      "week": "Esta Semana",
+      "month": "Este Mês"
+    },
+    "kinds": {
+      "view": "Visualização",
+      "download": "Download",
+      "upload": "Envio",
+      "share": "Compartilhamento",
+      "favorite": "Favorito"
+    },
+    "actions": {
+      "open": "Abrir Documento",
+      "viewDetails": "Ver Detalhes",
+      "remove": "Remover do Histórico"
+    },
+    "toasts": {
+      "removed": "Removido do histórico",
+      "removeFailed": "Falha ao remover atividade"
+    }
+  },
   "collections": {
     "title": "Coleções",
     "subtitle": "Coleções organizadas de documentos",
@@ -274,6 +349,19 @@
     "sensitivityLevels": "Níveis de Sensibilidade"
   },
   "documentDetail": {
+    "loading": "A carregar documento…",
+    "loadingContent": "A carregar conteúdo…",
+    "notFound": "Documento não encontrado",
+    "loader": {
+      "eyebrowResolve": "Leitor · Sincronização",
+      "eyebrowContent": "Leitor · Fluxo de dados",
+      "hintResolve": "A identificar o documento",
+      "hintContent": "A preparar páginas no visualizador"
+    },
+    "toggleHud": {
+      "show": "Ver detalhes",
+      "hide": "Modo leitura"
+    },
     "toasts": {
       "commentPosted": "Comentário publicado",
       "commentPostFailed": "Falha ao publicar comentário",
@@ -285,7 +373,8 @@
       "shareToPeersFailed": "Falha ao compartilhar com os pares",
       "shareLinkCopied": "Link de compartilhamento copiado",
       "addedToFavorites": "Adicionado aos favoritos",
-      "removedFromFavorites": "Removido dos favoritos"
+      "removedFromFavorites": "Removido dos favoritos",
+      "alreadyLocal": "Este ficheiro já está na biblioteca local."
     }
   }
 }

@@ -237,6 +237,78 @@
     "sensitivityLevel": "Sensitivity Level",
     "searchPlaceholder": "Search your documents..."
   },
+  "favorites": {
+    "title": "My Favorites",
+    "subtitle": "Documents you have bookmarked",
+    "searchPlaceholder": "Search your favorites...",
+    "loading": "Loading your favorites...",
+    "emptyTitle": "No favorites found",
+    "emptyFiltered": "Try adjusting your filters to find more favorites.",
+    "emptyDefault": "Start exploring documents and add your first favorites!",
+    "exploreDocuments": "Explore Documents",
+    "statsTotal": "Total",
+    "statsFiltered": "Filtered",
+    "unavailableTitle": "Document unavailable",
+    "unavailableDescription": "This favorite could not be resolved. Remove it to clear the list.",
+    "sourceLocal": "Local",
+    "sourceNetwork": "Network",
+    "actions": {
+      "open": "Open Document",
+      "viewDetails": "View Details",
+      "remove": "Remove"
+    },
+    "toasts": {
+      "removed": "Removed from favorites",
+      "removeFailed": "Failed to remove favorite"
+    }
+  },
+  "recent": {
+    "title": "Recent Activity",
+    "subtitle": "Your recent document interactions and activities",
+    "searchPlaceholder": "Search recent activities...",
+    "loading": "Loading recent activities...",
+    "emptyTitle": "No recent activities found",
+    "emptyFiltered": "Try adjusting your filters to see more activities.",
+    "emptyDefault": "Start exploring documents to see your activity history here!",
+    "exploreDocuments": "Explore Documents",
+    "sourceLocal": "Local",
+    "sourceNetwork": "Network",
+    "stats": {
+      "views": "Documents Viewed",
+      "downloads": "Downloads",
+      "uploads": "Uploads",
+      "filtered": "Filtered Results"
+    },
+    "filters": {
+      "allTypes": "All Activities",
+      "views": "Views",
+      "downloads": "Downloads",
+      "uploads": "Uploads",
+      "shares": "Shares",
+      "favorites": "Favorites",
+      "typeAria": "Filter by activity type",
+      "timeAria": "Filter by timeframe"
+    },
+    "timeframes": {
+      "all": "All Time",
+      "today": "Today",
+      "week": "This Week",
+      "month": "This Month"
+    },
+    "kinds": {
+      "view": "View",
+      "download": "Download",
+      "upload": "Upload",
+      "share": "Share",
+      "favorite": "Favorite"
+    },
+    "actions": {
+      "open": "Open Document",
+      "viewDetails": "View Details",
+      "remove": "Remove from History"
+    },
+    "toasts": { "removed": "Removed from history", "removeFailed": "Failed to remove activity" }
+  },
   "collections": {
     "title": "Collections",
     "subtitle": "Organized document collections",
@@ -271,5 +343,24 @@
     "educationalResources": "Educational Resources",
     "culturalOrigins": "Cultural Origins",
     "sensitivityLevels": "Sensitivity Levels"
+  },
+  "documentDetail": {
+    "toggleHud": {
+      "show": "View Details",
+      "hide": "Focus view"
+    },
+    "toasts": {
+      "commentPosted": "Comment posted",
+      "commentPostFailed": "Failed to post comment",
+      "commentUpdated": "Comment updated",
+      "commentUpdateFailed": "Failed to update comment",
+      "commentDeleted": "Comment deleted",
+      "commentDeleteFailed": "Failed to delete comment",
+      "sharedToPeers": "Shared to selected peers",
+      "shareToPeersFailed": "Failed to share to peers",
+      "shareLinkCopied": "Share link copied",
+      "addedToFavorites": "Added to favorites",
+      "removedFromFavorites": "Removed from favorites"
+    }
   }
 }

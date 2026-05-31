@@ -9,6 +9,17 @@
   gap: 1.5rem;
 }
 
+.main-column {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+}
+
+.bottom-panel {
+  width: 100%;
+  flex-shrink: 0;
+}
+
 /* Enhanced Page Header */
 .page-header {
   display: flex;
@@ -1040,16 +1051,51 @@
   background: rgba(239, 68, 68, 0.1) !important;
 }
 
+.favorite-button {
+  color: rgba(148, 163, 184, 0.9) !important;
+}
+
+.favorite-button:hover {
+  color: rgba(244, 63, 94, 0.9) !important;
+  background: rgba(244, 63, 94, 0.08) !important;
+}
+
+.favorite-button-active {
+  color: rgba(244, 63, 94, 1) !important;
+}
+
+.favorite-button-active:hover {
+  color: rgba(225, 29, 72, 1) !important;
+  background: rgba(244, 63, 94, 0.12) !important;
+}
+
 .document-content {
   padding: 0 1.25rem 1.25rem;
 }
 
+.document-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  min-width: 0;
+}
+
 .document-title {
+  flex: 1;
+  min-width: 0;
   font-size: 1.125rem;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.95);
-  margin: 0 0 0.5rem 0;
+  margin: 0;
   line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status-badge-inline {
+  flex-shrink: 0;
 }
 
 .document-description {
@@ -1076,6 +1122,51 @@
   gap: 0.25rem;
   font-size: 0.75rem;
   color: rgba(148, 163, 184, 0.8);
+}
+
+.document-status-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  width: fit-content;
+}
+
+.status-badge.status-validated {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border: 1px solid rgba(52, 211, 153, 0.45);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.15);
+}
+
+.status-badge.status-pending {
+  background: rgba(245, 158, 11, 0.12);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.35);
+}
+
+.status-badge.status-indexed {
+  background: rgba(99, 102, 241, 0.18);
+  color: #a5b4fc;
+  border: 1px solid rgba(129, 140, 248, 0.4);
+}
+
+.status-hint {
+  font-size: 0.6875rem;
+  color: rgba(148, 163, 184, 0.65);
+  margin-left: 0.35rem;
 }
 
 /* Cultural Context */

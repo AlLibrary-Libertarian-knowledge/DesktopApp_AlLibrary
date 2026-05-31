@@ -32,6 +32,8 @@ pub struct AppConfig {
     /// After Tor fails reaching `tracker_url`, also try HTTP to local Docker Desktop (`127.0.0.1:8080`).
     pub try_local_tracker_fallback: bool,
     pub bootstrap_peers: Vec<String>,
+    /// Tor bridge lines (one per entry), passed as `--Bridge` when non-empty.
+    pub tor_bridges: Vec<String>,
 }
 
 impl Default for AppConfig {
@@ -40,12 +42,13 @@ impl Default for AppConfig {
             terms_accepted: false,
             tor_path: String::new(),
             node_id: uuid::Uuid::new_v4().to_string(),
-            tracker_url: "http://tjsdpiz3aweek6wovl2oblmmgacfqvnvxmn7ughwhte2ureidnn5tiqd.onion"
+            tracker_url: "http://3anhnwqwxmjo7xsyxs3uoocdctxd3nwkfm5lt36xcwi4hfmkbttoktqd.onion"
                 .to_string(),
             share_publicly: true,
             // Docker Desktop POC maps tracker to host :8080; Tor-to-.onion can lag or fail behind strict networks.
             try_local_tracker_fallback: true,
             bootstrap_peers: Vec::new(),
+            tor_bridges: Vec::new(),
         }
     }
 }

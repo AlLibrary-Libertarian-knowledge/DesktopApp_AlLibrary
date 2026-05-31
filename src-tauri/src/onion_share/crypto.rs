@@ -6,7 +6,10 @@ use blake3::Hasher;
 use chacha20poly1305::aead::{Aead, Payload};
 use chacha20poly1305::{KeyInit, XChaCha20Poly1305, XNonce};
 use rand::RngCore;
+use std::path::Path;
 use uuid::Uuid;
+
+use crate::core::document::pipeline::fingerprint_for_treated_bytes;
 
 pub type FileKey = [u8; 32];
 
@@ -83,7 +86,21 @@ pub fn decrypt_chunk(
 }
 
 pub fn content_hash_hex(bytes: &[u8]) -> String {
-    blake3::hash(bytes).to_hex().to_string()
+    // Default ext unknown — page_count 0; prefer content_hash_for_file for treated docs.
+    fingerprint_for_treated_bytes(bytes, "")
+        .map(|fp| fp.content_hash)
+        .unwrap_or_else(|_| blake3::hash(bytes).to_hex().to_string())
+}
+
+pub fn content_hash_for_file(path: &Path, bytes: &[u8]) -> anyhow::Result<String> {
+    let ext = path
+        .extension()
+        .and_then(|e| e.to_str())
+        .unwrap_or("")
+        .to_lowercase();
+    Ok(fingerprint_for_treated_bytes(bytes, &ext)
+        .map_err(|e| anyhow::anyhow!(e))?
+        .content_hash)
 }
 
 pub fn key_from_content_hash(hash_hex: &str) -> anyhow::Result<FileKey> {

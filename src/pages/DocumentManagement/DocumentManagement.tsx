@@ -6,9 +6,11 @@ import {
   Show,
   For,
   onMount,
+  onCleanup,
   createEffect,
 } from 'solid-js';
 import { Button, Card, Modal } from '../../components/foundation';
+import { SeedingToggle } from '@/components/domain/document/SeedingToggle';
 import { TopCard, DocumentManagementRightColumn } from '../../components/composite';
 
 // Advanced Document Features Types - Task 0.3
@@ -36,6 +38,7 @@ import {
   Edit,
   Share,
   Trash2,
+  Heart,
   AlertCircle,
   Tag,
   Calendar,
@@ -48,9 +51,13 @@ import {
   Clock,
   Folder,
   RefreshCw,
+  CheckCircle2,
+  Radio,
 } from 'lucide-solid';
 import { validationService } from '../../services';
 import { invoke } from '@tauri-apps/api/core';
+import { listen } from '@tauri-apps/api/event';
+import { DocumentViewerLoader } from '@/components/composite/DocumentViewerLoader';
 import { searchService } from '../../services/searchService';
 import { projectService } from '../../services/projectService';
 import {
@@ -70,6 +77,35 @@ import type {
 import styles from './DocumentManagement.module.css';
 import { useNavigate } from '@solidjs/router';
 import { useP2PTransfers } from '@/hooks/api/useP2PTransfers';
+import { useToast } from '@/hooks/ui/useToast';
+import { shareWithToast } from '@/utils/documentActions';
+import { transferFacade } from '@/services/network/transferFacade';
+import { onionShareListLocal, syncAllEnabledSeeds } from '@/services/network/onionShareService';
+import { favoriteService } from '@/services/favoriteService';
+import { ConfirmDeleteModal } from '@/components/composite/ConfirmDeleteModal';
+
+/** Normalize paths for cross-platform share matching (Windows vs POSIX). */
+function normalizeLibPath(p: string): string {
+  return p.replace(/\\/g, '/').toLowerCase();
+}
+
+function isDocumentVerified(docInfo: DocumentInfo): boolean {
+  return docInfo.is_treated !== false && docInfo.processing_status === 'treated';
+}
+
+function isDocumentIntegrated(docInfo: DocumentInfo): boolean {
+  return isDocumentVerified(docInfo) && Boolean(docInfo.content_hash?.trim());
+}
+
+function isDocumentSeeding(docInfo: DocumentInfo, seedingPaths: Set<string>): boolean {
+  if (!docInfo.file_path) return false;
+  return seedingPaths.has(normalizeLibPath(docInfo.file_path));
+}
+
+/** Indexed = verified (treated) + integrated (library hash) + actively seeding locally. */
+function isDocumentIndexed(docInfo: DocumentInfo, seedingPaths: Set<string>): boolean {
+  return isDocumentIntegrated(docInfo) && isDocumentSeeding(docInfo, seedingPaths);
+}
 
 const DocumentManagement: Component = () => {
   // Initialize i18n translation hook
@@ -97,6 +133,22 @@ const DocumentManagement: Component = () => {
   };
   const [treatmentItems, setTreatmentItems] = createSignal<TreatmentItem[]>([]);
   const [activeTreatmentTab, setActiveTreatmentTab] = createSignal(0);
+  const [pipelineStep, setPipelineStep] = createSignal<number | null>(null);
+  const [pipelineLabel, setPipelineLabel] = createSignal<string>('');
+  const [isProcessing, setIsProcessing] = createSignal(false);
+
+  onMount(() => {
+    const unlistenPromise = listen<{ step: number; label: string; percent: number }>(
+      'document-pipeline-progress',
+      e => {
+        setPipelineStep(e.payload.step);
+        setPipelineLabel(e.payload.label);
+      }
+    );
+    onCleanup(() => {
+      void unlistenPromise.then(fn => fn());
+    });
+  });
 
   // Enhanced state for new features
   const [selectedDocuments, setSelectedDocuments] = createSignal<Set<string>>(new Set());
@@ -113,8 +165,16 @@ const DocumentManagement: Component = () => {
   const [showSmartSuggestions, setShowSmartSuggestions] = createSignal(false);
   const [autoTaggingEnabled, setAutoTaggingEnabled] = createSignal(true);
 
-  // P2P transfers
-  const { enabled, busy, enable, seedFile, error, lastOp } = useP2PTransfers();
+  type DeleteConfirmState =
+    | { mode: 'single'; document: Document }
+    | { mode: 'batch'; documents: Document[] }
+    | null;
+  const [deleteConfirm, setDeleteConfirm] = createSignal<DeleteConfirmState>(null);
+  const [deleteBusy, setDeleteBusy] = createSignal(false);
+
+  // P2P seed toggles (network always on at startup)
+  const { busy, setSeedEnabled, error, lastOp } = useP2PTransfers();
+  const toastUi = useToast();
 
   // Advanced Document Features - Task 0.3 Implementation
   const [showDocumentViewer, setShowDocumentViewer] = createSignal(false);
@@ -165,6 +225,52 @@ const DocumentManagement: Component = () => {
   const [scanResult, setScanResult] = createSignal<ScanResult | null>(null);
   const [folderInfo, setFolderInfo] = createSignal<FolderInfo | null>(null);
   const [scannedDocuments, setScannedDocuments] = createSignal<DocumentInfo[]>([]);
+  const [localSharePaths, setLocalSharePaths] = createSignal<Set<string>>(new Set());
+
+  const refreshLocalShares = async () => {
+    try {
+      const shares = await onionShareListLocal();
+      const paths = new Set(
+        shares
+          .map(s => s.diskPath)
+          .filter((p): p is string => Boolean(p))
+          .map(normalizeLibPath)
+      );
+      setLocalSharePaths(paths);
+    } catch {
+      setLocalSharePaths(new Set<string>());
+    }
+  };
+
+  const docInfoById = createMemo(() => {
+    const map = new Map<string, DocumentInfo>();
+    for (const doc of scannedDocuments()) {
+      map.set(doc.id, doc);
+    }
+    return map;
+  });
+
+  const indexedDocumentCount = createMemo(() => {
+    const paths = localSharePaths();
+    return scannedDocuments().filter(doc => isDocumentIndexed(doc, paths)).length;
+  });
+
+  const indexedHealth = createMemo(() => {
+    const treated = scannedDocuments().filter(doc => isDocumentIntegrated(doc)).length;
+    if (treated === 0) return 'healthy';
+    return indexedDocumentCount() > 0 ? 'healthy' : 'warning';
+  });
+
+  const handleSeedToggle = async (docInfo: DocumentInfo, enabled: boolean) => {
+    if (!docInfo.file_path) return;
+    try {
+      const updated = await setSeedEnabled(docInfo.file_path, enabled);
+      setScannedDocuments(prev => prev.map(d => (d.id === updated.id ? updated : d)));
+      await refreshLocalShares();
+    } catch (e) {
+      toastUi.error(`Seeding update failed: ${e instanceof Error ? e.message : e}`);
+    }
+  };
 
   // Project initialization and management
   const initializeProject = async () => {
@@ -214,6 +320,12 @@ const DocumentManagement: Component = () => {
       setScannedDocuments(result.documents);
       setProjectFolderPath(folderPath);
       await settingsSvc.setProjectFolder(folderPath);
+      try {
+        await syncAllEnabledSeeds();
+        await refreshLocalShares();
+      } catch {
+        /* onion may still be bootstrapping */
+      }
     } catch (error) {
       console.error('Failed to scan AlLibrary folder:', error);
     } finally {
@@ -242,6 +354,12 @@ const DocumentManagement: Component = () => {
         const result = await documentService.scanDocumentsFolder(folderPath);
         setScanResult(result);
         setScannedDocuments(result.documents);
+        try {
+          await syncAllEnabledSeeds();
+          await refreshLocalShares();
+        } catch {
+          /* onion may still be bootstrapping */
+        }
       }
     } catch (error) {
       console.error('💥 Auto-scan failed:', error);
@@ -253,8 +371,20 @@ const DocumentManagement: Component = () => {
     // Small delay to ensure component is fully mounted and ready
     globalThis.setTimeout(() => {
       console.log('🚀 Component mounted, starting auto-scan...');
-      autoScan();
+      void autoScan();
+      void refreshLocalShares();
     }, 100);
+
+    void (async () => {
+      try {
+        const unlisten = await listen('network-presence-changed', () => {
+          void refreshLocalShares();
+        });
+        onCleanup(unlisten);
+      } catch {
+        /* not in Tauri */
+      }
+    })();
   });
 
   // Retry auto-scan if no documents found after initial scan (with retry limit)
@@ -429,8 +559,12 @@ const DocumentManagement: Component = () => {
   // Enhanced document viewer -> open full-screen reader route
   const navigate = useNavigate();
   const openDocumentViewer = (document: Document) => {
-    const qs = `path=${encodeURIComponent(document.filePath)}&type=${encodeURIComponent(String(document.format))}&title=${encodeURIComponent(document.title)}`;
-    navigate(`/reader?${qs}`);
+    documentService.openInReader(navigate, {
+      id: document.id,
+      filePath: document.filePath,
+      format: String(document.format),
+      title: document.title,
+    });
   };
 
   const closeDocumentViewer = () => {
@@ -729,6 +863,7 @@ const DocumentManagement: Component = () => {
       if (format === 'txt') tags.push('text', 'plain');
       if (format === 'md' || format === 'markdown') tags.push('markdown', 'formatted');
       if (format === 'html' || format === 'htm') tags.push('web', 'html');
+      if (docInfo.is_treated === false) tags.push('untreated');
 
       return tags;
     };
@@ -751,11 +886,11 @@ const DocumentManagement: Component = () => {
       description: getDescription(),
       format: docInfo.document_type.toLowerCase() as any,
       contentType: 'document' as any,
-      status: 'active' as any,
+      status: (docInfo.is_treated === false ? 'draft' : 'active') as any,
       filePath: docInfo.file_path,
-      originalFilename: docInfo.filename,
+      originalFilename: docInfo.original_filename || docInfo.filename,
       fileSize: docInfo.file_size,
-      fileHash: docInfo.id,
+      fileHash: docInfo.content_hash || docInfo.id,
       mimeType: `application/${docInfo.document_type.toLowerCase()}`,
       createdAt: new Date(parseInt(docInfo.created_at) * 1000),
       updatedAt: new Date(parseInt(docInfo.modified_at) * 1000),
@@ -777,7 +912,7 @@ const DocumentManagement: Component = () => {
       relationships: [],
       securityValidation: {
         validatedAt: new Date(),
-        passed: true,
+        passed: isDocumentVerified(docInfo),
         malwareScanResult: {
           clean: true,
           threats: [],
@@ -891,22 +1026,105 @@ const DocumentManagement: Component = () => {
     setShowPreview(true);
   };
 
-  const handleDocumentAction = (action: string, document: Document) => {
+  const removeDocumentFromList = (documentId: string) => {
+    setScannedDocuments(prev => prev.filter(d => d.id !== documentId));
+  };
+
+  const removeSharedCopyIfAny = async (filePath: string) => {
+    try {
+      const shares = await transferFacade.listShares();
+      const match = shares.find(s => s.diskPath === filePath);
+      if (match) {
+        await transferFacade.removeShare(match.fileId);
+      }
+    } catch {
+      /* best effort */
+    }
+  };
+
+  const performDeleteDocuments = async (docs: Document[]) => {
+    let deleted = 0;
+    for (const doc of docs) {
+      try {
+        await removeSharedCopyIfAny(doc.filePath);
+        await documentService.deleteLocalDocument(doc.filePath);
+        removeDocumentFromList(doc.id);
+        deleted += 1;
+      } catch (e: unknown) {
+        toastUi.show({
+          type: 'error',
+          title: 'Delete failed',
+          message: `${doc.title}: ${e instanceof Error ? e.message : String(e)}`,
+        });
+      }
+    }
+    return deleted;
+  };
+
+  const closeDeleteConfirm = () => {
+    if (!deleteBusy()) setDeleteConfirm(null);
+  };
+
+  const confirmDelete = async () => {
+    const target = deleteConfirm();
+    if (!target) return;
+
+    const docs = target.mode === 'single' ? [target.document] : target.documents;
+    setDeleteBusy(true);
+    try {
+      const deleted = await performDeleteDocuments(docs);
+      if (target.mode === 'single' && deleted === 1) {
+        const doc = target.document;
+        if (selectedDocument()?.id === doc.id) {
+          setSelectedDocument(null);
+          setShowPreview(false);
+        }
+      }
+      if (target.mode === 'batch') {
+        clearSelection();
+      }
+      if (deleted > 0) {
+        toastUi.show({
+          type: 'success',
+          title: 'Deleted',
+          message:
+            deleted === 1
+              ? `"${docs[0]?.title}" was removed from disk.`
+              : `${deleted} document(s) removed from disk.`,
+        });
+      }
+      setDeleteConfirm(null);
+    } finally {
+      setDeleteBusy(false);
+    }
+  };
+
+  const deleteDocumentPermanently = async (document: Document) => {
+    setDeleteConfirm({ mode: 'single', document });
+  };
+
+  const handleDocumentAction = async (action: string, document: Document) => {
     switch (action) {
       case 'edit':
         setSelectedDocument(document);
         setShowMetadataEditor(true);
         break;
       case 'share':
-        alert(`Share functionality for "${document.title}" would open here.`);
+        try {
+          await shareWithToast(document, toastUi);
+        } catch (e: unknown) {
+          toastUi.show({
+            type: 'error',
+            title: 'Share failed',
+            message: e instanceof Error ? e.message : String(e),
+          });
+        }
         break;
       case 'download':
-        alert(`Download "${document.title}" would start here.`);
+        openDocumentViewer(document);
         break;
       case 'delete':
-        if (confirm(`Are you sure you want to delete "${document.title}"?`)) {
-          alert('Document deleted successfully.');
-        }
+        await deleteDocumentPermanently(document);
         break;
       case 'analyze':
         setSelectedDocument(document);
@@ -943,12 +1161,11 @@ const DocumentManagement: Component = () => {
     const selectedDocs = displayDocuments().filter(doc => selectedIds.includes(doc.id));
 
     switch (action) {
-      case 'delete':
-        if (confirm(`Are you sure you want to delete ${selectedIds.length} documents?`)) {
-          alert(`${selectedIds.length} documents deleted successfully.`);
-          clearSelection();
-        }
+      case 'delete': {
+        if (selectedDocs.length === 0) break;
+        setDeleteConfirm({ mode: 'batch', documents: selectedDocs });
         break;
+      }
       case 'tag': {
         const tag = prompt('Enter tag to add to selected documents:');
         if (tag) {
@@ -1045,12 +1262,49 @@ const DocumentManagement: Component = () => {
     });
   });
 
+  const [favoriteIds, setFavoriteIds] = createSignal<Set<string>>(new Set());
+
+  createEffect(() => {
+    const docs = sortedAndFilteredDocuments();
+    if (docs.length === 0) {
+      setFavoriteIds(new Set<string>());
+      return;
+    }
+    void Promise.all(
+      docs.map(async doc => {
+        const isFav = await favoriteService.isFavorite(doc.id);
+        return isFav ? doc.id : null;
+      })
+    ).then(results => {
+      setFavoriteIds(new Set(results.filter((id): id is string => id !== null)));
+    });
+  });
+
+  const toggleDocumentFavorite = async (document: Document, event?: Event) => {
+    event?.stopPropagation();
+    try {
+      const res = await favoriteService.toggleFavorite(document.id);
+      setFavoriteIds(prev => {
+        const next = new Set(prev);
+        if (res.isFavorite) {
+          next.add(document.id);
+        } else {
+          next.delete(document.id);
+        }
+        return next;
+      });
+    } catch (e: unknown) {
+      toastUi.show({
+        type: 'error',
+        title: 'Favorite failed',
+        message: e instanceof Error ? e.message : String(e),
+      });
+    }
+  };
+
   return (
-    <div
-      class={styles['document-management']}
-      style={{ display: 'flex', 'flex-direction': 'row', gap: '2rem' }}
-    >
-      <div style={{ flex: 1, 'min-width': 0 }}>
+    <div class={styles['document-management']}>
+      <div class={styles['main-column']}>
         {/* Reusable Top Card Component */}
         <TopCard
           title="Document Management"
@@ -1094,52 +1348,12 @@ const DocumentManagement: Component = () => {
           <div class={styles['enhanced-toolbar']}>
             {/* Left side - Selection and batch actions */}
             <div class={styles['toolbar-left']}>
-              {/* P2P quick actions */}
-              <div style={{ display: 'flex', 'align-items': 'center', gap: '0.5rem' }}>
-                <Button
-                  variant={enabled() ? 'secondary' : 'primary'}
-                  size="sm"
-                  onClick={enable}
-                  disabled={busy()}
-                >
-                  {enabled() ? 'Private Networking Enabled' : 'Enable Private Networking'}
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  disabled={!enabled() || busy() || displayDocuments().length === 0}
-                  onClick={async () => {
-                    // Seed all visible documents (PDF/EPUB preferred)
-                    for (const doc of displayDocuments()) {
-                      if (!doc?.filePath) continue;
-                      await seedFile(doc.filePath);
-                    }
-                  }}
-                >
-                  Seed All Visible
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  disabled={!enabled() || busy() || selectedDocuments().size === 0}
-                  onClick={async () => {
-                    const ids = Array.from(selectedDocuments());
-                    const byId = new Map(displayDocuments().map(d => [d.id, d]));
-                    for (const id of ids) {
-                      const d = byId.get(id);
-                      if (d?.filePath) await seedFile(d.filePath);
-                    }
-                  }}
-                >
-                  Seed Selected
-                </Button>
-                <Show when={error()}>
-                  <span style={{ color: 'var(--color-error)' }}>{error()}</span>
-                </Show>
-                <Show when={lastOp()}>
-                  <span style={{ color: 'var(--color-text-secondary)' }}>Last: {lastOp()}</span>
-                </Show>
-              </div>
+              <Show when={error()}>
+                <span style={{ color: 'var(--color-error)' }}>{error()}</span>
+              </Show>
+              <Show when={lastOp()}>
+                <span style={{ color: 'var(--color-text-secondary)' }}>Last: {lastOp()}</span>
+              </Show>
               <Show when={showBatchActions()}>
                 <div class={styles['batch-actions']}>
                   <span class={styles['selection-count']}>{selectedDocuments().size} selected</span>
@@ -1507,26 +1721,23 @@ const DocumentManagement: Component = () => {
                           <Settings size={10} />
                         </div>
                       </button>
-                      <Show when={indexInfo()}>
+                      <Show when={projectInfo()}>
                         <div class={styles['status-divider']} />
                         <div class={styles['status-item']}>
                           <div class={styles['status-indicator']}>
                             <div
-                              class={`${styles['indicator-dot']} ${indexInfo()?.indexHealth === 'healthy' ? styles['healthy'] : styles['warning']}`}
+                              class={`${styles['indicator-dot']} ${indexedHealth() === 'healthy' ? styles['healthy'] : styles['warning']}`}
                             />
                           </div>
                           <span class={styles['status-text']}>
-                            {indexInfo()?.documentCount || 0} documents indexed
+                            {indexedDocumentCount()} documents indexed
                           </span>
-                          {indexInfo()?.indexHealth !== 'healthy' && (
-                            <button
-                              class={styles['rebuild-button']}
-                              onClick={rebuildIndex}
-                              title="Rebuild search index"
-                            >
-                              <RefreshCw size={12} />
-                            </button>
-                          )}
+                          <span
+                            class={styles['status-hint']}
+                            title="Indexed = verified (treated), integrated in library, and seeding on this machine"
+                          >
+                            verified · integrated · seeding
+                          </span>
                         </div>
                       </Show>
 
@@ -1795,6 +2006,26 @@ const DocumentManagement: Component = () => {
                               <Button
                                 variant="ghost"
                                 size="sm"
+                                onClick={e => void toggleDocumentFavorite(document, e)}
+                                title={
+                                  favoriteIds().has(document.id)
+                                    ? 'Remove from favorites'
+                                    : 'Add to favorites'
+                                }
+                                class={
+                                  favoriteIds().has(document.id)
+                                    ? styles['favorite-button-active'] || 'favorite-button-active'
+                                    : styles['favorite-button'] || 'favorite-button'
+                                }
+                              >
+                                <Heart
+                                  size={16}
+                                  fill={favoriteIds().has(document.id) ? 'currentColor' : 'none'}
+                                />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
                                 onClick={() => handleDocumentAction('share', document)}
                                 title="Share Document"
                               >
@@ -1813,7 +2044,33 @@ const DocumentManagement: Component = () => {
                           </div>
 
                           <div class={styles['document-content']}>
-                            <h3 class={styles['document-title']}>{document.title}</h3>
+                            <div class={styles['document-title-row']}>
+                              <h3 class={styles['document-title']} title={document.title}>
+                                {document.title}
+                              </h3>
+                              <Show when={docInfoById().get(document.id)} keyed>
+                                {docInfo => (
+                                  <Show
+                                    when={isDocumentVerified(docInfo)}
+                                    fallback={
+                                      <span
+                                        class={`${styles['status-badge']} ${styles['status-pending']} ${styles['status-badge-inline']}`}
+                                      >
+                                        <Shield size={12} />
+                                        Pending
+                                      </span>
+                                    }
+                                  >
+                                    <span
+                                      class={`${styles['status-badge']} ${styles['status-validated']} ${styles['status-badge-inline']}`}
+                                    >
+                                      <CheckCircle2 size={12} />
+                                      Validated
+                                    </span>
+                                  </Show>
+                                )}
+                              </Show>
+                            </div>
                             <p class={styles['document-description']}>{document.description}</p>
 
                             <div class={styles['document-meta']}>
@@ -1826,14 +2083,36 @@ const DocumentManagement: Component = () => {
                                 {document.createdAt.toLocaleDateString()}
                               </span>
                               <span class={styles['meta-item']}>
-                                <Shield size={14} />
-                                {document.securityValidation.passed ? 'validated' : 'pending'}
-                              </span>
-                              <span class={styles['meta-item']}>
                                 <FileText size={14} />
                                 {document.format.toUpperCase()}
                               </span>
                             </div>
+
+                            <Show when={docInfoById().get(document.id)} keyed>
+                              {docInfo => (
+                                <>
+                                  <Show when={isDocumentVerified(docInfo)}>
+                                    <div class={styles['document-status-badges']}>
+                                      <SeedingToggle
+                                        enabled={docInfo.seed_enabled !== false}
+                                        disabled={busy()}
+                                        onChange={checked =>
+                                          void handleSeedToggle(docInfo, checked)
+                                        }
+                                      />
+                                      <Show when={isDocumentIndexed(docInfo, localSharePaths())}>
+                                        <span
+                                          class={`${styles['status-badge']} ${styles['status-indexed']}`}
+                                        >
+                                          <Radio size={12} />
+                                          Indexed
+                                        </span>
+                                      </Show>
+                                    </div>
+                                  </Show>
+                                </>
+                              )}
+                            </Show>
 
                             {/* Enhanced Cultural Context Display */}
                             <div class={styles['cultural-context']}>
@@ -1957,6 +2236,14 @@ const DocumentManagement: Component = () => {
                   title="Treatment Station"
                   size="xl"
                 >
+                  <Show when={isProcessing()}>
+                    <DocumentViewerLoader
+                      message="Running treatment pipeline…"
+                      pipelineStep={pipelineStep() ?? 0}
+                      pipelineLabel={pipelineLabel()}
+                      compact
+                    />
+                  </Show>
                   <div class={styles['ts-tabs']}>
                     <div class={styles['ts-tabbar']}>
                       <For each={treatmentItems()}>
@@ -2016,9 +2303,11 @@ const DocumentManagement: Component = () => {
                               <div class={styles['treatment-hint']}>{item.filename}</div>
                               <div class={styles['treatment-actions']}>
                                 <Button
+                                  disabled={isProcessing()}
                                   onClick={async () => {
                                     try {
-                                      // Now perform secure import to target dir using backend (copies and sanitizes)
+                                      setIsProcessing(true);
+                                      setPipelineStep(0);
                                       const settingsSvc = (
                                         await import('@/services/storage/settingsService')
                                       ).settingsService;
@@ -2028,14 +2317,13 @@ const DocumentManagement: Component = () => {
                                         setShowFolderSetup(true);
                                         return;
                                       }
-                                      const info = await invoke<any>('import_document', {
+                                      await invoke<DocumentInfo>('process_document', {
                                         targetDir: projectPath,
                                         sourcePath: item.filePath,
+                                        userTitle: item.title,
+                                        expectedContentHash: null,
                                       });
-                                      if (enabled() && info?.file_path) {
-                                        await seedFile(info.file_path);
-                                      }
-                                      // Robust update: find by tempId to avoid stale index after async
+                                      await refreshLocalShares();
                                       setTreatmentItems(prev =>
                                         prev.map(it =>
                                           it.tempId === item.tempId
@@ -2045,6 +2333,10 @@ const DocumentManagement: Component = () => {
                                       );
                                     } catch (e) {
                                       console.error('Process failed', e);
+                                    } finally {
+                                      setIsProcessing(false);
+                                      setPipelineStep(null);
+                                      setPipelineLabel('');
                                     }
                                   }}
                                 >
@@ -2079,8 +2371,10 @@ const DocumentManagement: Component = () => {
           </Show>
         </div>
       </div>
-      <div style={{ width: '370px', 'flex-shrink': 0 }}>
+
+      <div class={styles['bottom-panel']}>
         <DocumentManagementRightColumn
+          layout="bottom"
           storage={{ used: 156.85, total: 931.41 }}
           formats={['PDF', 'EPUB']}
           recentUploads={[]}
@@ -2591,6 +2885,29 @@ const DocumentManagement: Component = () => {
           </div>
         </Modal>
       </Show>
+
+      <ConfirmDeleteModal
+        isOpen={deleteConfirm() !== null}
+        onClose={closeDeleteConfirm}
+        onConfirm={confirmDelete}
+        busy={deleteBusy()}
+        itemLabel={(() => {
+          const target = deleteConfirm();
+          if (!target) return '';
+          if (target.mode === 'single') return target.document.title;
+          return `${target.documents.length} selected documents`;
+        })()}
+        count={(() => {
+          const target = deleteConfirm();
+          if (!target) return undefined;
+          return target.mode === 'batch' ? target.documents.length : 1;
+        })()}
+        itemNames={(() => {
+          const target = deleteConfirm();
+          if (target?.mode === 'batch') return target.documents.map(d => d.title);
+          return undefined;
+        })()}
+      />
     </div>
   );
 };

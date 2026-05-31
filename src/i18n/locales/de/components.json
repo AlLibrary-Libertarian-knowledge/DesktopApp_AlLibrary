@@ -29,6 +29,16 @@
     "cancel": "Abbrechen",
     "closeModal": "Modal schließen"
   },
+  "confirmDeleteModal": {
+    "titleSingle": "Dokument dauerhaft löschen?",
+    "titleBatch": "{{count}} Dokumente löschen?",
+    "messageSingle": "\"{{title}}\" wird dauerhaft von der Festplatte entfernt. Wenn es freigegeben ist, wird es aus dem Netzwerk entfernt. Dies kann nicht rückgängig gemacht werden.",
+    "messageBatch": "{{count}} Datei(en) werden dauerhaft von der Festplatte entfernt. Freigegebene Kopien werden aus dem Netzwerk entfernt. Dies kann nicht rückgängig gemacht werden.",
+    "confirmSingle": "Dauerhaft löschen",
+    "confirmBatch": "{{count}} löschen",
+    "deleting": "Wird gelöscht…",
+    "andMore": "…und {{count}} weitere"
+  },
   "input": {
     "required": "Dieses Feld ist erforderlich",
     "invalid": "Ungültige Eingabe",

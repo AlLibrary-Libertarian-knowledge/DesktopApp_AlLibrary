@@ -4,29 +4,53 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
   background: var(--bg-primary);
   color: var(--text-primary);
+}
+
+.main-layout > .app-footer {
+  flex-shrink: 0;
 }
 
 .layout-body {
   display: flex;
   flex: 1;
+  min-height: 0;
   overflow: hidden;
 }
 
-.main-content {
+.main-layout .main-content {
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-height: 0;
   overflow: hidden;
   background: var(--bg-secondary);
 }
 
 .content-wrapper {
   flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
   /* padding: 2rem; */
   overflow-y: auto;
   overflow-x: hidden;
+}
+
+.content-wrapper > * {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Full-height pages (document reader) — no outer scroll, child fills slot */
+.content-wrapper:has(.document-detail-page),
+.content-wrapper:has(.document-reader-page) {
+  overflow: hidden;
 }
 
 /* Responsive breakpoints */
@@ -43,7 +67,7 @@
 }
 
 /* Transitions for smooth layout changes */
-.main-content {
+.main-layout .main-content {
   transition: margin-left 0.3s ease;
 }
 

@@ -29,6 +29,16 @@
     "cancel": "Whakakore",
     "closeModal": "Katia pouaka"
   },
+  "confirmDeleteModal": {
+    "titleSingle": "Mukua tonu te tuhinga?",
+    "titleBatch": "Mukua {{count}} tuhinga?",
+    "messageSingle": "Ka tangohia tonutia \"{{title}}\" i te disk. Mēnā kua tiritiria, ka tangohia i te whatunga. Kāore e taea te huri.",
+    "messageBatch": "Ka tangohia tonutia {{count}} kōnae i te disk. Ka tangohia ngā kape tiritiri i te whatunga. Kāore e taea te huri.",
+    "confirmSingle": "Mukua tonu",
+    "confirmBatch": "Mukua {{count}}",
+    "deleting": "E muku ana…",
+    "andMore": "…me {{count}} anō"
+  },
   "input": {
     "required": "E hiahiatia ana tēnei wāhi",
     "invalid": "Urunga kāore e tika",

@@ -88,6 +88,7 @@ export interface NetworkGraphProps {
   height?: number | string;
   interactive?: boolean;
   showStats?: boolean;
+  showLegend?: boolean;
   theme?: 'light' | 'dark';
   testMode?: boolean; // Disables continuous animation for testing
 }

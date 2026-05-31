@@ -258,6 +258,78 @@
       "educationalUse": "Uso Educativo"
     }
   },
+  "favorites": {
+    "title": "I Miei Preferiti",
+    "subtitle": "Documenti che hai segnato",
+    "searchPlaceholder": "Cerca nei preferiti...",
+    "loading": "Caricamento preferiti...",
+    "emptyTitle": "Nessun preferito trovato",
+    "emptyFiltered": "Prova a modificare i filtri per trovare altri preferiti.",
+    "emptyDefault": "Esplora i documenti e aggiungi i tuoi primi preferiti!",
+    "exploreDocuments": "Esplora Documenti",
+    "statsTotal": "Totale",
+    "statsFiltered": "Filtrati",
+    "unavailableTitle": "Documento non disponibile",
+    "unavailableDescription": "Impossibile risolvere questo preferito. Rimuovilo per pulire l'elenco.",
+    "sourceLocal": "Locale",
+    "sourceNetwork": "Rete",
+    "actions": {
+      "open": "Apri Documento",
+      "viewDetails": "Vedi Dettagli",
+      "remove": "Rimuovi"
+    },
+    "toasts": {
+      "removed": "Rimosso dai preferiti",
+      "removeFailed": "Impossibile rimuovere il preferito"
+    }
+  },
+  "recent": {
+    "title": "Attività Recenti",
+    "subtitle": "Le tue interazioni recenti con i documenti",
+    "searchPlaceholder": "Cerca attività recenti...",
+    "loading": "Caricamento attività...",
+    "emptyTitle": "Nessuna attività recente",
+    "emptyFiltered": "Prova a modificare i filtri.",
+    "emptyDefault": "Esplora i documenti per vedere la cronologia!",
+    "exploreDocuments": "Esplora Documenti",
+    "sourceLocal": "Locale",
+    "sourceNetwork": "Rete",
+    "stats": {
+      "views": "Visualizzati",
+      "downloads": "Download",
+      "uploads": "Caricamenti",
+      "filtered": "Filtrati"
+    },
+    "filters": {
+      "allTypes": "Tutte",
+      "views": "Visualizzazioni",
+      "downloads": "Download",
+      "uploads": "Caricamenti",
+      "shares": "Condivisioni",
+      "favorites": "Preferiti",
+      "typeAria": "Filtra per tipo",
+      "timeAria": "Filtra per periodo"
+    },
+    "timeframes": {
+      "all": "Sempre",
+      "today": "Oggi",
+      "week": "Questa settimana",
+      "month": "Questo mese"
+    },
+    "kinds": {
+      "view": "Visualizzazione",
+      "download": "Download",
+      "upload": "Caricamento",
+      "share": "Condivisione",
+      "favorite": "Preferito"
+    },
+    "actions": {
+      "open": "Apri Documento",
+      "viewDetails": "Dettagli",
+      "remove": "Rimuovi dalla cronologia"
+    },
+    "toasts": { "removed": "Rimosso dalla cronologia", "removeFailed": "Impossibile rimuovere" }
+  },
   "collections": {
     "title": "Collezioni",
     "subtitle": "Collezioni organizzate di documenti",
@@ -463,6 +535,10 @@
     }
   },
   "documentDetail": {
+    "toggleHud": {
+      "show": "Mostra dettagli",
+      "hide": "Modalità lettura"
+    },
     "toasts": {
       "commentPosted": "Commento pubblicato",
       "commentPostFailed": "Impossibile pubblicare il commento",

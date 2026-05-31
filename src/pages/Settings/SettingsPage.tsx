@@ -27,7 +27,7 @@
  * - Local storage integration
  */
 
-import { type Component, createSignal, Show, For } from 'solid-js';
+import { type Component, createSignal, Show, For, onMount, createMemo } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
 import {
   Settings,
@@ -65,6 +65,8 @@ import { NetworkStatus } from '../../components/domain/network/NetworkStatus';
 // Hooks and Services
 import { useSettings } from '../../hooks/data/useSettings';
 import { useTheme } from '../../hooks/ui/useTheme';
+import { settingsService } from '@/services/storage/settingsService';
+import { pickLibraryFolder, pickFolder } from '@/services/system/fileDialogs';
 
 // Styles
 import styles from './SettingsPage.module.css';
@@ -81,6 +83,59 @@ export const SettingsPage: Component<SettingsPageProps> = props => {
 
   // State Management
   const [activeSection, setActiveSection] = createSignal(props.initialSection || 'general');
+  const [projectFolder, setProjectFolder] = createSignal('');
+  const [downloadFolder, setDownloadFolder] = createSignal('');
+  const [pathError, setPathError] = createSignal<string | null>(null);
+  const [pathsLoading, setPathsLoading] = createSignal(true);
+
+  const databasePath = createMemo(() => {
+    const project = projectFolder().trim();
+    if (!project) return '';
+    const sep = project.includes('\\') ? '\\' : '/';
+    return `${project}${sep}documents${sep}allibrary.db`;
+  });
+
+  onMount(async () => {
+    setPathsLoading(true);
+    setPathError(null);
+    try {
+      await settingsService.ensureInitialized();
+      const project = (await settingsService.getProjectFolder()) || '';
+      const download = (await settingsService.getDownloadFolder()) || '';
+      setProjectFolder(project);
+      setDownloadFolder(download);
+    } catch (e) {
+      setPathError(e instanceof Error ? e.message : 'Failed to load library paths');
+    } finally {
+      setPathsLoading(false);
+    }
+  });
+
+  const browseProjectFolder = async () => {
+    setPathError(null);
+    try {
+      const path = await pickLibraryFolder();
+      if (!path?.trim()) return;
+      await settingsService.setProjectFolder(path.trim());
+      setProjectFolder(path.trim());
+      const download = (await settingsService.getDownloadFolder()) || '';
+      setDownloadFolder(download);
+    } catch (e) {
+      setPathError(e instanceof Error ? e.message : 'Failed to update project folder');
+    }
+  };
+
+  const browseDownloadFolder = async () => {
+    setPathError(null);
+    try {
+      const path = await pickFolder('Select Download Folder');
+      if (!path?.trim()) return;
+      await settingsService.setDownloadFolder(path.trim());
+      setDownloadFolder(path.trim());
+    } catch (e) {
+      setPathError(e instanceof Error ? e.message : 'Failed to update download folder');
+    }
+  };
 
   // Hooks
   const {
@@ -273,16 +328,62 @@ export const SettingsPage: Component<SettingsPageProps> = props => {
 
                   <div class={styles.settingGroup}>
                     <label class={styles.settingLabel}>
+                      <BookOpen size={16} />
+                      Project Folder
+                    </label>
+                    <div class={styles.pathSetting}>
+                      <Input
+                        value={pathsLoading() ? 'Loading…' : projectFolder() || 'Not set'}
+                        readonly
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={pathsLoading()}
+                        onClick={browseProjectFolder}
+                      >
+                        Browse
+                      </Button>
+                    </div>
+                    <p class={styles.settingDescription}>
+                      Root folder for your library, documents database, and project structure.
+                    </p>
+                  </div>
+
+                  <div class={styles.settingGroup}>
+                    <label class={styles.settingLabel}>
                       <Download size={16} />
                       Default Download Location
                     </label>
                     <div class={styles.pathSetting}>
-                      <Input value="./downloads" readonly />
-                      <Button variant="outline" size="sm">
+                      <Input
+                        value={pathsLoading() ? 'Loading…' : downloadFolder() || 'Not set'}
+                        readonly
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={pathsLoading() || !projectFolder()}
+                        onClick={browseDownloadFolder}
+                      >
                         Browse
                       </Button>
                     </div>
                   </div>
+
+                  <div class={styles.settingGroup}>
+                    <label class={styles.settingLabel}>
+                      <Info size={16} />
+                      Database Path
+                    </label>
+                    <Input value={databasePath() || 'Set project folder first'} readonly />
+                  </div>
+
+                  <Show when={pathError()}>
+                    <p class={styles.settingDescription} role="alert" style={{ color: '#ef4444' }}>
+                      {pathError()}
+                    </p>
+                  </Show>
 
                   <div class={styles.settingGroup}>
                     <div class={styles.toggleSetting}>

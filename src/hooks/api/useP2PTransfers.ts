@@ -1,82 +1,44 @@
 import { createSignal } from 'solid-js';
-import { enableTorAndP2P } from '@/services/network/bootstrap';
-import { p2pNetworkService } from '@/services/network/p2pNetworkService';
+import { invoke } from '@tauri-apps/api/core';
+import { transferFacade } from '@/services/network/transferFacade';
+import type { DocumentInfo } from '@/services/documentService';
 
 export function useP2PTransfers() {
-  const [enabled, setEnabled] = createSignal(false);
   const [busy, setBusy] = createSignal(false);
   const [lastOp, setLastOp] = createSignal<string | null>(null);
   const [error, setError] = createSignal<string | null>(null);
 
-  const enable = async () => {
+  const setSeedEnabled = async (path: string, enabled: boolean): Promise<DocumentInfo> => {
     setBusy(true);
     setError(null);
+    setLastOp(enabled ? 'seed:on' : 'seed:off');
     try {
-      await enableTorAndP2P();
-      setEnabled(true);
-    } catch (e: any) {
-      setError(String(e));
+      return await invoke<DocumentInfo>('set_document_seed_enabled', {
+        filePath: path,
+        enabled,
+      });
+    } catch (e: unknown) {
+      const msg = String(e instanceof Error ? e.message : e);
+      setError(msg);
+      throw e;
     } finally {
       setBusy(false);
     }
   };
 
-  const seedFile = async (path: string) => {
-    setBusy(true);
-    setError(null);
-    setLastOp('seed:file');
-    try {
-      await p2pNetworkService.publishContent({
-        id: `seed-${Date.now()}`,
-        title: path.split('/').pop() || path,
-      } as any);
-    } catch (e: any) {
-      setError(String(e));
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const seedFolder = async (dir: string, files: string[]) => {
-    setBusy(true);
-    setError(null);
-    setLastOp('seed:folder');
-    try {
-      for (const f of files) {
-        await p2pNetworkService.publishContent({
-          id: `seed-${Date.now()}-${f}`,
-          title: `${dir}/${f}`,
-        } as any);
-      }
-    } catch (e: any) {
-      setError(String(e));
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const downloadByHash = async (hash: string, outDir: string) => {
+  const downloadByHash = async (hash: string, outDir: string, fileName?: string) => {
     setBusy(true);
     setError(null);
     setLastOp('download');
     try {
-      void outDir;
-      await p2pNetworkService.requestContent(
-        {
-          ipfsHash: hash,
-          contentType: 'document',
-          size: 0,
-          verificationHash: hash,
-          createdAt: new Date(),
-        },
-        undefined
-      );
-    } catch (e: any) {
-      setError(String(e));
+      await transferFacade.downloadByHashOrLink(hash, fileName || hash, outDir);
+    } catch (e: unknown) {
+      setError(String(e instanceof Error ? e.message : e));
+      throw e;
     } finally {
       setBusy(false);
     }
   };
 
-  return { enabled, busy, lastOp, error, enable, seedFile, seedFolder, downloadByHash };
+  return { busy, lastOp, error, setSeedEnabled, downloadByHash };
 }

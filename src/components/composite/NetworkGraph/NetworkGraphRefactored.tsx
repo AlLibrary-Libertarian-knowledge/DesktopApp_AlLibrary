@@ -741,7 +741,7 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
       </div>
 
       {/* Transfer Legend Component */}
-      <TransferLegend />
+      {(props.showLegend ?? true) && <TransferLegend />}
 
       {/* Network Stats */}
       {props.showStats && (

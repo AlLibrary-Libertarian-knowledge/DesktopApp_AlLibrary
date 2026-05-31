@@ -6,7 +6,7 @@ use anyhow::Context;
 use memmap2::Mmap;
 use uuid::Uuid;
 
-use super::crypto::{content_hash_hex, encrypt_chunk, key_from_content_hash, FileKey};
+use super::crypto::{self, encrypt_chunk, key_from_content_hash, FileKey};
 
 #[derive(Clone)]
 pub struct Share {
@@ -45,7 +45,8 @@ impl Share {
             .map(|s| s.to_string_lossy().to_string())
             .unwrap_or_else(|| "shared.bin".to_string());
 
-        let content_hash = content_hash_hex(&mmap[..]);
+        let content_hash = crypto::content_hash_for_file(&file_path, &mmap[..])
+            .context("content hash failed")?;
         let key = key_from_content_hash(&content_hash)?;
 
         Ok(Self {

@@ -6,7 +6,7 @@ import { ThemeSwitcher } from '@/components/foundation/ThemeSwitcher';
 import { useTranslation } from '@/i18n';
 import { Bell, Menu, Search as SearchIcon, Settings as SettingsIcon } from 'lucide-solid';
 import { Badge } from '@/components/foundation/Badge';
-import { useNetworkPresenceResource } from '@/hooks/network/useNetworkPresence';
+import { useNetworkPresenceResource, onionBadgeLabel } from '@/hooks/network/useNetworkPresence';
 
 interface HeaderProps {
   sidebarCollapsed?: boolean;
@@ -114,16 +114,24 @@ const Header: Component<HeaderProps> = props => {
           style={{ display: 'flex', 'align-items': 'center', gap: '8px' }}
         >
           <span
-            class={`status-indicator ${presence()?.online ? 'online' : 'offline'}`}
+            class={`status-indicator ${presence().online ? 'online' : 'offline'}`}
             title={
-              presence()?.online ? t('common.status.connected') : t('common.status.disconnected')
+              presence().online ? t('common.status.connected') : t('common.status.disconnected')
             }
           />
           <span class="network-text">
-            {presence()?.online ? t('common.status.online') : t('common.status.offline')}
+            {presence().online ? t('common.status.online') : t('common.status.offline')}
           </span>
-          <Badge variant={presence()?.onionActive ? 'success' : 'secondary'}>
-            {presence()?.onionActive ? 'Onion' : 'No Onion'}
+          <Badge
+            variant={
+              presence().onionActive
+                ? 'success'
+                : presence().mode === 'bootstrapping'
+                  ? 'warning'
+                  : 'secondary'
+            }
+          >
+            {onionBadgeLabel(presence())}
           </Badge>
         </div>
       </div>

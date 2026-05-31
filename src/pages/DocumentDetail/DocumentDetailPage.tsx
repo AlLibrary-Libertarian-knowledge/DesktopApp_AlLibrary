@@ -35,9 +35,10 @@ import {
   Show,
   For,
   ErrorBoundary,
+  onMount,
 } from 'solid-js';
-import { useParams, useNavigate } from '@solidjs/router';
-import { createAsync } from '@solidjs/router';
+import { useParams, useNavigate, useSearchParams } from '@solidjs/router';
+import { convertFileSrc } from '@tauri-apps/api/core';
 import {
   BookOpen,
   Download,
@@ -54,13 +55,16 @@ import {
   Globe,
   Users,
   Heart,
+  PanelRightOpen,
+  PanelRightClose,
 } from 'lucide-solid';
 
 // Import components
 import { Button } from '@/components/foundation/Button';
+import { SeedingToggle } from '@/components/domain/document/SeedingToggle';
 import { Card } from '@/components/foundation/Card';
 import { Modal } from '@/components/foundation/Modal';
-import { Loading } from '@/components/foundation/Loading';
+import { DocumentViewerLoader } from '@/components/composite/DocumentViewerLoader';
 import ErrorMessage from '@/components/foundation/ErrorMessage/ErrorMessage';
 import { Badge } from '@/components/foundation/Badge';
 import { Tooltip } from '@/components/foundation/Tooltip';
@@ -71,23 +75,67 @@ import { useToast } from '@/hooks/ui/useToast';
 import { useTranslation } from '@/i18n';
 
 // Import services
-import { documentApi, culturalApi } from '@/services/api';
-import { commentService, shareService } from '@/services';
-import { p2pNetworkService } from '@/services/network/p2pNetworkService';
-// import type { Document } from '@/types/core';
+import { culturalApi } from '@/services/api';
+import { commentService, favoriteService, activityService } from '@/services';
+import { documentService, type DocumentDetailModel } from '@/services/documentService';
+import { transferFacade } from '@/services/network/transferFacade';
+import { shareWithToast, copyNetworkLinkWithToast } from '@/utils/documentActions';
 
 // Import styles
 import styles from './DocumentDetailPage.module.css';
 import { useP2PTransfers } from '@/hooks/api/useP2PTransfers';
 
+type DetailDocument = DocumentDetailModel & {
+  fileType?: string;
+  author?: string;
+  publishedDate?: string;
+  tags?: string[];
+  viewCount?: number;
+  favoriteCount?: number;
+  commentCount?: number;
+  culturalMetadata?: { sensitivityLevel: number };
+  language?: string;
+  category?: string;
+  culturalOrigin?: string;
+  metadata?: { totalPages?: number };
+};
+
+function mapToDetailDocument(model: DocumentDetailModel): DetailDocument {
+  return {
+    ...model,
+    fileType: model.format,
+    tags: [],
+    viewCount: 0,
+    favoriteCount: 0,
+    commentCount: 0,
+    culturalMetadata: { sensitivityLevel: 0 },
+  };
+}
+
+function detectDocumentType(format: string): 'pdf' | 'epub' | 'text' | 'markdown' {
+  const p = format.toLowerCase();
+  if (p.endsWith('.pdf') || p === 'pdf') return 'pdf';
+  if (p.endsWith('.epub') || p === 'epub') return 'epub';
+  if (p.endsWith('.md') || p === 'markdown') return 'markdown';
+  if (p.endsWith('.txt') || p === 'text') return 'text';
+  return 'pdf';
+}
+
 type DocumentDetailPageProps = {};
 
 export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
-  const { enabled, busy, enable, seedFile, downloadByHash, error, lastOp } = useP2PTransfers();
+  const { busy, setSeedEnabled, downloadByHash, error, lastOp } = useP2PTransfers();
   const params = useParams();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [seedEnabled, setSeedEnabledState] = createSignal(true);
+  const [docIsTreated, setDocIsTreated] = createSignal(false);
+
+  const paramValue = (value: string | string[] | undefined): string =>
+    Array.isArray(value) ? (value[0] ?? '') : (value ?? '');
 
   // State management
+  const [hudOpen, setHudOpen] = createSignal(false);
   const [viewMode, setViewMode] = createSignal<'reader' | 'metadata' | 'cultural' | 'community'>(
     'reader'
   );
@@ -99,51 +147,97 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
   const [searchTerm, setSearchTerm] = createSignal('');
   const [comments, setComments] = createSignal<Awaited<ReturnType<typeof commentService.list>>>([]);
   const [newComment, setNewComment] = createSignal('');
-  const [peers, setPeers] = createSignal<any[]>([]);
-  const [selectedPeerIds, setSelectedPeerIds] = createSignal<string[]>([]);
+  const [detailDocument, setDetailDocument] = createSignal<DetailDocument | null>(null);
+  const [detailLoading, setDetailLoading] = createSignal(true);
+  const [culturalContext, setCulturalContext] = createSignal<unknown>(null);
+  const [documentBytes, setDocumentBytes] = createSignal<Uint8Array | undefined>();
+  const [documentUrl, setDocumentUrl] = createSignal<string | undefined>();
+  const [contentLoading, setContentLoading] = createSignal(false);
   const toast = useToast();
   const { t } = useTranslation();
   const tf = t as unknown as (key: string) => string;
 
-  // Data fetching
-  const document = createAsync(async () => {
-    if (!params.id) return null;
-    try {
-      const response = await documentApi.getDocument(params.id);
-      if (!response.success || !response.document) return null;
-      // Fire-and-forget increment view
-      documentApi.incrementViewCount(params.id);
-      // Merge stats if available
-      try {
-        const stats = await documentApi.getDocumentStats(params.id);
-        return { ...response.document, ...stats } as any;
-      } catch {
-        return response.document;
-      }
-    } catch {
-      // ignore
-      return null;
+  onMount(() => {
+    if (paramValue(searchParams.hud) === '1') {
+      setHudOpen(true);
     }
   });
 
-  const culturalContext = createAsync(async () => {
-    const doc = document();
-    if (!doc) return null;
-
-    try {
-      // Use the document ID as the context ID for now
-      const response = await culturalApi.getCulturalContext(params.id!);
-      return response.success ? response.data : null;
-    } catch {
-      // ignore
-      return null;
+  const toggleHud = () => {
+    const next = !hudOpen();
+    setHudOpen(next);
+    setSearchParams({ hud: next ? '1' : undefined }, { replace: true });
+    if (!next) {
+      setViewMode('reader');
     }
+  };
+
+  const effectiveViewMode = createMemo(() => (hudOpen() ? viewMode() : 'reader'));
+
+  // Resolve document without router createAsync (avoids route-level Suspense flash)
+  createEffect(() => {
+    const id = params.id;
+    if (!id) {
+      setDetailDocument(null);
+      setDetailLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setDetailLoading(true);
+    setDetailDocument(null);
+    setCulturalContext(null);
+
+    void (async () => {
+      try {
+        const resolved = await documentService.resolveDocumentById(id);
+        if (cancelled) return;
+        const mapped = resolved ? mapToDetailDocument(resolved) : null;
+        setDetailDocument(mapped);
+
+        if (mapped) {
+          void activityService.logActivity('view', mapped.id, { title: mapped.title });
+          void favoriteService.isFavorite(mapped.id).then(setIsBookmarked);
+          if (mapped.source === 'local' && mapped.filePath) {
+            void documentService.getDocumentInfo(mapped.filePath).then(info => {
+              if (!cancelled) {
+                setDocIsTreated(Boolean(info.is_treated));
+                setSeedEnabledState(info.seed_enabled !== false);
+              }
+            });
+          }
+          commentService
+            .list(mapped.id)
+            .then(list => {
+              if (!cancelled) setComments(list);
+            })
+            .catch(() => {
+              if (!cancelled) setComments([]);
+            });
+
+          try {
+            const response = await culturalApi.getCulturalContext(id);
+            if (!cancelled && response.success) {
+              setCulturalContext(response.data);
+            }
+          } catch {
+            /* ignore */
+          }
+        }
+      } finally {
+        if (!cancelled) setDetailLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   });
 
   // Computed values
-  const documentTitle = createMemo(() => document()?.title || 'Loading...');
+  const documentTitle = createMemo(() => detailDocument()?.title || 'Loading...');
   const totalPages = createMemo(() => 1); // Default to 1 page for now
-  const culturalLevel = createMemo(() => document()?.culturalMetadata?.sensitivityLevel || 0);
+  const culturalLevel = createMemo(() => detailDocument()?.culturalMetadata?.sensitivityLevel || 0);
   const hasEducationalContent = createMemo(() => {
     const ctx = culturalContext();
     const resources =
@@ -151,31 +245,85 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
     return Array.isArray(resources) && resources.length > 0;
   });
 
-  // Effects
-  createEffect(() => {
-    const doc = document();
-    if (doc) {
-      // Load initial comments
-      commentService
-        .list(doc.id)
-        .then(list => setComments(list))
-        .catch(() => setComments([]));
-    }
+  const documentType = createMemo((): 'pdf' | 'epub' | 'text' | 'markdown' => {
+    const doc = detailDocument();
+    if (!doc) return 'pdf';
+    return detectDocumentType(doc.fileType?.toLowerCase?.() || doc.format || 'pdf');
   });
 
+  const viewerContentReady = createMemo(() => {
+    const type = documentType();
+    if (type === 'pdf' || type === 'epub') return !!documentBytes();
+    return !!documentUrl();
+  });
+
+  const showViewerLoader = createMemo(() => {
+    if (detailLoading()) return true;
+    const doc = detailDocument();
+    if (!doc || doc.source !== 'local') return false;
+    return contentLoading() || !viewerContentReady();
+  });
+
+  const loaderPhase = createMemo((): 'resolve' | 'content' =>
+    detailLoading() ? 'resolve' : 'content'
+  );
+
+  const loaderMessage = createMemo(() =>
+    loaderPhase() === 'resolve'
+      ? tf('pages.documentDetail.loading')
+      : tf('pages.documentDetail.loadingContent')
+  );
+
+  const loaderEyebrow = createMemo(() =>
+    loaderPhase() === 'resolve'
+      ? tf('pages.documentDetail.loader.eyebrowResolve')
+      : tf('pages.documentDetail.loader.eyebrowContent')
+  );
+
+  const loaderHint = createMemo(() =>
+    loaderPhase() === 'resolve'
+      ? tf('pages.documentDetail.loader.hintResolve')
+      : tf('pages.documentDetail.loader.hintContent')
+  );
+
+  // Load local file bytes for viewer
   createEffect(() => {
-    if (showShareModal()) {
-      p2pNetworkService
-        .getConnectedPeers()
-        .then(list => setPeers(list || []))
-        .catch(() => setPeers([]));
+    const doc = detailDocument();
+    if (!doc || doc.source !== 'local' || !doc.filePath) {
+      setDocumentBytes(undefined);
+      setDocumentUrl(undefined);
+      setContentLoading(false);
+      return;
     }
+
+    const type = detectDocumentType(doc.fileType?.toLowerCase?.() || doc.format || 'pdf');
+    let cancelled = false;
+    setContentLoading(true);
+
+    void (async () => {
+      try {
+        if (type === 'pdf' || type === 'epub') {
+          const content = await documentService.openDocument(doc.filePath);
+          if (!cancelled) setDocumentBytes(content);
+        } else {
+          if (!cancelled) setDocumentUrl(convertFileSrc(doc.filePath));
+        }
+      } catch (e) {
+        console.warn('DocumentDetail: failed to load content', e);
+      } finally {
+        if (!cancelled) setContentLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   });
 
   // Reload comments when switching to community tab
   createEffect(() => {
     if (viewMode() === 'community') {
-      const doc = document();
+      const doc = detailDocument();
       if (doc) {
         commentService
           .list(doc.id)
@@ -187,9 +335,8 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
 
   // Event handlers
   const handleBookmark = async () => {
-    const doc = document();
+    const doc = detailDocument();
     if (!doc) return;
-    const { favoriteService } = await import('@/services');
     const res = await favoriteService.toggleFavorite(doc.id);
     setIsBookmarked(res.isFavorite);
     toast.success(
@@ -200,31 +347,37 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
   };
 
   const handleShare = async () => {
-    const doc = document();
+    const doc = detailDocument();
     if (!doc) return;
-    // Default to link sharing for now; P2P share can be added with peer selection UI
-    const link = await shareService.createShareLink(doc.id);
-    if (link?.url) {
-      await window.navigator.clipboard.writeText(link.url);
-      toast.success(tf('pages.documentDetail.toasts.shareLinkCopied'));
+    try {
+      if (doc.source === 'network' && doc.networkLink) {
+        await copyNetworkLinkWithToast(doc.networkLink, doc.title, toast);
+      } else if (doc.filePath && doc.source === 'local') {
+        await shareWithToast(doc, toast);
+      } else {
+        throw new Error('No shareable path for this document.');
+      }
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : String(e));
     }
   };
 
   const handleDownload = async () => {
-    const doc = document();
+    const doc = detailDocument();
     if (!doc) return;
 
     try {
-      const downloadUrl = await documentApi.getDownloadUrl(doc.id);
-      if (downloadUrl) {
-        // Create a temporary link and trigger download
-        const link = window.document.createElement('a');
-        link.href = downloadUrl;
-        link.download = doc.title || 'document';
-        link.click();
+      if (doc.source === 'local' && doc.filePath) {
+        toast.info(tf('pages.documentDetail.toasts.alreadyLocal'));
+        return;
       }
-    } catch {
-      // ignore
+      const link = doc.networkLink || doc.filePath;
+      if (link) {
+        await transferFacade.downloadLink(link, doc.title);
+        toast.success('Download started — check Sharing & downloads for progress.');
+      }
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : String(e));
     }
   };
 
@@ -251,7 +404,9 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
         />
       )}
     >
-      <div class={styles.documentDetailPage}>
+      <div
+        class={`document-detail-page ${styles.documentDetailPage} ${!hudOpen() ? styles.focusMode : ''}`}
+      >
         {/* Header */}
         <header class={styles.pageHeader}>
           <div class={styles.headerLeft}>
@@ -267,7 +422,7 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
 
             <div class={styles.titleSection}>
               <h1 class={styles.documentTitle}>{documentTitle()}</h1>
-              <Show when={document()}>
+              <Show when={hudOpen() && detailDocument()}>
                 {doc => (
                   <div class={styles.documentMeta}>
                     <span class={styles.author}>{doc().author}</span>
@@ -275,7 +430,11 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
                     <span class={styles.date}>{doc().publishedDate}</span>
                     <Show when={culturalLevel() > 0}>
                       <span class={styles.separator}>•</span>
-                      <CulturalIndicator level={culturalLevel()} size="sm" informationOnly={true} />
+                      <CulturalIndicator
+                        level={(Math.min(3, Math.max(1, culturalLevel())) || 1) as 1 | 2 | 3}
+                        size="sm"
+                        informationOnly={true}
+                      />
                     </Show>
                   </div>
                 )}
@@ -284,24 +443,28 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
           </div>
 
           <div class={styles.headerActions}>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={enable}
-              disabled={busy()}
-              class={styles.actionButton || ''}
+            <Tooltip
+              content={
+                hudOpen()
+                  ? tf('pages.documentDetail.toggleHud.hide')
+                  : tf('pages.documentDetail.toggleHud.show')
+              }
             >
-              {enabled() ? 'Private Networking Enabled' : 'Enable Private Networking'}
-            </Button>
-            <Tooltip content="Cultural Information">
               <Button
-                variant="ghost"
+                variant={hudOpen() ? 'primary' : 'outline'}
                 size="sm"
-                onClick={() => setShowCulturalModal(true)}
+                onClick={toggleHud}
                 class={styles.actionButton || ''}
-                disabled={!hasEducationalContent()}
+                aria-pressed={hudOpen()}
               >
-                <Globe size={16} />
+                <Show when={hudOpen()} fallback={<PanelRightOpen size={16} />}>
+                  <PanelRightClose size={16} />
+                </Show>
+                <span class={styles.hudToggleLabel}>
+                  {hudOpen()
+                    ? tf('pages.documentDetail.toggleHud.hide')
+                    : tf('pages.documentDetail.toggleHud.show')}
+                </span>
               </Button>
             </Tooltip>
 
@@ -316,292 +479,369 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
               </Button>
             </Tooltip>
 
-            <Tooltip content="Share Document">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowShareModal(true)}
-                class={styles.actionButton || ''}
-              >
-                <Share2 size={16} />
-              </Button>
-            </Tooltip>
+            <Show when={hudOpen()}>
+              <Show when={docIsTreated()}>
+                <SeedingToggle
+                  size="md"
+                  enabled={seedEnabled()}
+                  disabled={busy()}
+                  onChange={checked => {
+                    const doc = detailDocument();
+                    if (doc?.source !== 'local' || !doc.filePath) return;
+                    void (async () => {
+                      try {
+                        const updated = await setSeedEnabled(doc.filePath, checked);
+                        setSeedEnabledState(updated.seed_enabled !== false);
+                      } catch {
+                        /* error surfaced via hook */
+                      }
+                    })();
+                  }}
+                />
+              </Show>
+              <Tooltip content="Cultural Information">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowCulturalModal(true)}
+                  class={styles.actionButton || ''}
+                  disabled={!hasEducationalContent()}
+                >
+                  <Globe size={16} />
+                </Button>
+              </Tooltip>
 
-            <Tooltip content="Seed via P2P">
-              <Button
-                variant="ghost"
-                size="sm"
-                disabled={!enabled() || busy()}
-                onClick={() => {
-                  const doc = document();
-                  if (doc) seedFile((doc as any).path || (doc as any).filePath);
-                }}
-                class={styles.actionButton || ''}
-              >
-                <Share2 size={16} />
-              </Button>
-            </Tooltip>
+              <Tooltip content="Share Document">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowShareModal(true)}
+                  class={styles.actionButton || ''}
+                >
+                  <Share2 size={16} />
+                </Button>
+              </Tooltip>
 
-            <Tooltip content="Download">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleDownload}
-                class={styles.actionButton || ''}
-              >
-                <Download size={16} />
-              </Button>
-            </Tooltip>
+              <Tooltip content="Download">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleDownload}
+                  class={styles.actionButton || ''}
+                >
+                  <Download size={16} />
+                </Button>
+              </Tooltip>
+            </Show>
           </div>
         </header>
 
         {/* Main Content */}
         <main class={styles.mainContent}>
-          {/* Sidebar */}
-          <aside class={styles.sidebar}>
-            <nav class={styles.viewTabs}>
-              <button
-                class={`${styles.tab} ${viewMode() === 'reader' ? styles.active : ''}`}
-                onClick={() => setViewMode('reader')}
-              >
-                <BookOpen size={16} />
-                Reader
-              </button>
-              <button
-                class={`${styles.tab} ${viewMode() === 'metadata' ? styles.active : ''}`}
-                onClick={() => setViewMode('metadata')}
-              >
-                <Info size={16} />
-                Details
-              </button>
-              <button
-                class={`${styles.tab} ${viewMode() === 'cultural' ? styles.active : ''}`}
-                onClick={() => setViewMode('cultural')}
-                disabled={!hasEducationalContent()}
-              >
-                <Globe size={16} />
-                Cultural
-              </button>
-              <button
-                class={`${styles.tab} ${viewMode() === 'community' ? styles.active : ''}`}
-                onClick={() => setViewMode('community')}
-              >
-                <Users size={16} />
-                Community
-              </button>
-            </nav>
+          <Show when={showViewerLoader()}>
+            <div class={styles.loaderScreen}>
+              <DocumentViewerLoader
+                fullscreen
+                phase={loaderPhase()}
+                message={loaderMessage()}
+                eyebrow={loaderEyebrow()}
+                hint={loaderHint()}
+              />
+            </div>
+          </Show>
 
-            {/* Sidebar Content */}
-            <div class={styles.sidebarContent}>
-              <Show when={viewMode() === 'metadata'}>
-                <Card title="Document Information" class={styles.metadataCard || ''}>
-                  <Show when={document()}>
-                    {doc => (
-                      <div class={styles.metadataList}>
-                        <div class={styles.metadataItem}>
-                          <span class={styles.label}>File Type:</span>
-                          <span class={styles.value}>{doc().fileType?.toUpperCase()}</span>
-                        </div>
-                        <div class={styles.metadataItem}>
-                          <span class={styles.label}>File Size:</span>
-                          <span class={styles.value}>{doc().fileSize}</span>
-                        </div>
-                        <div class={styles.metadataItem}>
-                          <span class={styles.label}>Pages:</span>
-                          <span class={styles.value}>{doc().metadata?.totalPages}</span>
-                        </div>
-                        <div class={styles.metadataItem}>
-                          <span class={styles.label}>Language:</span>
-                          <span class={styles.value}>{doc().language}</span>
-                        </div>
-                        <div class={styles.metadataItem}>
-                          <span class={styles.label}>Category:</span>
-                          <span class={styles.value}>{doc().category}</span>
-                        </div>
-                        <Show when={doc().culturalOrigin}>
+          {/* Sidebar — visible only in HUD mode */}
+          <Show when={hudOpen()}>
+            <aside class={styles.sidebar}>
+              <nav class={styles.viewTabs}>
+                <button
+                  class={`${styles.tab} ${viewMode() === 'reader' ? styles.active : ''}`}
+                  onClick={() => setViewMode('reader')}
+                >
+                  <BookOpen size={16} />
+                  Reader
+                </button>
+                <button
+                  class={`${styles.tab} ${viewMode() === 'metadata' ? styles.active : ''}`}
+                  onClick={() => setViewMode('metadata')}
+                >
+                  <Info size={16} />
+                  Details
+                </button>
+                <button
+                  class={`${styles.tab} ${viewMode() === 'cultural' ? styles.active : ''}`}
+                  onClick={() => setViewMode('cultural')}
+                  disabled={!hasEducationalContent()}
+                >
+                  <Globe size={16} />
+                  Cultural
+                </button>
+                <button
+                  class={`${styles.tab} ${viewMode() === 'community' ? styles.active : ''}`}
+                  onClick={() => setViewMode('community')}
+                >
+                  <Users size={16} />
+                  Community
+                </button>
+              </nav>
+
+              {/* Sidebar Content */}
+              <div class={styles.sidebarContent}>
+                <Show when={viewMode() === 'metadata'}>
+                  <Card title="Document Information" class={styles.metadataCard || ''}>
+                    <Show when={detailDocument()}>
+                      {doc => (
+                        <div class={styles.metadataList}>
                           <div class={styles.metadataItem}>
-                            <span class={styles.label}>Cultural Origin:</span>
-                            <span class={styles.value}>{doc().culturalOrigin}</span>
+                            <span class={styles.label}>File Type:</span>
+                            <span class={styles.value}>{doc().fileType?.toUpperCase()}</span>
                           </div>
-                        </Show>
-                      </div>
-                    )}
-                  </Show>
-                </Card>
+                          <div class={styles.metadataItem}>
+                            <span class={styles.label}>File Size:</span>
+                            <span class={styles.value}>
+                              {documentService.formatFileSize(doc().fileSize)}
+                            </span>
+                          </div>
+                          <Show when={doc().source === 'network'}>
+                            <div class={styles.metadataItem}>
+                              <span class={styles.label}>Peers:</span>
+                              <span class={styles.value}>{doc().peerCount ?? 0}</span>
+                            </div>
+                          </Show>
+                          <div class={styles.metadataItem}>
+                            <span class={styles.label}>Pages:</span>
+                            <span class={styles.value}>{doc().metadata?.totalPages}</span>
+                          </div>
+                          <div class={styles.metadataItem}>
+                            <span class={styles.label}>Language:</span>
+                            <span class={styles.value}>{doc().language}</span>
+                          </div>
+                          <div class={styles.metadataItem}>
+                            <span class={styles.label}>Category:</span>
+                            <span class={styles.value}>{doc().category}</span>
+                          </div>
+                          <Show when={doc().culturalOrigin}>
+                            <div class={styles.metadataItem}>
+                              <span class={styles.label}>Cultural Origin:</span>
+                              <span class={styles.value}>{doc().culturalOrigin}</span>
+                            </div>
+                          </Show>
+                        </div>
+                      )}
+                    </Show>
+                  </Card>
 
-                <Card title="Tags" class={styles.tagsCard || ''}>
-                  <Show when={document()?.tags}>
-                    <div class={styles.tagsList}>
-                      <For each={document()!.tags}>
-                        {tag => (
-                          <Badge variant="secondary" size="sm">
-                            {tag}
-                          </Badge>
+                  <Card title="Tags" class={styles.tagsCard || ''}>
+                    <Show when={detailDocument()?.tags}>
+                      <div class={styles.tagsList}>
+                        <For each={detailDocument()!.tags}>
+                          {tag => (
+                            <Badge variant="secondary" size="sm">
+                              {tag}
+                            </Badge>
+                          )}
+                        </For>
+                      </div>
+                    </Show>
+                  </Card>
+                </Show>
+
+                <Show when={viewMode() === 'cultural' && culturalContext()}>
+                  <CulturalContext
+                    contextInfo={culturalContext() as any}
+                    showEducationalResources={true}
+                    showCommunityInfo={true}
+                  />
+                </Show>
+
+                <Show when={viewMode() === 'community'}>
+                  <Card title="Community Activity" class={styles.communityCard || ''}>
+                    <div class={styles.communityStats}>
+                      <div class={styles.statItem}>
+                        <Eye size={16} />
+                        <span>{detailDocument()?.viewCount || 0} views</span>
+                      </div>
+                      <div class={styles.statItem}>
+                        <Heart size={16} />
+                        <span>{detailDocument()?.favoriteCount || 0} favorites</span>
+                      </div>
+                      <div class={styles.statItem}>
+                        <MessageCircle size={16} />
+                        <span>{detailDocument()?.commentCount || 0} comments</span>
+                      </div>
+                    </div>
+                    <div class={styles.commentComposer}>
+                      <textarea
+                        class={styles.commentInput}
+                        placeholder="Add a comment..."
+                        value={newComment()}
+                        onInput={e => setNewComment(e.currentTarget.value)}
+                      />
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={async () => {
+                          const doc = detailDocument();
+                          if (!doc || !newComment().trim()) return;
+                          const created = await commentService.add({
+                            documentId: doc.id,
+                            text: newComment().trim(),
+                          });
+                          if (created) {
+                            setComments([created, ...comments()]);
+                            setNewComment('');
+                            toast.success(tf('pages.documentDetail.toasts.commentPosted'));
+                          } else {
+                            toast.error(tf('pages.documentDetail.toasts.commentPostFailed'));
+                          }
+                        }}
+                      >
+                        Post
+                      </Button>
+                    </div>
+                    <div class={styles.commentList}>
+                      <For each={comments()}>
+                        {c => (
+                          <div class={styles.commentItem}>
+                            <div class={styles.commentHeader}>
+                              <span class={styles.author}>{c.authorName || c.authorId}</span>
+                              <span class={styles.time}>
+                                {new Date(c.createdAt).toLocaleString()}
+                              </span>
+                            </div>
+                            <div class={styles.commentText}>{c.text}</div>
+                          </div>
                         )}
                       </For>
                     </div>
-                  </Show>
-                </Card>
-              </Show>
-
-              <Show when={viewMode() === 'cultural' && culturalContext()}>
-                <CulturalContext
-                  contextInfo={culturalContext() as any}
-                  showEducationalResources={true}
-                  showCommunityInfo={true}
-                />
-              </Show>
-
-              <Show when={viewMode() === 'community'}>
-                <Card title="Community Activity" class={styles.communityCard || ''}>
-                  <div class={styles.communityStats}>
-                    <div class={styles.statItem}>
-                      <Eye size={16} />
-                      <span>{document()?.viewCount || 0} views</span>
-                    </div>
-                    <div class={styles.statItem}>
-                      <Heart size={16} />
-                      <span>{document()?.favoriteCount || 0} favorites</span>
-                    </div>
-                    <div class={styles.statItem}>
-                      <MessageCircle size={16} />
-                      <span>{document()?.commentCount || 0} comments</span>
-                    </div>
-                  </div>
-                  <div class={styles.commentComposer}>
-                    <textarea
-                      class={styles.commentInput}
-                      placeholder="Add a comment..."
-                      value={newComment()}
-                      onInput={e => setNewComment(e.currentTarget.value)}
-                    />
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={async () => {
-                        const doc = document();
-                        if (!doc || !newComment().trim()) return;
-                        const created = await commentService.add({
-                          documentId: doc.id,
-                          text: newComment().trim(),
-                        });
-                        if (created) {
-                          setComments([created, ...comments()]);
-                          setNewComment('');
-                          toast.success(tf('pages.documentDetail.toasts.commentPosted'));
-                        } else {
-                          toast.error(tf('pages.documentDetail.toasts.commentPostFailed'));
-                        }
-                      }}
-                    >
-                      Post
-                    </Button>
-                  </div>
-                  <div class={styles.commentList}>
-                    <For each={comments()}>
-                      {c => (
-                        <div class={styles.commentItem}>
-                          <div class={styles.commentHeader}>
-                            <span class={styles.author}>{c.authorName || c.authorId}</span>
-                            <span class={styles.time}>
-                              {new Date(c.createdAt).toLocaleString()}
-                            </span>
-                          </div>
-                          <div class={styles.commentText}>{c.text}</div>
-                        </div>
-                      )}
-                    </For>
-                  </div>
-                </Card>
-              </Show>
-            </div>
-          </aside>
+                  </Card>
+                </Show>
+              </div>
+            </aside>
+          </Show>
 
           {/* Document Viewer */}
           <section class={styles.viewerSection}>
-            <Show when={viewMode() === 'reader'}>
-              {/* Viewer Controls */}
-              <div class={styles.viewerControls}>
-                <div class={styles.navigationControls}>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handlePageNavigation('prev')}
-                    disabled={currentPage() <= 1}
-                  >
-                    <ChevronLeft size={16} />
-                  </Button>
+            <Show when={effectiveViewMode() === 'reader'}>
+              {/* Viewer Controls — HUD mode only; focus mode uses DocumentViewer toolbar */}
+              <Show when={hudOpen()}>
+                <div class={styles.viewerControls}>
+                  <div class={styles.navigationControls}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handlePageNavigation('prev')}
+                      disabled={currentPage() <= 1}
+                    >
+                      <ChevronLeft size={16} />
+                    </Button>
 
-                  <span class={styles.pageInfo}>
-                    {currentPage()} of {totalPages()}
-                  </span>
+                    <span class={styles.pageInfo}>
+                      {currentPage()} of {totalPages()}
+                    </span>
 
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handlePageNavigation('next')}
-                    disabled={currentPage() >= totalPages()}
-                  >
-                    <ChevronRight size={16} />
-                  </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handlePageNavigation('next')}
+                      disabled={currentPage() >= totalPages()}
+                    >
+                      <ChevronRight size={16} />
+                    </Button>
+                  </div>
+
+                  <div class={styles.zoomControls}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleZoom('out')}
+                      disabled={zoomLevel() <= 50}
+                    >
+                      <ZoomOut size={16} />
+                    </Button>
+
+                    <span class={styles.zoomLevel}>{zoomLevel()}%</span>
+
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleZoom('in')}
+                      disabled={zoomLevel() >= 300}
+                    >
+                      <ZoomIn size={16} />
+                    </Button>
+                  </div>
+
+                  <div class={styles.searchControls}>
+                    <input
+                      type="text"
+                      placeholder="Search in document..."
+                      value={searchTerm()}
+                      onInput={e => setSearchTerm(e.currentTarget.value)}
+                      class={styles.searchInput}
+                    />
+                    <Button variant="ghost" size="sm">
+                      <Search size={16} />
+                    </Button>
+                  </div>
                 </div>
-
-                <div class={styles.zoomControls}>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleZoom('out')}
-                    disabled={zoomLevel() <= 50}
-                  >
-                    <ZoomOut size={16} />
-                  </Button>
-
-                  <span class={styles.zoomLevel}>{zoomLevel()}%</span>
-
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleZoom('in')}
-                    disabled={zoomLevel() >= 300}
-                  >
-                    <ZoomIn size={16} />
-                  </Button>
-                </div>
-
-                <div class={styles.searchControls}>
-                  <input
-                    type="text"
-                    placeholder="Search in document..."
-                    value={searchTerm()}
-                    onInput={e => setSearchTerm(e.currentTarget.value)}
-                    class={styles.searchInput}
-                  />
-                  <Button variant="ghost" size="sm">
-                    <Search size={16} />
-                  </Button>
-                </div>
-              </div>
+              </Show>
 
               {/* Document Viewer Component */}
               <div class={styles.viewerContainer}>
-                <Show when={document()} fallback={<Loading />}>
-                  {doc => (
-                    <DocumentViewer
-                      documentType={(doc() as any).fileType?.toLowerCase?.() || 'pdf'}
-                      title={(doc() as any).title}
-                      currentPage={currentPage()}
-                      zoomLevel={zoomLevel()}
-                      searchTerm={searchTerm()}
-                      onPageChange={setCurrentPage}
-                      culturalContext={culturalContext() as any}
-                    />
-                  )}
+                <Show when={!detailLoading() && !detailDocument()}>
+                  <ErrorMessage
+                    message={tf('pages.documentDetail.notFound')}
+                    onRetry={() => navigate('/documents')}
+                  />
+                </Show>
+                <Show when={!detailLoading() && detailDocument()}>
+                  <Show
+                    when={detailDocument()?.source === 'local'}
+                    fallback={
+                      <Card title="Network document" padding="lg">
+                        <p>
+                          This file is on the network. Use Download to fetch it locally, then open
+                          it from Sharing & downloads or your download folder.
+                        </p>
+                        <Button variant="primary" size="sm" onClick={() => void handleDownload()}>
+                          Download from network
+                        </Button>
+                      </Card>
+                    }
+                  >
+                    <Show when={!contentLoading() && viewerContentReady()}>
+                      <DocumentViewer
+                        documentType={documentType()}
+                        documentPath={detailDocument()!.filePath}
+                        documentBytes={
+                          documentType() === 'pdf' || documentType() === 'epub'
+                            ? documentBytes()
+                            : undefined
+                        }
+                        documentUrl={
+                          documentType() === 'pdf' || documentType() === 'epub'
+                            ? undefined
+                            : documentUrl()
+                        }
+                        title={detailDocument()!.title}
+                        currentPage={currentPage()}
+                        zoomLevel={zoomLevel()}
+                        searchTerm={searchTerm()}
+                        onPageChange={setCurrentPage}
+                        onZoomChange={setZoomLevel}
+                        culturalContext={culturalContext() as any}
+                        showHeader={false}
+                        showControls={true}
+                      />
+                    </Show>
+                  </Show>
                 </Show>
               </div>
             </Show>
 
-            {/* Other view modes content */}
-            <Show when={viewMode() !== 'reader'}>
+            {/* Other view modes content — HUD mode only */}
+            <Show when={hudOpen() && effectiveViewMode() !== 'reader'}>
               <Show when={viewMode() === 'community'}>
                 <div class={styles.communityView}>
                   <div class={styles.commentComposer}>
@@ -615,7 +855,7 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
                       variant="primary"
                       size="sm"
                       onClick={async () => {
-                        const doc = document();
+                        const doc = detailDocument();
                         if (!doc || !newComment().trim()) return;
                         const created = await commentService.add({
                           documentId: doc.id,
@@ -750,15 +990,7 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
             </Show>
             <Button
               variant="outline"
-              onClick={() => handleShare()}
-              class={styles.shareButton || ''}
-            >
-              <Users size={16} />
-              Share via P2P Network
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => handleShare()}
+              onClick={() => void handleShare()}
               class={styles.shareButton || ''}
             >
               <Share2 size={16} />
@@ -766,50 +998,12 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
             </Button>
             <Button
               variant="outline"
-              onClick={() => handleShare()}
+              onClick={() => void handleDownload()}
               class={styles.shareButton || ''}
             >
               <Download size={16} />
-              Export with Metadata
+              Download
             </Button>
-            <div class={styles.peerList}>
-              <h4>Connected Peers</h4>
-              <For each={peers()}>
-                {p => (
-                  <label class={styles.peerItem}>
-                    <input
-                      type="checkbox"
-                      checked={selectedPeerIds().includes((p as any).id)}
-                      onChange={e => {
-                        const id = (p as any).id;
-                        setSelectedPeerIds(
-                          e.currentTarget.checked
-                            ? [...selectedPeerIds(), id]
-                            : selectedPeerIds().filter(x => x !== id)
-                        );
-                      }}
-                    />
-                    <span>{(p as any).name || (p as any).id}</span>
-                  </label>
-                )}
-              </For>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={async () => {
-                  const doc = document();
-                  if (!doc) return;
-                  const ok = await shareService.shareViaP2P(doc.id, selectedPeerIds());
-                  if (ok) {
-                    toast.success(tf('pages.documentDetail.toasts.sharedToPeers'));
-                  } else {
-                    toast.error(tf('pages.documentDetail.toasts.shareToPeersFailed'));
-                  }
-                }}
-              >
-                Share to selected peers
-              </Button>
-            </div>
           </div>
         </Modal>
       </div>

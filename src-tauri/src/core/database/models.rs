@@ -104,6 +104,43 @@ pub struct DocumentTag {
     pub added_at: DateTime<Utc>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+pub struct NetworkFileRow {
+    pub content_hash: String,
+    pub name: String,
+    pub size: i64,
+    pub canonical_link: Option<String>,
+    pub peer_count: i64,
+    pub first_seen_at: Option<String>,
+    pub last_seen_at: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+pub struct NetworkPeerRow {
+    pub node_id: String,
+    pub onion: String,
+    pub last_seen_at: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+pub struct NetworkFilePeerRow {
+    pub content_hash: String,
+    pub node_id: String,
+    pub file_id: String,
+    pub link: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+pub struct LocalShareRow {
+    pub file_id: String,
+    pub name: String,
+    pub size_bytes: i64,
+    pub content_hash: String,
+    pub link: String,
+    pub disk_path: String,
+    pub created_at: String,
+}
+
 // Enums for specific fields
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum FileType {

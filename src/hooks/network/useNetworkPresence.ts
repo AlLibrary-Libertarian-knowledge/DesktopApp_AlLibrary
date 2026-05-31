@@ -1,64 +1,83 @@
 /**
  * Header/sidebar presence: reflects onion-share / POC tracker overlay (Tor hidden service up).
  */
-import { createResource, createSignal, onCleanup, onMount } from 'solid-js';
+import { createSignal, onCleanup, onMount } from 'solid-js';
 import { listen } from '@tauri-apps/api/event';
-import { fetchNetworkPresence } from '@/services/network/onionShareService';
+import {
+  fetchNetworkPresence,
+  listenTorBootstrapProgress,
+  type OnionShareMode,
+} from '@/services/network/onionShareService';
 
 export interface NetworkPresence {
-  /** Hidden service is up — participating in the onion P2P overlay. */
   online: boolean;
-  /** Same signal for the Onion badge (Tor HS address known). */
   onionActive: boolean;
+  mode: OnionShareMode;
+  localOnly: boolean;
+  lastError: string | null;
+  bootstrapPercent: number;
 }
 
-const POLL_MS = 5000;
+const POLL_MS = 15_000;
 
 export function useNetworkPresenceResource() {
-  const [tick, setTick] = createSignal(0);
-
-  const [presence] = createResource(
-    tick,
-    async (): Promise<NetworkPresence> => fetchNetworkPresence()
-  );
+  const [presence, setPresence] = createSignal<NetworkPresence>({
+    online: false,
+    onionActive: false,
+    mode: 'idle',
+    localOnly: false,
+    lastError: null,
+    bootstrapPercent: 0,
+  });
 
   onMount(() => {
-    setTick(t => t + 1);
-    const intervalId = globalThis.setInterval(
-      () => setTick(t => t + 1),
-      POLL_MS
-    ) as unknown as number;
+    let cancelled = false;
 
-    let disposed = false;
+    const poll = async () => {
+      try {
+        const next = await fetchNetworkPresence();
+        if (!cancelled) setPresence(next);
+      } catch {
+        /* keep last value */
+      }
+    };
+
+    void poll();
+    const intervalId = globalThis.setInterval(() => void poll(), POLL_MS);
+
+    const bump = () => void poll();
+    window.addEventListener('tor-status-updated', bump);
+
     const unlisteners: Array<() => void> = [];
-
-    const torDomHandler = () => setTick(t => t + 1);
-    window.addEventListener('tor-status-updated', torDomHandler);
-
     void (async () => {
       try {
-        const u1 = await listen('network-presence-changed', () => setTick(t => t + 1));
-        if (!disposed) unlisteners.push(u1);
-        else u1();
+        for (const event of ['network-presence-changed', 'tracker-ws-started'] as const) {
+          const u = await listen(event, bump);
+          if (!cancelled) unlisteners.push(u);
+          else u();
+        }
+        const uTor = await listenTorBootstrapProgress(() => bump());
+        if (!cancelled) unlisteners.push(uTor);
+        else uTor();
       } catch {
-        /* not running inside Tauri webview */
-      }
-      try {
-        const u2 = await listen('tracker-ws-started', () => setTick(t => t + 1));
-        if (!disposed) unlisteners.push(u2);
-        else u2();
-      } catch {
-        /* same */
+        /* not in Tauri webview */
       }
     })();
 
     onCleanup(() => {
-      disposed = true;
+      cancelled = true;
       globalThis.clearInterval(intervalId);
-      window.removeEventListener('tor-status-updated', torDomHandler);
+      window.removeEventListener('tor-status-updated', bump);
       unlisteners.forEach(u => u());
     });
   });
 
   return presence;
+}
+
+export function onionBadgeLabel(presence: NetworkPresence): string {
+  if (presence.onionActive) return 'Onion';
+  if (presence.mode === 'bootstrapping') return 'Connecting…';
+  if (presence.localOnly || presence.mode === 'degraded') return 'Local only';
+  return 'No Onion';
 }

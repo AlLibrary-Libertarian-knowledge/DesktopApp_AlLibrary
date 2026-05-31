@@ -26,12 +26,15 @@ import { DocumentDetailPage } from './pages/DocumentDetail';
 import { SearchNetworkPage } from './pages/SearchNetwork';
 import { DocumentReader } from './pages/DocumentReader';
 import PeerTransfers from './pages/PeerTransfers';
+import { SettingsPage } from './pages/Settings/SettingsPage';
 
 interface InitProgress {
   phase: string;
   message: string;
   progress: number;
   icon: string;
+  localOnly?: boolean;
+  bootstrapPercent?: number;
 }
 
 // Route loading wrapper component following optimization principles
@@ -149,7 +152,7 @@ const App: Component = () => {
 
       fallbackTimer = globalThis.setTimeout(() => {
         console.warn(
-          'Tauri initialization timeout (baseline + onion can take ~90s); forcing dismiss'
+          'Tauri initialization timeout (baseline + onion can take ~5 min); forcing dismiss'
         );
         setIsLoading(false);
         try {
@@ -158,7 +161,7 @@ const App: Component = () => {
           /* ignore */
         }
         cleanup = null;
-      }, 120000);
+      }, 300000);
 
       try {
         const { invoke } = await import('@tauri-apps/api/core');
@@ -177,6 +180,30 @@ const App: Component = () => {
         // 2) Heavy Tor / onion bootstrap + tracker announce — Loading overlay stays up.
         try {
           await onionShare.bootstrapOnionOverlay();
+
+          // One-time legacy migration from localStorage → SQLite (via add_file)
+          try {
+            const raw = globalThis.localStorage?.getItem('allibrary_shared_paths');
+            if (raw) {
+              const existing = await onionShare.onionShareListLocal();
+              const restoredPaths = new Set(
+                existing.map(s => s.diskPath).filter((p): p is string => Boolean(p))
+              );
+              const paths: string[] = JSON.parse(raw);
+              for (const path of paths) {
+                if (restoredPaths.has(path)) continue;
+                try {
+                  console.log('Migrating legacy shared path to SQLite:', path);
+                  await onionShare.onionShareAddFile(path);
+                } catch (shareErr) {
+                  console.warn('Failed to migrate legacy shared path:', path, shareErr);
+                }
+              }
+              globalThis.localStorage?.removeItem('allibrary_shared_paths');
+            }
+          } catch (migrateErr) {
+            console.warn('Legacy share path migration failed:', migrateErr);
+          }
         } catch (onionErr) {
           console.warn('Onion overlay bootstrap failed:', onionErr);
         }
@@ -437,6 +464,15 @@ const App: Component = () => {
             component={() => (
               <RouteWrapper>
                 <PeerTransfers />
+              </RouteWrapper>
+            )}
+          />
+
+          <Route
+            path="/settings"
+            component={() => (
+              <RouteWrapper>
+                <SettingsPage />
               </RouteWrapper>
             )}
           />

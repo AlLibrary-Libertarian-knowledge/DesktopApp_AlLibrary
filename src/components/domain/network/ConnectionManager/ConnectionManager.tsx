@@ -7,6 +7,7 @@ import type { ConnectionManagerProps } from './types';
 import {
   trackerGetConfig,
   trackerSetConfig,
+  syncAllEnabledSeeds,
   type TrackerNetworkConfig,
 } from '@/services/network/onionShareService';
 import styles from './ConnectionManager.module.css';
@@ -29,7 +30,7 @@ export const ConnectionManager: Component<ConnectionManagerProps> = props => {
 
   const [trackerUrl, setTrackerUrl] = createSignal('');
   const [nodeId, setNodeId] = createSignal('');
-  const [sharePublicly, setSharePublicly] = createSignal(true);
+  const [pauseAllSeeding, setPauseAllSeeding] = createSignal(false);
   const [trackerBusy, setTrackerBusy] = createSignal(false);
   const [trackerToast, setTrackerToast] = createSignal('');
 
@@ -115,7 +116,7 @@ export const ConnectionManager: Component<ConnectionManagerProps> = props => {
       const c = await trackerGetConfig();
       setTrackerUrl(c.trackerUrl?.trim() ?? '');
       setNodeId(c.nodeId ?? '');
-      setSharePublicly(c.sharePublicly ?? true);
+      setPauseAllSeeding(!(c.sharePublicly ?? true));
     } catch (e) {
       setTrackerToast(String(e instanceof Error ? e.message : e));
     } finally {
@@ -139,12 +140,15 @@ export const ConnectionManager: Component<ConnectionManagerProps> = props => {
       const cfg: TrackerNetworkConfig = {
         trackerUrl: url,
         nodeId: nodeId(),
-        sharePublicly: sharePublicly(),
+        sharePublicly: !pauseAllSeeding(),
       };
       await trackerSetConfig(cfg);
+      await syncAllEnabledSeeds();
       props.onConfigChange?.(cfg);
       setTrackerToast(
-        'Tracker settings saved. Start onion sharing, then use Sharing & downloads or refresh lobby.'
+        pauseAllSeeding()
+          ? 'All seeding paused. Per-file settings preserved.'
+          : 'Seeding resumed. Eligible files will re-announce.'
       );
       window.setTimeout(() => setTrackerToast(''), 5000);
     } catch (e) {
@@ -199,9 +203,10 @@ export const ConnectionManager: Component<ConnectionManagerProps> = props => {
             />
           </label>
           <Switch
-            checked={sharePublicly()}
-            onChange={setSharePublicly}
-            label="Announce shared files to lobby"
+            checked={pauseAllSeeding()}
+            onChange={setPauseAllSeeding}
+            label="Pause all seeding"
+            description="Stops lobby announces for every file. Per-file toggles are kept."
           />
         </div>
         <div class={styles.actionBar}>

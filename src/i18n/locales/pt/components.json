@@ -40,6 +40,16 @@
     "cancel": "Cancelar",
     "closeModal": "Fechar modal"
   },
+  "confirmDeleteModal": {
+    "titleSingle": "Excluir documento permanentemente?",
+    "titleBatch": "Excluir {{count}} documentos?",
+    "messageSingle": "Isso removerá permanentemente \"{{title}}\" do disco. Se estiver compartilhado, será removido da rede. Esta ação não pode ser desfeita.",
+    "messageBatch": "Isso removerá permanentemente {{count}} arquivo(s) do disco. Cópias compartilhadas serão removidas da rede. Esta ação não pode ser desfeita.",
+    "confirmSingle": "Excluir permanentemente",
+    "confirmBatch": "Excluir {{count}}",
+    "deleting": "Excluindo…",
+    "andMore": "…e mais {{count}}"
+  },
   "input": {
     "required": "Este campo é obrigatório",
     "invalid": "Entrada inválida",

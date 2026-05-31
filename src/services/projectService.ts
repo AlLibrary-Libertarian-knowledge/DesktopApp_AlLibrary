@@ -356,6 +356,7 @@ class ProjectServiceImpl implements IProjectService {
       return {
         project: {
           projectFolderPath: defaultProjectPath,
+          downloadFolderPath: `${defaultProjectPath}/downloads`,
           defaultProjectName: this.defaultProjectName,
           autoCreateSubfolders: true,
           searchIndexPath: `${defaultProjectPath}/search_index`,
@@ -411,6 +412,7 @@ class ProjectServiceImpl implements IProjectService {
       return {
         project: {
           projectFolderPath: fallbackPath,
+          downloadFolderPath: `${fallbackPath}/downloads`,
           defaultProjectName: this.defaultProjectName,
           autoCreateSubfolders: true,
           searchIndexPath: `${fallbackPath}/search_index`,

@@ -1,7 +1,7 @@
 // Derived from onion-poc (MIT): POC-Tracker-Onion-Share/src/tor/process.rs
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::Stdio;
-use std::time::Duration;
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use anyhow::Context;
 use directories::ProjectDirs;
@@ -9,6 +9,22 @@ use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::process::{Child, Command};
 use tokio::sync::watch;
 use tracing::{info, warn};
+
+use super::TorControl;
+
+#[derive(Debug, Clone, Default)]
+pub struct TorStartOptions {
+    pub data_dir_override: Option<PathBuf>,
+    pub bridges: Vec<String>,
+    pub progress_tx: Option<watch::Sender<u8>>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ResetOutcome {
+    pub path: PathBuf,
+    pub cleared: bool,
+    pub fallback_renamed: bool,
+}
 
 #[derive(Debug)]
 pub struct TorProcess {
@@ -20,10 +36,154 @@ pub struct TorProcess {
 }
 
 impl TorProcess {
-    pub async fn start(tor_path: &str) -> anyhow::Result<Self> {
+    /// Default overlay data dir: `%LOCALAPPDATA%/tcc/onion_poc/data/tor-overlay-data`.
+    pub fn default_overlay_dir() -> anyhow::Result<PathBuf> {
+        tor_overlay_dir()
+    }
+
+    /// Fresh UUID-based dir when default cannot be cleared.
+    pub fn fresh_overlay_dir() -> anyhow::Result<PathBuf> {
+        let base = tor_overlay_base()?;
+        Ok(base.join(format!("tor-overlay-data-{}", uuid::Uuid::new_v4())))
+    }
+
+    pub fn resolve_data_dir(override_dir: Option<PathBuf>) -> anyhow::Result<PathBuf> {
+        override_dir.map(Ok).unwrap_or_else(TorProcess::default_overlay_dir)
+    }
+
+    /// True when dir exists and has Tor cache artifacts (warm start).
+    pub fn dir_has_cache(dir: &Path) -> bool {
+        dir.join("cached-microdesc-consensus").exists()
+            || dir.join("cached-certs").exists()
+            || dir.join("state").exists()
+    }
+
+    /// Remove stale lock files before spawning Tor.
+    pub async fn preflight_cleanup_for(dir: &Path) {
+        let lock_file = dir.join("lock");
+        if lock_file.exists() {
+            let _ = tokio::fs::remove_file(&lock_file).await;
+        }
+    }
+
+    pub async fn preflight_cleanup() {
+        if let Ok(dir) = tor_overlay_dir() {
+            Self::preflight_cleanup_for(&dir).await;
+        }
+    }
+
+    /// Wipe overlay data dir (best-effort; rename fallback on Windows lock failures).
+    pub async fn reset_data_dir() -> ResetOutcome {
+        let dir = match tor_overlay_dir() {
+            Ok(d) => d,
+            Err(e) => {
+                warn!("reset_data_dir: no overlay path: {e}");
+                return ResetOutcome {
+                    path: PathBuf::new(),
+                    cleared: false,
+                    fallback_renamed: false,
+                };
+            }
+        };
+        Self::reset_dir_at(&dir).await
+    }
+
+    pub async fn reset_dir_at(dir: &Path) -> ResetOutcome {
+        if !dir.exists() {
+            if let Err(e) = tokio::fs::create_dir_all(dir).await {
+                warn!("reset_dir_at: create failed {}: {e}", dir.display());
+            }
+            return ResetOutcome {
+                path: dir.to_path_buf(),
+                cleared: true,
+                fallback_renamed: false,
+            };
+        }
+
+        Self::release_data_dir(dir).await;
+
+        const RESET_BACKOFF_MS: [u64; 4] = [500, 1000, 2000, 3000];
+
+        for attempt in 0..5u32 {
+            match tokio::fs::remove_dir_all(dir).await {
+                Ok(()) => {
+                    if let Err(e) = tokio::fs::create_dir_all(dir).await {
+                        warn!("reset_dir_at: recreate failed {}: {e}", dir.display());
+                    } else {
+                        info!("Tor overlay data directory reset: {}", dir.display());
+                    }
+                    return ResetOutcome {
+                        path: dir.to_path_buf(),
+                        cleared: true,
+                        fallback_renamed: false,
+                    };
+                }
+                Err(e) if attempt < 4 => {
+                    tracing::debug!(
+                        "reset_dir_at attempt {} failed for {}: {e}",
+                        attempt + 1,
+                        dir.display()
+                    );
+                    let ms = RESET_BACKOFF_MS
+                        .get(attempt as usize)
+                        .copied()
+                        .unwrap_or(5000);
+                    tokio::time::sleep(Duration::from_millis(ms)).await;
+                }
+                Err(e) => {
+                    warn!(
+                        "reset_dir_at: delete failed after retries for {}: {e}; renaming",
+                        dir.display()
+                    );
+                    break;
+                }
+            }
+        }
+
+        let epoch = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map(|d| d.as_secs())
+            .unwrap_or(0);
+        let bak = dir.with_file_name(format!(
+            "{}.bak.{}",
+            dir.file_name()
+                .and_then(|n| n.to_str())
+                .unwrap_or("tor-overlay-data"),
+            epoch
+        ));
+        match tokio::fs::rename(dir, &bak).await {
+            Ok(()) => {
+                info!(
+                    "Tor overlay dir renamed to {} (original locked)",
+                    bak.display()
+                );
+                let _ = tokio::fs::create_dir_all(dir).await;
+                ResetOutcome {
+                    path: dir.to_path_buf(),
+                    cleared: false,
+                    fallback_renamed: true,
+                }
+            }
+            Err(e) => {
+                warn!(
+                    "reset_dir_at: rename fallback failed for {}: {e}",
+                    dir.display()
+                );
+                ResetOutcome {
+                    path: dir.to_path_buf(),
+                    cleared: false,
+                    fallback_renamed: false,
+                }
+            }
+        }
+    }
+
+    pub async fn start(tor_path: &str, opts: TorStartOptions) -> anyhow::Result<Self> {
+        let data_dir = Self::resolve_data_dir(opts.data_dir_override)?;
+        Self::preflight_cleanup_for(&data_dir).await;
+
         let (socks_port, control_port) = (free_port().await?, free_port().await?);
 
-        let data_dir = tor_data_dir()?;
         tokio::fs::create_dir_all(&data_dir)
             .await
             .context("create tor data_dir failed")?;
@@ -38,9 +198,25 @@ impl TorProcess {
             .arg("--DataDirectory")
             .arg(&data_dir)
             .arg("--Log")
-            .arg("notice stdout")
+            .arg("info stdout")
+            .arg("--ConnectionPadding")
+            .arg("1")
+            .arg("--ReducedConnectionPadding")
+            .arg("0")
+            .arg("--CircuitBuildTimeout")
+            .arg("120")
             .stdout(Stdio::piped())
             .stderr(Stdio::piped());
+
+        if !opts.bridges.is_empty() {
+            cmd.arg("--UseBridges").arg("1");
+            for bridge in &opts.bridges {
+                let b = bridge.trim();
+                if !b.is_empty() {
+                    cmd.arg("--Bridge").arg(b);
+                }
+            }
+        }
 
         let mut child = cmd
             .spawn()
@@ -61,10 +237,15 @@ impl TorProcess {
             }
         });
 
+        let boot_tx3 = boot_tx.clone();
         tokio::spawn(async move {
             let mut lines = BufReader::new(stderr).lines();
             while let Ok(Some(line)) = lines.next_line().await {
-                warn!("tor: {}", line);
+                if line.contains("Bootstrapped 100%") {
+                    let _ = boot_tx3.send(true);
+                } else if !line.trim().is_empty() {
+                    warn!("tor: {}", line);
+                }
             }
         });
 
@@ -89,21 +270,100 @@ impl TorProcess {
         self.data_dir.join("control_auth_cookie")
     }
 
-    pub async fn wait_bootstrap(&mut self, timeout: Duration) -> anyhow::Result<()> {
+    pub fn data_dir(&self) -> &Path {
+        &self.data_dir
+    }
+
+    /// Best-effort wait for overlay dir handles to release (after kill or before reset).
+    pub async fn release_data_dir(dir: &Path) {
+        Self::preflight_cleanup_for(dir).await;
+        let delay = if cfg!(windows) {
+            Duration::from_millis(2000)
+        } else {
+            Duration::from_millis(500)
+        };
+        tokio::time::sleep(delay).await;
+    }
+
+    async fn terminate_child(child: &mut Child) {
+        let pid = child.id();
+        let _ = child.kill().await;
+        match tokio::time::timeout(Duration::from_secs(5), child.wait()).await {
+            Ok(Ok(_)) => {}
+            Ok(Err(e)) => warn!("tor wait after kill: {e}"),
+            Err(_) => warn!("tor wait after kill timed out (5s)"),
+        }
+        #[cfg(windows)]
+        if let Some(pid) = pid {
+            Self::force_kill_windows(pid).await;
+        }
+    }
+
+    #[cfg(windows)]
+    async fn force_kill_windows(pid: u32) {
+        match Command::new("taskkill")
+            .args(["/F", "/PID", &pid.to_string()])
+            .status()
+            .await
+        {
+            Ok(status) if status.success() => {
+                info!("Force-terminated tor process (pid={pid})");
+            }
+            Ok(status) => {
+                warn!("taskkill /F /PID {pid} exited with {status}");
+            }
+            Err(e) => warn!("taskkill /F /PID {pid} failed: {e}"),
+        }
+    }
+
+    pub async fn wait_bootstrap(
+        &mut self,
+        timeout: Duration,
+        progress_tx: Option<watch::Sender<u8>>,
+    ) -> anyhow::Result<()> {
         let cookie = self.cookie_path();
+        let control_addr = self.control_addr();
 
         let t0 = tokio::time::Instant::now();
+        let mut last_reported: u8 = 0;
         loop {
-            if cookie.exists() && *self.boot_rx.borrow() {
-                info!(
-                    "Tor ready (socks={}, control={})",
-                    self.socks_port, self.control_port
-                );
-                return Ok(());
+            if cookie.exists() {
+                if *self.boot_rx.borrow() {
+                    if let Some(ref tx) = progress_tx {
+                        let _ = tx.send(100);
+                    }
+                    info!(
+                        "Tor ready (socks={}, control={})",
+                        self.socks_port, self.control_port
+                    );
+                    return Ok(());
+                }
+                if let Ok(mut ctl) =
+                    TorControl::connect(control_addr.clone(), cookie.clone()).await
+                {
+                    let pct = ctl.bootstrap_progress().await.unwrap_or(0).min(100) as u8;
+                    if pct >= 100 {
+                        if let Some(ref tx) = progress_tx {
+                            let _ = tx.send(100);
+                        }
+                        info!(
+                            "Tor ready via control port (socks={}, control={})",
+                            self.socks_port, self.control_port
+                        );
+                        return Ok(());
+                    }
+                    if pct > last_reported {
+                        last_reported = pct;
+                        if let Some(ref tx) = progress_tx {
+                            let _ = tx.send(pct);
+                        }
+                    }
+                }
             }
             if t0.elapsed() > timeout {
+                let _ = self.kill().await;
                 anyhow::bail!(
-                    "Tor bootstrap timeout ({}s). Is tor installed and allowed to run?",
+                    "Tor bootstrap timeout ({}s). The system will attempt a deep reset on next retry.",
                     timeout.as_secs()
                 );
             }
@@ -118,20 +378,54 @@ impl TorProcess {
     }
 
     pub async fn kill(&mut self) -> anyhow::Result<()> {
-        let _ = self.child.kill().await;
+        Self::terminate_child(&mut self.child).await;
+        Self::release_data_dir(&self.data_dir).await;
         Ok(())
     }
 }
 
-fn tor_data_dir() -> anyhow::Result<PathBuf> {
-    let proj =
-        ProjectDirs::from("br", "tcc", "onion_poc").context("ProjectDirs unavailable")?;
-    let base = proj.data_local_dir();
-    let dir = base.join(format!("tor-{}", uuid::Uuid::new_v4()));
-    Ok(dir)
+fn tor_overlay_base() -> anyhow::Result<PathBuf> {
+    let proj = ProjectDirs::from("br", "tcc", "onion_poc").context("ProjectDirs unavailable")?;
+    Ok(proj.data_local_dir().to_path_buf())
+}
+
+fn tor_overlay_dir() -> anyhow::Result<PathBuf> {
+    Ok(tor_overlay_base()?.join("tor-overlay-data"))
 }
 
 async fn free_port() -> anyhow::Result<u16> {
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await?;
     Ok(listener.local_addr()?.port())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn resolve_data_dir_uses_override() {
+        let custom = PathBuf::from("/tmp/custom-tor");
+        let resolved = TorProcess::resolve_data_dir(Some(custom.clone())).unwrap();
+        assert_eq!(resolved, custom);
+    }
+
+    #[tokio::test]
+    async fn reset_dir_at_creates_missing_dir() {
+        let base = std::env::temp_dir().join(format!("tor-reset-test-{}", uuid::Uuid::new_v4()));
+        let outcome = TorProcess::reset_dir_at(&base).await;
+        assert!(outcome.cleared);
+        assert!(base.exists());
+        let _ = tokio::fs::remove_dir_all(&base).await;
+    }
+
+    #[tokio::test]
+    async fn reset_dir_at_clears_existing() {
+        let base = std::env::temp_dir().join(format!("tor-reset-test-{}", uuid::Uuid::new_v4()));
+        tokio::fs::create_dir_all(&base).await.unwrap();
+        tokio::fs::write(base.join("lock"), b"x").await.unwrap();
+        let outcome = TorProcess::reset_dir_at(&base).await;
+        assert!(outcome.cleared);
+        assert!(!base.join("lock").exists());
+        let _ = tokio::fs::remove_dir_all(&base).await;
+    }
 }

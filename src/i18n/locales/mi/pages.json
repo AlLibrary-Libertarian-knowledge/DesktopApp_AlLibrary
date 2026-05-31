@@ -237,6 +237,78 @@
     "sensitivityLevel": "Taumata Māharahara",
     "searchPlaceholder": "Rapu āu tuhinga..."
   },
+  "favorites": {
+    "title": "Āku Makau",
+    "subtitle": "Ngā tuhinga kua tohu e koe",
+    "searchPlaceholder": "Rapu i ō makau...",
+    "loading": "E uta ana i ngā makau...",
+    "emptyTitle": "Kāore he makau i kitea",
+    "emptyFiltered": "Whakaritea ngā tātari kia kitea he makau anō.",
+    "emptyDefault": "Tīmata ki te toro i ngā tuhinga, ā, tāpirihia ō makau tuatahi!",
+    "exploreDocuments": "Toro Tuhinga",
+    "statsTotal": "Tapeke",
+    "statsFiltered": "Kua tātari",
+    "unavailableTitle": "Tuhinga kāore e wātea",
+    "unavailableDescription": "Kāore i taea te kite i tēnei makau. Tangohia kia whakapai te rārangi.",
+    "sourceLocal": "Paetata",
+    "sourceNetwork": "Whatunga",
+    "actions": {
+      "open": "Whakatuwhera Tuhinga",
+      "viewDetails": "Tiro Taipitopito",
+      "remove": "Tango"
+    },
+    "toasts": {
+      "removed": "Kua tangohia mai i ngā makau",
+      "removeFailed": "I rahua te tango i te makau"
+    }
+  },
+  "recent": {
+    "title": "Mahi Hou",
+    "subtitle": "Ō whakawhitinga tuhinga hou",
+    "searchPlaceholder": "Rapu i ngā mahi hou...",
+    "loading": "E uta ana i ngā mahi...",
+    "emptyTitle": "Kāore he mahi hou",
+    "emptyFiltered": "Whakaritea ngā tātari.",
+    "emptyDefault": "Tīmata ki te toro i ngā tuhinga!",
+    "exploreDocuments": "Toro Tuhinga",
+    "sourceLocal": "Paetata",
+    "sourceNetwork": "Whatunga",
+    "stats": {
+      "views": "I Mātakitia",
+      "downloads": "Tikiake",
+      "uploads": "Tuku",
+      "filtered": "Kua Tātari"
+    },
+    "filters": {
+      "allTypes": "Ngā Mahi Katoa",
+      "views": "Mātakitanga",
+      "downloads": "Tikiake",
+      "uploads": "Tuku",
+      "shares": "Tiritiri",
+      "favorites": "Makau",
+      "typeAria": "Tātari mā te momo",
+      "timeAria": "Tātari mā te wā"
+    },
+    "timeframes": {
+      "all": "Ngā Wā Katoa",
+      "today": "Āianei",
+      "week": "Te Wiki Nei",
+      "month": "Te Marama Nei"
+    },
+    "kinds": {
+      "view": "Mātakitanga",
+      "download": "Tikiake",
+      "upload": "Tuku",
+      "share": "Tiritiri",
+      "favorite": "Makau"
+    },
+    "actions": {
+      "open": "Whakatuwhera",
+      "viewDetails": "Taipitopito",
+      "remove": "Tango mai i te hitori"
+    },
+    "toasts": { "removed": "Kua tangohia mai i te hitori", "removeFailed": "I rahua te tango" }
+  },
   "collections": {
     "title": "Kohinga",
     "subtitle": "Kohinga tuhinga whakaritea",
@@ -271,5 +343,24 @@
     "educationalResources": "Rauemi Mātauranga",
     "culturalOrigins": "Take Ahurea",
     "sensitivityLevels": "Taumata Māharahara"
+  },
+  "documentDetail": {
+    "toggleHud": {
+      "show": "Whakaatu taipitopito",
+      "hide": "Aratau pānui"
+    },
+    "toasts": {
+      "commentPosted": "Kua tukuna te kōrero",
+      "commentPostFailed": "I rahua te tuku kōrero",
+      "commentUpdated": "Kua whakahoutia te kōrero",
+      "commentUpdateFailed": "I rahua te whakahou",
+      "commentDeleted": "Kua mukua te kōrero",
+      "commentDeleteFailed": "I rahua te muku",
+      "sharedToPeers": "Kua tiritiria ki ngā hoa",
+      "shareToPeersFailed": "I rahua te tiri",
+      "shareLinkCopied": "Kua tāruatia te hono",
+      "addedToFavorites": "Kua tāpiritia ki ngā makau",
+      "removedFromFavorites": "Kua tangohia mai i ngā makau"
+    }
   }
 }

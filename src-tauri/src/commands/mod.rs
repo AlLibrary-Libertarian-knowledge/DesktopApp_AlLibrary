@@ -7,7 +7,12 @@ pub mod collections;
 pub mod documents;
 pub mod network_shell;
 pub mod onion_bridge;
+pub mod onion_state;
+pub mod seed_sync;
+pub mod network_cache;
 pub mod tor_setup;
+pub mod favorites;
+pub mod activity;
 
 pub use app::{initialize_app, get_app_ready_state, close_splash_screen, InitProgress};
 pub use security::{get_security_info, refresh_security_info, SecurityInfo};
@@ -16,7 +21,7 @@ pub use system::{
     pick_library_folder, pick_document_files,
 };
 pub use tor_setup::{ensure_tor_for_onion_share, TorSetupProgress};
-pub use settings::{load_app_settings, save_app_settings, AppSettings};
+pub use settings::{apply_project_paths, load_app_settings, save_app_settings, AppSettings};
 pub use search::{get_search_history, clear_search_history, get_search_index_info, SearchIndex};
 pub use collections::{create_collection, get_collections, get_collection, update_collection, delete_collection};
 pub use documents::{
@@ -28,6 +33,11 @@ pub use documents::{
   pdf_get_page_count,
   pdf_render_page_png,
   import_document,
+  process_document,
+  migrate_library_hashes,
+  process_downloaded_file_internal,
+  ensure_seeding_allowed,
+  delete_local_document,
   DocumentInfo,
   ScanResult,
   FolderInfo
@@ -73,6 +83,8 @@ pub use onion_bridge::{
     onion_share_start,
     onion_share_status,
     onion_share_stop,
+    reset_tor_overlay_data,
+    spawn_tor_recovery_watchdog,
     tracker_get_cached_lobby_cmd,
     tracker_get_config,
     tracker_refresh_lobby,
@@ -81,5 +93,11 @@ pub use onion_bridge::{
     tracker_start_ws_loop,
     tracker_stop_ws_loop,
     OnionShareState,
+    TorBootstrapSnapshot,
     TrackerNetworkConfig,
 };
+pub use onion_state::SeedNotifySender;
+pub use seed_sync::{set_document_seed_enabled, sync_all_enabled_seeds_cmd};
+pub use network_cache::{list_network_peers, search_network_cached};
+pub use favorites::{is_favorite, toggle_favorite, list_favorites, FavoriteToggleResult};
+pub use activity::{log_activity, list_activity, delete_activity};

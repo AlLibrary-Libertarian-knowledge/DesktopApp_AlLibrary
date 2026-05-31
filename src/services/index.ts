@@ -46,3 +46,4 @@ export { ValidationService } from './validationService';
 export { commentService } from './comments/commentService';
 export { shareService } from './sharing/shareService';
 export { favoriteService } from './favoriteService';
+export { activityService } from './activityService';

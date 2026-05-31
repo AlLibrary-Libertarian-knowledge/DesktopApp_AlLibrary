@@ -120,11 +120,11 @@ pub async fn clear_cache() -> Result<bool, String> {
 }
 
 #[tauri::command]
-pub async fn get_disk_space_info(projectPath: String) -> Result<DiskSpaceInfo, String> {
+pub async fn get_disk_space_info(project_path: String) -> Result<DiskSpaceInfo, String> {
     use tracing::{info, debug};
     
-    info!("Getting disk space info for path: {}", projectPath);
-    let path = Path::new(&projectPath);
+    info!("Getting disk space info for path: {}", project_path);
+    let path = Path::new(&project_path);
     
     // Get project directory size (gracefully handle permission errors)
     let project_size = calculate_directory_size(path).unwrap_or(0);
@@ -174,7 +174,7 @@ pub async fn get_disk_space_info(projectPath: String) -> Result<DiskSpaceInfo, S
             .map(|d| format!("{} ({})", d.name().to_string_lossy(), d.mount_point().to_string_lossy()))
             .collect();
         format!("Could not find disk for project path '{}'. Available disks: [{}]", 
-                projectPath, available_disks.join(", "))
+                project_path, available_disks.join(", "))
     })?;
     
     let total_space = disk.total_space();
@@ -201,7 +201,7 @@ pub async fn get_disk_space_info(projectPath: String) -> Result<DiskSpaceInfo, S
         used_disk_space_bytes: used_space,
         project_percentage,
         disk_usage_percentage,
-        project_path: projectPath.clone(),
+        project_path: project_path.clone(),
         disk_name: disk.name().to_string_lossy().to_string(),
     })
 }

@@ -50,6 +50,20 @@ impl TorControl {
         Ok(())
     }
 
+    /// Returns Tor bootstrap progress 0–100 from the control port.
+    pub async fn bootstrap_progress(&mut self) -> anyhow::Result<u8> {
+        let lines = self.cmd("GETINFO status/bootstrap-phase").await?;
+        for line in lines {
+            if let Some(idx) = line.find("PROGRESS=") {
+                let rest = &line[idx + "PROGRESS=".len()..];
+                if let Ok(p) = rest.split_whitespace().next().unwrap_or("0").parse::<u8>() {
+                    return Ok(p);
+                }
+            }
+        }
+        Ok(0)
+    }
+
     async fn cmd(&mut self, cmd: &str) -> anyhow::Result<Vec<String>> {
         self.writer
             .write_all(format!("{}\r\n", cmd).as_bytes())

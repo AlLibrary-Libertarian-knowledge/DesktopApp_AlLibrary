@@ -10,12 +10,18 @@ use axum::Router;
 use tokio::io::AsyncWriteExt;
 use tokio::net::TcpListener;
 use tokio::sync::{oneshot, watch};
-use tracing::info;
+use tracing::{info, warn};
 
 use super::link::ShareLink;
 use super::share::Share;
-use super::tor::{TorControl, TorProcess};
+use super::tor::{TorControl, TorProcess, TorStartOptions};
 use state::AppState;
+
+#[derive(Clone, Default)]
+pub struct ShareServerStartOptions {
+    pub bridges: Vec<String>,
+    pub progress_tx: Option<watch::Sender<u8>>,
+}
 
 pub struct ShareServerHandle {
     pub state: AppState,
@@ -29,7 +35,69 @@ pub struct ShareServerHandle {
 }
 
 impl ShareServerHandle {
-    pub async fn start(tor_path: &str) -> anyhow::Result<Self> {
+    pub async fn start(tor_path: &str, opts: ShareServerStartOptions) -> anyhow::Result<Self> {
+        let default_dir = TorProcess::default_overlay_dir()?;
+        let warm = TorProcess::dir_has_cache(&default_dir);
+        let first_timeout = if warm {
+            Duration::from_secs(120)
+        } else {
+            Duration::from_secs(180)
+        };
+
+        // Attempt 1: default dir
+        match Self::start_once(tor_path, first_timeout, None, opts.clone()).await {
+            Ok(handle) => return Ok(handle),
+            Err(e) => {
+                let msg = e.to_string();
+                if !msg.contains("bootstrap timeout") {
+                    return Err(e);
+                }
+                warn!("Tor bootstrap attempt 1 timed out ({first_timeout:?})");
+            }
+        }
+
+        // Attempt 2: best-effort reset default dir, then retry if reset succeeded
+        warn!("Tor bootstrap timed out; resetting overlay data dir and retrying…");
+        let reset = TorProcess::reset_data_dir().await;
+        if reset.cleared || reset.fallback_renamed {
+            match Self::start_once(tor_path, Duration::from_secs(180), None, opts.clone()).await {
+                Ok(handle) => return Ok(handle),
+                Err(e) => {
+                    let msg = e.to_string();
+                    if !msg.contains("bootstrap timeout") {
+                        return Err(e);
+                    }
+                    warn!("Tor bootstrap attempt 2 timed out (180s)");
+                }
+            }
+        } else {
+            warn!(
+                "Skipping attempt 2 — overlay dir locked at {}; using fresh data dir",
+                reset.path.display()
+            );
+        }
+
+        // Attempt 3: fresh UUID data dir
+        let fresh = TorProcess::fresh_overlay_dir()?;
+        warn!(
+            "Tor bootstrap attempt 3 using fresh data dir: {}",
+            fresh.display()
+        );
+        Self::start_once(
+            tor_path,
+            Duration::from_secs(240),
+            Some(fresh),
+            opts,
+        )
+        .await
+    }
+
+    async fn start_once(
+        tor_path: &str,
+        bootstrap_timeout: Duration,
+        data_dir_override: Option<PathBuf>,
+        opts: ShareServerStartOptions,
+    ) -> anyhow::Result<Self> {
         let listener = TcpListener::bind("127.0.0.1:0")
             .await
             .context("bind failed")?;
@@ -49,10 +117,49 @@ impl ShareServerHandle {
                 .map_err(|e| anyhow::anyhow!(e))
         });
 
-        let mut tor = TorProcess::start(tor_path).await?;
-        tor.wait_bootstrap(Duration::from_secs(90)).await?;
-        let mut ctl = TorControl::connect(tor.control_addr(), tor.cookie_path()).await?;
-        let service_id = ctl.add_onion(local_port).await?;
+        let tor_opts = TorStartOptions {
+            data_dir_override,
+            bridges: opts.bridges,
+            progress_tx: opts.progress_tx.clone(),
+        };
+
+        let mut tor = match TorProcess::start(tor_path, tor_opts).await {
+            Ok(t) => t,
+            Err(e) => {
+                let _ = shutdown_tx.send(());
+                return Err(e);
+            }
+        };
+
+        if let Err(e) = tor
+            .wait_bootstrap(bootstrap_timeout, opts.progress_tx)
+            .await
+        {
+            let _ = tor.kill().await;
+            let _ = shutdown_tx.send(());
+            let _ = server_task.await;
+            return Err(e);
+        }
+
+        let mut ctl = match TorControl::connect(tor.control_addr(), tor.cookie_path()).await {
+            Ok(c) => c,
+            Err(e) => {
+                let _ = tor.kill().await;
+                let _ = shutdown_tx.send(());
+                let _ = server_task.await;
+                return Err(e);
+            }
+        };
+
+        let service_id = match ctl.add_onion(local_port).await {
+            Ok(id) => id,
+            Err(e) => {
+                let _ = tor.kill().await;
+                let _ = shutdown_tx.send(());
+                let _ = server_task.await;
+                return Err(e);
+            }
+        };
         let onion_addr = format!("{}.onion", service_id);
 
         info!("Onion service ready: {}", onion_addr);
@@ -117,8 +224,8 @@ pub async fn run_join_client(
         .await
         .context("failed to create --out dir")?;
 
-    let mut tor = TorProcess::start(&tor_path).await?;
-    tor.wait_bootstrap(Duration::from_secs(90)).await?;
+    let mut tor = TorProcess::start(&tor_path, TorStartOptions::default()).await?;
+    tor.wait_bootstrap(Duration::from_secs(90), None).await?;
 
     let socks = tor.socks_addr();
     let proxy =

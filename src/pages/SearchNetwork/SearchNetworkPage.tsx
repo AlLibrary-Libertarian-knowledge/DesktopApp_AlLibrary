@@ -3,7 +3,7 @@
  * Enhanced to match HomePage and DocumentManagement sophisticated patterns
  */
 
-import { type Component, createSignal, onMount, Show, For } from 'solid-js';
+import { type Component, createSignal, onMount, Show, For, createEffect } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
 import { Search, Shield, Filter, Download, BookOpen, ArrowRight, Users } from 'lucide-solid';
 
@@ -23,8 +23,10 @@ import { NetworkStatus } from '../../components/domain/network/NetworkStatus';
 
 // Hooks and Services
 import { useNetworkSearch } from '../../hooks/api/useNetworkSearch';
+import { useNetworkLobby } from '../../hooks/api/useNetworkLobby';
 import { enableTorAndP2P } from '../../services/network/bootstrap';
 import { useP2PTransfers } from '@/hooks/api/useP2PTransfers';
+import { transferFacade } from '@/services/network/transferFacade';
 import { torAdapter } from '../../services/network/torAdapter';
 import { useNetworkStore } from '@/stores/network/networkStore';
 
@@ -43,20 +45,21 @@ export interface SearchNetworkPageProps {
 
 export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
   const navigate = useNavigate();
-  const { enabled, busy, enable, downloadByHash } = useP2PTransfers();
+  const { busy, downloadByHash, error: transferError } = useP2PTransfers();
   const [hash, setHash] = createSignal('');
+  const [downloadError, setDownloadError] = createSignal<string | null>(null);
 
   // State Management
   const [searchQuery, setSearchQuery] = createSignal(props.initialQuery || '');
-  const [activeTab, setActiveTab] = createSignal<'search' | 'results'>('search');
+  const [activeTab, setActiveTab] = createSignal<'search' | 'results'>('results');
   // const [viewMode, setViewMode] = createSignal<'grid' | 'list'>(props.initialViewMode || 'grid');
   const [showFilters, setShowFilters] = createSignal(false);
   const [anonymousMode, setAnonymousMode] = createSignal(props.anonymousMode || false);
   const [searchScope, setSearchScope] = createSignal<'all' | 'trusted' | 'nearby'>('all');
   // const [sortBy, setSortBy] = createSignal<'relevance' | 'date' | 'peers'>('relevance');
   const [torReady, setTorReady] = createSignal(false);
-  // const [torBootstrapped, setTorBootstrapped] = createSignal(false);
   const [torEstablishing, setTorEstablishing] = createSignal(false);
+  const [autoSearchDone, setAutoSearchDone] = createSignal(false);
 
   // Search filters
   const [fileTypes, setFileTypes] = createSignal<string[]>([]);
@@ -64,6 +67,7 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
 
   // Hooks
   const { results, isSearching, search } = useNetworkSearch();
+  const lobby = useNetworkLobby();
   const net = useNetworkStore();
   let searchInputEl: HTMLInputElement | undefined;
   const onEnableTorClick = async () => {
@@ -105,6 +109,7 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
       }
     };
     window.addEventListener('keydown', keyHandler);
+
     return () => {
       globalThis.clearInterval(timer);
       window.removeEventListener('tor-status-updated', handler as any);
@@ -112,11 +117,24 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
     };
   });
 
+  createEffect(() => {
+    if (torReady() && !autoSearchDone()) {
+      setAutoSearchDone(true);
+      void handleSearch();
+    }
+  });
+
+  const formatTotalSize = () => {
+    const bytes = lobby.totalBytes();
+    if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KiB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MiB`;
+  };
+
   // Removed mocked activity/stats
 
   // Title-only, Tor-gated search interface
   const handleSearch = async () => {
-    if (!searchQuery().trim()) return;
+    // if (!searchQuery().trim()) return;
     if (!torReady()) return;
     setActiveTab('results');
     try {
@@ -196,17 +214,24 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
                       <Button
                         variant="outline"
                         size="sm"
-                        disabled={!enabled() || busy() || !hash().trim()}
-                        onClick={() =>
-                          downloadByHash(
-                            hash().trim(),
-                            (window as any).api?.downloadsDir ?? 'downloads'
-                          )
-                        }
+                        disabled={busy() || !hash().trim()}
+                        onClick={async () => {
+                          setDownloadError(null);
+                          try {
+                            await downloadByHash(hash().trim(), '', hash().trim());
+                          } catch (e) {
+                            setDownloadError(e instanceof Error ? e.message : String(e));
+                          }
+                        }}
                       >
                         <Download size={14} class="mr-2" />
                         Download
                       </Button>
+                      <Show when={downloadError() || transferError()}>
+                        <p class={styles['download-error']} role="alert">
+                          {downloadError() || transferError()}
+                        </p>
+                      </Show>
                     </div>
                     <Button
                       variant="ghost"
@@ -238,7 +263,7 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
                     <Button
                       variant="primary"
                       onClick={handleSearch}
-                      disabled={!searchQuery().trim() || isSearching() || !torReady()}
+                      disabled={isSearching() || !torReady()}
                     >
                       {isSearching() ? 'Searching...' : 'Search Network'}
                     </Button>
@@ -330,8 +355,8 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
               <StatCard
                 type="peers"
                 icon={<Users size={20} />}
-                number={`${net.connectedPeers()}`}
-                label="Connected Peers"
+                number={`${lobby.onlineNodes()}`}
+                label="Nodes Online"
                 trendType="neutral"
                 trendIcon={<ArrowRight size={12} />}
                 trendValue="live"
@@ -340,21 +365,21 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
               <StatCard
                 type="documents"
                 icon={<BookOpen size={20} />}
-                number={String(results()?.length || 0)}
-                label="Results"
+                number={String(lobby.files().length || results()?.length || 0)}
+                label="Network Files"
                 trendType="neutral"
                 trendIcon={<ArrowRight size={12} />}
-                trendValue="now"
+                trendValue="cached"
                 graphType="chart"
               />
               <StatCard
                 type="health"
                 icon={<Shield size={20} />}
-                number={torReady() ? 'Onion' : 'No Onion'}
-                label="Routing"
+                number={formatTotalSize()}
+                label="Total Size"
                 trendType={torReady() ? 'positive' : 'neutral'}
                 trendIcon={<ArrowRight size={12} />}
-                trendValue="status"
+                trendValue={torReady() ? 'Onion' : 'No Onion'}
                 graphType="health"
               />
             </div>
@@ -392,6 +417,12 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
               </div>
             </Show>
 
+            <Show when={downloadError() && activeTab() === 'results'}>
+              <p class={styles['download-error']} role="alert">
+                {downloadError()}
+              </p>
+            </Show>
+
             <Show when={results() && results()!.length > 0}>
               <div class={styles['results-grid']}>
                 <For each={results()}>
@@ -399,6 +430,21 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
                     <DocumentCard
                       document={result.document}
                       onOpen={() => handleDocumentOpen(result.document)}
+                      onDownload={async doc => {
+                        setDownloadError(null);
+                        try {
+                          const result = results()?.find(r => r.document.id === doc.id);
+                          const link = result?.document.filePath || '';
+                          if (link) {
+                            await transferFacade.downloadLink(link, doc.title);
+                          } else {
+                            await transferFacade.downloadByHashOrLink(doc.id, doc.title);
+                          }
+                        } catch (e) {
+                          const msg = e instanceof Error ? e.message : String(e);
+                          setDownloadError(msg);
+                        }
+                      }}
                       showCulturalContext={true}
                       variant="default"
                     />

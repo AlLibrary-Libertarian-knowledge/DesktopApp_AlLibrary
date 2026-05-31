@@ -24,6 +24,74 @@
     "filter": "تصفية المستندات",
     "sort": "ترتيب المستندات"
   },
+  "favorites": {
+    "title": "مفضلاتي",
+    "subtitle": "المستندات التي قمت بوضع إشارة عليها",
+    "searchPlaceholder": "البحث في المفضلات...",
+    "loading": "جاري تحميل المفضلات...",
+    "emptyTitle": "لم يتم العثور على مفضلات",
+    "emptyFiltered": "حاول تعديل عوامل التصفية للعثور على المزيد.",
+    "emptyDefault": "ابدأ باستكشاف المستندات وأضف مفضلاتك الأولى!",
+    "exploreDocuments": "استكشاف المستندات",
+    "statsTotal": "الإجمالي",
+    "statsFiltered": "المصفاة",
+    "unavailableTitle": "المستند غير متاح",
+    "unavailableDescription": "تعذر حل هذا المفضل. قم بإزالته لتنظيف القائمة.",
+    "sourceLocal": "محلي",
+    "sourceNetwork": "شبكة",
+    "actions": {
+      "open": "فتح المستند",
+      "viewDetails": "عرض التفاصيل",
+      "remove": "إزالة"
+    },
+    "toasts": {
+      "removed": "تمت الإزالة من المفضلات",
+      "removeFailed": "فشل في إزالة المفضل"
+    }
+  },
+  "recent": {
+    "title": "النشاط الأخير",
+    "subtitle": "تفاعلاتك الأخيرة مع المستندات",
+    "searchPlaceholder": "البحث في الأنشطة...",
+    "loading": "جاري تحميل الأنشطة...",
+    "emptyTitle": "لا توجد أنشطة حديثة",
+    "emptyFiltered": "حاول تعديل عوامل التصفية.",
+    "emptyDefault": "ابدأ باستكشاف المستندات لرؤية سجل نشاطك!",
+    "exploreDocuments": "استكشاف المستندات",
+    "sourceLocal": "محلي",
+    "sourceNetwork": "شبكة",
+    "stats": {
+      "views": "المشاهدات",
+      "downloads": "التنزيلات",
+      "uploads": "الرفع",
+      "filtered": "المصفاة"
+    },
+    "filters": {
+      "allTypes": "جميع الأنشطة",
+      "views": "المشاهدات",
+      "downloads": "التنزيلات",
+      "uploads": "الرفع",
+      "shares": "المشاركات",
+      "favorites": "المفضلات",
+      "typeAria": "تصفية حسب النوع",
+      "timeAria": "تصفية حسب الوقت"
+    },
+    "timeframes": {
+      "all": "كل الوقت",
+      "today": "اليوم",
+      "week": "هذا الأسبوع",
+      "month": "هذا الشهر"
+    },
+    "kinds": {
+      "view": "عرض",
+      "download": "تنزيل",
+      "upload": "رفع",
+      "share": "مشاركة",
+      "favorite": "مفضل"
+    },
+    "actions": { "open": "فتح المستند", "viewDetails": "عرض التفاصيل", "remove": "إزالة من السجل" },
+    "toasts": { "removed": "تمت الإزالة من السجل", "removeFailed": "فشل في الإزالة" }
+  },
   "collections": {
     "title": "المجموعات",
     "subtitle": "تنظيم معرفتك",
@@ -130,5 +198,24 @@
     "backup": "النسخ الاحتياطي",
     "restore": "الاستعادة",
     "archive": "الأرشيف"
+  },
+  "documentDetail": {
+    "toggleHud": {
+      "show": "عرض التفاصيل",
+      "hide": "وضع القراءة"
+    },
+    "toasts": {
+      "commentPosted": "تم نشر التعليق",
+      "commentPostFailed": "فشل نشر التعليق",
+      "commentUpdated": "تم تحديث التعليق",
+      "commentUpdateFailed": "فشل تحديث التعليق",
+      "commentDeleted": "تم حذف التعليق",
+      "commentDeleteFailed": "فشل حذف التعليق",
+      "sharedToPeers": "تمت المشاركة مع الأقران",
+      "shareToPeersFailed": "فشلت المشاركة",
+      "shareLinkCopied": "تم نسخ رابط المشاركة",
+      "addedToFavorites": "تمت الإضافة إلى المفضلة",
+      "removedFromFavorites": "تمت الإزالة من المفضلة"
+    }
   }
 }

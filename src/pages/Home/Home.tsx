@@ -1,4 +1,4 @@
-import { type Component, createSignal, onMount } from 'solid-js';
+import { type Component, createSignal, onMount, onCleanup } from 'solid-js';
 import { Button, Card, Modal } from '../../components/foundation';
 import {
   NetworkGraph,
@@ -31,6 +31,16 @@ import { useNavigate } from '@solidjs/router';
 import { settingsService } from '@/services/storage/settingsService';
 import { invoke } from '@tauri-apps/api/core';
 import { useNetworkStore } from '@/stores/network/networkStore';
+import { downloadManager } from '@/services/network/downloadManager';
+import { activityService } from '@/services/activityService';
+
+const formatDownloadBytes = (bytes?: number): string => {
+  if (!bytes) return '';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${parseFloat((bytes / k ** i).toFixed(1))} ${sizes[i]}`;
+};
 
 const HomePage: Component = () => {
   // Initialize i18n translation hooks
@@ -45,6 +55,52 @@ const HomePage: Component = () => {
   const net = useNetworkStore();
   const navigate = useNavigate();
 
+  const [recentDownloads, setRecentDownloads] = createSignal<ActivityItemProps[]>([]);
+  const [networkActivity, setNetworkActivity] = createSignal<ActivityItemProps[]>([]);
+
+  const mapDownloadItems = (
+    active: ReturnType<typeof downloadManager.getActive>,
+    completed: ReturnType<typeof downloadManager.getCompleted>
+  ): ActivityItemProps[] => {
+    const items: ActivityItemProps[] = active.map(item => ({
+      type: 'downloading' as const,
+      title: item.name,
+      fileSize: formatDownloadBytes(item.sizeBytes),
+      progress: Math.round(item.progress * 100),
+      status: tc('activityList.status.downloading'),
+      metadata: tc('activityList.metadata.complete', {
+        progress: Math.round(item.progress * 100),
+      }),
+    }));
+    for (const item of completed.slice(0, 5)) {
+      items.push({
+        type: 'completed',
+        title: item.name,
+        fileSize: formatDownloadBytes(item.sizeBytes),
+        status: tc('activityList.status.complete'),
+      });
+    }
+    return items;
+  };
+
+  const loadNetworkActivity = async () => {
+    const entries = await activityService.loadActivityDocuments({ limit: 20 });
+    const filtered = entries.filter(entry =>
+      ['share', 'upload', 'favorite'].includes(entry.entry.kind)
+    );
+    setNetworkActivity(
+      filtered.slice(0, 5).map(entry => ({
+        type: entry.entry.kind === 'share' ? ('seeding' as const) : ('completed' as const),
+        title: entry.title,
+        status:
+          entry.entry.kind === 'share'
+            ? tc('activityList.status.seeding')
+            : tc('activityList.status.complete'),
+        metadata: new Date(entry.entry.createdAt).toLocaleString(),
+      }))
+    );
+  };
+
   onMount(() => {
     // Show welcome modal on first visit
     const hasVisited = globalThis.localStorage?.getItem('allibrary-visited');
@@ -52,60 +108,17 @@ const HomePage: Component = () => {
       setShowModal(true);
       globalThis.localStorage?.setItem('allibrary-visited', 'true');
     }
+
+    setRecentDownloads(
+      mapDownloadItems(downloadManager.getActive(), downloadManager.getCompleted())
+    );
+    const unsubscribe = downloadManager.subscribe((active, completed) => {
+      setRecentDownloads(mapDownloadItems(active, completed));
+    });
+    onCleanup(() => unsubscribe());
+
+    void loadNetworkActivity();
   });
-
-  // Sample data for recent downloads with enhanced i18n
-  const recentDownloads: ActivityItemProps[] = [
-    {
-      type: 'downloading',
-      title: 'Traditional Healing Practices.pdf',
-      fileSize: '2.4 MB',
-      progress: 67,
-      speed: '2.1 MB/s',
-      status: tc('activityList.status.downloading'),
-      metadata: tc('activityList.metadata.complete', { progress: 67 }),
-    },
-    {
-      type: 'seeding',
-      title: 'Digital Archives Collection',
-      fileSize: '156 MB',
-      speed: '1.5 MB/s upload',
-      status: tc('activityList.status.seeding'),
-      metadata: tc('activityList.metadata.seedingToPeers', { count: 12 }),
-    },
-    {
-      type: 'completed',
-      title: 'Andean Music Methods.epub',
-      fileSize: '8.2 MB',
-      status: tc('activityList.status.complete'),
-      metadata: tc('activityList.metadata.completedAgo', { time: '2 minutes' }),
-    },
-  ];
-
-  // Sample data for network activity with enhanced i18n
-  const networkActivity: ActivityItemProps[] = [
-    {
-      type: 'peer-connected',
-      title: tc('activityList.types.peerConnected'),
-      status: tc('activityList.status.connected'),
-      metadata: 'Library.universidadsanmarcos.pe',
-      peerCount: 24,
-    },
-    {
-      type: 'institution',
-      title: tc('activityList.types.institution'),
-      status: tc('activityList.status.sharing'),
-      metadata: 'Universidad Nacional Mayor de San Marcos',
-      resultCount: 847,
-    },
-    {
-      type: 'discovery',
-      title: tc('activityList.types.discovery'),
-      status: tc('activityList.status.discovered'),
-      metadata: tc('activityList.metadata.foundSources', { count: 3 }),
-      resultCount: 3,
-    },
-  ];
 
   return (
     <div class={styles['home-page']}>
@@ -280,20 +293,19 @@ const HomePage: Component = () => {
           </span>
         </button>
       </div>
-
       <div class={styles['dashboard-content']} id="main-content">
         {/* Overview Tab */}
         {activeTab() === 'overview' && (
           <div role="tabpanel" id="overview-panel" aria-labelledby="overview-tab">
             {/* Enhanced Stats Section */}
-            <section aria-labelledby="stats-title">
+            <section
+              class={`${styles['stats-section']} ${styles.enhanced}`}
+              aria-labelledby="stats-title"
+            >
               <h2 id="stats-title" class="sr-only">
                 {t('home.stats.documentsShared')}
               </h2>
-              <div
-                class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-                data-testid="stats-section"
-              >
+              <div class={styles.grid} data-testid="stats-section">
                 <StatCard
                   type="documents"
                   icon={<BookOpen size={24} />}
@@ -405,7 +417,7 @@ const HomePage: Component = () => {
                   title={t('home.networkActivity.recentDownloads')}
                   subtitle={t('home.networkActivity.recentDownloadsSubtitle')}
                   icon={<Download size={20} />}
-                  items={recentDownloads}
+                  items={recentDownloads()}
                   cardType="downloads"
                   data-testid="recent-documents"
                 />
@@ -414,7 +426,7 @@ const HomePage: Component = () => {
                   title={t('home.networkActivity.title')}
                   subtitle={t('home.networkActivity.networkActivitySubtitle')}
                   icon={<Upload size={20} />}
-                  items={networkActivity}
+                  items={networkActivity()}
                   cardType="network"
                 />
               </div>
@@ -579,8 +591,10 @@ const HomePage: Component = () => {
         )}
       </div>
 
-      {/* Status Bar */}
-      <StatusBar />
+      {/* Status Bar — page-level metrics above app footer */}
+      <section class={styles['home-status-bar']}>
+        <StatusBar />
+      </section>
 
       {/* Enhanced Welcome Modal */}
       <Modal

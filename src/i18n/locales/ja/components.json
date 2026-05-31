@@ -29,6 +29,16 @@
     "cancel": "キャンセル",
     "closeModal": "モーダルを閉じる"
   },
+  "confirmDeleteModal": {
+    "titleSingle": "ドキュメントを完全に削除しますか？",
+    "titleBatch": "{{count}} 件のドキュメントを削除しますか？",
+    "messageSingle": "「{{title}}」をディスクから完全に削除します。共有中の場合はネットワークからも削除されます。この操作は元に戻せません。",
+    "messageBatch": "{{count}} 件のファイルをディスクから完全に削除します。共有コピーはネットワークから削除されます。この操作は元に戻せません。",
+    "confirmSingle": "完全に削除",
+    "confirmBatch": "{{count}} 件を削除",
+    "deleting": "削除中…",
+    "andMore": "…他 {{count}} 件"
+  },
   "input": {
     "required": "このフィールドは必須です",
     "invalid": "無効な入力",

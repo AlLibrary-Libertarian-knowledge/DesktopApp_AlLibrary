@@ -1,9 +1,7 @@
 use serde::{Deserialize, Serialize};
-use sqlx::SqlitePool;
 use crate::core::database::CollectionOperations;
 use crate::core::database::models::Collection;
-use crate::core::database::migrations;
-use crate::commands::settings::load_app_settings;
+use crate::core::database::ensure_node_database;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CreateCollectionRequest {
@@ -57,57 +55,6 @@ pub struct CollectionResponse {
     pub categories: Vec<String>,
 }
 
-// Database connection function that uses app settings
-async fn get_database_pool(app_handle: &tauri::AppHandle) -> Result<SqlitePool, String> {
-    // Load app settings to get the documents folder path
-    let settings = load_app_settings(app_handle.clone()).await
-        .map_err(|e| format!("Failed to load app settings: {}", e))?;
-    
-    // Create database in the documents folder
-    let documents_folder = std::path::Path::new(&settings.folder_structure.documents_folder);
-    let database_path = documents_folder.join("allibrary.db");
-    let database_url = format!("sqlite:{}", database_path.to_string_lossy());
-    
-    println!("Attempting to connect to database at: {}", database_path.display());
-    println!("Database URL: {}", database_url);
-    
-    // Ensure the documents folder exists
-    std::fs::create_dir_all(documents_folder)
-        .map_err(|e| format!("Failed to create documents folder: {}", e))?;
-    
-    println!("Documents folder created/verified: {}", documents_folder.display());
-    println!("Database will be created at: {}", database_path.display());
-    
-    // Check if we can write to the directory
-    let test_file = documents_folder.join("test_write.tmp");
-    std::fs::write(&test_file, "test")
-        .map_err(|e| format!("Cannot write to documents folder: {}", e))?;
-    std::fs::remove_file(test_file)
-        .map_err(|e| format!("Cannot remove test file: {}", e))?;
-    println!("Write permissions verified for documents folder");
-    
-    let pool = SqlitePool::connect(&database_url)
-        .await
-        .map_err(|e| {
-            println!("Database connection error: {}", e);
-            format!("Failed to connect to database: {}", e)
-        })?;
-    
-    println!("Database connected successfully");
-    
-    // Run migrations to ensure tables exist
-    println!("Running database migrations...");
-    migrations::run_migrations(&pool)
-        .await
-        .map_err(|e| {
-            println!("Migration error: {}", e);
-            format!("Failed to run database migrations: {}", e)
-        })?;
-    
-    println!("Database migrations completed successfully");
-    Ok(pool)
-}
-
 #[tauri::command]
 pub async fn create_collection(
     app_handle: tauri::AppHandle,
@@ -115,7 +62,7 @@ pub async fn create_collection(
 ) -> Result<CollectionResponse, String> {
     println!("Creating collection with name: {}", request.name);
     
-    let pool = get_database_pool(&app_handle).await?;
+    let pool = ensure_node_database(&app_handle).await?;
     println!("Database pool obtained successfully");
     
     let collection = Collection {
@@ -155,7 +102,7 @@ pub async fn create_collection(
 
 #[tauri::command]
 pub async fn get_collections(app_handle: tauri::AppHandle) -> Result<Vec<CollectionResponse>, String> {
-    let pool = get_database_pool(&app_handle).await?;
+    let pool = ensure_node_database(&app_handle).await?;
     
     match CollectionOperations::get_all(&pool).await {
         Ok(collections) => {
@@ -186,7 +133,7 @@ pub async fn get_collection(
     app_handle: tauri::AppHandle,
     _id: String,
 ) -> Result<Option<CollectionResponse>, String> {
-    let pool = get_database_pool(&app_handle).await?;
+    let pool = ensure_node_database(&app_handle).await?;
     
     match CollectionOperations::get_by_id(&pool, &_id).await {
         Ok(Some(collection)) => {

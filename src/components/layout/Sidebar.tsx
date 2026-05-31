@@ -33,6 +33,8 @@ import {
 } from 'lucide-solid';
 import './Sidebar.css';
 import { useNetworkPresenceResource } from '@/hooks/network/useNetworkPresence';
+import { useNetworkLobby } from '@/hooks/api/useNetworkLobby';
+import { useNetworkPeers } from '@/hooks/api/useNetworkPeers';
 
 interface NavItem {
   path: string;
@@ -55,59 +57,74 @@ interface SidebarProps {
   onToggle?: () => void;
 }
 
+const NAV_SECTIONS: NavSection[] = [
+  {
+    section: 'library',
+    title: 'Library',
+    icon: BookOpen,
+    items: [
+      { path: '/', label: 'Dashboard', icon: HardDrive },
+      { path: '/documents', label: 'Documents & Search', icon: FileText },
+      { path: '/collections', label: 'Collections', icon: Folder },
+      { path: '/favorites', label: 'Favorites', icon: Star },
+      { path: '/recent', label: 'Recent', icon: Clock },
+    ],
+  },
+  {
+    section: 'discovery',
+    title: 'Discovery',
+    icon: Search,
+    items: [
+      { path: '/search-network', label: 'Search Network', icon: Search },
+      { path: '/browse', label: 'Browse Categories', icon: FolderOpen },
+      { path: '/trending', label: 'Trending', icon: TrendingUp },
+      { path: '/new-arrivals', label: 'New Arrivals', icon: Sparkles },
+    ],
+  },
+  {
+    section: 'network',
+    title: 'P2P Network',
+    icon: Globe,
+    items: [
+      { path: '/peers', label: 'Peer Network', icon: Users },
+      { path: '/network-health', label: 'Network Health', icon: Activity },
+      {
+        path: '/transfers',
+        label: 'Sharing & downloads',
+        icon: ArrowLeftRight,
+        alsoMatch: ['/sharing', '/downloads'],
+      },
+      { path: '/connection-manager', label: 'Configurations', icon: Settings },
+    ],
+  },
+];
+
 const Sidebar: Component<SidebarProps> = props => {
   const [activeSection, setActiveSection] = createSignal('');
   const presence = useNetworkPresenceResource();
+  const lobby = useNetworkLobby();
+  const networkPeers = useNetworkPeers();
   const [isTransitioning, setIsTransitioning] = createSignal(false);
   const [wasCollapsed, setWasCollapsed] = createSignal(false);
   const [pendingSection, setPendingSection] = createSignal<string | null>(null);
   const location = useLocation();
-  const navigationItems: NavSection[] = [
-    {
-      section: 'library',
-      title: 'Library',
-      icon: BookOpen,
-      items: [
-        { path: '/', label: 'Dashboard', icon: HardDrive },
-        { path: '/documents', label: 'Documents & Search', icon: FileText },
-        { path: '/collections', label: 'Collections', icon: Folder },
-        { path: '/favorites', label: 'Favorites', icon: Star },
-        { path: '/recent', label: 'Recent', icon: Clock },
-      ],
-    },
-    {
-      section: 'discovery',
-      title: 'Discovery',
-      icon: Search,
-      items: [
-        { path: '/search-network', label: 'Search Network', icon: Globe },
-        { path: '/browse', label: 'Browse Categories', icon: FolderOpen },
-        { path: '/trending', label: 'Trending', icon: TrendingUp, badge: '12' },
-        { path: '/new-arrivals', label: 'New Arrivals', icon: Sparkles, badge: 'New' },
-      ],
-    },
-    {
-      section: 'network',
-      title: 'P2P Network',
-      icon: Globe,
-      items: [
-        { path: '/peers', label: 'Peer Network', icon: Users, badge: '8' },
-        { path: '/network-health', label: 'Network Health', icon: Activity },
-        {
-          path: '/transfers',
-          label: 'Sharing & downloads',
-          icon: ArrowLeftRight,
-          alsoMatch: ['/sharing', '/downloads'],
-        },
-        { path: '/connection-manager', label: 'Configurations', icon: Settings },
-      ],
-    },
-  ];
+
+  const badgeForPath = (path: string) => {
+    if (path === '/search-network') {
+      const n = lobby.files().length;
+      return n > 0 ? String(n) : undefined;
+    }
+    if (path === '/peers') {
+      const n = networkPeers.peerCount();
+      return n > 0 ? String(n) : undefined;
+    }
+    return undefined;
+  };
 
   // Find which section contains the current path
   const getCurrentPageSection = () => {
     const currentPath = location.pathname;
-    for (const section of navigationItems) {
+    for (const section of NAV_SECTIONS) {
       for (const item of section.items) {
         if (item.path === currentPath || item.alsoMatch?.includes(currentPath)) {
           return section.section;
@@ -184,6 +201,7 @@ const Sidebar: Component<SidebarProps> = props => {
   onMount(() => {
     const handler = () => refetchDisk();
     window.addEventListener('project-folder-changed' as any, handler);
+
     onCleanup(() => {
       window.removeEventListener('project-folder-changed' as any, handler);
     });
@@ -200,7 +218,7 @@ const Sidebar: Component<SidebarProps> = props => {
     <aside class={`app-sidebar ${props.collapsed ? 'collapsed' : ''}`}>
       {/* Navigation */}
       <nav class="sidebar-nav" data-testid="main-navigation">
-        <For each={navigationItems}>
+        <For each={NAV_SECTIONS}>
           {section => (
             <div class="nav-section">
               <button
@@ -245,8 +263,8 @@ const Sidebar: Component<SidebarProps> = props => {
                       </span>
                       <Show when={!props.collapsed}>
                         <span class="nav-label">{item.label}</span>
-                        <Show when={item.badge}>
-                          <span class="nav-badge">{item.badge}</span>
+                        <Show when={badgeForPath(item.path)}>
+                          <span class="nav-badge">{badgeForPath(item.path)}</span>
                         </Show>
                       </Show>
                     </A>
@@ -291,13 +309,13 @@ const Sidebar: Component<SidebarProps> = props => {
         </Show>
 
         {/* Connection Status */}
-        <div class={`connection-status ${presence()?.online ? 'online' : 'offline'}`}>
+        <div class={`connection-status ${presence().online ? 'online' : 'offline'}`}>
           <span class="connection-icon">
-            {presence()?.online ? <Wifi size={14} /> : <WifiOff size={14} />}
+            {presence().online ? <Wifi size={14} /> : <WifiOff size={14} />}
           </span>
           <Show when={!props.collapsed}>
             <span class="connection-text">
-              {presence()?.online ? 'Network Online' : 'Network Offline'}
+              {presence().online ? 'Network Online' : 'Network Offline'}
             </span>
             <div class="connection-indicator">
               <div class="signal-dot" />
@@ -306,11 +324,23 @@ const Sidebar: Component<SidebarProps> = props => {
             </div>
             <div
               class="tor-status-pill"
-              title={presence()?.onionActive ? 'Onion routing active' : 'Onion routing inactive'}
+              title={presence().onionActive ? 'Onion routing active' : 'Onion routing inactive'}
             >
-              <span class={`pill-dot ${presence()?.onionActive ? 'on' : 'off'}`} />
-              <span class="pill-text">{presence()?.onionActive ? 'Onion' : 'No Onion'}</span>
+              <span class={`pill-dot ${presence().onionActive ? 'on' : 'off'}`} />
+              <span class="pill-text">{presence().onionActive ? 'Onion' : 'No Onion'}</span>
             </div>
+            <Show when={lobby.onlineNodes() > 0 || lobby.lastSyncAt()}>
+              <div
+                class="tor-status-pill"
+                title="Nodes connected to the global tracker"
+                style={{ 'margin-top': '4px', cursor: 'default' }}
+              >
+                <span class="pill-dot on" />
+                <span class="pill-text">
+                  {lobby.onlineNodes()} node{lobby.onlineNodes() !== 1 ? 's' : ''} online
+                </span>
+              </div>
+            </Show>
           </Show>
         </div>
       </div>
