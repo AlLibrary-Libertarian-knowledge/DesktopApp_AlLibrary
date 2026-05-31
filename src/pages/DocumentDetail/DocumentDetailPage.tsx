@@ -75,7 +75,8 @@ import { useTranslation } from '@/i18n';
 // Import services
 import { commentService, favoriteService, activityService } from '@/services';
 import { documentService, type DocumentDetailModel } from '@/services/documentService';
-import { transferFacade } from '@/services/network/transferFacade';
+import { downloadWithToast } from '@/utils/downloadActions';
+import { useTransferState } from '@/hooks/api/useTransferState';
 import { shareWithToast, copyNetworkLinkWithToast } from '@/utils/documentActions';
 
 // Import styles
@@ -118,6 +119,7 @@ function detectDocumentType(format: string): 'pdf' | 'epub' | 'text' | 'markdown
 type DocumentDetailPageProps = {};
 
 export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
+  const transfer = useTransferState();
   const { busy, setSeedEnabled, downloadByHash, error, lastOp } = useP2PTransfers();
   const params = useParams();
   const navigate = useNavigate();
@@ -344,11 +346,15 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
         toast.info(tf('pages.documentDetail.toasts.alreadyLocal'));
         return;
       }
-      const link = doc.networkLink || doc.filePath;
-      if (link) {
-        await transferFacade.downloadLink(link, doc.title);
-        toast.success('Download started — check Sharing & downloads for progress.');
+      const linkOrHash = doc.networkLink || doc.contentHash || doc.id;
+      if (!linkOrHash) {
+        throw new Error('No network link or content hash for this document.');
       }
+      await downloadWithToast(
+        doc.title,
+        () => transfer.startDownload(linkOrHash, doc.title),
+        toast
+      );
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : String(e));
     }

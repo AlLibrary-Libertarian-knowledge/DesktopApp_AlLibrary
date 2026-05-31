@@ -19,6 +19,7 @@ export interface NetworkFileView {
   name: string;
   size: number;
   link: string;
+  swarmLink?: string;
   peerCount: number;
   peers: Array<{ nodeId: string; onion: string; link: string; fileId: string }>;
 }
@@ -42,6 +43,7 @@ interface CachedNetworkFileWire {
   link: string;
   content_hash: string;
   peer_count: number;
+  swarm_link?: string;
   peers: Array<{
     node_id: string;
     onion: string;
@@ -62,6 +64,7 @@ function mapFile(file: CachedNetworkFileWire | NetworkLobby['files'][number]): N
     name: file.name,
     size: file.size,
     link: file.link,
+    swarmLink: 'swarm_link' in file ? file.swarm_link : undefined,
     peerCount: file.peer_count,
     peers: (file.peers || []).map(p => ({
       nodeId: p.node_id,

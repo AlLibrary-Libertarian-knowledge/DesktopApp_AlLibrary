@@ -66,14 +66,37 @@ Alvo pós-integração: só Search Network + cache SQLite.
 
 ## 5. Testar download
 
-1. Com ficheiro no lobby, clicar **Download** (Global Acervo) ou corrigir fluxo em Search Network
-2. Pasta destino: first-run / `settingsService.getDownloadFolder()`
-3. Progresso: `downloadManager` (percentagem simulada até evento final)
-4. Sucesso: evento `onion-share-fetch-done`, badge “Saved”
+### Fluxo UI unificado (Search Network + Sharing & downloads)
 
-**Mesma máquina:** evitar descarregar link do **próprio** `.onion` (guard no Global Acervo).
+1. **Seeder (PC A):** Sharing & downloads → Add files → confirmar outbound table + lobby com `peer_count ≥ 1`
+2. **Downloader (PC B):** Search Network → Download num resultado
+   - Toast: *Download started* com acção **Open transfers**
+   - Progresso na grelha de resultados (barra inline) e em **Sharing & downloads** (`/transfers`)
+   - Badge no sidebar em **Sharing & downloads** enquanto houver downloads activos
+3. **Home → Downloads tab** mostra a mesma fila (`TransferQueuePanel`) que `/transfers`
+4. Downloads usam **swarm-first** (`opocswarm://` via `resolve_download_link`) quando há vários peers
 
-**Dois PCs:** dois clientes, tracker acessível (localhost ou `.onion`), cada um partilha ficheiros diferentes.
+### Comportamento esperado
+
+- Pasta destino: first-run / `settingsService.getDownloadFolder()`
+- Progresso: `downloadManager` + eventos `transfer-progress` / `onion-share-fetch-done`
+- Sem peers online: botão Download desactivado ou erro imediato *No online peers are seeding this file* (não hang silencioso)
+- Colar hash/link: modal **Download from link** em `/transfers` mostra peer count antes de iniciar
+
+**Mesma máquina:** evitar descarregar link do **próprio** `.onion` (guard em `transferFacade.downloadLink`).
+
+**Dois PCs:** dois clientes, tracker acessível (localhost ou `.onion`), cada um partilha ficheiros diferentes — o downloader deve resolver swarm link, não só o primeiro peer directo.
+
+### Checklist dois nós
+
+| Passo | PC A (seeder) | PC B (downloader) |
+|-------|---------------|-------------------|
+| Onion activo | ✓ | ✓ |
+| Ficheiro no lobby | ✓ | — |
+| Search Network vê ficheiro | — | ✓ |
+| Download + toast | — | ✓ |
+| Progresso em `/transfers` | — | ✓ |
+| Parar seeder | peer_count → 0 | Download desactivado / erro rápido |
 
 ---
 

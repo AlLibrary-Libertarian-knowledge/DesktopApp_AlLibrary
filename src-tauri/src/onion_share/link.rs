@@ -67,6 +67,13 @@ impl fmt::Display for ShareLink {
 }
 
 impl SwarmLink {
+    pub fn new(tracker_url: impl Into<String>, content_hash: impl Into<String>) -> Self {
+        Self {
+            tracker_url: tracker_url.into(),
+            content_hash: content_hash.into(),
+        }
+    }
+
     pub fn to_link_string(&self) -> String {
         let encoded_tracker = URL_SAFE_NO_PAD.encode(self.tracker_url.as_bytes());
         format!("opocswarm://swarm/{}#{}", self.content_hash, encoded_tracker)
@@ -108,10 +115,30 @@ impl fmt::Display for SwarmLink {
     }
 }
 
+pub fn build_swarm_link_string(tracker_url: &str, content_hash: &str) -> String {
+    SwarmLink::new(tracker_url, content_hash).to_link_string()
+}
+
 pub fn parse_any(s: &str) -> anyhow::Result<ParsedLink> {
     if s.starts_with("opocswarm://") {
         Ok(ParsedLink::Swarm(SwarmLink::parse(s)?))
     } else {
         Ok(ParsedLink::Direct(ShareLink::parse(s)?))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn build_swarm_link_round_trip() {
+        let tracker = "http://127.0.0.1:8080";
+        let hash = "a".repeat(64);
+        let link = build_swarm_link_string(tracker, &hash);
+        assert!(link.starts_with("opocswarm://swarm/"));
+        let parsed = SwarmLink::parse(&link).expect("parse swarm link");
+        assert_eq!(parsed.tracker_url, tracker);
+        assert_eq!(parsed.content_hash, hash);
     }
 }

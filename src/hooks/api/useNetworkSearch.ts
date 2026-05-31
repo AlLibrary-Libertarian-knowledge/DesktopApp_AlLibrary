@@ -42,6 +42,10 @@ export interface NetworkSearchResult {
   document: Document;
   /** Peer providing the document */
   peerId: string;
+  /** Number of peers seeding this file */
+  peerCount: number;
+  /** Swarm link when available */
+  swarmLink?: string;
   /** Peer location */
   peerLocation?: string;
   /** Peer reputation score */
@@ -123,7 +127,7 @@ export const useNetworkSearch = (): UseNetworkSearchReturn => {
         title: f.name,
         author: 'P2P Network',
         description: `Available via ${f.peerCount} peer(s)`,
-        filePath: f.link,
+        filePath: f.swarmLink || f.link,
         fileSize: f.size,
         fileType: (f.name.split('.').pop() as string) || 'pdf',
         uploadDate: new Date(),
@@ -136,6 +140,8 @@ export const useNetworkSearch = (): UseNetworkSearchReturn => {
         culturalOrigin: '',
       } as unknown as Document,
       peerId: f.peers[0]?.nodeId || '',
+      peerCount: f.peerCount,
+      swarmLink: f.swarmLink,
       peerReputation: 5,
       relevanceScore: 100,
     }));
@@ -215,7 +221,7 @@ export const useNetworkSearch = (): UseNetworkSearchReturn => {
   };
 
   const downloadFromPeer = async (result: NetworkSearchResult) => {
-    await transferFacade.downloadLink(result.document.filePath, result.document.title);
+    await transferFacade.downloadByHashOrLink(result.document.id, result.document.title);
   };
 
   onCleanup(() => {

@@ -70,3 +70,38 @@
   gap: 0.5rem;
   margin-top: auto;
 }
+
+.progressWrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+}
+
+.progressBar {
+  flex: 1;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: #22d3ee;
+  border-radius: 999px;
+  transition: width 0.2s ease;
+}
+
+.progressLabel {
+  font-size: 0.75rem;
+  opacity: 0.75;
+  min-width: 2.5rem;
+}
+
+.statusMessage {
+  margin: 0.35rem 0 0;
+  font-size: 0.75rem;
+  color: #22d3ee;
+  line-height: 1.35;
+}

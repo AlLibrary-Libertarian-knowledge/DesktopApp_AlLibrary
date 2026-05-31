@@ -32,8 +32,9 @@ vi.mock('../networkFacade', () => ({
         name: 'cached.pdf',
         size: 100,
         link: 'http://peer.onion/f/cached',
+        swarmLink: 'opocswarm://swarm/hash-abc#dHJhY2tlcg',
         contentHash: 'hash-abc',
-        peerCount: 1,
+        peerCount: 2,
         peers: [],
       },
     ]),
@@ -86,14 +87,81 @@ describe('transferFacade', () => {
     expect(link).toBe('http://peer.onion/f/direct');
   });
 
-  it('resolveDownloadLink resolves hash from cached search', async () => {
+  it('resolveDownloadLink resolves hash to swarm link when preferSwarm', async () => {
+    invokeMock.mockImplementation(async (cmd: string, args?: { input?: string }) => {
+      if (cmd === 'resolve_download_link' && args?.input === 'hash-abc') {
+        return {
+          link: 'opocswarm://swarm/hash-abc#dHJhY2tlcg',
+          linkKind: 'swarm',
+          contentHash: 'hash-abc',
+          peerCount: 2,
+          available: true,
+          peers: [],
+        };
+      }
+      return null;
+    });
+
+    const { transferFacade } = await import('../transferFacade');
+    const resolved = await transferFacade.resolveDownloadLinkFull('hash-abc', true);
+    expect(resolved.linkKind).toBe('swarm');
+    expect(resolved.link).toContain('opocswarm://');
+    expect(resolved.available).toBe(true);
+  });
+
+  it('downloadByHashOrLink fails fast when no peers available', async () => {
     invokeMock.mockImplementation(async (cmd: string) => {
+      if (cmd === 'resolve_download_link') {
+        return {
+          link: '',
+          linkKind: 'direct',
+          contentHash: 'deadbeef',
+          peerCount: 0,
+          available: false,
+          peers: [],
+        };
+      }
+      if (cmd === 'onion_share_status') {
+        return { running: true, onion: 'other.onion', localPort: 17600 };
+      }
+      return null;
+    });
+
+    const { transferFacade } = await import('../transferFacade');
+    await expect(transferFacade.downloadByHashOrLink('deadbeef', 'missing.pdf')).rejects.toThrow(
+      /no online peers/i
+    );
+    expect(startDownloadMock).not.toHaveBeenCalled();
+  });
+
+  it('looksLikeDownloadLink accepts opocswarm links via resolve pass-through', async () => {
+    invokeMock.mockImplementation(async (cmd: string) => {
+      if (cmd === 'onion_share_status') {
+        return { running: true, onion: 'other.onion', localPort: 17600 };
+      }
+      return null;
+    });
+
+    const { transferFacade } = await import('../transferFacade');
+    const swarm = 'opocswarm://swarm/abc123#dHJhY2tlcg';
+    await transferFacade.downloadLink(swarm, 'swarm.pdf');
+    expect(startDownloadMock).toHaveBeenCalledWith(swarm, 'swarm.pdf', '/home/user/downloads');
+  });
+
+  it('resolveDownloadLink resolves hash from cached search fallback', async () => {
+    invokeMock.mockImplementation(async (cmd: string) => {
+      if (cmd === 'resolve_download_link') {
+        throw new Error('not in tauri test');
+      }
       if (cmd === 'search_network_cached') {
         return [
           {
             name: 'cached.pdf',
             link: 'http://peer.onion/f/cached',
             content_hash: 'hash-abc',
+            peer_count: 1,
+            swarm_link: 'opocswarm://swarm/hash-abc#dHJhY2tlcg',
+            peers: [],
           },
         ];
       }
@@ -102,6 +170,6 @@ describe('transferFacade', () => {
 
     const { transferFacade } = await import('../transferFacade');
     const link = await transferFacade.resolveDownloadLink('hash-abc');
-    expect(link).toBe('http://peer.onion/f/cached');
+    expect(link).toContain('opocswarm://');
   });
 });

@@ -32,7 +32,7 @@ Frontend-driven integration tasks to connect the designed UI to a **per-node SQL
 ### Phase B — Screen integration
 
 - [x] Wire Discovery screens to **cached lobby + local library** (Search Network, Browse, Trending, New Arrivals) — **done** (May 2026): offline cache search, extension filters, Download All, stats ribbon
-- [~] Wire P2P screens to **real transfers + tracker peers** (Peer Network, Network Health, Sharing & downloads tables) — **Network Health + transfers/peers done** (May 2026); latency/upload backend still P2
+- [x] **Download UX integration** — swarm-first `resolve_download_link`, unified `useTransferState` + `TransferQueuePanel`, toasts, sidebar badge (May 2026)
 - [x] Wire Library actions (share/download/delete) to Tauri + onion share — **Home quick-share + useTransferState on Home** (May 2026)
 
 ### Phase C — POC removal

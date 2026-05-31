@@ -5,6 +5,8 @@ use crate::core::database::network_cache::{
 };
 use crate::core::database::models::NetworkPeerRow;
 use crate::core::database::node_db::ensure_node_database;
+use crate::commands::transfer_resolve::enrich_files_swarm_links;
+use crate::onion_share::config::{normalize_tracker_url, AppConfig};
 use crate::onion_share::tracker_proto::NetworkFile;
 use serde::Serialize;
 use tauri::AppHandle;
@@ -81,7 +83,10 @@ pub async fn search_network_cached(
     limit: Option<u32>,
 ) -> Result<Vec<NetworkFile>, String> {
     let pool = ensure_node_database(&app_handle).await?;
-    search_network_cached_pool(&pool, &query, limit.unwrap_or(100)).await
+    let mut files = search_network_cached_pool(&pool, &query, limit.unwrap_or(100)).await?;
+    let tracker = normalize_tracker_url(&AppConfig::load().tracker_url);
+    enrich_files_swarm_links(&mut files, &tracker);
+    Ok(files)
 }
 
 #[tauri::command]

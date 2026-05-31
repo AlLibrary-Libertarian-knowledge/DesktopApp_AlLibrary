@@ -1,4 +1,4 @@
-import { type Component, createSignal, onMount, createEffect } from 'solid-js';
+import { type Component, createSignal, onMount, createEffect, Show } from 'solid-js';
 import { Button, Card, Modal } from '../../components/foundation';
 import {
   NetworkGraph,
@@ -6,7 +6,8 @@ import {
   StatCard,
   type ActivityItemProps,
 } from '../../components/composite';
-import { DownloadManager, StatusBar, SecurityPanel } from '../../components/domain/dashboard';
+import { StatusBar, SecurityPanel } from '../../components/domain/dashboard';
+import { TransferQueuePanel } from '@/components/domain/network/TransferQueuePanel';
 import { useTranslation } from '../../i18n/hooks';
 import {
   Download,
@@ -554,30 +555,24 @@ const HomePage: Component = () => {
                     variant="primary"
                     size="sm"
                     aria-label={t('home.downloadsSection.addDownload')}
+                    onClick={() => navigate('/transfers')}
                   >
                     <Plus size={14} aria-hidden="true" />
                     {t('home.downloadsSection.addDownload')}
                   </Button>
-                  <Button variant="ghost" size="sm" aria-label={t('home.downloadsSection.queue')}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    aria-label={t('home.downloadsSection.queue')}
+                    onClick={() => navigate('/transfers')}
+                  >
                     <ClipboardList size={14} aria-hidden="true" />
                     {t('home.downloadsSection.queue')}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    aria-label={t('home.downloadsSection.preferences')}
-                  >
-                    <Settings size={14} aria-hidden="true" />
-                    {t('home.downloadsSection.preferences')}
+                    <Show when={transfer.activeCount() > 0}> ({transfer.activeCount()})</Show>
                   </Button>
                 </div>
               </div>
-              <Card class={styles['download-container']!}>
-                <DownloadManager
-                  onItemSelect={item => console.log('Selected:', item)}
-                  onItemAction={(action, item) => console.log('Action:', action, item)}
-                />
-              </Card>
+              <TransferQueuePanel variant="full" showOutbound={false} />
             </section>
           </div>
         )}

@@ -14,22 +14,21 @@ import { TopCard } from '@/components/composite/TopCard';
 import StatCard from '@/components/composite/StatCard/StatCard';
 import LoadingSpinner from '@/components/foundation/LoadingSpinner/LoadingSpinner';
 
-// Composite Components
-// Removed mocked stat/activity components; we will show only real metrics
-
 // Domain Components
 import { NetworkFileCard } from '../../components/domain/network/NetworkFileCard';
 import { NetworkStatus } from '../../components/domain/network/NetworkStatus';
 import { OnionStatusBar } from '../../components/domain/network/OnionStatusBar';
+import { TransferQueuePanel } from '@/components/domain/network/TransferQueuePanel';
 
 // Hooks and Services
-import { useNetworkSearch } from '../../hooks/api/useNetworkSearch';
+import { useNetworkSearch, type NetworkSearchResult } from '../../hooks/api/useNetworkSearch';
 import { useNetworkLobby } from '../../hooks/api/useNetworkLobby';
 import { enableTorAndP2P } from '../../services/network/bootstrap';
-import { useP2PTransfers } from '@/hooks/api/useP2PTransfers';
-import { transferFacade } from '@/services/network/transferFacade';
+import { useTransferState } from '@/hooks/api/useTransferState';
 import { useNetworkStore } from '@/stores/network/networkStore';
 import { useNetworkPresenceResource } from '@/hooks/network/useNetworkPresence';
+import { useToast } from '@/hooks/ui/useToast';
+import { downloadWithToast } from '@/utils/downloadActions';
 
 // Types
 import type { Document } from '@/types/core';
@@ -46,7 +45,8 @@ export interface SearchNetworkPageProps {
 
 export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
   const navigate = useNavigate();
-  const { busy, downloadByHash, error: transferError } = useP2PTransfers();
+  const transfer = useTransferState();
+  const toast = useToast();
   const [hash, setHash] = createSignal('');
   const [downloadError, setDownloadError] = createSignal<string | null>(null);
 
@@ -122,7 +122,8 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
     return formatTotalSize(bytes);
   };
 
-  const canDownload = () => presence().onionActive && presence().online;
+  const canDownload = () =>
+    presence().onionActive || (transfer.onionRunning() && Boolean(transfer.onionAddress()));
 
   const handleSearch = async () => {
     setActiveTab('results');
@@ -140,16 +141,33 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
     }
   };
 
+  const handleFileDownload = async (result: NetworkSearchResult) => {
+    setDownloadError(null);
+    const target = result.swarmLink || result.document.filePath || result.document.id;
+    await downloadWithToast(
+      result.document.title,
+      () => transfer.startDownload(target, result.document.title),
+      toast
+    );
+  };
+
   const handleDownloadAll = async () => {
     if (!canDownload() || !results()?.length) return;
     setDownloadingAll(true);
     setDownloadError(null);
     try {
-      const items = (results() ?? []).map(r => ({
-        link: r.document.filePath || '',
-        name: r.document.title || r.document.id,
-      }));
-      await transferFacade.downloadAll(items);
+      for (const r of results() ?? []) {
+        if (r.peerCount <= 0) continue;
+        await downloadWithToast(
+          r.document.title,
+          () =>
+            transfer.startDownload(
+              r.swarmLink || r.document.filePath || r.document.id,
+              r.document.title
+            ),
+          toast
+        );
+      }
     } catch (e) {
       setDownloadError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -226,11 +244,15 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
                       <Button
                         variant="outline"
                         size="sm"
-                        disabled={busy() || !hash().trim()}
+                        disabled={transfer.busy() || !hash().trim() || !canDownload()}
                         onClick={async () => {
                           setDownloadError(null);
                           try {
-                            await downloadByHash(hash().trim(), '', hash().trim());
+                            await downloadWithToast(
+                              hash().trim(),
+                              () => transfer.startDownload(hash().trim(), hash().trim()),
+                              toast
+                            );
                           } catch (e) {
                             setDownloadError(e instanceof Error ? e.message : String(e));
                           }
@@ -239,9 +261,9 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
                         <Download size={14} class="mr-2" />
                         Download
                       </Button>
-                      <Show when={downloadError() || transferError()}>
+                      <Show when={downloadError() || transfer.error()}>
                         <p class={styles['download-error']} role="alert">
-                          {downloadError() || transferError()}
+                          {downloadError() || transfer.error()}
                         </p>
                       </Show>
                     </div>
@@ -413,7 +435,9 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
                 <Button
                   variant="outline"
                   size="sm"
-                  disabled={!results()?.length || busy() || downloadingAll() || !canDownload()}
+                  disabled={
+                    !results()?.length || transfer.busy() || downloadingAll() || !canDownload()
+                  }
                   onClick={() => void handleDownloadAll()}
                 >
                   <Download size={14} class="mr-2" />
@@ -447,17 +471,28 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
               </p>
             </Show>
 
+            <Show when={transfer.hasActiveDownloads()}>
+              <TransferQueuePanel
+                variant="compact"
+                showOutbound={false}
+                class={styles['transfer-queue']}
+              />
+            </Show>
+
             <Show when={results() && results()!.length > 0}>
               <div class={styles['results-grid']}>
                 <For each={results()}>
-                  {(result: any) => (
+                  {result => (
                     <NetworkFileCard
                       contentHash={result.document.id}
                       name={result.document.title}
                       size={result.document.fileSize}
                       link={result.document.filePath || ''}
+                      peerCount={result.peerCount}
                       canDownload={canDownload()}
+                      downloadProgress={transfer.findActiveProgress(result.document.id)}
                       onOpen={() => handleDocumentOpen(result.document)}
+                      onDownload={() => handleFileDownload(result)}
                       onDownloadError={msg => setDownloadError(msg)}
                     />
                   )}

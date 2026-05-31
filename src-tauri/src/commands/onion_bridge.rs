@@ -15,6 +15,7 @@ use crate::onion_share::fetch;
 use crate::onion_share::server::{ShareServerHandle, ShareServerStartOptions};
 use crate::onion_share::tor::TorProcess;
 use crate::onion_share::tracker_client;
+use crate::commands::transfer_resolve::enrich_files_swarm_links;
 use crate::onion_share::tracker_proto::NetworkLobby;
 use crate::onion_share::tracker_proto::lobby_fingerprint;
 use crate::onion_share::wizard::installer;
@@ -968,11 +969,13 @@ pub async fn tracker_get_cached_lobby_cmd(
 }
 
 async fn tracker_get_cached_inner(app: &AppHandle, state: &OnionShareState) -> Result<NetworkLobby, String> {
-    let mem = state.cached_lobby.read().await.clone();
-    if !mem.files.is_empty() || mem.online_nodes > 0 {
-        return Ok(mem);
+    let mut mem = state.cached_lobby.read().await.clone();
+    if mem.files.is_empty() && mem.online_nodes == 0 {
+        mem = load_lobby_from_db(app).await?;
     }
-    load_lobby_from_db(app).await
+    let tracker = normalize_tracker_url(&AppConfig::load().tracker_url);
+    enrich_files_swarm_links(&mut mem.files, &tracker);
+    Ok(mem)
 }
 
 #[tauri::command]

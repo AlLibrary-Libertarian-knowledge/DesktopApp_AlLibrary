@@ -41,26 +41,22 @@ describe('NetworkFileCard', () => {
     expect(screen.getByRole('button', { name: /Download/i })).toBeDisabled();
   });
 
-  it('calls transferFacade.downloadLink when download clicked', async () => {
+  it('disables download when peerCount is zero', () => {
+    render(() => <NetworkFileCard contentHash="hash" name="Doc.pdf" peerCount={0} canDownload />);
+    expect(screen.getByRole('button', { name: /Download/i })).toBeDisabled();
+    expect(screen.getByText(/No peers online/i)).toBeInTheDocument();
+  });
+
+  it('calls transferFacade.downloadByHashOrLink when download clicked (swarm-first)', async () => {
     render(() => (
       <NetworkFileCard
-        contentHash="hash"
+        contentHash="content-hash-123"
         name="Doc.pdf"
         link="http://example.onion/file"
+        peerCount={2}
         canDownload
       />
     ));
-    fireEvent.click(screen.getByRole('button', { name: /Download/i }));
-    await waitFor(() => {
-      expect(transferFacade.downloadLink).toHaveBeenCalledWith(
-        'http://example.onion/file',
-        'Doc.pdf'
-      );
-    });
-  });
-
-  it('uses hash fallback when link is empty', async () => {
-    render(() => <NetworkFileCard contentHash="content-hash-123" name="Doc.pdf" canDownload />);
     fireEvent.click(screen.getByRole('button', { name: /Download/i }));
     await waitFor(() => {
       expect(transferFacade.downloadByHashOrLink).toHaveBeenCalledWith(
@@ -68,5 +64,19 @@ describe('NetworkFileCard', () => {
         'Doc.pdf'
       );
     });
+    expect(transferFacade.downloadLink).not.toHaveBeenCalled();
+  });
+
+  it('shows inline progress when downloadProgress is set', () => {
+    render(() => (
+      <NetworkFileCard
+        contentHash="hash"
+        name="Doc.pdf"
+        peerCount={1}
+        downloadProgress={0.42}
+        canDownload
+      />
+    ));
+    expect(screen.getByText('42%')).toBeInTheDocument();
   });
 });

@@ -5,7 +5,6 @@
 import { invoke } from '@tauri-apps/api/core';
 import { settingsService } from '@/services/storage/settingsService';
 import { downloadManager, type DownloadItem } from './downloadManager';
-import { networkFacade } from './networkFacade';
 import {
   onionShareAddFile,
   onionShareListLocal,
@@ -38,15 +37,65 @@ export interface TransferView {
   error?: string;
 }
 
-interface CachedFileWire {
+export interface PeerLocationView {
+  nodeId: string;
+  onion: string;
+  fileId: string;
+  link: string;
+}
+
+export interface ResolvedDownloadLink {
+  link: string;
+  linkKind: 'swarm' | 'direct';
+  contentHash: string;
+  peerCount: number;
+  available: boolean;
+  peers: PeerLocationView[];
+}
+
+interface CachedNetworkFileWire {
   name: string;
+  size: number;
   link: string;
   content_hash: string;
+  peer_count: number;
+  swarm_link?: string;
+  peers: Array<{
+    node_id: string;
+    onion: string;
+    file_id: string;
+    link: string;
+  }>;
+}
+
+interface ResolvedDownloadLinkWire {
+  link: string;
+  linkKind: string;
+  contentHash: string;
+  peerCount: number;
+  available: boolean;
+  peers: Array<{
+    nodeId: string;
+    onion: string;
+    fileId: string;
+    link: string;
+  }>;
 }
 
 function looksLikeDownloadLink(value: string): boolean {
   const v = value.trim();
-  return v.startsWith('http://') || v.startsWith('https://') || v.includes('.onion');
+  return (
+    v.startsWith('http://') ||
+    v.startsWith('https://') ||
+    v.startsWith('opoc://') ||
+    v.startsWith('opocswarm://') ||
+    v.includes('.onion')
+  );
+}
+
+function isLikelyContentHash(value: string): boolean {
+  const v = value.trim();
+  return v.length >= 32 && /^[a-fA-F0-9]+$/.test(v);
 }
 
 function mapShare(entry: LocalShareEntry): ShareEntryView {
@@ -68,7 +117,19 @@ function mapDownloadItem(item: DownloadItem): TransferView {
     status: item.status === 'active' ? 'active' : item.status,
     progress: item.progress,
     link: item.link,
+    localPath: item.outDir || undefined,
     error: item.error,
+  };
+}
+
+function mapResolved(wire: ResolvedDownloadLinkWire): ResolvedDownloadLink {
+  return {
+    link: wire.link,
+    linkKind: wire.linkKind === 'direct' ? 'direct' : 'swarm',
+    contentHash: wire.contentHash,
+    peerCount: wire.peerCount,
+    available: wire.available,
+    peers: wire.peers ?? [],
   };
 }
 
@@ -79,23 +140,72 @@ async function resolveOutputDir(outDir?: string): Promise<string> {
   );
 }
 
-export async function resolveDownloadLink(contentHashOrLink: string): Promise<string | null> {
+async function resolveDownloadLinkFull(
+  contentHashOrLink: string,
+  preferSwarm = true
+): Promise<ResolvedDownloadLink> {
   const value = contentHashOrLink.trim();
-  if (!value) return null;
-  if (looksLikeDownloadLink(value)) return value;
+  if (!value) {
+    throw new Error('Download input is empty.');
+  }
 
-  const fromLobby = (await networkFacade.searchFiles('')).find(
-    f => f.contentHash === value || f.link === value
-  );
-  if (fromLobby?.link) return fromLobby.link;
+  if (typeof window !== 'undefined' && (window as any).__TAURI_INTERNALS__) {
+    try {
+      const wire = await invoke<ResolvedDownloadLinkWire>('resolve_download_link', {
+        input: value,
+        preferSwarm: preferSwarm,
+      });
+      return mapResolved(wire);
+    } catch {
+      /* fall through to legacy resolution */
+    }
+  }
+
+  if (looksLikeDownloadLink(value)) {
+    return {
+      link: value,
+      linkKind: value.startsWith('opocswarm://') ? 'swarm' : 'direct',
+      contentHash: '',
+      peerCount: 0,
+      available: true,
+      peers: [],
+    };
+  }
 
   try {
-    const cached = await invoke<CachedFileWire[]>('search_network_cached', {
+    const cached = await invoke<CachedNetworkFileWire[]>('search_network_cached', {
       query: value,
       limit: 10,
     });
     const hit = cached.find(f => f.content_hash === value);
-    return hit?.link ?? null;
+    if (hit) {
+      const link =
+        preferSwarm && hit.swarm_link ? hit.swarm_link : hit.link || hit.peers?.[0]?.link || '';
+      return {
+        link,
+        linkKind: preferSwarm && hit.swarm_link ? 'swarm' : 'direct',
+        contentHash: hit.content_hash,
+        peerCount: hit.peer_count ?? hit.peers?.length ?? 0,
+        available: (hit.peer_count ?? hit.peers?.length ?? 0) > 0,
+        peers: (hit.peers ?? []).map(p => ({
+          nodeId: p.node_id,
+          onion: p.onion,
+          fileId: p.file_id,
+          link: p.link,
+        })),
+      };
+    }
+  } catch {
+    /* ignore */
+  }
+
+  throw new Error(`No network file found for hash or link: ${value}`);
+}
+
+export async function resolveDownloadLink(contentHashOrLink: string): Promise<string | null> {
+  try {
+    const resolved = await resolveDownloadLinkFull(contentHashOrLink, true);
+    return resolved.link || null;
   } catch {
     return null;
   }
@@ -137,10 +247,34 @@ export const transferFacade = {
     await onionShareRemoveFile(fileId);
   },
 
+  async getPeerAvailability(contentHash: string): Promise<ResolvedDownloadLink> {
+    if (typeof window !== 'undefined' && (window as any).__TAURI_INTERNALS__) {
+      try {
+        const wire = await invoke<ResolvedDownloadLinkWire>('get_swarm_availability', {
+          contentHash,
+        });
+        return mapResolved(wire);
+      } catch {
+        /* fall through */
+      }
+    }
+    return resolveDownloadLinkFull(contentHash, true);
+  },
+
+  resolveDownloadLinkFull,
+
   async downloadLink(link: string, fileName: string, outDir?: string): Promise<string> {
-    const trimmedLink = link.trim();
+    let trimmedLink = link.trim();
     if (!trimmedLink) {
       throw new Error('File download link is empty or missing.');
+    }
+
+    if (isLikelyContentHash(trimmedLink) || !looksLikeDownloadLink(trimmedLink)) {
+      const resolved = await resolveDownloadLinkFull(trimmedLink, true);
+      if (!resolved.available) {
+        throw new Error('No online peers are seeding this file.');
+      }
+      trimmedLink = resolved.link;
     }
 
     const status = await onionShareStatus();
@@ -165,11 +299,11 @@ export const transferFacade = {
     fileName: string,
     outDir?: string
   ): Promise<string> {
-    const link = await resolveDownloadLink(contentHashOrLink);
-    if (!link) {
-      throw new Error(`No network file found for hash or link: ${contentHashOrLink}`);
+    const resolved = await resolveDownloadLinkFull(contentHashOrLink, true);
+    if (!resolved.available && resolved.peerCount === 0 && !looksLikeDownloadLink(resolved.link)) {
+      throw new Error('No online peers are seeding this file.');
     }
-    return this.downloadLink(link, fileName, outDir);
+    return this.downloadLink(resolved.link, fileName, outDir);
   },
 
   listTransfers(): { active: TransferView[]; completed: TransferView[] } {
@@ -193,10 +327,11 @@ export const transferFacade = {
     const completedLinks = new Set(downloadManager.getCompleted().map(c => c.link));
     for (const item of items) {
       const link = item.link.trim();
-      if (!link) continue;
-      if (downloadManager.getActive().some(a => a.link === link)) continue;
-      if (completedLinks.has(link)) continue;
-      await this.downloadLink(link, item.name || link, outDir);
+      if (!link && !item.name) continue;
+      const key = link || item.name;
+      if (downloadManager.getActive().some(a => a.link === key || a.name === item.name)) continue;
+      if (link && completedLinks.has(link)) continue;
+      await this.downloadByHashOrLink(link || item.name, item.name || link, outDir);
     }
   },
 

@@ -9,6 +9,7 @@ use crate::commands::network_cache::{
     list_browse_categories, list_network_peers, list_recent_local_documents,
     list_recent_network_files, list_trending_network_files, search_network_cached,
 };
+use crate::commands::transfer_resolve::{build_swarm_link, get_swarm_availability, resolve_download_link};
 use crate::commands::transfers::list_recent_transfers;
 use crate::commands::onion_bridge::{bootstrap_onion_overlay, bootstrap_onion_overlay_background, onion_share_start, onion_share_stop, stop_onion_share_internal, onion_share_add_file, onion_share_remove_file, onion_share_list_local, onion_share_status, reset_tor_overlay_data, spawn_tor_recovery_watchdog, tracker_get_config, tracker_set_config, tracker_refresh_lobby, tracker_get_cached_lobby_cmd, tracker_get_last_sync_diag, tracker_start_ws_loop, tracker_stop_ws_loop, onion_share_fetch, OnionShareState};
 use crate::commands::seed_sync::{spawn_seed_notify_listener, set_document_seed_enabled, sync_all_enabled_seeds_cmd};
@@ -145,6 +146,9 @@ pub fn run() {
             ,tracker_stop_ws_loop
             ,onion_share_fetch
             ,search_network_cached
+            ,build_swarm_link
+            ,resolve_download_link
+            ,get_swarm_availability
             ,list_network_peers
             ,list_trending_network_files
             ,list_recent_network_files

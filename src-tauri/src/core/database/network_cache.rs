@@ -222,6 +222,7 @@ pub async fn load_lobby_from_pool(pool: &SqlitePool) -> Result<NetworkLobby, Str
             content_hash: row.content_hash.clone(),
             peer_count: row.peer_count as usize,
             peers: peers_by_hash.remove(&row.content_hash).unwrap_or_default(),
+            swarm_link: None,
         })
         .collect();
 
@@ -323,6 +324,7 @@ pub async fn search_network_cached_pool(
                 peers.len()
             },
             peers,
+            swarm_link: None,
         });
     }
 
@@ -509,6 +511,7 @@ async fn rows_to_network_files(
                 peers.len()
             },
             peers,
+            swarm_link: None,
         });
     }
     Ok(results)
@@ -556,6 +559,7 @@ mod tests {
                         file_id: Uuid::new_v4(),
                         link: "http://a.onion/f/1".into(),
                     }],
+                    swarm_link: None,
                 },
                 NetworkFile {
                     name: "beta.epub".into(),
@@ -569,6 +573,7 @@ mod tests {
                         file_id: Uuid::new_v4(),
                         link: "http://b.onion/f/2".into(),
                     }],
+                    swarm_link: None,
                 },
             ],
         }

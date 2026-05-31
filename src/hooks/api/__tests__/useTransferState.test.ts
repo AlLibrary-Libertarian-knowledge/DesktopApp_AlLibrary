@@ -13,7 +13,10 @@ const listSharesMock = vi.fn(async () => [
 
 const subscribeTransfersMock = vi.fn(
   (listener: (active: unknown[], completed: unknown[]) => void) => {
-    listener([], []);
+    listener(
+      [{ id: 'd1', direction: 'inbound', name: 'a.pdf', status: 'active', progress: 0.5 }],
+      []
+    );
     return () => {};
   }
 );
@@ -27,6 +30,7 @@ vi.mock('@/services/network/transferFacade', () => ({
     addShare: vi.fn(),
     removeShare: vi.fn(),
     downloadLink: vi.fn(),
+    downloadByHashOrLink: vi.fn(async () => 'dl-1'),
     startOnionShare: vi.fn(),
     stopOnionShare: vi.fn(),
   },
@@ -53,9 +57,31 @@ describe('useTransferState', () => {
           expect(listSharesMock).toHaveBeenCalled();
           expect(state.shares()).toHaveLength(1);
           expect(state.onionRunning()).toBe(true);
+          expect(state.canDownload()).toBe(true);
+          expect(state.activeCount()).toBe(1);
+          expect(state.hasActiveDownloads()).toBe(true);
           dispose();
           resolve();
         }, 0);
+      });
+    });
+  });
+
+  it('startDownload delegates to transferFacade.downloadByHashOrLink', async () => {
+    const { transferFacade } = await import('@/services/network/transferFacade');
+    const { useTransferState } = await import('../useTransferState');
+
+    await new Promise<void>(resolve => {
+      createRoot(async dispose => {
+        const state = useTransferState();
+        await state.startDownload('hash-abc', 'file.pdf');
+        expect(transferFacade.downloadByHashOrLink).toHaveBeenCalledWith(
+          'hash-abc',
+          'file.pdf',
+          undefined
+        );
+        dispose();
+        resolve();
       });
     });
   });

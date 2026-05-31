@@ -37,6 +37,7 @@ import { TorBootstrapStatus } from '@/components/domain/network/TorBootstrapStat
 import { OnionStatusBar } from '@/components/domain/network/OnionStatusBar';
 import { useNetworkLobby } from '@/hooks/api/useNetworkLobby';
 import { useNetworkPeers } from '@/hooks/api/useNetworkPeers';
+import { useTransferState } from '@/hooks/api/useTransferState';
 
 interface NavItem {
   path: string;
@@ -106,6 +107,7 @@ const Sidebar: Component<SidebarProps> = props => {
   const { presence, isBootstrapping } = useNetworkPresenceResource();
   const lobby = useNetworkLobby();
   const networkPeers = useNetworkPeers();
+  const transfer = useTransferState();
   const [isTransitioning, setIsTransitioning] = createSignal(false);
   const [wasCollapsed, setWasCollapsed] = createSignal(false);
   const [pendingSection, setPendingSection] = createSignal<string | null>(null);
@@ -118,6 +120,10 @@ const Sidebar: Component<SidebarProps> = props => {
     }
     if (path === '/peers') {
       const n = networkPeers.peerCount();
+      return n > 0 ? String(n) : undefined;
+    }
+    if (path === '/transfers') {
+      const n = transfer.activeCount();
       return n > 0 ? String(n) : undefined;
     }
     return undefined;

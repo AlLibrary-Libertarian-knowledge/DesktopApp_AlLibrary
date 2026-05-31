@@ -14,6 +14,7 @@ pub mod tor_setup;
 pub mod favorites;
 pub mod activity;
 pub mod transfers;
+pub mod transfer_resolve;
 
 pub use app::{initialize_app, get_app_ready_state, close_splash_screen, InitProgress};
 pub use security::{get_security_info, refresh_security_info, SecurityInfo};
@@ -112,3 +113,7 @@ pub use network_cache::{
 pub use favorites::{is_favorite, toggle_favorite, list_favorites, FavoriteToggleResult};
 pub use activity::{log_activity, list_activity, delete_activity};
 pub use transfers::{list_recent_transfers, TransferDto};
+pub use transfer_resolve::{
+    build_swarm_link, get_swarm_availability, resolve_download_link, ResolvedDownloadLink,
+    PeerLocationDto,
+};

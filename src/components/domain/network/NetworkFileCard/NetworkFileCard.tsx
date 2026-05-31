@@ -1,4 +1,4 @@
-import { type Component, Show } from 'solid-js';
+import { type Component, Show, createSignal } from 'solid-js';
 import { BookOpen, Download, ExternalLink, FileText } from 'lucide-solid';
 import { Button } from '@/components/foundation/Button';
 import { Badge } from '@/components/foundation/Badge';
@@ -12,6 +12,7 @@ export interface NetworkFileCardProps {
   link?: string;
   peerCount?: number;
   canDownload?: boolean;
+  downloadProgress?: number;
   onOpen?: () => void;
   onDownload?: () => Promise<void>;
   onDownloadError?: (message: string) => void;
@@ -36,24 +37,30 @@ function fileTypeFromName(name: string): string {
 }
 
 export const NetworkFileCard: Component<NetworkFileCardProps> = props => {
-  const canDownload = () => props.canDownload !== false;
+  const [downloading, setDownloading] = createSignal(false);
+  const [statusMessage, setStatusMessage] = createSignal<string | null>(null);
+
+  const peersAvailable = () => (props.peerCount ?? 1) > 0;
+  const canDownloadNow = () => props.canDownload !== false && peersAvailable() && !downloading();
 
   const handleDownload = async () => {
-    if (!canDownload()) return;
+    if (!canDownloadNow() && !downloading()) return;
+    setStatusMessage(null);
+    setDownloading(true);
     try {
       if (props.onDownload) {
         await props.onDownload();
+        setStatusMessage('Download started');
         return;
       }
-      const link = props.link?.trim() || '';
-      if (link) {
-        await transferFacade.downloadLink(link, props.name);
-      } else {
-        await transferFacade.downloadByHashOrLink(props.contentHash, props.name);
-      }
+      await transferFacade.downloadByHashOrLink(props.contentHash, props.name);
+      setStatusMessage('Download started');
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
+      setStatusMessage(msg);
       props.onDownloadError?.(msg);
+    } finally {
+      setDownloading(false);
     }
   };
 
@@ -61,6 +68,12 @@ export const NetworkFileCard: Component<NetworkFileCardProps> = props => {
     const type = fileTypeFromName(props.name);
     if (type === 'epub') return <BookOpen size={20} />;
     return <FileText size={20} />;
+  };
+
+  const progressPct = () => {
+    const p = props.downloadProgress;
+    if (p == null) return null;
+    return Math.round(Math.min(1, Math.max(0, p)) * 100);
   };
 
   return (
@@ -78,10 +91,26 @@ export const NetworkFileCard: Component<NetworkFileCardProps> = props => {
               <Show when={(props.peerCount ?? 0) > 0}>
                 <Badge variant="outline">{props.peerCount} peer(s)</Badge>
               </Show>
+              <Show when={props.peerCount === 0}>
+                <Badge variant="secondary">No peers online</Badge>
+              </Show>
             </div>
             <Show when={props.contentHash}>
               <div class={styles.hash} title={props.contentHash}>
                 {hashSnippet(props.contentHash)}
+              </div>
+            </Show>
+            <Show when={statusMessage()}>
+              <p class={styles.statusMessage} role="status">
+                {statusMessage()}
+              </p>
+            </Show>
+            <Show when={progressPct() != null}>
+              <div class={styles.progressWrap}>
+                <div class={styles.progressBar}>
+                  <div class={styles.progressFill} style={{ width: `${progressPct()}%` }} />
+                </div>
+                <span class={styles.progressLabel}>{progressPct()}%</span>
               </div>
             </Show>
           </div>
@@ -97,12 +126,13 @@ export const NetworkFileCard: Component<NetworkFileCardProps> = props => {
         <Button
           variant="primary"
           size="sm"
-          disabled={!canDownload()}
+          disabled={!canDownloadNow()}
+          loading={downloading()}
           onClick={() => void handleDownload()}
           aria-label={`Download ${props.name}`}
         >
           <Download size={14} />
-          &nbsp;Download
+          &nbsp;{downloading() ? 'Starting…' : 'Download'}
         </Button>
       </div>
     </article>

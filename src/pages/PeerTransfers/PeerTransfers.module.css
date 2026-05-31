@@ -598,3 +598,9 @@
   justify-content: flex-end;
   gap: 0.5rem;
 }
+
+.resolveHint {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary, #94a3b8);
+  margin: 0;
+}

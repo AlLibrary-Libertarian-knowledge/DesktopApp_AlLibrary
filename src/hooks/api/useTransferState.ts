@@ -1,4 +1,4 @@
-import { createSignal, onCleanup, onMount } from 'solid-js';
+import { createMemo, createSignal, onCleanup, onMount } from 'solid-js';
 import {
   transferFacade,
   type ShareEntryView,
@@ -13,6 +13,10 @@ export function useTransferState() {
   const [onionAddress, setOnionAddress] = createSignal<string | null>(null);
   const [error, setError] = createSignal<string | null>(null);
   const [busy, setBusy] = createSignal(false);
+
+  const activeCount = createMemo(() => activeDownloads().length);
+  const hasActiveDownloads = createMemo(() => activeCount() > 0);
+  const canDownload = createMemo(() => onionRunning() && Boolean(onionAddress()));
 
   const refreshOnionStatus = async () => {
     try {
@@ -94,6 +98,26 @@ export function useTransferState() {
     }
   };
 
+  const startDownload = async (linkOrHash: string, fileName: string, outDir?: string) => {
+    setBusy(true);
+    setError(null);
+    try {
+      await refreshOnionStatus();
+      if (!onionRunning() || !onionAddress()) {
+        throw new Error(
+          'Tor onion sharing is not ready. Open Sharing & downloads and wait for Onion status to turn ready.'
+        );
+      }
+      return await transferFacade.downloadByHashOrLink(linkOrHash, fileName, outDir);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setError(msg);
+      throw e;
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const startOnionShare = async () => {
     setBusy(true);
     setError(null);
@@ -127,6 +151,17 @@ export function useTransferState() {
     }
   };
 
+  const findActiveProgress = (linkOrHash: string) => {
+    const key = linkOrHash.trim().toLowerCase();
+    const active = activeDownloads().find(
+      d =>
+        d.link?.toLowerCase() === key ||
+        d.link?.toLowerCase().includes(key) ||
+        d.name.toLowerCase() === key
+    );
+    return active?.progress;
+  };
+
   return {
     shares,
     activeDownloads,
@@ -135,12 +170,17 @@ export function useTransferState() {
     onionAddress,
     error,
     busy,
+    activeCount,
+    hasActiveDownloads,
+    canDownload,
     refreshShares,
     refreshAll,
     addShare,
     removeShare,
     downloadLink,
+    startDownload,
     startOnionShare,
     stopOnionShare,
+    findActiveProgress,
   };
 }
