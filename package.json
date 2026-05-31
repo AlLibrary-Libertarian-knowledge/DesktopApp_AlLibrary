@@ -12,6 +12,7 @@
   },
   "scripts": {
     "sync:version": "node scripts/sync-app-version.cjs",
+    "release:notes": "node scripts/generate-release-notes.cjs",
     "predev": "node scripts/sync-app-version.cjs",
     "predev:frontend": "node scripts/sync-app-version.cjs",
     "prebuild": "node scripts/sync-app-version.cjs",
