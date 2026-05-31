@@ -11,6 +11,11 @@
     "url": "https://github.com/yourusername/allibrary.git"
   },
   "scripts": {
+    "sync:version": "node scripts/sync-app-version.cjs",
+    "predev": "node scripts/sync-app-version.cjs",
+    "predev:frontend": "node scripts/sync-app-version.cjs",
+    "prebuild": "node scripts/sync-app-version.cjs",
+    "prebuild:frontend": "node scripts/sync-app-version.cjs",
     "dev": "npx tauri dev",
     "dev:frontend": "vite",
     "build": "npx tauri build",

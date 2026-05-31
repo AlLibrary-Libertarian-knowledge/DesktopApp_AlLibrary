@@ -331,6 +331,15 @@ pub async fn process_document(
         let _ = insert_activity_pool(&pool, "upload", Some(&info.id), Some(&payload)).await;
     }
 
+    let _ = app_handle.emit(
+        "document-pipeline-progress",
+        serde_json::json!({
+            "step": 7,
+            "label": "Complete",
+            "percent": 100,
+        }),
+    );
+
     notify_document_treated(&app_handle, &info.file_path);
 
     Ok(info)

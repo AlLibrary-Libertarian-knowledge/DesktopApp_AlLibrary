@@ -1,5 +1,6 @@
 import { type Component, createMemo } from 'solid-js';
 import './Footer.css';
+import { APP_FOOTER_VERSION } from '@/config/appMeta';
 import { useNetworkStore } from '@/stores/network/networkStore';
 import { useNetworkLobby } from '@/hooks/api/useNetworkLobby';
 import { useNetworkPresenceResource } from '@/hooks/network/useNetworkPresence';
@@ -43,7 +44,7 @@ const Footer: Component = () => {
 
         <div class="footer-right">
           <div class="version-info">
-            <span class="app-version">AlLibrary v1.0.11</span>
+            <span class="app-version">{APP_FOOTER_VERSION}</span>
             <span class="build-info">P2P Onion-Routing Active</span>
           </div>
 

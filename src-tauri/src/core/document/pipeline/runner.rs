@@ -45,7 +45,7 @@ fn emit_progress(cb: &Option<ProgressCallback>, step: u8, label: &str, percent: 
 }
 
 /// Run full pipeline on source file; returns treated bytes + fingerprint (steps 0–7).
-pub fn run_pipeline(source: &Path, progress: Option<ProgressCallback>) -> Result<PipelineOutput, String> {
+pub fn run_pipeline(source: &Path, progress: &Option<ProgressCallback>) -> Result<PipelineOutput, String> {
     if !source.exists() || !source.is_file() {
         return Err("Source file not found".into());
     }
@@ -112,8 +112,6 @@ pub fn run_pipeline(source: &Path, progress: Option<ProgressCallback>) -> Result
     emit_progress(&progress, 7, "Hash generation", 95);
     let fingerprint = compute_fingerprint_from_bytes(&treated, page_count);
 
-    emit_progress(&progress, 7, "Complete", 100);
-
     Ok(PipelineOutput {
         treated_bytes: treated,
         fingerprint,
@@ -131,10 +129,11 @@ pub fn run_pipeline_to_file(
     dest: &Path,
     progress: Option<ProgressCallback>,
 ) -> Result<PipelineOutput, String> {
-    let out = run_pipeline(source, progress)?;
+    let out = run_pipeline(source, &progress)?;
     if let Some(parent) = dest.parent() {
         fs::create_dir_all(parent).map_err(|e| e.to_string())?;
     }
+    emit_progress(&progress, 7, "Writing to library", 97);
     let tmp = dest.with_extension("tmp-treating");
     fs::write(&tmp, &out.treated_bytes).map_err(|e| e.to_string())?;
     fs::rename(&tmp, dest).map_err(|e| e.to_string())?;
@@ -414,7 +413,7 @@ mod tests {
         let dir = std::env::temp_dir();
         let txt = dir.join(format!("al-test-{}.txt", uuid::Uuid::new_v4()));
         fs::write(&txt, b"hello").unwrap();
-        assert!(run_pipeline(&txt, None).is_err());
+        assert!(run_pipeline(&txt, &None).is_err());
         let _ = fs::remove_file(&txt);
     }
 }

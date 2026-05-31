@@ -1,7 +1,9 @@
 // Application Configuration Constants
+import { APP_NAME, APP_VERSION } from '@/config/appMeta';
+
 export const APP_CONFIG = {
-  name: 'AlLibrary',
-  version: '1.0.0',
+  name: APP_NAME,
+  version: APP_VERSION,
   description: 'Decentralized document library and P2P network',
   author: 'AlLibrary Team',
 };

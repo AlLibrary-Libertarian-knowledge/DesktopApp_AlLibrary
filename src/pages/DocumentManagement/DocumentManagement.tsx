@@ -2322,7 +2322,6 @@ const DocumentManagement: Component = () => {
                                         userTitle: item.title,
                                         expectedContentHash: null,
                                       });
-                                      await refreshLocalShares();
                                       setTreatmentItems(prev =>
                                         prev.map(it =>
                                           it.tempId === item.tempId
@@ -2330,8 +2329,12 @@ const DocumentManagement: Component = () => {
                                             : it
                                         )
                                       );
+                                      void refreshLocalShares();
                                     } catch (e) {
                                       console.error('Process failed', e);
+                                      toastUi.error(
+                                        `Processing failed: ${e instanceof Error ? e.message : String(e)}`
+                                      );
                                     } finally {
                                       setIsProcessing(false);
                                       setPipelineStep(null);

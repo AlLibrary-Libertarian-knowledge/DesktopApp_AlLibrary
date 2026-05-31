@@ -55,6 +55,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Prepare app version env
+        run: |
+          cp .env.example .env
+          pnpm run sync:version
+
       - name: Install Playwright Browsers
         run: npx playwright install ${{ matrix.browser }} --with-deps
 
@@ -98,6 +103,11 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Prepare app version env
+        run: |
+          copy .env.example .env
+          pnpm run sync:version
 
       - name: Install Playwright Chromium
         run: npx playwright install chromium --with-deps

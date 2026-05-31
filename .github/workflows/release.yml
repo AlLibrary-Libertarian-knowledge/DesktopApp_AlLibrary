@@ -44,6 +44,11 @@ jobs:
       - name: Install frontend dependencies
         run: pnpm install
 
+      - name: Sync app version from .env
+        run: |
+          cp .env.example .env
+          pnpm run sync:version
+
       - name: Build Tauri app
         uses: tauri-apps/tauri-action@v0
         env:
