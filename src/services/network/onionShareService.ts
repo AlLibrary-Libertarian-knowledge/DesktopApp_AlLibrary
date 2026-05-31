@@ -20,6 +20,9 @@ async function safeInvoke<T>(cmd: string, args?: Record<string, unknown>): Promi
         running: false,
         onion: null,
         localPort: null,
+        mode: 'idle',
+        bootstrapPercent: 0,
+        localOnly: false,
       } as unknown as T;
     }
     if (cmd === 'tracker_refresh_lobby' || cmd === 'tracker_get_cached_lobby_cmd') {
@@ -49,6 +52,30 @@ export interface TrackerNetworkConfig {
   sharePublicly: boolean;
   /** If true, retry announce to http://127.0.0.1:8080 when Tor to .onion fails (same-PC Docker). */
   tryLocalTrackerFallback?: boolean;
+  /** Tor bridge lines (one per entry). */
+  torBridges?: string[];
+}
+
+export type OnionShareMode = 'idle' | 'bootstrapping' | 'ready' | 'degraded' | 'failed';
+
+export interface OnionShareStatus {
+  running: boolean;
+  onion: string | null;
+  localPort: number | null;
+  mode?: OnionShareMode;
+  bootstrapPercent?: number;
+  lastError?: string | null;
+  localOnly?: boolean;
+  retryCount?: number;
+}
+
+export interface TorBootstrapProgressPayload {
+  mode: string;
+  bootstrapPercent: number;
+  message: string;
+  lastError?: string | null;
+  localOnly?: boolean;
+  retryCount?: number;
 }
 
 export type TrackerSyncDiagnostics = {
@@ -143,26 +170,63 @@ export async function onionShareListLocal(): Promise<LocalShareEntry[]> {
   return safeInvoke<LocalShareEntry[]>('onion_share_list_local');
 }
 
-export async function onionShareStatus(): Promise<{
-  running: boolean;
-  onion: string | null;
-  localPort: number | null;
-}> {
-  return safeInvoke('onion_share_status');
+export async function onionShareStatus(): Promise<OnionShareStatus> {
+  return safeInvoke<OnionShareStatus>('onion_share_status');
 }
 
-/** Used by header/sidebar: true when Tor hidden service is up (onion share active with an address). */
+/** Used by header/sidebar: reflects Tor hidden service and bootstrap mode. */
 export async function fetchNetworkPresence(): Promise<{
   online: boolean;
   onionActive: boolean;
+  mode: OnionShareMode;
+  localOnly: boolean;
+  lastError: string | null;
+  bootstrapPercent: number;
 }> {
   try {
     const s = await onionShareStatus();
-    const onionActive = Boolean(s.running && s.onion && String(s.onion).trim().length > 0);
-    return { online: s.running, onionActive };
+    const mode = (s.mode ?? 'idle') as OnionShareMode;
+    const onionActive =
+      mode === 'ready' && Boolean(s.running && s.onion && String(s.onion).trim().length > 0);
+    const localOnly = Boolean(s.localOnly || mode === 'degraded');
+    const online = Boolean(s.running || localOnly || mode === 'bootstrapping');
+    return {
+      online,
+      onionActive,
+      mode,
+      localOnly,
+      lastError: s.lastError ?? null,
+      bootstrapPercent: s.bootstrapPercent ?? 0,
+    };
   } catch {
-    return { online: false, onionActive: false };
+    return {
+      online: false,
+      onionActive: false,
+      mode: 'idle',
+      localOnly: false,
+      lastError: null,
+      bootstrapPercent: 0,
+    };
   }
+}
+
+export async function resetTorOverlayData(): Promise<{
+  cleared: boolean;
+  fallbackRenamed: boolean;
+  path: string;
+}> {
+  return safeInvoke('reset_tor_overlay_data');
+}
+
+/** Manual retry — same as Start onion share. */
+export async function retryOnionShare(): Promise<OnionShareStartResponse> {
+  return onionShareStart();
+}
+
+export function listenTorBootstrapProgress(
+  handler: (payload: TorBootstrapProgressPayload) => void
+): Promise<() => void> {
+  return listen<TorBootstrapProgressPayload>('tor-bootstrap-progress', e => handler(e.payload));
 }
 
 export async function trackerGetConfig(): Promise<TrackerNetworkConfig> {
@@ -171,6 +235,11 @@ export async function trackerGetConfig(): Promise<TrackerNetworkConfig> {
 
 export async function trackerSetConfig(config: TrackerNetworkConfig): Promise<void> {
   return safeInvoke('tracker_set_config', { config });
+}
+
+/** Re-announce all seed-eligible treated documents (after library scan or resume global seeding). */
+export async function syncAllEnabledSeeds(): Promise<number> {
+  return safeInvoke<number>('sync_all_enabled_seeds_cmd');
 }
 
 export async function trackerGetLastSyncDiag(): Promise<TrackerSyncDiagnostics | null> {

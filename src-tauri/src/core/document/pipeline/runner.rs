@@ -280,7 +280,7 @@ fn strip_opf_metadata(opf: &str) -> String {
     let mut out = opf.to_string();
     for tag in ["dc:title", "dc:creator", "dc:date", "dc:identifier"] {
         while let Some(start) = out.to_lowercase().find(&format!("<{tag}")) {
-            if let Some(end) = out[start..].find('>') {
+            if out[start..].contains('>') {
                 let close = format!("</{tag}>");
                 if let Some(close_start) = out[start..].to_lowercase().find(&close) {
                     let abs_end = start + close_start + close.len();
@@ -322,7 +322,7 @@ fn scan_heuristics(bytes: &[u8], ext: &str) -> Result<String, String> {
     }
     if ext == "epub" {
         let cursor = std::io::Cursor::new(bytes);
-        let mut zip = ZipArchive::new(cursor).map_err(|e| e.to_string())?;
+        let zip = ZipArchive::new(cursor).map_err(|e| e.to_string())?;
         if zip.len() > 10_000 {
             return Err("EPUB archive too large (zip bomb heuristic)".into());
         }

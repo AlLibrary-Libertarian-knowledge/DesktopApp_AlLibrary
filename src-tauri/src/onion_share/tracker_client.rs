@@ -16,7 +16,7 @@ use crate::onion_share::config::{normalize_tracker_url, AppConfig};
 use crate::onion_share::fetch::build_http_client;
 use crate::onion_share::server::ShareServerHandle;
 use crate::onion_share::tracker_proto::{
-    lobby_fingerprint, AnnouncedFile, NetworkLobby, WsClientMessage, WsServerMessage,
+    AnnouncedFile, NetworkLobby, WsClientMessage, WsServerMessage,
 };
 
 pub fn tracker_ws_url(tracker_url: &str) -> String {

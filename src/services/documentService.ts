@@ -75,6 +75,8 @@ export interface DocumentInfo {
   content_hash?: string;
   canonical_name?: string;
   original_filename?: string;
+  /** Per-file seed opt-out (maps to documents.is_shared). Default true for treated files. */
+  seed_enabled?: boolean;
 }
 
 export interface CulturalContext {

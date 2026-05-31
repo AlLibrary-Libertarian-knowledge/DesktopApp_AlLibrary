@@ -9,9 +9,10 @@ use crate::core::document::pipeline::{
     run_pipeline_to_file, PipelineProgress,
 };
 use crate::core::database::{
-    delete_document_by_id_pool, remap_document_id_pool, upsert_treated_document_pool,
-    TreatedDocumentRow,
+    delete_document_by_id_pool, document_seed_enabled_pool, remap_document_id_pool,
+    upsert_treated_document_pool, TreatedDocumentRow,
 };
+use crate::commands::seed_sync::notify_document_treated;
 use tauri::{AppHandle, Emitter};
 use crate::commands::settings::load_app_settings;
 use crate::core::database::node_db::ensure_node_database;
@@ -36,6 +37,12 @@ pub struct DocumentInfo {
     pub content_hash: Option<String>,
     pub canonical_name: Option<String>,
     pub original_filename: Option<String>,
+    #[serde(default = "default_seed_enabled")]
+    pub seed_enabled: bool,
+}
+
+fn default_seed_enabled() -> bool {
+    true
 }
 
 fn default_processing_status() -> String {
@@ -83,7 +90,10 @@ pub struct FolderInfo {
 
 /// Scan a folder for documents and return information about found files
 #[tauri::command]
-pub async fn scan_documents_folder(folder_path: String) -> Result<ScanResult, String> {
+pub async fn scan_documents_folder(
+    app: AppHandle,
+    folder_path: String,
+) -> Result<ScanResult, String> {
     let start_time = std::time::Instant::now();
     let path = PathBuf::from(&folder_path);
     
@@ -103,7 +113,7 @@ pub async fn scan_documents_folder(folder_path: String) -> Result<ScanResult, St
     let mut documents_found = 0u32;
     
     // Recursively scan the folder
-    if let Err(e) = scan_directory_recursive(&path, &mut documents, &mut errors, &mut total_size, &mut documents_found).await {
+    if let Err(e) = scan_directory_recursive(&app, &path, &mut documents, &mut errors, &mut total_size, &mut documents_found).await {
         errors.push(format!("Failed to scan directory: {}", e));
     }
     
@@ -185,7 +195,10 @@ pub async fn get_folder_info(folder_path: String) -> Result<FolderInfo, String> 
 
 /// Get a list of documents in a folder (non-recursive)
 #[tauri::command]
-pub async fn list_documents_in_folder(folder_path: String) -> Result<Vec<DocumentInfo>, String> {
+pub async fn list_documents_in_folder(
+    app: AppHandle,
+    folder_path: String,
+) -> Result<Vec<DocumentInfo>, String> {
     let path = PathBuf::from(&folder_path);
     
     if !path.exists() || !path.is_dir() {
@@ -199,7 +212,7 @@ pub async fn list_documents_in_folder(folder_path: String) -> Result<Vec<Documen
             if let Ok(entry) = entry {
                 let entry_path = entry.path();
                 if entry_path.is_file() {
-                    if let Ok(document_info) = create_document_info(&entry_path).await {
+                    if let Ok(document_info) = create_document_info(&entry_path, Some(&app)).await {
                         documents.push(document_info);
                     }
                 }
@@ -274,6 +287,7 @@ pub async fn process_document(
         &canonical_name,
         user_title,
         pipeline_out.page_count,
+        true,
     )
     .await?;
 
@@ -305,6 +319,8 @@ pub async fn process_document(
         .to_string();
         let _ = insert_activity_pool(&pool, "upload", Some(&info.id), Some(&payload)).await;
     }
+
+    notify_document_treated(&app_handle, &info.file_path);
 
     Ok(info)
 }
@@ -427,31 +443,28 @@ pub async fn process_downloaded_file_internal(
 }
 
 pub async fn ensure_seeding_allowed(path: &Path) -> Result<(), String> {
-    if !is_treated_file(path) {
-        return Err(
-            "File is untreated. It must pass the 0–7 treatment pipeline before seeding."
-                .into(),
-        );
+    crate::core::document::seeding::ensure_seeding_allowed(path).await
+}
+
+pub async fn get_document_info_internal(file_path: &str) -> Result<DocumentInfo, String> {
+    let path = PathBuf::from(file_path);
+    if !path.exists() || !path.is_file() {
+        return Err(format!("File does not exist: {file_path}"));
     }
-    let fp = crate::core::document::pipeline::fingerprint_for_treated_path(path)?;
-    let bytes = fs::read(path).map_err(|e| e.to_string())?;
-    let verify = compute_fingerprint_from_bytes(&bytes, fp.page_count);
-    if verify.content_hash != fp.content_hash {
-        return Err("Content hash verification failed for treated file".into());
-    }
-    Ok(())
+    create_document_info(&path, None).await
 }
 
 /// Get detailed information about a specific document
 #[tauri::command]
-pub async fn get_document_info(file_path: String) -> Result<DocumentInfo, String> {
+pub async fn get_document_info(
+    app: AppHandle,
+    file_path: String,
+) -> Result<DocumentInfo, String> {
     let path = PathBuf::from(&file_path);
-    
     if !path.exists() || !path.is_file() {
-        return Err(format!("File does not exist: {}", file_path));
+        return Err(format!("File does not exist: {file_path}"));
     }
-    
-    create_document_info(&path).await
+    create_document_info(&path, Some(&app)).await
 }
 
 /// Open a document and return its content for preview
@@ -477,6 +490,7 @@ pub async fn open_document(file_path: String) -> Result<Vec<u8>, String> {
 
 // Helper function to recursively scan a directory
 async fn scan_directory_recursive(
+    app: &AppHandle,
     dir_path: &Path,
     documents: &mut Vec<DocumentInfo>,
     errors: &mut Vec<String>,
@@ -501,7 +515,7 @@ async fn scan_directory_recursive(
                             
                             if TypeDetection::is_supported_extension(ext_str) {
                                 info!("Supported extension found: {}", ext_str);
-                                match create_document_info(&entry_path).await {
+                                match create_document_info(&entry_path, Some(app)).await {
                                     Ok(doc_info) => {
                                         info!("Successfully processed document: {} (size: {})", doc_info.filename, doc_info.file_size);
                                         *total_size += doc_info.file_size;
@@ -528,7 +542,7 @@ async fn scan_directory_recursive(
                                 let lower_filename = filename.to_lowercase();
                                 if lower_filename.contains("pdf") || lower_filename.contains(".pdf") {
                                     info!("Detected PDF from filename: {}", filename);
-                                    match create_document_info(&entry_path).await {
+                                    match create_document_info(&entry_path, Some(app)).await {
                                         Ok(doc_info) => {
                                             info!("Successfully processed PDF document: {} (size: {})", doc_info.filename, doc_info.file_size);
                                             *total_size += doc_info.file_size;
@@ -543,7 +557,7 @@ async fn scan_directory_recursive(
                                     }
                                 } else if lower_filename.contains("epub") || lower_filename.contains(".epub") {
                                     info!("Detected EPUB from filename: {}", filename);
-                                    match create_document_info(&entry_path).await {
+                                    match create_document_info(&entry_path, Some(app)).await {
                                         Ok(doc_info) => {
                                             info!("Successfully processed EPUB document: {} (size: {})", doc_info.filename, doc_info.file_size);
                                             *total_size += doc_info.file_size;
@@ -567,7 +581,7 @@ async fn scan_directory_recursive(
                 } else if entry_path.is_dir() {
                     info!("Found subdirectory: {}", entry_path.display());
                     // Recursively scan subdirectories - use Box::pin to avoid recursion issues
-                    let future = Box::pin(scan_directory_recursive(&entry_path, documents, errors, total_size, documents_found));
+                    let future = Box::pin(scan_directory_recursive(app, &entry_path, documents, errors, total_size, documents_found));
                     if let Err(e) = future.await {
                         let error_msg = format!("Failed to scan subdirectory {}: {}", entry_path.display(), e);
                         info!("{}", error_msg);
@@ -601,6 +615,7 @@ async fn build_document_info_from_treated(
     canonical_name: &str,
     user_title: Option<String>,
     page_count: u32,
+    seed_enabled: bool,
 ) -> Result<DocumentInfo, String> {
     let base = file_metadata_fields(file_path)?;
     let title = user_title.unwrap_or_else(|| original_filename.to_string());
@@ -629,6 +644,7 @@ async fn build_document_info_from_treated(
         content_hash: Some(fp.content_hash.clone()),
         canonical_name: Some(canonical_name.to_string()),
         original_filename: Some(original_filename.to_string()),
+        seed_enabled,
     })
 }
 
@@ -690,7 +706,10 @@ fn default_cultural_context() -> Option<CulturalContext> {
 }
 
 // Helper function to create DocumentInfo from a file path
-async fn create_document_info(file_path: &Path) -> Result<DocumentInfo, String> {
+async fn create_document_info(
+    file_path: &Path,
+    app: Option<&AppHandle>,
+) -> Result<DocumentInfo, String> {
     let filename = file_path
         .file_name()
         .and_then(|name| name.to_str())
@@ -698,8 +717,28 @@ async fn create_document_info(file_path: &Path) -> Result<DocumentInfo, String> 
         .to_string();
 
     let base = file_metadata_fields(file_path)?;
+    let path_str = base.file_path.clone();
+
+    async fn resolve_seed_enabled(
+        app: Option<&AppHandle>,
+        path: &str,
+        is_treated: bool,
+    ) -> bool {
+        if !is_treated {
+            return false;
+        }
+        if let Some(app) = app {
+            if let Ok(pool) = ensure_node_database(app).await {
+                return document_seed_enabled_pool(&pool, path)
+                    .await
+                    .unwrap_or(true);
+            }
+        }
+        true
+    }
 
     if is_treated_file(file_path) {
+        let seed_enabled = resolve_seed_enabled(app, &path_str, true).await;
         if let Some(fp) = read_sidecar(file_path) {
             return build_document_info_from_treated(
                 file_path,
@@ -708,6 +747,7 @@ async fn create_document_info(file_path: &Path) -> Result<DocumentInfo, String> 
                 &filename,
                 None,
                 fp.page_count,
+                seed_enabled,
             )
             .await;
         }
@@ -720,6 +760,7 @@ async fn create_document_info(file_path: &Path) -> Result<DocumentInfo, String> 
             &filename,
             None,
             fp.page_count,
+            seed_enabled,
         )
         .await;
     }
@@ -750,6 +791,7 @@ async fn create_document_info(file_path: &Path) -> Result<DocumentInfo, String> 
         content_hash: None,
         canonical_name: None,
         original_filename: Some(filename),
+        seed_enabled: false,
     })
 }
 

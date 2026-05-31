@@ -45,7 +45,7 @@ export interface SearchNetworkPageProps {
 
 export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
   const navigate = useNavigate();
-  const { enabled, busy, enable, downloadByHash, error: transferError } = useP2PTransfers();
+  const { busy, downloadByHash, error: transferError } = useP2PTransfers();
   const [hash, setHash] = createSignal('');
   const [downloadError, setDownloadError] = createSignal<string | null>(null);
 
@@ -214,7 +214,7 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
                       <Button
                         variant="outline"
                         size="sm"
-                        disabled={!enabled() || busy() || !hash().trim()}
+                        disabled={busy() || !hash().trim()}
                         onClick={async () => {
                           setDownloadError(null);
                           try {

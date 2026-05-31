@@ -61,6 +61,7 @@ import {
 
 // Import components
 import { Button } from '@/components/foundation/Button';
+import { SeedingToggle } from '@/components/domain/document/SeedingToggle';
 import { Card } from '@/components/foundation/Card';
 import { Modal } from '@/components/foundation/Modal';
 import { DocumentViewerLoader } from '@/components/composite/DocumentViewerLoader';
@@ -123,10 +124,12 @@ function detectDocumentType(format: string): 'pdf' | 'epub' | 'text' | 'markdown
 type DocumentDetailPageProps = {};
 
 export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
-  const { enabled, busy, enable, seedFile, downloadByHash, error, lastOp } = useP2PTransfers();
+  const { busy, setSeedEnabled, downloadByHash, error, lastOp } = useP2PTransfers();
   const params = useParams();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [seedEnabled, setSeedEnabledState] = createSignal(true);
+  const [docIsTreated, setDocIsTreated] = createSignal(false);
 
   const paramValue = (value: string | string[] | undefined): string =>
     Array.isArray(value) ? (value[0] ?? '') : (value ?? '');
@@ -195,6 +198,14 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
         if (mapped) {
           void activityService.logActivity('view', mapped.id, { title: mapped.title });
           void favoriteService.isFavorite(mapped.id).then(setIsBookmarked);
+          if (mapped.source === 'local' && mapped.filePath) {
+            void documentService.getDocumentInfo(mapped.filePath).then(info => {
+              if (!cancelled) {
+                setDocIsTreated(Boolean(info.is_treated));
+                setSeedEnabledState(info.seed_enabled !== false);
+              }
+            });
+          }
           commentService
             .list(mapped.id)
             .then(list => {
@@ -469,15 +480,25 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
             </Tooltip>
 
             <Show when={hudOpen()}>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={enable}
-                disabled={busy()}
-                class={styles.actionButton || ''}
-              >
-                {enabled() ? 'Private Networking Enabled' : 'Enable Private Networking'}
-              </Button>
+              <Show when={docIsTreated()}>
+                <SeedingToggle
+                  size="md"
+                  enabled={seedEnabled()}
+                  disabled={busy()}
+                  onChange={checked => {
+                    const doc = detailDocument();
+                    if (doc?.source !== 'local' || !doc.filePath) return;
+                    void (async () => {
+                      try {
+                        const updated = await setSeedEnabled(doc.filePath, checked);
+                        setSeedEnabledState(updated.seed_enabled !== false);
+                      } catch {
+                        /* error surfaced via hook */
+                      }
+                    })();
+                  }}
+                />
+              </Show>
               <Tooltip content="Cultural Information">
                 <Button
                   variant="ghost"
@@ -495,23 +516,6 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowShareModal(true)}
-                  class={styles.actionButton || ''}
-                >
-                  <Share2 size={16} />
-                </Button>
-              </Tooltip>
-
-              <Tooltip content="Seed via P2P">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  disabled={!enabled() || busy()}
-                  onClick={() => {
-                    const doc = detailDocument();
-                    if (doc?.source === 'local' && doc.filePath) {
-                      void seedFile(doc.filePath);
-                    }
-                  }}
                   class={styles.actionButton || ''}
                 >
                   <Share2 size={16} />

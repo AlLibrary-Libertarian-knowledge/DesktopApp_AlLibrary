@@ -10,6 +10,7 @@ import {
   createEffect,
 } from 'solid-js';
 import { Button, Card, Modal } from '../../components/foundation';
+import { SeedingToggle } from '@/components/domain/document/SeedingToggle';
 import { TopCard, DocumentManagementRightColumn } from '../../components/composite';
 
 // Advanced Document Features Types - Task 0.3
@@ -50,6 +51,8 @@ import {
   Clock,
   Folder,
   RefreshCw,
+  CheckCircle2,
+  Radio,
 } from 'lucide-solid';
 import { validationService } from '../../services';
 import { invoke } from '@tauri-apps/api/core';
@@ -77,8 +80,32 @@ import { useP2PTransfers } from '@/hooks/api/useP2PTransfers';
 import { useToast } from '@/hooks/ui/useToast';
 import { shareWithToast } from '@/utils/documentActions';
 import { transferFacade } from '@/services/network/transferFacade';
+import { onionShareListLocal, syncAllEnabledSeeds } from '@/services/network/onionShareService';
 import { favoriteService } from '@/services/favoriteService';
 import { ConfirmDeleteModal } from '@/components/composite/ConfirmDeleteModal';
+
+/** Normalize paths for cross-platform share matching (Windows vs POSIX). */
+function normalizeLibPath(p: string): string {
+  return p.replace(/\\/g, '/').toLowerCase();
+}
+
+function isDocumentVerified(docInfo: DocumentInfo): boolean {
+  return docInfo.is_treated !== false && docInfo.processing_status === 'treated';
+}
+
+function isDocumentIntegrated(docInfo: DocumentInfo): boolean {
+  return isDocumentVerified(docInfo) && Boolean(docInfo.content_hash?.trim());
+}
+
+function isDocumentSeeding(docInfo: DocumentInfo, seedingPaths: Set<string>): boolean {
+  if (!docInfo.file_path) return false;
+  return seedingPaths.has(normalizeLibPath(docInfo.file_path));
+}
+
+/** Indexed = verified (treated) + integrated (library hash) + actively seeding locally. */
+function isDocumentIndexed(docInfo: DocumentInfo, seedingPaths: Set<string>): boolean {
+  return isDocumentIntegrated(docInfo) && isDocumentSeeding(docInfo, seedingPaths);
+}
 
 const DocumentManagement: Component = () => {
   // Initialize i18n translation hook
@@ -145,8 +172,8 @@ const DocumentManagement: Component = () => {
   const [deleteConfirm, setDeleteConfirm] = createSignal<DeleteConfirmState>(null);
   const [deleteBusy, setDeleteBusy] = createSignal(false);
 
-  // P2P transfers
-  const { enabled, busy, enable, seedFile, error, lastOp } = useP2PTransfers();
+  // P2P seed toggles (network always on at startup)
+  const { busy, setSeedEnabled, error, lastOp } = useP2PTransfers();
   const toastUi = useToast();
 
   // Advanced Document Features - Task 0.3 Implementation
@@ -198,6 +225,52 @@ const DocumentManagement: Component = () => {
   const [scanResult, setScanResult] = createSignal<ScanResult | null>(null);
   const [folderInfo, setFolderInfo] = createSignal<FolderInfo | null>(null);
   const [scannedDocuments, setScannedDocuments] = createSignal<DocumentInfo[]>([]);
+  const [localSharePaths, setLocalSharePaths] = createSignal<Set<string>>(new Set());
+
+  const refreshLocalShares = async () => {
+    try {
+      const shares = await onionShareListLocal();
+      const paths = new Set(
+        shares
+          .map(s => s.diskPath)
+          .filter((p): p is string => Boolean(p))
+          .map(normalizeLibPath)
+      );
+      setLocalSharePaths(paths);
+    } catch {
+      setLocalSharePaths(new Set<string>());
+    }
+  };
+
+  const docInfoById = createMemo(() => {
+    const map = new Map<string, DocumentInfo>();
+    for (const doc of scannedDocuments()) {
+      map.set(doc.id, doc);
+    }
+    return map;
+  });
+
+  const indexedDocumentCount = createMemo(() => {
+    const paths = localSharePaths();
+    return scannedDocuments().filter(doc => isDocumentIndexed(doc, paths)).length;
+  });
+
+  const indexedHealth = createMemo(() => {
+    const treated = scannedDocuments().filter(doc => isDocumentIntegrated(doc)).length;
+    if (treated === 0) return 'healthy';
+    return indexedDocumentCount() > 0 ? 'healthy' : 'warning';
+  });
+
+  const handleSeedToggle = async (docInfo: DocumentInfo, enabled: boolean) => {
+    if (!docInfo.file_path) return;
+    try {
+      const updated = await setSeedEnabled(docInfo.file_path, enabled);
+      setScannedDocuments(prev => prev.map(d => (d.id === updated.id ? updated : d)));
+      await refreshLocalShares();
+    } catch (e) {
+      toastUi.error(`Seeding update failed: ${e instanceof Error ? e.message : e}`);
+    }
+  };
 
   // Project initialization and management
   const initializeProject = async () => {
@@ -247,6 +320,12 @@ const DocumentManagement: Component = () => {
       setScannedDocuments(result.documents);
       setProjectFolderPath(folderPath);
       await settingsSvc.setProjectFolder(folderPath);
+      try {
+        await syncAllEnabledSeeds();
+        await refreshLocalShares();
+      } catch {
+        /* onion may still be bootstrapping */
+      }
     } catch (error) {
       console.error('Failed to scan AlLibrary folder:', error);
     } finally {
@@ -275,6 +354,12 @@ const DocumentManagement: Component = () => {
         const result = await documentService.scanDocumentsFolder(folderPath);
         setScanResult(result);
         setScannedDocuments(result.documents);
+        try {
+          await syncAllEnabledSeeds();
+          await refreshLocalShares();
+        } catch {
+          /* onion may still be bootstrapping */
+        }
       }
     } catch (error) {
       console.error('💥 Auto-scan failed:', error);
@@ -286,8 +371,20 @@ const DocumentManagement: Component = () => {
     // Small delay to ensure component is fully mounted and ready
     globalThis.setTimeout(() => {
       console.log('🚀 Component mounted, starting auto-scan...');
-      autoScan();
+      void autoScan();
+      void refreshLocalShares();
     }, 100);
+
+    void (async () => {
+      try {
+        const unlisten = await listen('network-presence-changed', () => {
+          void refreshLocalShares();
+        });
+        onCleanup(unlisten);
+      } catch {
+        /* not in Tauri */
+      }
+    })();
   });
 
   // Retry auto-scan if no documents found after initial scan (with retry limit)
@@ -815,7 +912,7 @@ const DocumentManagement: Component = () => {
       relationships: [],
       securityValidation: {
         validatedAt: new Date(),
-        passed: true,
+        passed: isDocumentVerified(docInfo),
         malwareScanResult: {
           clean: true,
           threats: [],
@@ -1251,52 +1348,12 @@ const DocumentManagement: Component = () => {
           <div class={styles['enhanced-toolbar']}>
             {/* Left side - Selection and batch actions */}
             <div class={styles['toolbar-left']}>
-              {/* P2P quick actions */}
-              <div style={{ display: 'flex', 'align-items': 'center', gap: '0.5rem' }}>
-                <Button
-                  variant={enabled() ? 'secondary' : 'primary'}
-                  size="sm"
-                  onClick={enable}
-                  disabled={busy()}
-                >
-                  {enabled() ? 'Private Networking Enabled' : 'Enable Private Networking'}
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  disabled={!enabled() || busy() || displayDocuments().length === 0}
-                  onClick={async () => {
-                    // Seed all visible documents (PDF/EPUB preferred)
-                    for (const doc of displayDocuments()) {
-                      if (!doc?.filePath) continue;
-                      await seedFile(doc.filePath);
-                    }
-                  }}
-                >
-                  Seed All Visible
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  disabled={!enabled() || busy() || selectedDocuments().size === 0}
-                  onClick={async () => {
-                    const ids = Array.from(selectedDocuments());
-                    const byId = new Map(displayDocuments().map(d => [d.id, d]));
-                    for (const id of ids) {
-                      const d = byId.get(id);
-                      if (d?.filePath) await seedFile(d.filePath);
-                    }
-                  }}
-                >
-                  Seed Selected
-                </Button>
-                <Show when={error()}>
-                  <span style={{ color: 'var(--color-error)' }}>{error()}</span>
-                </Show>
-                <Show when={lastOp()}>
-                  <span style={{ color: 'var(--color-text-secondary)' }}>Last: {lastOp()}</span>
-                </Show>
-              </div>
+              <Show when={error()}>
+                <span style={{ color: 'var(--color-error)' }}>{error()}</span>
+              </Show>
+              <Show when={lastOp()}>
+                <span style={{ color: 'var(--color-text-secondary)' }}>Last: {lastOp()}</span>
+              </Show>
               <Show when={showBatchActions()}>
                 <div class={styles['batch-actions']}>
                   <span class={styles['selection-count']}>{selectedDocuments().size} selected</span>
@@ -1664,26 +1721,23 @@ const DocumentManagement: Component = () => {
                           <Settings size={10} />
                         </div>
                       </button>
-                      <Show when={indexInfo()}>
+                      <Show when={projectInfo()}>
                         <div class={styles['status-divider']} />
                         <div class={styles['status-item']}>
                           <div class={styles['status-indicator']}>
                             <div
-                              class={`${styles['indicator-dot']} ${indexInfo()?.indexHealth === 'healthy' ? styles['healthy'] : styles['warning']}`}
+                              class={`${styles['indicator-dot']} ${indexedHealth() === 'healthy' ? styles['healthy'] : styles['warning']}`}
                             />
                           </div>
                           <span class={styles['status-text']}>
-                            {indexInfo()?.documentCount || 0} documents indexed
+                            {indexedDocumentCount()} documents indexed
                           </span>
-                          {indexInfo()?.indexHealth !== 'healthy' && (
-                            <button
-                              class={styles['rebuild-button']}
-                              onClick={rebuildIndex}
-                              title="Rebuild search index"
-                            >
-                              <RefreshCw size={12} />
-                            </button>
-                          )}
+                          <span
+                            class={styles['status-hint']}
+                            title="Indexed = verified (treated), integrated in library, and seeding on this machine"
+                          >
+                            verified · integrated · seeding
+                          </span>
                         </div>
                       </Show>
 
@@ -1990,7 +2044,33 @@ const DocumentManagement: Component = () => {
                           </div>
 
                           <div class={styles['document-content']}>
-                            <h3 class={styles['document-title']}>{document.title}</h3>
+                            <div class={styles['document-title-row']}>
+                              <h3 class={styles['document-title']} title={document.title}>
+                                {document.title}
+                              </h3>
+                              <Show when={docInfoById().get(document.id)} keyed>
+                                {docInfo => (
+                                  <Show
+                                    when={isDocumentVerified(docInfo)}
+                                    fallback={
+                                      <span
+                                        class={`${styles['status-badge']} ${styles['status-pending']} ${styles['status-badge-inline']}`}
+                                      >
+                                        <Shield size={12} />
+                                        Pending
+                                      </span>
+                                    }
+                                  >
+                                    <span
+                                      class={`${styles['status-badge']} ${styles['status-validated']} ${styles['status-badge-inline']}`}
+                                    >
+                                      <CheckCircle2 size={12} />
+                                      Validated
+                                    </span>
+                                  </Show>
+                                )}
+                              </Show>
+                            </div>
                             <p class={styles['document-description']}>{document.description}</p>
 
                             <div class={styles['document-meta']}>
@@ -2003,14 +2083,36 @@ const DocumentManagement: Component = () => {
                                 {document.createdAt.toLocaleDateString()}
                               </span>
                               <span class={styles['meta-item']}>
-                                <Shield size={14} />
-                                {document.securityValidation.passed ? 'validated' : 'pending'}
-                              </span>
-                              <span class={styles['meta-item']}>
                                 <FileText size={14} />
                                 {document.format.toUpperCase()}
                               </span>
                             </div>
+
+                            <Show when={docInfoById().get(document.id)} keyed>
+                              {docInfo => (
+                                <>
+                                  <Show when={isDocumentVerified(docInfo)}>
+                                    <div class={styles['document-status-badges']}>
+                                      <SeedingToggle
+                                        enabled={docInfo.seed_enabled !== false}
+                                        disabled={busy()}
+                                        onChange={checked =>
+                                          void handleSeedToggle(docInfo, checked)
+                                        }
+                                      />
+                                      <Show when={isDocumentIndexed(docInfo, localSharePaths())}>
+                                        <span
+                                          class={`${styles['status-badge']} ${styles['status-indexed']}`}
+                                        >
+                                          <Radio size={12} />
+                                          Indexed
+                                        </span>
+                                      </Show>
+                                    </div>
+                                  </Show>
+                                </>
+                              )}
+                            </Show>
 
                             {/* Enhanced Cultural Context Display */}
                             <div class={styles['cultural-context']}>
@@ -2215,15 +2317,13 @@ const DocumentManagement: Component = () => {
                                         setShowFolderSetup(true);
                                         return;
                                       }
-                                      const info = await invoke<DocumentInfo>('process_document', {
+                                      await invoke<DocumentInfo>('process_document', {
                                         targetDir: projectPath,
                                         sourcePath: item.filePath,
                                         userTitle: item.title,
                                         expectedContentHash: null,
                                       });
-                                      if (enabled() && info?.file_path && info.is_treated) {
-                                        await seedFile(info.file_path);
-                                      }
+                                      await refreshLocalShares();
                                       setTreatmentItems(prev =>
                                         prev.map(it =>
                                           it.tempId === item.tempId

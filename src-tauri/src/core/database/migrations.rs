@@ -290,6 +290,13 @@ fn get_migrations() -> Vec<Migration> {
                 CREATE INDEX idx_documents_local_path ON documents(local_path);
             "#.to_string(),
         },
+        Migration {
+            version: "007_seed_defaults".to_string(),
+            description: "Default is_shared=1 for existing treated documents".to_string(),
+            sql: r#"
+                UPDATE documents SET is_shared = 1 WHERE is_treated = 1 AND is_shared = 0;
+            "#.to_string(),
+        },
     ]
 }
 

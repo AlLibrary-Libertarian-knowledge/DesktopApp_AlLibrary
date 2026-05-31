@@ -165,21 +165,18 @@ async fn announce_http(
     State(state): State<TrackerState>,
     Json(msg): Json<WsClientMessage>,
 ) -> StatusCode {
-    if let WsClientMessage::Announce { node_id, onion, files } = msg {
-        tracing::info!("HTTP Announce: node_id={}, onion={}, files={}", node_id, onion, files.len());
-        let mut nodes = state.nodes.lock().await;
-        register_canonical_names(&state, &files).await;
-        nodes.insert(node_id, Node {
-            last_seen: Instant::now(),
-            onion,
-            files,
-        });
-        drop(nodes);
-        push_lobby(&state).await;
-        StatusCode::OK
-    } else {
-        StatusCode::BAD_REQUEST
-    }
+    let WsClientMessage::Announce { node_id, onion, files } = msg;
+    tracing::info!("HTTP Announce: node_id={}, onion={}, files={}", node_id, onion, files.len());
+    let mut nodes = state.nodes.lock().await;
+    register_canonical_names(&state, &files).await;
+    nodes.insert(node_id, Node {
+        last_seen: Instant::now(),
+        onion,
+        files,
+    });
+    drop(nodes);
+    push_lobby(&state).await;
+    StatusCode::OK
 }
 
 async fn ws_handler(ws: WebSocketUpgrade, State(state): State<TrackerState>) -> impl IntoResponse {

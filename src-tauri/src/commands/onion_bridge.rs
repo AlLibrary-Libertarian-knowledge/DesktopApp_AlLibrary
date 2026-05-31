@@ -6,13 +6,14 @@ use std::sync::Arc;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use tauri::{AppHandle, Emitter, Manager, State};
-use tokio::sync::{Mutex, RwLock};
+use tokio::sync::{Mutex, watch};
 use tracing::{info, error, warn};
 use uuid::Uuid;
 
 use crate::onion_share::config::{normalize_tracker_url, AppConfig};
 use crate::onion_share::fetch;
-use crate::onion_share::server::ShareServerHandle;
+use crate::onion_share::server::{ShareServerHandle, ShareServerStartOptions};
+use crate::onion_share::tor::TorProcess;
 use crate::onion_share::tracker_client;
 use crate::onion_share::tracker_proto::NetworkLobby;
 use crate::onion_share::tracker_proto::lobby_fingerprint;
@@ -26,9 +27,12 @@ use crate::core::database::activity_log::insert_activity_pool;
 use crate::core::database::models::LocalShareRow;
 use chrono::Utc;
 use std::collections::HashSet;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
-use crate::commands::documents::{ensure_seeding_allowed, process_downloaded_file_internal};
+use crate::commands::documents::process_downloaded_file_internal;
+use crate::commands::seed_sync::{ensure_document_seeded, flush_pending_seeds, sync_all_enabled_seeds};
+
+pub use crate::commands::onion_state::{OnionShareState, TorBootstrapSnapshot};
 use crate::commands::settings::load_app_settings;
 use crate::core::document::pipeline::is_treated_file;
 use crate::onion_share::link::parse_any;
@@ -44,6 +48,10 @@ fn tracker_epoch_ms() -> i64 {
         .unwrap_or(0)
 }
 
+const TOR_WATCHDOG_INTERVAL_SECS: u64 = 180;
+const TOR_MAX_RETRIES_PER_HOUR: u32 = 5;
+const TOR_RETRY_WINDOW_MS: i64 = 3_600_000;
+
 fn default_try_local_fallback() -> bool {
     true
 }
@@ -56,35 +64,72 @@ pub struct TrackerNetworkConfig {
     pub share_publicly: bool,
     #[serde(default = "default_try_local_fallback")]
     pub try_local_tracker_fallback: bool,
+    #[serde(default)]
+    pub tor_bridges: Vec<String>,
 }
 
-#[derive(Clone)]
-pub struct OnionShareState {
-    handle: Arc<Mutex<Option<ShareServerHandle>>>,
-    tracker_stop: Arc<AtomicBool>,
-    tracker_task: Arc<Mutex<Option<tokio::task::JoinHandle<()>>>>,
-    cached_lobby: Arc<RwLock<NetworkLobby>>,
-    /// Last tracker announce diagnostics (persisted only in memory).
-    tracker_last_sync: Arc<Mutex<Option<serde_json::Value>>>,
-    http_announce_stop: Arc<AtomicBool>,
-    http_announce_task: Arc<Mutex<Option<tokio::task::JoinHandle<()>>>>,
-    /// Skip redundant SQLite sync + frontend events when lobby unchanged.
-    last_persisted_lobby_fp: Arc<Mutex<Option<String>>>,
+struct BootstrapInProgressGuard {
+    flag: Arc<AtomicBool>,
 }
 
-impl Default for OnionShareState {
-    fn default() -> Self {
-        Self {
-            handle: Arc::new(Mutex::new(None)),
-            tracker_stop: Arc::new(AtomicBool::new(false)),
-            tracker_task: Arc::new(Mutex::new(None)),
-            cached_lobby: Arc::new(RwLock::new(NetworkLobby::default())),
-            tracker_last_sync: Arc::new(Mutex::new(None)),
-            http_announce_stop: Arc::new(AtomicBool::new(true)),
-            http_announce_task: Arc::new(Mutex::new(None)),
-            last_persisted_lobby_fp: Arc::new(Mutex::new(None)),
-        }
+impl BootstrapInProgressGuard {
+    fn new(flag: Arc<AtomicBool>) -> Self {
+        flag.store(true, Ordering::SeqCst);
+        Self { flag }
     }
+}
+
+impl Drop for BootstrapInProgressGuard {
+    fn drop(&mut self) {
+        self.flag.store(false, Ordering::SeqCst);
+    }
+}
+
+async fn update_bootstrap_snapshot(state: &OnionShareState, update: impl FnOnce(&mut TorBootstrapSnapshot)) {
+    let mut snap = state.bootstrap.write().await;
+    update(&mut snap);
+    snap.last_attempt_at_ms = tracker_epoch_ms();
+}
+
+async fn emit_tor_bootstrap_progress(app: &AppHandle, snap: &TorBootstrapSnapshot, message: &str) {
+    let _ = app.emit(
+        "tor-bootstrap-progress",
+        json!({
+            "mode": snap.mode,
+            "bootstrapPercent": snap.bootstrap_percent,
+            "message": message,
+            "lastError": snap.last_error,
+            "localOnly": snap.local_only,
+            "retryCount": snap.retry_count,
+        }),
+    );
+}
+
+fn status_json_from_snapshot(
+    running: bool,
+    onion: serde_json::Value,
+    local_port: serde_json::Value,
+    snap: &TorBootstrapSnapshot,
+) -> serde_json::Value {
+    json!({
+        "running": running,
+        "onion": onion,
+        "localPort": local_port,
+        "mode": snap.mode,
+        "bootstrapPercent": snap.bootstrap_percent,
+        "lastError": snap.last_error,
+        "localOnly": snap.local_only,
+        "retryCount": snap.retry_count,
+    })
+}
+
+async fn finalize_running_onion(app: &AppHandle, state: &OnionShareState) {
+    restart_http_announce_heartbeat(app.clone(), state).await;
+    spawn_tracker_ws_loop(app, state).await;
+    restore_local_shares_from_db(app, state).await;
+    let _ = sync_all_enabled_seeds(app, state).await;
+    flush_pending_seeds(app, state).await;
+    let _ = app.emit("network-presence-changed", json!({}));
 }
 
 async fn persist_share_to_db(
@@ -330,25 +375,53 @@ async fn persist_tracker_diag(
 /// Used by `onion_share_start` and application bootstrap.
 pub async fn bootstrap_onion_share(
     app: &AppHandle,
-    state: &State<'_, OnionShareState>,
+    state: &OnionShareState,
 ) -> Result<serde_json::Value, String> {
-    let mut guard = state.handle.lock().await;
-    if guard.is_some() {
-        let h = guard.as_ref().unwrap();
-        let onion = h.onion_addr.clone();
-        let port = h.local_port;
-        let tr = tracker_client::sync_tracker_result(Some(h), state.cached_lobby.clone()).await;
-        let sink = Arc::clone(&state.tracker_last_sync);
-        persist_tracker_diag(sink, Some(app), &tr).await;
-        if tr.is_ok() {
-            persist_lobby_to_sqlite(app, state.inner()).await;
+    {
+        let guard = state.handle.lock().await;
+        if let Some(ref h) = *guard {
+            let onion = h.onion_addr.clone();
+            let port = h.local_port;
+            let tr = tracker_client::sync_tracker_result(Some(h), state.cached_lobby.clone()).await;
+            let sink = Arc::clone(&state.tracker_last_sync);
+            persist_tracker_diag(sink, Some(app), &tr).await;
+            if tr.is_ok() {
+                persist_lobby_to_sqlite(app, state).await;
+            }
+            drop(guard);
+            update_bootstrap_snapshot(state, |s| {
+                s.mode = "ready".to_string();
+                s.bootstrap_percent = 100;
+                s.local_only = false;
+                s.last_error = None;
+            })
+            .await;
+            finalize_running_onion(app, state).await;
+            return Ok(json!({"onion": onion, "localPort": port}));
         }
-        drop(guard);
-        restart_http_announce_heartbeat(app.clone(), state.inner()).await;
-        spawn_tracker_ws_loop(app, state.inner()).await;
-        restore_local_shares_from_db(app, state.inner()).await;
-        let _ = app.emit("network-presence-changed", json!({}));
-        return Ok(json!({"onion": onion, "localPort": port}));
+    }
+
+    if state.bootstrap_in_progress.load(Ordering::SeqCst) {
+        let snap = state.bootstrap.read().await.clone();
+        return Ok(json!({
+            "localOnly": snap.local_only,
+            "error": snap.last_error,
+            "bootstrapping": true,
+        }));
+    }
+
+    let _bootstrap_guard = BootstrapInProgressGuard::new(Arc::clone(&state.bootstrap_in_progress));
+
+    update_bootstrap_snapshot(state, |s| {
+        s.mode = "bootstrapping".to_string();
+        s.bootstrap_percent = 0;
+        s.last_error = None;
+        s.local_only = false;
+    })
+    .await;
+    {
+        let snap = state.bootstrap.read().await.clone();
+        emit_tor_bootstrap_progress(app, &snap, "Connecting Tor…").await;
     }
 
     let mut cfg = AppConfig::load();
@@ -356,61 +429,153 @@ pub async fn bootstrap_onion_share(
         Some(r) => r,
         None => {
             error!("Tor not found during bootstrap");
-            drop(guard);
-            connect_local_tracker_fallback(app, state.inner()).await;
+            let err = "Tor not found. Install Tor Browser or Expert Bundle and set tor path in config, or rely on bundled install (Windows).".to_string();
+            update_bootstrap_snapshot(state, |s| {
+                s.mode = "degraded".to_string();
+                s.local_only = true;
+                s.last_error = Some(err.clone());
+            })
+            .await;
+            connect_local_tracker_fallback(app, state).await;
+            let snap = state.bootstrap.read().await.clone();
+            emit_tor_bootstrap_progress(app, &snap, "Tor unavailable — local tracker only").await;
+            let _ = app.emit("network-presence-changed", json!({}));
             if cfg.try_local_tracker_fallback {
-                return Ok(json!({
-                    "localOnly": true,
-                    "error": "Tor not found. Install Tor Browser or Expert Bundle and set tor path in config, or rely on bundled install (Windows).",
-                }));
+                return Ok(json!({ "localOnly": true, "error": err }));
             }
-            return Err(
-                "Tor not found. Install Tor Browser or Expert Bundle and set tor path in config, or rely on bundled install (Windows)."
-                    .to_string(),
-            );
+            return Err(err);
         }
     };
+
+    let (progress_tx, mut progress_rx) = watch::channel(0u8);
+    let app_progress = app.clone();
+    let state_progress = state.clone();
+    let progress_task = tokio::spawn(async move {
+        loop {
+            if progress_rx.changed().await.is_err() {
+                break;
+            }
+            let pct = *progress_rx.borrow();
+            update_bootstrap_snapshot(&state_progress, |s| {
+                s.bootstrap_percent = pct;
+                if s.mode == "bootstrapping" && pct > 0 {
+                    s.mode = "bootstrapping".to_string();
+                }
+            })
+            .await;
+            let snap = state_progress.bootstrap.read().await.clone();
+            emit_tor_bootstrap_progress(
+                &app_progress,
+                &snap,
+                &format!("Bootstrapping Tor… {pct}%"),
+            )
+            .await;
+        }
+    });
 
     info!("Starting OnionShare with Tor binary: {}", resolved);
-    let handle_srv = match ShareServerHandle::start(&resolved).await {
+    let start_opts = ShareServerStartOptions {
+        bridges: cfg.tor_bridges.clone(),
+        progress_tx: Some(progress_tx),
+    };
+    let handle_srv = match ShareServerHandle::start(&resolved, start_opts).await {
         Ok(h) => h,
         Err(e) => {
+            progress_task.abort();
             error!("ShareServerHandle::start failed: {}", e);
-            drop(guard);
-            connect_local_tracker_fallback(app, state.inner()).await;
+            let err = e.to_string();
+            update_bootstrap_snapshot(state, |s| {
+                s.mode = "degraded".to_string();
+                s.local_only = true;
+                s.last_error = Some(err.clone());
+                s.bootstrap_percent = 0;
+            })
+            .await;
+            connect_local_tracker_fallback(app, state).await;
+            let snap = state.bootstrap.read().await.clone();
+            emit_tor_bootstrap_progress(app, &snap, "Tor bootstrap failed — local tracker only").await;
+            let _ = app.emit("network-presence-changed", json!({}));
             if AppConfig::load().try_local_tracker_fallback {
-                return Ok(json!({
-                    "localOnly": true,
-                    "error": e.to_string(),
-                }));
+                return Ok(json!({ "localOnly": true, "error": err }));
             }
-            return Err(e.to_string());
+            update_bootstrap_snapshot(state, |s| {
+                s.mode = "failed".to_string();
+            })
+            .await;
+            return Err(err);
         }
     };
+    progress_task.abort();
 
-    if cfg.tor_path != resolved && !resolved.eq_ignore_ascii_case("tor") && !resolved.eq_ignore_ascii_case("tor.exe") {
+    if cfg.tor_path != resolved
+        && !resolved.eq_ignore_ascii_case("tor")
+        && !resolved.eq_ignore_ascii_case("tor.exe")
+    {
         cfg.tor_path = resolved.clone();
         let _ = cfg.save();
     }
 
     let onion = handle_srv.onion_addr.clone();
     let port = handle_srv.local_port;
-    *guard = Some(handle_srv);
-    let lobby = state.cached_lobby.clone();
-    if let Some(ref h) = *guard {
-        let tr = tracker_client::sync_tracker_result(Some(h), lobby).await;
-        let sink = Arc::clone(&state.tracker_last_sync);
-        persist_tracker_diag(sink, Some(app), &tr).await;
-        if tr.is_ok() {
-            persist_lobby_to_sqlite(app, state.inner()).await;
+    {
+        let mut guard = state.handle.lock().await;
+        *guard = Some(handle_srv);
+        let lobby = state.cached_lobby.clone();
+        if let Some(ref h) = *guard {
+            let tr = tracker_client::sync_tracker_result(Some(h), lobby).await;
+            let sink = Arc::clone(&state.tracker_last_sync);
+            persist_tracker_diag(sink, Some(app), &tr).await;
+            if tr.is_ok() {
+                persist_lobby_to_sqlite(app, state).await;
+            }
         }
     }
-    drop(guard);
-    restart_http_announce_heartbeat(app.clone(), state.inner()).await;
-    spawn_tracker_ws_loop(app, state.inner()).await;
-    restore_local_shares_from_db(app, state.inner()).await;
-    let _ = app.emit("network-presence-changed", json!({}));
+
+    update_bootstrap_snapshot(state, |s| {
+        s.mode = "ready".to_string();
+        s.bootstrap_percent = 100;
+        s.local_only = false;
+        s.last_error = None;
+    })
+    .await;
+    let snap = state.bootstrap.read().await.clone();
+    emit_tor_bootstrap_progress(app, &snap, "Onion network ready").await;
+    finalize_running_onion(app, state).await;
     Ok(json!({"onion": onion, "localPort": port}))
+}
+
+/// Background recovery: retry Tor when handle is absent (max 5 attempts/hour).
+pub fn spawn_tor_recovery_watchdog(app: AppHandle, state: OnionShareState) {
+    tauri::async_runtime::spawn(async move {
+        let mut interval =
+            tokio::time::interval(std::time::Duration::from_secs(TOR_WATCHDOG_INTERVAL_SECS));
+        interval.tick().await;
+        loop {
+            interval.tick().await;
+            if state.bootstrap_in_progress.load(Ordering::SeqCst) {
+                continue;
+            }
+            if state.handle.lock().await.is_some() {
+                continue;
+            }
+            {
+                let mut snap = state.bootstrap.write().await;
+                let now = tracker_epoch_ms();
+                if snap.retry_window_start_ms == 0
+                    || now - snap.retry_window_start_ms > TOR_RETRY_WINDOW_MS
+                {
+                    snap.retry_window_start_ms = now;
+                    snap.retry_count = 0;
+                }
+                if snap.retry_count >= TOR_MAX_RETRIES_PER_HOUR {
+                    continue;
+                }
+                snap.retry_count += 1;
+            }
+            info!("Tor recovery watchdog: attempting onion bootstrap");
+            let _ = bootstrap_onion_share(&app, &state).await;
+        }
+    });
 }
 
 /// Second-stage startup: Tor + hidden service + chunk server while the React Loading overlay is visible.
@@ -432,9 +597,35 @@ pub async fn bootstrap_onion_overlay(
     });
     let _ = main.emit("init-progress", &start);
 
-    let result = bootstrap_onion_share(&app, &state).await;
+    let result = bootstrap_onion_share(&app, state.inner()).await;
+    let snap = state.bootstrap.read().await.clone();
 
     match &result {
+        Ok(v) if v.get("localOnly").and_then(|x| x.as_bool()) == Some(true) => {
+            let err = v
+                .get("error")
+                .and_then(|x| x.as_str())
+                .unwrap_or("Tor unavailable");
+            let partial = json!({
+                "phase": "onion",
+                "message": format!("Tracker via localhost only ({err})"),
+                "progress": 100.0,
+                "icon": "Users",
+                "localOnly": true,
+                "bootstrapPercent": snap.bootstrap_percent,
+            });
+            let _ = main.emit("init-progress", &partial);
+        }
+        Ok(v) if v.get("bootstrapping").and_then(|x| x.as_bool()) == Some(true) => {
+            let partial = json!({
+                "phase": "onion",
+                "message": "Tor bootstrap already in progress…",
+                "progress": snap.bootstrap_percent as f64,
+                "icon": "Users",
+                "bootstrapPercent": snap.bootstrap_percent,
+            });
+            let _ = main.emit("init-progress", &partial);
+        }
         Ok(v) => {
             let done = json!({
                 "phase": "onion",
@@ -443,6 +634,7 @@ pub async fn bootstrap_onion_overlay(
                 "icon": "CheckCircle",
                 "onion": v.get("onion"),
                 "localPort": v.get("localPort"),
+                "bootstrapPercent": 100,
             });
             let _ = main.emit("init-progress", &done);
         }
@@ -452,23 +644,11 @@ pub async fn bootstrap_onion_overlay(
                 "message": format!("Onion unavailable ({e}). Local tracker may still work if Docker is running."),
                 "progress": 100.0,
                 "icon": "Users",
+                "localOnly": true,
+                "bootstrapPercent": snap.bootstrap_percent,
             });
             let _ = main.emit("init-progress", &skip);
         }
-    }
-
-    match &result {
-        Ok(v) if v.get("localOnly").and_then(|x| x.as_bool()) == Some(true) => {
-            let partial = json!({
-                "phase": "onion",
-                "message": "Tracker connected via localhost (Tor unavailable)",
-                "progress": 100.0,
-                "icon": "Users",
-                "localOnly": true,
-            });
-            let _ = main.emit("init-progress", &partial);
-        }
-        _ => {}
     }
 
     result
@@ -479,7 +659,7 @@ pub async fn onion_share_start(
     app: AppHandle,
     state: State<'_, OnionShareState>,
 ) -> Result<serde_json::Value, String> {
-    bootstrap_onion_share(&app, &state).await
+    bootstrap_onion_share(&app, state.inner()).await
 }
 
 #[tauri::command]
@@ -518,54 +698,19 @@ async fn add_treated_share(
     state: &OnionShareState,
     path: &str,
 ) -> Result<serde_json::Value, String> {
-    let guard = state.handle.lock().await;
-    let Some(ref srv) = *guard else {
-        return Err("Onion sharing not running. Run onion_share_start first.".to_string());
-    };
-    let disk_path = path.to_string();
-    let p = PathBuf::from(path);
-    ensure_seeding_allowed(&p).await?;
-    let share = srv
-        .add_file(p, DEFAULT_CHUNK)
-        .await
-        .map_err(|e| e.to_string())?;
-    let link = srv.link_for(&share);
-    drop(guard);
-
-    persist_share_to_db(
-        app,
-        &disk_path,
-        &share.file_id.to_string(),
-        &share.file_name,
-        share.file_size,
-        &share.content_hash,
-        &link,
-    )
-    .await?;
-
-    if let Ok(pool) = ensure_node_database(app).await {
-        let payload = serde_json::json!({
-            "title": share.file_name,
-            "link": link,
-            "name": share.file_name,
-        })
-        .to_string();
-        let _ = insert_activity_pool(
-            &pool,
-            "share",
-            Some(&share.content_hash),
-            Some(&payload),
-        )
-        .await;
+    ensure_document_seeded(app, state, path).await?;
+    let pool = ensure_node_database(app).await?;
+    let rows = list_local_shares_pool(&pool).await.unwrap_or_default();
+    if let Some(row) = rows.iter().find(|r| r.disk_path == path) {
+        return Ok(json!({
+            "fileId": row.file_id,
+            "fileName": row.name,
+            "fileSize": row.size_bytes,
+            "contentHash": row.content_hash,
+            "link": row.link,
+        }));
     }
-
-    Ok(json!({
-        "fileId": share.file_id.to_string(),
-        "fileName": share.file_name,
-        "fileSize": share.file_size,
-        "contentHash": share.content_hash,
-        "link": link,
-    }))
+    Ok(json!({ "queued": true, "path": path }))
 }
 
 #[tauri::command]
@@ -620,19 +765,42 @@ pub async fn onion_share_list_local(
 pub async fn onion_share_status(
     state: State<'_, OnionShareState>,
 ) -> Result<serde_json::Value, String> {
+    let snap = state.bootstrap.read().await.clone();
     let guard = state.handle.lock().await;
     match guard.as_ref() {
-        None => Ok(json!({
-            "running": false,
-            "onion": serde_json::Value::Null,
-            "localPort": serde_json::Value::Null,
-        })),
-        Some(h) => Ok(json!({
-            "running": true,
-            "onion": h.onion_addr,
-            "localPort": h.local_port,
-        })),
+        None => Ok(status_json_from_snapshot(
+            false,
+            serde_json::Value::Null,
+            serde_json::Value::Null,
+            &snap,
+        )),
+        Some(h) => Ok(status_json_from_snapshot(
+            true,
+            json!(h.onion_addr),
+            json!(h.local_port),
+            &snap,
+        )),
     }
+}
+
+#[tauri::command]
+pub async fn reset_tor_overlay_data(
+    app: AppHandle,
+    state: State<'_, OnionShareState>,
+) -> Result<serde_json::Value, String> {
+    {
+        let mut guard = state.handle.lock().await;
+        if let Some(h) = guard.take() {
+            h.stop().await;
+        }
+    }
+    let outcome = TorProcess::reset_data_dir().await;
+    let _ = app.emit("network-presence-changed", json!({}));
+    Ok(json!({
+        "cleared": outcome.cleared,
+        "fallbackRenamed": outcome.fallback_renamed,
+        "path": outcome.path.to_string_lossy(),
+    }))
 }
 
 #[tauri::command]
@@ -643,6 +811,7 @@ pub async fn tracker_get_config() -> Result<TrackerNetworkConfig, String> {
         node_id: c.node_id,
         share_publicly: c.share_publicly,
         try_local_tracker_fallback: c.try_local_tracker_fallback,
+        tor_bridges: c.tor_bridges,
     })
 }
 
@@ -656,6 +825,12 @@ pub async fn tracker_set_config(config: TrackerNetworkConfig) -> Result<(), Stri
     c.node_id = config.node_id;
     c.share_publicly = config.share_publicly;
     c.try_local_tracker_fallback = config.try_local_tracker_fallback;
+    c.tor_bridges = config
+        .tor_bridges
+        .into_iter()
+        .map(|b| b.trim().to_string())
+        .filter(|b| !b.is_empty())
+        .collect();
     c.save().map_err(|e| e.to_string())
 }
 

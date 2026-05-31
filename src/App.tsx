@@ -33,6 +33,8 @@ interface InitProgress {
   message: string;
   progress: number;
   icon: string;
+  localOnly?: boolean;
+  bootstrapPercent?: number;
 }
 
 // Route loading wrapper component following optimization principles
@@ -150,7 +152,7 @@ const App: Component = () => {
 
       fallbackTimer = globalThis.setTimeout(() => {
         console.warn(
-          'Tauri initialization timeout (baseline + onion can take ~90s); forcing dismiss'
+          'Tauri initialization timeout (baseline + onion can take ~5 min); forcing dismiss'
         );
         setIsLoading(false);
         try {
@@ -159,7 +161,7 @@ const App: Component = () => {
           /* ignore */
         }
         cleanup = null;
-      }, 120000);
+      }, 300000);
 
       try {
         const { invoke } = await import('@tauri-apps/api/core');

@@ -32,6 +32,8 @@ pub struct AppConfig {
     /// After Tor fails reaching `tracker_url`, also try HTTP to local Docker Desktop (`127.0.0.1:8080`).
     pub try_local_tracker_fallback: bool,
     pub bootstrap_peers: Vec<String>,
+    /// Tor bridge lines (one per entry), passed as `--Bridge` when non-empty.
+    pub tor_bridges: Vec<String>,
 }
 
 impl Default for AppConfig {
@@ -46,6 +48,7 @@ impl Default for AppConfig {
             // Docker Desktop POC maps tracker to host :8080; Tor-to-.onion can lag or fail behind strict networks.
             try_local_tracker_fallback: true,
             bootstrap_peers: Vec::new(),
+            tor_bridges: Vec::new(),
         }
     }
 }

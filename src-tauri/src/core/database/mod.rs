@@ -14,8 +14,9 @@ pub use models::*;
 pub use operations::*;
 pub use node_db::{ensure_node_database, resolve_database_path};
 pub use document_registry::{
-    delete_document_by_id_pool, get_document_by_path_pool, is_path_treated_pool,
-    list_local_document_paths_pool, remap_document_id_pool, upsert_treated_document_pool,
+    delete_document_by_id_pool, document_seed_enabled_pool, get_document_by_path_pool,
+    is_path_treated_pool, list_local_document_paths_pool, list_seed_eligible_paths_pool,
+    remap_document_id_pool, set_document_shared_pool, upsert_treated_document_pool,
     upsert_untreated_by_path_pool, TreatedDocumentRow,
 };
 pub use network_cache::{

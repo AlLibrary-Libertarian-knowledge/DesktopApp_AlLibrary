@@ -193,3 +193,41 @@ pub async fn list_local_document_paths_pool(pool: &SqlitePool) -> Result<Vec<Str
     .map_err(|e| format!("Failed to list document paths: {e}"))?;
     Ok(rows)
 }
+
+pub async fn set_document_shared_pool(
+    pool: &SqlitePool,
+    local_path: &str,
+    enabled: bool,
+) -> Result<(), String> {
+    sqlx::query("UPDATE documents SET is_shared = ? WHERE local_path = ?")
+        .bind(if enabled { 1i64 } else { 0 })
+        .bind(local_path)
+        .execute(pool)
+        .await
+        .map_err(|e| format!("Failed to set is_shared: {e}"))?;
+    Ok(())
+}
+
+pub async fn document_seed_enabled_pool(
+    pool: &SqlitePool,
+    local_path: &str,
+) -> Result<bool, String> {
+    let v: Option<i64> = sqlx::query_scalar(
+        "SELECT is_shared FROM documents WHERE local_path = ? LIMIT 1",
+    )
+    .bind(local_path)
+    .fetch_optional(pool)
+    .await
+    .map_err(|e| format!("Failed to read is_shared: {e}"))?;
+    Ok(v.unwrap_or(1) != 0)
+}
+
+pub async fn list_seed_eligible_paths_pool(pool: &SqlitePool) -> Result<Vec<String>, String> {
+    let rows = sqlx::query_scalar::<_, String>(
+        "SELECT local_path FROM documents WHERE is_treated = 1 AND is_shared = 1 AND local_path IS NOT NULL",
+    )
+    .fetch_all(pool)
+    .await
+    .map_err(|e| format!("Failed to list seed-eligible paths: {e}"))?;
+    Ok(rows)
+}

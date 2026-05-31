@@ -3,4 +3,4 @@ mod control;
 mod process;
 
 pub use control::TorControl;
-pub use process::TorProcess;
+pub use process::{ResetOutcome, TorProcess, TorStartOptions};
