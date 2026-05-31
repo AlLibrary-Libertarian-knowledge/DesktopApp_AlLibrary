@@ -20,13 +20,7 @@ export type {
 } from './categoryApi';
 export { CategoryType } from './categoryApi';
 
-// Cultural context API
-export { culturalApi } from './culturalApi';
-export type {
-  CulturalContext,
-  TraditionalClassification,
-  CulturalEducationContent,
-} from './culturalApi';
+// Cultural context API — removed
 
 // Peer network API
 export { peerApi } from './peerApi';

@@ -166,6 +166,15 @@ pub fn is_treated_file(file_path: &Path) -> bool {
     read_sidecar(file_path).is_some()
 }
 
+/// Returns true for AlLibrary metadata sidecars (e.g. `doc.allibrary.json`), not user documents.
+pub fn is_sidecar_file(file_path: &Path) -> bool {
+    file_path
+        .file_name()
+        .and_then(|name| name.to_str())
+        .map(|name| name.ends_with(".allibrary.json"))
+        .unwrap_or(false)
+}
+
 fn treat_pdf(source: &Path) -> Result<Vec<u8>, String> {
     let mut doc = LoDocument::load(source).map_err(|e| format!("PDF parse failed: {e}"))?;
     if let Some(cat_id) = doc.trailer.get(b"Root").and_then(|r| r.as_reference()).ok() {
@@ -392,6 +401,13 @@ pub fn fingerprint_for_treated_path(path: &Path) -> Result<ContentFingerprint, S
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn sidecar_file_detection() {
+        assert!(is_sidecar_file(Path::new("TCC WORD_rev2.allibrary.json")));
+        assert!(!is_sidecar_file(Path::new("TCC WORD_rev2.pdf")));
+        assert!(!is_sidecar_file(Path::new("notes.json")));
+    }
 
     #[test]
     fn pipeline_rejects_non_pdf_epub() {

@@ -81,9 +81,10 @@ Each section lists **UI intent** (from existing design), **current state**, and 
 
 | Feature | Current | Task |
 |---------|---------|------|
-| CRUD | ⚠️ Basic Tauri only | [ ] Match service surface to registered commands |
-| Add documents | ❌ Unimplemented backend | [ ] P1 backend or hide UI |
-| P2P share collection | ❌ | [ ] P2 design |
+| CRUD | ✅ Minimal Tauri + SQLite | [x] create/get/update/delete with real DB writes |
+| Add/remove documents | ✅ Junction table | [x] `add_documents_to_collection`, `remove_documents_from_collection`, `get_collection_documents` |
+| UI | ✅ Minimal page | [x] List, create/edit modals, detail with library picker — no analytics/P2P/cultural filters |
+| P2P share collection | Removed from UI | [ ] P2 design (out of scope for minimal slice) |
 
 ### Favorites `/favorites`
 
@@ -238,7 +239,6 @@ Each section lists **UI intent** (from existing design), **current state**, and 
 
 ### Next
 
-1. Collections backend audit (implement or hide UI)
-2. Shared components: `NetworkFileCard`, `useTransferState`, `OnionStatusBar`
-3. Home NetworkGraph → cached peer viz
-4. `get_swarm` + optional parallel download UX
+1. Shared components: `NetworkFileCard`, `useTransferState`, `OnionStatusBar`
+2. Home NetworkGraph → cached peer viz
+3. `get_swarm` + optional parallel download UX

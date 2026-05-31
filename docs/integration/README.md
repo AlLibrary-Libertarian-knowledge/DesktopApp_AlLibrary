@@ -43,7 +43,8 @@ Frontend-driven integration tasks to connect the designed UI to a **per-node SQL
 
 ### Phase D — Depth
 
-- Collection/favorites Tauri commands matching `collectionService` surface
+- [x] Collections — minimal CRUD + document membership (`add_documents_to_collection`, etc.) — **May 2026**
+- [x] Cultural sensitivity UI removed from product (components/hooks deleted; copy neutralized)
 - [~] Network metrics (throughput, active transfers) from Rust → `networkStore` — **basic `get_network_metrics` done**; rolling window / facade consolidation remain
 - [ ] Optional: tracker timestamps for Trending / New Arrivals (history-based charts)
 
@@ -58,6 +59,17 @@ Frontend-driven integration tasks to connect the designed UI to a **per-node SQL
 - `[ ]` Not started
 - `[~]` Partial (POC or mock in place)
 - `[x]` Done
+
+---
+
+## Recently completed — Collections + cultural removal (May 2026)
+
+| Area | Done |
+|------|------|
+| Collections backend | Real update/delete; `document_collections` junction ops; `add_documents_to_collection`, `remove_documents_from_collection`, `get_collection_documents` |
+| Collections UI | Minimal list/create/edit/detail; add/remove docs from library scan |
+| `collectionService` | Slim CRUD + membership only; tests rewritten |
+| Cultural removal | Deleted `src/components/cultural/`, `hooks/cultural/`; neutral branding; footer/shell copy updated |
 
 ---
 
@@ -88,21 +100,17 @@ See [04-frontend-screen-tasks.md](./04-frontend-screen-tasks.md) mock checklist 
 
 Priority order for the next integration slice(s):
 
-1. **Phase D — Collections**
-   - Audit `collectionService` vs registered Tauri commands; implement or hide CRUD gaps — [03 § Collections](./03-backend-rust-tasks.md)
-
-2. **Consolidation (lower risk, improves maintainability)**
+1. **Consolidation (lower risk, improves maintainability)**
    - Shared `NetworkFileCard`, `useTransferState`, `OnionStatusBar` — [04 § Components to consolidate](./04-frontend-screen-tasks.md)
    - Slim `p2pNetworkService` + finish `networkStore` facade consolidation — [05](./05-network-services-layer.md)
 
-3. **Phase B — remaining polish**
+2. **Phase B — remaining polish**
    - Documents list UI sync after scan (optional)
    - Home NetworkGraph mock → cached peer viz
 
-4. **P2 / optional**
+3. **P2 / optional**
+   - Collection P2P sharing / export (cancelled for minimal scope)
    - `get_swarm` / parallel download peer list
    - Trending charts (cache history / `first_seen_at` deltas)
    - Settings theme/i18n → `save_app_settings`
    - Global top search bar → `/search-network?q=`
-
-**Explicitly out of scope** for near-term slices (per plan): Collections swarm API, Network Health chart rework at full fidelity.

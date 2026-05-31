@@ -2,7 +2,7 @@
 export const APP_CONFIG = {
   name: 'AlLibrary',
   version: '1.0.0',
-  description: 'Decentralized Cultural Heritage Preservation Network',
+  description: 'Decentralized document library and P2P network',
   author: 'AlLibrary Team',
 };
 

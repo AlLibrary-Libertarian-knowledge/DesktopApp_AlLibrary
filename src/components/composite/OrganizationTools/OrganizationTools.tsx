@@ -14,9 +14,13 @@ import {
   Info,
 } from 'lucide-solid';
 import type { CulturalSensitivityLevel } from '../../../types/Cultural';
-import type { Collection, CollectionOrganization } from '../../../types/Collection';
+import type { Collection } from '../../../types/Collection';
 import type { Document } from '../../../types/Document';
 import styles from './OrganizationTools.module.css';
+
+export interface CollectionOrganization {
+  [key: string]: unknown;
+}
 
 /**
  * Organization Rule Interface

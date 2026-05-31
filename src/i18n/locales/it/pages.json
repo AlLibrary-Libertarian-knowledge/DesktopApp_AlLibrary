@@ -328,40 +328,83 @@
       "viewDetails": "Dettagli",
       "remove": "Rimuovi dalla cronologia"
     },
-    "toasts": { "removed": "Rimosso dalla cronologia", "removeFailed": "Impossibile rimuovere" }
+    "toasts": {
+      "removed": "Rimosso dalla cronologia",
+      "removeFailed": "Impossibile rimuovere"
+    }
   },
   "collections": {
     "title": "Collezioni",
-    "subtitle": "Collezioni organizzate di documenti",
-    "createNew": "Crea Nuova Collezione",
-    "manageExisting": "Gestisci Collezioni Esistenti",
-    "collaborativeCollections": "Collezioni Collaborative",
-    "culturalCollections": "Collezioni di Patrimonio Culturale",
+    "subtitle": "Raggruppa documenti locali in set curati",
+    "newCollection": "Nuova collezione",
+    "searchPlaceholder": "Cerca collezioni...",
+    "loading": "Caricamento collezioni...",
+    "empty": {
+      "title": "Nessuna collezione",
+      "cta": "Crea la prima collezione"
+    },
+    "card": {
+      "docs": "{{count}} docs",
+      "updated": "Updated {{date}}"
+    },
     "actions": {
-      "create": "Crea",
+      "open": "Apri",
       "edit": "Modifica",
-      "delete": "Elimina",
-      "share": "Condividi",
-      "export": "Esporta",
-      "import": "Importa"
+      "delete": "Elimina"
     },
-    "types": {
-      "personal": "Personale",
-      "shared": "Condivisa",
-      "public": "Pubblica",
-      "cultural": "Culturale",
-      "educational": "Educativa",
-      "research": "Ricerca"
+    "create": {
+      "title": "Nuova collezione",
+      "subtitle": "Group related documents together for quick access.",
+      "submit": "Crea"
     },
-    "metadata": {
-      "name": "Nome",
-      "description": "Descrizione",
-      "creator": "Creatore",
-      "created": "Creato",
-      "modified": "Modificato",
-      "items": "Elementi",
-      "size": "Dimensione"
-    }
+    "edit": {
+      "title": "Modifica collezione",
+      "subtitle": "Update the name or description for this collection.",
+      "submit": "Salva modifiche"
+    },
+    "form": {
+      "name": "Name",
+      "namePlaceholder": "e.g. Research papers, Field notes",
+      "nameHint": "A short, recognizable title for this group.",
+      "description": "Description",
+      "optional": "Optional",
+      "descriptionPlaceholder": "What belongs in this collection?",
+      "bufLabel": "BUF",
+      "nameLabel": "NAME",
+      "charCount": "{{current}} / {{max}}"
+    },
+    "detail": {
+      "fallbackTitle": "Collection",
+      "subtitle": "{{count}} documents · updated {{date}}",
+      "detailsFallback": "Collection details",
+      "docsBadge": "DOCS",
+      "addFromLibrary": "Aggiungi dalla libreria",
+      "syncing": "Syncing document index...",
+      "emptyTitle": "No documents in this collection yet.",
+      "emptyHint": "Use \"Add from library\" to attach scanned files.",
+      "remove": "Rimuovi"
+    },
+    "addDocs": {
+      "title": "Aggiungi documenti dalla libreria",
+      "subtitle": "Select scanned documents to include in this collection.",
+      "loading": "Loading library...",
+      "empty": "No scanned documents found. Scan your library first.",
+      "hint": "{{toAdd}} to add · {{inCollection}} already in collection",
+      "addSelected": "Aggiungi selezionati ({{count}})",
+      "inCollection": "Nella collezione"
+    },
+    "confirmDelete": "Eliminare \"{{name}}\"? I documenti non verranno eliminati.",
+    "errors": {
+      "createFailed": "Failed to create collection",
+      "updateFailed": "Failed to update collection",
+      "deleteFailed": "Failed to delete collection",
+      "removeDocFailed": "Failed to remove document",
+      "addDocsFailed": "Failed to add documents"
+    },
+    "createNew": "Create New Collection",
+    "manageExisting": "Manage Collections",
+    "collaborativeCollections": "Collaborative Collections",
+    "culturalCollections": "Collections"
   },
   "network": {
     "title": "Rete",

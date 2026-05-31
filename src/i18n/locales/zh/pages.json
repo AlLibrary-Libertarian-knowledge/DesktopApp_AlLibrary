@@ -269,7 +269,12 @@
     "exploreDocuments": "探索文档",
     "sourceLocal": "本地",
     "sourceNetwork": "网络",
-    "stats": { "views": "已查看", "downloads": "下载", "uploads": "上传", "filtered": "筛选结果" },
+    "stats": {
+      "views": "已查看",
+      "downloads": "下载",
+      "uploads": "上传",
+      "filtered": "筛选结果"
+    },
     "filters": {
       "allTypes": "全部活动",
       "views": "查看",
@@ -280,7 +285,12 @@
       "typeAria": "按类型筛选",
       "timeAria": "按时间筛选"
     },
-    "timeframes": { "all": "全部", "today": "今天", "week": "本周", "month": "本月" },
+    "timeframes": {
+      "all": "全部",
+      "today": "今天",
+      "week": "本周",
+      "month": "本月"
+    },
     "kinds": {
       "view": "查看",
       "download": "下载",
@@ -288,23 +298,88 @@
       "share": "分享",
       "favorite": "收藏"
     },
-    "actions": { "open": "打开文档", "viewDetails": "查看详情", "remove": "从历史中移除" },
-    "toasts": { "removed": "已从历史中移除", "removeFailed": "移除失败" }
+    "actions": {
+      "open": "打开文档",
+      "viewDetails": "查看详情",
+      "remove": "从历史中移除"
+    },
+    "toasts": {
+      "removed": "已从历史中移除",
+      "removeFailed": "移除失败"
+    }
   },
   "collections": {
     "title": "收藏",
-    "subtitle": "有组织的文档收藏",
-    "createNew": "创建新收藏",
-    "manageExisting": "管理现有收藏",
-    "collaborativeCollections": "协作收藏",
-    "culturalCollections": "文化遗产收藏",
-    "filters": {
-      "all": "全部收藏",
-      "personal": "个人",
-      "shared": "已分享",
-      "public": "公开",
-      "cultural": "文化"
-    }
+    "subtitle": "将本地文档分组为精选集合",
+    "newCollection": "新建收藏",
+    "searchPlaceholder": "搜索收藏...",
+    "loading": "正在加载收藏...",
+    "empty": {
+      "title": "暂无收藏",
+      "cta": "创建第一个收藏"
+    },
+    "card": {
+      "docs": "{{count}} docs",
+      "updated": "Updated {{date}}"
+    },
+    "actions": {
+      "open": "打开",
+      "edit": "编辑",
+      "delete": "删除"
+    },
+    "create": {
+      "title": "新建收藏",
+      "subtitle": "Group related documents together for quick access.",
+      "submit": "创建"
+    },
+    "edit": {
+      "title": "编辑收藏",
+      "subtitle": "Update the name or description for this collection.",
+      "submit": "保存更改"
+    },
+    "form": {
+      "name": "Name",
+      "namePlaceholder": "e.g. Research papers, Field notes",
+      "nameHint": "A short, recognizable title for this group.",
+      "description": "Description",
+      "optional": "Optional",
+      "descriptionPlaceholder": "What belongs in this collection?",
+      "bufLabel": "BUF",
+      "nameLabel": "NAME",
+      "charCount": "{{current}} / {{max}}"
+    },
+    "detail": {
+      "fallbackTitle": "Collection",
+      "subtitle": "{{count}} documents · updated {{date}}",
+      "detailsFallback": "Collection details",
+      "docsBadge": "DOCS",
+      "addFromLibrary": "从库中添加",
+      "syncing": "Syncing document index...",
+      "emptyTitle": "No documents in this collection yet.",
+      "emptyHint": "Use \"Add from library\" to attach scanned files.",
+      "remove": "移除"
+    },
+    "addDocs": {
+      "title": "从库中添加文档",
+      "subtitle": "Select scanned documents to include in this collection.",
+      "loading": "Loading library...",
+      "empty": "No scanned documents found. Scan your library first.",
+      "hint": "{{toAdd}} to add · {{inCollection}} already in collection",
+      "addSelected": "添加所选 ({{count}})",
+      "inCollection": "已在收藏中"
+    },
+    "confirmDelete": "删除\"{{name}}\"？文档不会被删除。",
+    "errors": {
+      "createFailed": "Failed to create collection",
+      "updateFailed": "Failed to update collection",
+      "deleteFailed": "Failed to delete collection",
+      "removeDocFailed": "Failed to remove document",
+      "addDocsFailed": "Failed to add documents"
+    },
+    "createNew": "Create New Collection",
+    "manageExisting": "Manage Collections",
+    "collaborativeCollections": "Collaborative Collections",
+    "culturalCollections": "Collections"
   },
   "network": {
     "title": "网络",

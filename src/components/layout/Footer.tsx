@@ -41,13 +41,6 @@ const Footer: Component = () => {
           </div>
         </div>
 
-        <div class="footer-center">
-          <div class="cultural-notice">
-            <span class="respect-icon">🌿</span>
-            <span class="respect-text">Respecting cultural heritage and traditional knowledge</span>
-          </div>
-        </div>
-
         <div class="footer-right">
           <div class="version-info">
             <span class="app-version">AlLibrary v1.0.11</span>
@@ -63,11 +56,6 @@ const Footer: Component = () => {
             <span class="status-item">
               <span class="status-dot privacy-protected" title="Privacy: Protected" />
               <span class="status-label">Private</span>
-            </span>
-
-            <span class="status-item">
-              <span class="status-dot cultural-aware" title="Cultural Sensitivity: Active" />
-              <span class="status-label">Cultural</span>
             </span>
           </div>
         </div>

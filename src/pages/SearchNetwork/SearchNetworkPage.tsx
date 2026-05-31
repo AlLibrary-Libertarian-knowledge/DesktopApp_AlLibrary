@@ -193,7 +193,7 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
       {/* Futuristic header using existing TopCard component */}
       <TopCard
         title="Network Search Hub"
-        subtitle="Distributed search across decentralized cultural heritage network"
+        subtitle="Distributed search across the P2P network"
         rightContent={
           <div class={styles['network-status-enhanced']}>
             <NetworkStatus variant="default" />
@@ -292,7 +292,7 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
                   <Search size={20} />
                   <Input
                     type="text"
-                    placeholder="Search cultural heritage documents across P2P network..."
+                    placeholder="Search documents across the P2P network..."
                     value={searchQuery()}
                     onInput={handleSearchInput}
                     onKeyDown={(e: any) => {
@@ -501,7 +501,6 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
                           setDownloadError(msg);
                         }
                       }}
-                      showCulturalContext={true}
                       variant="default"
                     />
                   )}

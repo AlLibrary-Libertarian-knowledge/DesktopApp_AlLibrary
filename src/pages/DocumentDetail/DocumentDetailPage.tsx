@@ -68,14 +68,11 @@ import { DocumentViewerLoader } from '@/components/composite/DocumentViewerLoade
 import ErrorMessage from '@/components/foundation/ErrorMessage/ErrorMessage';
 import { Badge } from '@/components/foundation/Badge';
 import { Tooltip } from '@/components/foundation/Tooltip';
-import { CulturalIndicator } from '@/components/cultural/CulturalIndicator';
-import { CulturalContext } from '@/components/cultural/CulturalContext';
 import { DocumentViewer } from '@/components/composite/DocumentViewer';
 import { useToast } from '@/hooks/ui/useToast';
 import { useTranslation } from '@/i18n';
 
 // Import services
-import { culturalApi } from '@/services/api';
 import { commentService, favoriteService, activityService } from '@/services';
 import { documentService, type DocumentDetailModel } from '@/services/documentService';
 import { transferFacade } from '@/services/network/transferFacade';
@@ -93,10 +90,8 @@ type DetailDocument = DocumentDetailModel & {
   viewCount?: number;
   favoriteCount?: number;
   commentCount?: number;
-  culturalMetadata?: { sensitivityLevel: number };
   language?: string;
   category?: string;
-  culturalOrigin?: string;
   metadata?: { totalPages?: number };
 };
 
@@ -108,7 +103,6 @@ function mapToDetailDocument(model: DocumentDetailModel): DetailDocument {
     viewCount: 0,
     favoriteCount: 0,
     commentCount: 0,
-    culturalMetadata: { sensitivityLevel: 0 },
   };
 }
 
@@ -136,12 +130,9 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
 
   // State management
   const [hudOpen, setHudOpen] = createSignal(false);
-  const [viewMode, setViewMode] = createSignal<'reader' | 'metadata' | 'cultural' | 'community'>(
-    'reader'
-  );
+  const [viewMode, setViewMode] = createSignal<'reader' | 'metadata' | 'community'>('reader');
   const [zoomLevel, setZoomLevel] = createSignal(100);
   const [currentPage, setCurrentPage] = createSignal(1);
-  const [showCulturalModal, setShowCulturalModal] = createSignal(false);
   const [showShareModal, setShowShareModal] = createSignal(false);
   const [isBookmarked, setIsBookmarked] = createSignal(false);
   const [searchTerm, setSearchTerm] = createSignal('');
@@ -149,7 +140,6 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
   const [newComment, setNewComment] = createSignal('');
   const [detailDocument, setDetailDocument] = createSignal<DetailDocument | null>(null);
   const [detailLoading, setDetailLoading] = createSignal(true);
-  const [culturalContext, setCulturalContext] = createSignal<unknown>(null);
   const [documentBytes, setDocumentBytes] = createSignal<Uint8Array | undefined>();
   const [documentUrl, setDocumentUrl] = createSignal<string | undefined>();
   const [contentLoading, setContentLoading] = createSignal(false);
@@ -186,7 +176,6 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
     let cancelled = false;
     setDetailLoading(true);
     setDetailDocument(null);
-    setCulturalContext(null);
 
     void (async () => {
       try {
@@ -214,15 +203,6 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
             .catch(() => {
               if (!cancelled) setComments([]);
             });
-
-          try {
-            const response = await culturalApi.getCulturalContext(id);
-            if (!cancelled && response.success) {
-              setCulturalContext(response.data);
-            }
-          } catch {
-            /* ignore */
-          }
         }
       } finally {
         if (!cancelled) setDetailLoading(false);
@@ -237,13 +217,6 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
   // Computed values
   const documentTitle = createMemo(() => detailDocument()?.title || 'Loading...');
   const totalPages = createMemo(() => 1); // Default to 1 page for now
-  const culturalLevel = createMemo(() => detailDocument()?.culturalMetadata?.sensitivityLevel || 0);
-  const hasEducationalContent = createMemo(() => {
-    const ctx = culturalContext();
-    const resources =
-      (ctx as any)?.educationalResources || (ctx as any)?.educationalContent?.learningResources;
-    return Array.isArray(resources) && resources.length > 0;
-  });
 
   const documentType = createMemo((): 'pdf' | 'epub' | 'text' | 'markdown' => {
     const doc = detailDocument();
@@ -428,14 +401,6 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
                     <span class={styles.author}>{doc().author}</span>
                     <span class={styles.separator}>•</span>
                     <span class={styles.date}>{doc().publishedDate}</span>
-                    <Show when={culturalLevel() > 0}>
-                      <span class={styles.separator}>•</span>
-                      <CulturalIndicator
-                        level={(Math.min(3, Math.max(1, culturalLevel())) || 1) as 1 | 2 | 3}
-                        size="sm"
-                        informationOnly={true}
-                      />
-                    </Show>
                   </div>
                 )}
               </Show>
@@ -499,18 +464,6 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
                   }}
                 />
               </Show>
-              <Tooltip content="Cultural Information">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowCulturalModal(true)}
-                  class={styles.actionButton || ''}
-                  disabled={!hasEducationalContent()}
-                >
-                  <Globe size={16} />
-                </Button>
-              </Tooltip>
-
               <Tooltip content="Share Document">
                 <Button
                   variant="ghost"
@@ -569,14 +522,6 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
                   Details
                 </button>
                 <button
-                  class={`${styles.tab} ${viewMode() === 'cultural' ? styles.active : ''}`}
-                  onClick={() => setViewMode('cultural')}
-                  disabled={!hasEducationalContent()}
-                >
-                  <Globe size={16} />
-                  Cultural
-                </button>
-                <button
                   class={`${styles.tab} ${viewMode() === 'community' ? styles.active : ''}`}
                   onClick={() => setViewMode('community')}
                 >
@@ -620,12 +565,6 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
                             <span class={styles.label}>Category:</span>
                             <span class={styles.value}>{doc().category}</span>
                           </div>
-                          <Show when={doc().culturalOrigin}>
-                            <div class={styles.metadataItem}>
-                              <span class={styles.label}>Cultural Origin:</span>
-                              <span class={styles.value}>{doc().culturalOrigin}</span>
-                            </div>
-                          </Show>
                         </div>
                       )}
                     </Show>
@@ -644,14 +583,6 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
                       </div>
                     </Show>
                   </Card>
-                </Show>
-
-                <Show when={viewMode() === 'cultural' && culturalContext()}>
-                  <CulturalContext
-                    contextInfo={culturalContext() as any}
-                    showEducationalResources={true}
-                    showCommunityInfo={true}
-                  />
                 </Show>
 
                 <Show when={viewMode() === 'community'}>
@@ -830,7 +761,6 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
                         searchTerm={searchTerm()}
                         onPageChange={setCurrentPage}
                         onZoomChange={setZoomLevel}
-                        culturalContext={culturalContext() as any}
                         showHeader={false}
                         showControls={true}
                       />
@@ -941,24 +871,6 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
             </Show>
           </section>
         </main>
-
-        {/* Cultural Information Modal */}
-        <Modal
-          isOpen={showCulturalModal()}
-          onClose={() => setShowCulturalModal(false)}
-          title="Cultural Context & Educational Resources"
-          size="lg"
-        >
-          <Show when={culturalContext()}>
-            {context => (
-              <CulturalContext
-                contextInfo={context() as any}
-                showEducationalResources={true}
-                showCommunityInfo={true}
-              />
-            )}
-          </Show>
-        </Modal>
 
         {/* Share Modal */}
         <Modal

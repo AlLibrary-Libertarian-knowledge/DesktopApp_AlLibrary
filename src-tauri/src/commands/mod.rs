@@ -24,7 +24,10 @@ pub use system::{
 pub use tor_setup::{ensure_tor_for_onion_share, TorSetupProgress};
 pub use settings::{apply_project_paths, load_app_settings, save_app_settings, AppSettings};
 pub use search::{get_search_history, clear_search_history, get_search_index_info, SearchIndex};
-pub use collections::{create_collection, get_collections, get_collection, update_collection, delete_collection};
+pub use collections::{
+    create_collection, get_collections, get_collection, update_collection, delete_collection,
+    add_documents_to_collection, remove_documents_from_collection, get_collection_documents,
+};
 pub use documents::{
   scan_documents_folder,
   get_folder_info,

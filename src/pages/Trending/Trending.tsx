@@ -369,7 +369,7 @@ export const Trending: Component = () => {
               Trending Content Discovery
             </h1>
             <p class={styles['page-subtitle']}>
-              Real-time trending analysis across the decentralized cultural heritage network
+              Real-time trending analysis across the decentralized network
             </p>
           </div>
 

@@ -6,6 +6,3 @@ export * from './data';
 
 // UI Hooks
 export * from './ui';
-
-// Cultural Hooks
-export * from './cultural';

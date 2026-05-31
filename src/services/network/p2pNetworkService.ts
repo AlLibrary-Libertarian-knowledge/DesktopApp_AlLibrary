@@ -24,7 +24,7 @@ import type {
   CommunityNetwork,
   NetworkParticipation,
   JoinNetworkRequest,
-} from '../../components/cultural/CommunityNetworks/types/CommunityNetworksTypes';
+} from '../../types/CommunityNetwork';
 
 const defaultNetworkStatus = (): NetworkStatus =>
   ({

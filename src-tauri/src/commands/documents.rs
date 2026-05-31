@@ -5,8 +5,8 @@ use tracing::info;
 use crate::core::document::type_detection::TypeDetection;
 use crate::core::document::file_operations::FileOperations;
 use crate::core::document::pipeline::{
-    compute_fingerprint_from_bytes, is_treated_file, legacy_full_file_hash, read_sidecar,
-    run_pipeline_to_file, PipelineProgress,
+    compute_fingerprint_from_bytes, is_sidecar_file, is_treated_file, legacy_full_file_hash,
+    read_sidecar, run_pipeline_to_file, PipelineProgress,
 };
 use crate::core::database::{
     delete_document_by_id_pool, document_seed_enabled_pool, remap_document_id_pool,
@@ -220,6 +220,9 @@ pub async fn list_documents_in_folder(
             if let Ok(entry) = entry {
                 let entry_path = entry.path();
                 if entry_path.is_file() {
+                    if is_sidecar_file(&entry_path) {
+                        continue;
+                    }
                     if let Ok(document_info) = create_document_info(&entry_path, Some(&app)).await {
                         documents.push(document_info);
                     }

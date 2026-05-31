@@ -102,9 +102,10 @@ Ensure these endpoints are used and cached:
 
 Frontend `collectionService` invokes many commands **not** in `lib.rs`. Registered today: `create_collection`, `get_collections`, `get_collection`, `update_collection`, `delete_collection`.
 
-- [ ] **P1** Audit `collectionService.ts` invoke list vs `lib.rs`
-- [ ] **P1** Either implement or remove from UI: `add_documents_to_collection`, `enable_p2p_sharing`, `sync_collection`, collaborators, export, etc.
-- [ ] **P2** `enable_p2p_sharing` → adds collection manifest files to onion share (design TBD)
+- [x] **P1** Audit `collectionService.ts` invoke list vs `lib.rs` — **May 2026**: minimal CRUD + document membership implemented; P2P/collaborators/export removed from service/UI
+- [x] **P1** `add_documents_to_collection`, `remove_documents_from_collection`, `get_collection_documents` registered
+- [x] **P1** Real `update_collection` / `delete_collection` (no longer mocked)
+- [ ] **P2** `enable_p2p_sharing` → adds collection manifest files to onion share (design TBD; UI hidden)
 
 ---
 

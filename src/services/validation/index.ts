@@ -11,14 +11,6 @@ export { culturalValidator, CulturalValidator } from './culturalValidator';
 export { securityValidator, SecurityValidator } from './securityValidator';
 export { documentValidator, DocumentValidator } from './documentValidator';
 
-// Export validation types
-export type {
-  CulturalSensitivityLevel,
-  CulturalInformation,
-  CulturalAnalysis,
-  CulturalValidationContext,
-} from '@/types/Cultural';
-
 export type {
   ValidationResult,
   ValidationContext,
