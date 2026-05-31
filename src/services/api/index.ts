@@ -33,17 +33,6 @@ export { peerApi } from './peerApi';
 export type { PeerInfo as PeerApiInfo, NetworkHealth, ContentExchange } from './peerApi';
 export { PeerStatus, PeerCapability, ExchangeStatus } from './peerApi';
 
-// Document management API
-export { documentApi } from './documentApi';
-export type {
-  DocumentUploadConfig,
-  DocumentUploadResult,
-  CulturalValidationResult,
-  SecurityValidationResult,
-  DocumentSearchParams,
-  DocumentSearchResult,
-} from './documentApi';
-
 // Network operations API
 export { networkApi } from './networkApi';
 export type {

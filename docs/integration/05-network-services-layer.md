@@ -11,14 +11,14 @@ src/services/network/
 ├── networkFacade.ts      # Primary entry: lobby, peers, presence, sync
 ├── transferFacade.ts     # Downloads, shares, progress (wraps downloadManager)
 ├── onionShareService.ts  # Low-level Tauri invoke (keep)
-├── downloadManager.ts    # In-memory active + events (keep; backend owns persistence)
+├── downloadManager.ts    # Active in-memory + events; completed from SQLite via list_recent_transfers
 ├── p2pNetworkService.ts  # Slim adapter → networkFacade (deprecate fat interface)
 └── torAdapter.ts         # Thin wrapper over onion presence (keep)
 ```
 
 ---
 
-## `networkFacade.ts` (to create)
+## `networkFacade.ts` (created)
 
 ### Responsibilities
 
@@ -109,6 +109,7 @@ export const transferFacade = {
   addShare(path: string): Promise<ShareEntryView>;
   removeShare(fileId: string): Promise<void>;
   downloadLink(link: string, fileName: string, outDir?: string): Promise<string>;
+  downloadAll(items: Array<{ link: string; name: string }>, outDir?: string): Promise<void>;
   listTransfers(): { active: TransferView[]; completed: TransferView[] };
   subscribeTransfers(listener: (active, completed) => void): () => void;
 };
@@ -119,7 +120,9 @@ export const transferFacade = {
 - [x] Wrap `onionShareService` + `downloadManager` + `settingsService.getDownloadFolder`
 - [x] Self-download guard from Global Acervo → keep in `downloadLink`
 - [x] `PeerTransfers` uses `useTransferState` → `transferFacade`
-- [ ] **Home** downloads tab uses `useTransferState`
+- [x] **Home** downloads tab uses `downloadManager` subscribe (same data as `useTransferState` target)
+- [x] `downloadAll` — sequential queue for Search Network Results tab (May 2026)
+- [x] Completed transfers loaded from SQLite on `downloadManager` init (not localStorage)
 - [ ] Remove direct `onionShare.*` imports from pages except Connection Manager config
 
 ---
@@ -140,7 +143,7 @@ Today implements 20+ methods; most are no-ops. Target:
 |-------------------------|--------|
 | `discoverCommunityNetworks`, `joinCommunityNetwork`, … | No UI contract |
 | `requestContent` | Use `transferFacade.downloadLink` |
-| `getNetworkMetrics` | Until backend implements; return from transfer stats |
+| `getNetworkMetrics` | [x] Implemented via `get_network_metrics` Tauri command |
 
 - [ ] Slim interface documented in this file
 - [x] Update `useNetworkSearch`, `useP2PTransfers` to use facades
@@ -150,10 +153,9 @@ Today implements 20+ methods; most are no-ops. Target:
 
 ## `networkStore.ts` updates
 
-- [ ] `refreshOnce()` calls `networkFacade.getLobby()` + `transferFacade` metrics
-- [ ] `connectedPeers` = lobby `onlineNodes`
-- [ ] `transfers` = transferFacade active inbound/outbound
-- [ ] `downloadMbps` / `uploadMbps` from backend metrics when available
+- [x] `downloadMbps` / `uploadMbps` from backend metrics — wired via `p2pNetworkService.getNetworkMetrics` → `get_network_metrics`
+- [x] `metricsHistory` rolling buffer — append on poll; `historyForRange` / `historySparkline` for Network Health charts (May 2026)
+- [ ] `refreshOnce()` calls `networkFacade.getLobby()` + `transferFacade` metrics (still uses `p2pNetworkService` today)
 
 ---
 
@@ -161,7 +163,7 @@ Today implements 20+ methods; most are no-ops. Target:
 
 | Hook | Should use |
 |------|------------|
-| `useNetworkSearch` | `networkFacade.searchFiles` + `transferFacade.downloadLink` |
+| `useNetworkSearch` | `networkFacade.searchFiles` + `transferFacade.downloadLink` / `downloadAll`; presence via `networkFacade.getPresence` (cache-only search when offline) |
 | `useP2PTransfers` | `transferFacade` |
 | `useNetworkPresenceResource` | `networkFacade.getPresence` |
 | `useNetworkLobby` | `networkFacade` with Solid resource |
@@ -191,7 +193,7 @@ await transferFacade.downloadLink(
 | A (recommended) | Delete mock; DocumentDetail uses `documentService` only |
 | B | Make `documentApi` thin re-export of `documentService` + Tauri invoke |
 
-- [ ] Track in [04-frontend-screen-tasks.md](./04-frontend-screen-tasks.md) Document Detail section
+- [x] **Option A applied** — `documentApi.ts` deleted (May 2026); DocumentDetail uses `documentService` only
 
 ---
 

@@ -35,7 +35,64 @@ pub struct TorProcess {
     boot_rx: watch::Receiver<bool>,
 }
 
+const TOR_PID_FILE: &str = "allibrary-tor.pid";
+
 impl TorProcess {
+    pub fn pid_file_path(dir: &Path) -> PathBuf {
+        dir.join(TOR_PID_FILE)
+    }
+
+    async fn write_pid_file(dir: &Path, pid: u32) {
+        let _ = tokio::fs::write(Self::pid_file_path(dir), pid.to_string()).await;
+    }
+
+    async fn remove_pid_file(dir: &Path) {
+        let _ = tokio::fs::remove_file(Self::pid_file_path(dir)).await;
+    }
+
+    /// Kill stale Tor from a prior crashed session and release overlay locks (Windows-safe).
+    pub async fn cleanup_stale_tor_for_dir(dir: &Path) {
+        Self::preflight_cleanup_for(dir).await;
+        if let Ok(content) = tokio::fs::read_to_string(Self::pid_file_path(dir)).await {
+            if let Ok(pid) = content.trim().parse::<u32>() {
+                if pid > 0 {
+                    info!("Cleaning stale Tor process (pid={pid}) for {}", dir.display());
+                    #[cfg(windows)]
+                    Self::force_kill_windows(pid).await;
+                    #[cfg(not(windows))]
+                    {
+                        let _ = Command::new("kill")
+                            .args(["-9", &pid.to_string()])
+                            .status()
+                            .await;
+                    }
+                }
+            }
+        }
+        Self::release_data_dir(dir).await;
+        Self::remove_pid_file(dir).await;
+    }
+
+    /// Called before bootstrap: release default + persisted overlay dirs.
+    pub async fn cleanup_stale_tor_on_startup() {
+        if let Ok(dir) = tor_overlay_dir() {
+            Self::cleanup_stale_tor_for_dir(&dir).await;
+        }
+        let cfg = super::super::config::AppConfig::load();
+        if let Some(ref saved) = cfg.tor_overlay_data_dir {
+            let path = PathBuf::from(saved);
+            if path.exists() {
+                if let Ok(default) = tor_overlay_dir() {
+                    if path != default {
+                        Self::cleanup_stale_tor_for_dir(&path).await;
+                    }
+                } else {
+                    Self::cleanup_stale_tor_for_dir(&path).await;
+                }
+            }
+        }
+    }
+
     /// Default overlay data dir: `%LOCALAPPDATA%/tcc/onion_poc/data/tor-overlay-data`.
     pub fn default_overlay_dir() -> anyhow::Result<PathBuf> {
         tor_overlay_dir()
@@ -222,6 +279,10 @@ impl TorProcess {
             .spawn()
             .with_context(|| format!("failed to spawn tor: {}", tor_path))?;
 
+        if let Some(pid) = child.id() {
+            Self::write_pid_file(&data_dir, pid).await;
+        }
+
         let stdout = child.stdout.take().context("tor stdout unavailable")?;
         let stderr = child.stderr.take().context("tor stderr unavailable")?;
 
@@ -278,9 +339,9 @@ impl TorProcess {
     pub async fn release_data_dir(dir: &Path) {
         Self::preflight_cleanup_for(dir).await;
         let delay = if cfg!(windows) {
-            Duration::from_millis(2000)
+            Duration::from_millis(4000)
         } else {
-            Duration::from_millis(500)
+            Duration::from_millis(800)
         };
         tokio::time::sleep(delay).await;
     }
@@ -379,6 +440,7 @@ impl TorProcess {
 
     pub async fn kill(&mut self) -> anyhow::Result<()> {
         Self::terminate_child(&mut self.child).await;
+        Self::remove_pid_file(&self.data_dir).await;
         Self::release_data_dir(&self.data_dir).await;
         Ok(())
     }

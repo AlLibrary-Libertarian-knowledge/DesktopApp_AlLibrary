@@ -221,6 +221,22 @@
   box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
 }
 
+.status-indicator.connecting {
+  background: var(--warning-color, #f59e0b);
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.25);
+  animation: status-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes status-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
 .network-text {
   font-size: 0.875rem;
   color: var(--text-primary);

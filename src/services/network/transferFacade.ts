@@ -186,4 +186,19 @@ export const transferFacade = {
   },
 
   resolveDownloadLink,
+
+  async downloadAll(items: Array<{ link: string; name: string }>, outDir?: string): Promise<void> {
+    const completedLinks = new Set(downloadManager.getCompleted().map(c => c.link));
+    for (const item of items) {
+      const link = item.link.trim();
+      if (!link) continue;
+      if (downloadManager.getActive().some(a => a.link === link)) continue;
+      if (completedLinks.has(link)) continue;
+      try {
+        await this.downloadLink(link, item.name || link, outDir);
+      } catch (e) {
+        throw e;
+      }
+    }
+  },
 };

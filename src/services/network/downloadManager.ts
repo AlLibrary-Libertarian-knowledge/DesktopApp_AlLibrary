@@ -1,3 +1,4 @@
+import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import {
   listenTransferProgress,
@@ -12,7 +13,7 @@ export interface DownloadItem {
   name: string;
   outDir: string;
   status: 'active' | 'queued' | 'completed' | 'failed';
-  progress: number; // 0 to 1
+  progress: number;
   sizeBytes?: number;
   error?: string;
   timestamp: number;
@@ -20,35 +21,63 @@ export interface DownloadItem {
 
 type Listener = (active: DownloadItem[], completed: DownloadItem[]) => void;
 
+interface TransferRow {
+  id: string;
+  link: string;
+  name?: string;
+  status: string;
+  progress: number;
+  bytesMoved: number;
+  localPath?: string;
+  error?: string;
+  startedAt: string;
+  completedAt?: string;
+}
+
+async function loadCompletedFromDb(): Promise<DownloadItem[]> {
+  if (typeof window === 'undefined' || !(window as any).__TAURI_INTERNALS__) {
+    return [];
+  }
+  try {
+    const rows = await invoke<TransferRow[]>('list_recent_transfers', { limit: 50 });
+    return (rows ?? [])
+      .filter(r => r.status === 'completed' || r.status === 'failed')
+      .map(r => ({
+        id: r.id,
+        link: r.link,
+        name: r.name?.trim() || r.link,
+        outDir: r.localPath ?? '',
+        status: r.status === 'completed' ? 'completed' : 'failed',
+        progress: r.progress,
+        sizeBytes: r.bytesMoved,
+        error: r.error,
+        timestamp: new Date(r.completedAt ?? r.startedAt).getTime(),
+      }));
+  } catch (e) {
+    console.error('Failed to load transfers from SQLite:', e);
+    return [];
+  }
+}
+
 class DownloadManager {
   private active: DownloadItem[] = [];
   private completed: DownloadItem[] = [];
   private listeners: Set<Listener> = new Set();
   private initialized = false;
+  private hydrated = false;
 
   constructor() {
-    this.loadCompleted();
+    void this.hydrateCompleted();
   }
 
-  private loadCompleted() {
+  private async hydrateCompleted() {
+    this.completed = await loadCompletedFromDb();
+    this.hydrated = true;
+    this.notify();
     try {
-      const data = globalThis.localStorage?.getItem('allibrary_completed_downloads');
-      if (data) {
-        this.completed = JSON.parse(data);
-      }
-    } catch (e) {
-      console.error('Failed to load completed downloads:', e);
-    }
-  }
-
-  private saveCompleted() {
-    try {
-      globalThis.localStorage?.setItem(
-        'allibrary_completed_downloads',
-        JSON.stringify(this.completed.slice(0, 50))
-      );
-    } catch (e) {
-      console.error('Failed to save completed downloads:', e);
+      globalThis.localStorage?.removeItem('allibrary_completed_downloads');
+    } catch {
+      // ignore
     }
   }
 
@@ -87,28 +116,16 @@ class DownloadManager {
     };
   }
 
+  private async refreshCompletedFromDb() {
+    this.completed = await loadCompletedFromDb();
+    this.notify();
+  }
+
   private handleFetchDone(payload: OnionShareFetchDonePayload) {
     const idx = this.active.findIndex(item => item.link === payload.link);
     if (idx !== -1) {
-      const item = this.active[idx];
-      if (!item) return;
       this.active.splice(idx, 1);
-
-      const completedItem: DownloadItem = {
-        id: item.id,
-        link: item.link,
-        name: item.name,
-        outDir: item.outDir,
-        status: payload.ok ? 'completed' : 'failed',
-        progress: 1,
-        sizeBytes: item.sizeBytes,
-        error: payload.error,
-        timestamp: Date.now(),
-      };
-
-      this.completed.unshift(completedItem);
-      this.saveCompleted();
-      this.notify();
+      void this.refreshCompletedFromDb();
     }
   }
 
@@ -137,22 +154,8 @@ class DownloadManager {
     } catch (err) {
       const idx = this.active.findIndex(item => item.link === link);
       if (idx !== -1) {
-        const item = this.active[idx];
-        if (!item) throw new Error('Download item not found in active list');
         this.active.splice(idx, 1);
-        this.completed.unshift({
-          id: item.id,
-          link: item.link,
-          name: item.name,
-          outDir: item.outDir,
-          status: 'failed',
-          progress: 0,
-          sizeBytes: item.sizeBytes,
-          error: String(err instanceof Error ? err.message : err),
-          timestamp: Date.now(),
-        });
-        this.saveCompleted();
-        this.notify();
+        void this.refreshCompletedFromDb();
       }
       throw err;
     }
@@ -168,7 +171,6 @@ class DownloadManager {
 
   public clearCompleted() {
     this.completed = [];
-    this.saveCompleted();
     this.notify();
   }
 }

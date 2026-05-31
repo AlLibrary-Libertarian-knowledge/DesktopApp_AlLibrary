@@ -265,8 +265,11 @@ class P2PNetworkServiceImpl implements P2PNetworkService {
     return true;
   }
 
-  async searchNetwork(query: string, _options: SearchOptions): Promise<SearchResult[]> {
-    const matches = await networkFacade.searchFiles(query);
+  async searchNetwork(query: string, options: SearchOptions): Promise<SearchResult[]> {
+    const matches = await networkFacade.searchFiles(query, {
+      extensions: options.extensions,
+      limit: options.maxResults ?? 50,
+    });
 
     return matches.map(
       f =>

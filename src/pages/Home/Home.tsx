@@ -29,10 +29,12 @@ import {
 import styles from './Home.module.css';
 import { useNavigate } from '@solidjs/router';
 import { settingsService } from '@/services/storage/settingsService';
-import { invoke } from '@tauri-apps/api/core';
 import { useNetworkStore } from '@/stores/network/networkStore';
 import { downloadManager } from '@/services/network/downloadManager';
 import { activityService } from '@/services/activityService';
+import { pickAnyFiles } from '@/services/system/fileDialogs';
+import { shareWithToast } from '@/utils/documentActions';
+import { useToast } from '@/hooks/ui/useToast';
 
 const formatDownloadBytes = (bytes?: number): string => {
   if (!bytes) return '';
@@ -54,6 +56,7 @@ const HomePage: Component = () => {
 
   const net = useNetworkStore();
   const navigate = useNavigate();
+  const toast = useToast();
 
   const [recentDownloads, setRecentDownloads] = createSignal<ActivityItemProps[]>([]);
   const [networkActivity, setNetworkActivity] = createSignal<ActivityItemProps[]>([]);
@@ -448,21 +451,22 @@ const HomePage: Component = () => {
                   data-testid="upload-button"
                   aria-label={t('home.quickActions.shareDocument')}
                   onClick={async () => {
-                    // Open file picker via backend and stage into Document Management
-                    const projectPath = await settingsService.getProjectFolder();
-                    if (!projectPath) {
-                      navigate('/documents');
-                      return;
-                    }
                     try {
-                      const files = await invoke<string[] | null>('pick_document_files');
-                      if (files && files.length) {
-                        navigate('/documents');
-                      } else {
-                        navigate('/documents');
+                      const paths = await pickAnyFiles();
+                      if (!paths.length) return;
+
+                      for (const filePath of paths) {
+                        const base = filePath.split(/[\\/]/).pop() ?? 'document';
+                        const title = base.replace(/\.[^.]+$/, '') || base;
+                        await shareWithToast({ title, filePath }, toast);
                       }
-                    } catch {
-                      navigate('/documents');
+                      await loadNetworkActivity();
+                    } catch (e: unknown) {
+                      toast.show({
+                        type: 'error',
+                        title: 'Share failed',
+                        message: e instanceof Error ? e.message : String(e),
+                      });
                     }
                   }}
                 >

@@ -24,28 +24,28 @@ Frontend-driven integration tasks to connect the designed UI to a **per-node SQL
 
 ### Phase A — Foundation (blocking)
 
-- Unify project path: first-run wizard → Rust `save_app_settings` → SQLite path `{documentsFolder}/allibrary.db`
-- Persist tracker lobby cache + sync diagnostics in SQLite (not only in-memory `RwLock`)
-- Expose one TS module `networkFacade` (see doc 05) used by Search Network, Peers, Home, Sidebar
-- Fix broken paths: `documentApi` mock, `/settings` route, Search Network download
+- [x] Unify project path: first-run wizard → Rust `save_app_settings` → SQLite path `{documentsFolder}/allibrary.db`
+- [x] Persist tracker lobby cache + sync diagnostics in SQLite (not only in-memory `RwLock`)
+- [x] Expose one TS module `networkFacade` (see doc 05) used by Search Network, Peers, Home, Sidebar
+- [x] Fix broken paths: `/settings` route, Search Network download, `documentApi` mock removed — **May 2026**
 
 ### Phase B — Screen integration
 
-- Wire Discovery screens to **cached lobby + local library** (Search Network, Browse, Trending, New Arrivals)
-- Wire P2P screens to **real transfers + tracker peers** (Peer Network, Network Health, Sharing & downloads tables)
-- Wire Library actions (share/download/delete) to Tauri + onion share
+- [x] Wire Discovery screens to **cached lobby + local library** (Search Network, Browse, Trending, New Arrivals) — **done** (May 2026): offline cache search, extension filters, Download All, stats ribbon
+- [~] Wire P2P screens to **real transfers + tracker peers** (Peer Network, Network Health, Sharing & downloads tables) — **Network Health + transfers/peers done** (May 2026); latency/upload backend still P2
+- [~] Wire Library actions (share/download/delete) to Tauri + onion share — **Home quick-share done** (May 2026); documents table list sync remain
 
 ### Phase C — POC removal
 
-- Delete route `/acervo` and `GlobalAcervo` page
-- Remove **Onion mesh (live)** card from `PeerTransfers`; keep polished transfer UI only
-- Remove duplicate tracker debug controls from UI (keep in dev tools or Connection Manager advanced section)
+- [x] Delete route `/acervo` and `GlobalAcervo` page
+- [x] Remove **Onion mesh (live)** card from `PeerTransfers`; keep polished transfer UI only
+- [x] Remove duplicate tracker debug controls from UI (manual sync in Connection Manager Advanced; retry only on sync error in Peer Network)
 
 ### Phase D — Depth
 
 - Collection/favorites Tauri commands matching `collectionService` surface
-- Network metrics (throughput, active transfers) from Rust → `networkStore`
-- Optional: tracker timestamps for Trending / New Arrivals
+- [~] Network metrics (throughput, active transfers) from Rust → `networkStore` — **basic `get_network_metrics` done**; rolling window / facade consolidation remain
+- [ ] Optional: tracker timestamps for Trending / New Arrivals (history-based charts)
 
 ## Related existing docs
 
@@ -58,3 +58,51 @@ Frontend-driven integration tasks to connect the designed UI to a **per-node SQL
 - `[ ]` Not started
 - `[~]` Partial (POC or mock in place)
 - `[x]` Done
+
+---
+
+## Recently completed — Network Health + Home quick-share (May 2026)
+
+| Area | Done |
+|------|------|
+| Home quick-share | `pickAnyFiles` + `shareWithToast`; no navigate-only stub |
+| Network Health | `networkStore.metricsHistory`; real peer/download/transfer cards; rolling charts; mock topology/latency/storage removed |
+| Dashboard | `NetworkHealthDashboard` reads store; performance-over-time chart with series toggles |
+
+---
+
+## Recently completed — Search Network polish + mock cleanup (May 2026)
+
+| Area | Done |
+|------|------|
+| Mock cleanup | Removed `Browse.tsx`, `documentApi.ts`, `NetworkSettingsPanel.tsx`; trimmed Connection Manager simulation UI |
+| Transfers persistence | `list_recent_transfers` Tauri command; `downloadManager` hydrates completed from SQLite (no localStorage) |
+| Search Network | Tor gate via `networkFacade.getPresence`; cache-only search offline; extension filters; Download All; lobby vs results stats |
+| Tracker sync UX | Manual refresh in Connection Manager **Advanced**; Peer Network retry only when `syncError` |
+
+See [04-frontend-screen-tasks.md](./04-frontend-screen-tasks.md) mock checklist and Search Network table for detail.
+
+---
+
+## Recommended next steps
+
+Priority order for the next integration slice(s):
+
+1. **Phase D — Collections**
+   - Audit `collectionService` vs registered Tauri commands; implement or hide CRUD gaps — [03 § Collections](./03-backend-rust-tasks.md)
+
+2. **Consolidation (lower risk, improves maintainability)**
+   - Shared `NetworkFileCard`, `useTransferState`, `OnionStatusBar` — [04 § Components to consolidate](./04-frontend-screen-tasks.md)
+   - Slim `p2pNetworkService` + finish `networkStore` facade consolidation — [05](./05-network-services-layer.md)
+
+3. **Phase B — remaining polish**
+   - Documents list UI sync after scan (optional)
+   - Home NetworkGraph mock → cached peer viz
+
+4. **P2 / optional**
+   - `get_swarm` / parallel download peer list
+   - Trending charts (cache history / `first_seen_at` deltas)
+   - Settings theme/i18n → `save_app_settings`
+   - Global top search bar → `/search-network?q=`
+
+**Explicitly out of scope** for near-term slices (per plan): Collections swarm API, Network Health chart rework at full fidelity.

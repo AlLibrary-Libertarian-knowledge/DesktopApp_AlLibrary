@@ -6,7 +6,6 @@
  */
 
 import { createSignal, onCleanup } from 'solid-js';
-import { torAdapter } from '@/services/network/torAdapter';
 import { transferFacade } from '@/services/network/transferFacade';
 import { p2pNetworkService } from '@/services/network/p2pNetworkService';
 import type { Document } from '@/types/core';
@@ -16,6 +15,8 @@ export interface NetworkSearchFilters {
   query: string;
   /** Document type filter */
   documentType?: 'pdf' | 'epub' | 'all';
+  /** File extension filter (e.g. pdf, epub) */
+  extensions?: string[];
   /** File size range */
   sizeRange?: {
     min: number;
@@ -96,7 +97,6 @@ export interface UseNetworkSearchReturn {
 }
 
 export const useNetworkSearch = (): UseNetworkSearchReturn => {
-  // State management
   const [results, setResults] = createSignal<NetworkSearchResult[]>([]);
   const [isSearching, setIsSearching] = createSignal(false);
   const [error, setError] = createSignal<string | null>(null);
@@ -107,18 +107,12 @@ export const useNetworkSearch = (): UseNetworkSearchReturn => {
   const [currentSearchController, setCurrentSearchController] =
     createSignal<AbortController | null>(null);
 
-  // Real network search: Tor-gated, title-only
   const runNetworkSearch = async (
     filters: NetworkSearchFilters,
     options: NetworkSearchOptions = {},
-    signal: AbortSignal
+    _signal: AbortSignal
   ): Promise<NetworkSearchResult[]> => {
-    const st = await torAdapter.status();
-    if (!st?.circuitEstablished) throw new Error('TOR circuit not established');
-    // Title-only mode; request service to search titles
     const q = (filters.query || '').trim();
-    // Empty query returns full network lobby (the "acervo")
-    // Delegate to service (it should aggregate peers via libp2p/Tor)
     const raw = await p2pNetworkService.searchNetwork(q, {
       type: 'content',
       includeAnonymous: options.anonymous !== false,
@@ -128,8 +122,8 @@ export const useNetworkSearch = (): UseNetworkSearchReturn => {
       enableEducationalContext: true,
       supportAlternativeNarratives: true,
       resistCensorship: true,
+      extensions: filters.extensions,
     });
-    // Adapt to NetworkSearchResult
     const mapped: NetworkSearchResult[] = (raw || []).map((r: any) => ({
       document: {
         id: r.id,
@@ -158,13 +152,10 @@ export const useNetworkSearch = (): UseNetworkSearchReturn => {
     return mapped;
   };
 
-  // Perform network search
   const search = async (filters: NetworkSearchFilters, options: NetworkSearchOptions = {}) => {
     try {
-      // Cancel any ongoing search
       cancelSearch();
 
-      // Reset state
       setResults([]);
       setError(null);
       setPeersSearched(0);
@@ -173,11 +164,9 @@ export const useNetworkSearch = (): UseNetworkSearchReturn => {
       setCulturalResources([]);
       setIsSearching(true);
 
-      // Create abort controller for this search
       const controller = new AbortController();
       setCurrentSearchController(controller);
 
-      // Set default options
       const searchOptions: NetworkSearchOptions = {
         maxResults: 50,
         timeout: 30000,
@@ -187,21 +176,16 @@ export const useNetworkSearch = (): UseNetworkSearchReturn => {
         ...options,
       };
 
-      // Perform search with timeout
       const timeoutPromise = new Promise<never>((_, reject) => {
         setTimeout(() => reject(new Error('Search timeout')), searchOptions.timeout);
       });
 
-      // Limit filters to title-only
-      const titleOnly: NetworkSearchFilters = { ...filters, query: filters.query } as any;
-      const searchPromise = runNetworkSearch(titleOnly, searchOptions, controller.signal);
+      const searchPromise = runNetworkSearch(filters, searchOptions, controller.signal);
 
-      const results = await Promise.race([searchPromise, timeoutPromise]);
+      const searchResults = await Promise.race([searchPromise, timeoutPromise]);
 
-      // Apply max results limit
-      const limitedResults = results.slice(0, searchOptions.maxResults);
+      const limitedResults = searchResults.slice(0, searchOptions.maxResults);
 
-      // Sort by relevance score
       limitedResults.sort((a, b) => b.relevanceScore - a.relevanceScore);
 
       setResults(limitedResults);
@@ -222,7 +206,6 @@ export const useNetworkSearch = (): UseNetworkSearchReturn => {
     }
   };
 
-  // Cancel ongoing search
   const cancelSearch = () => {
     const controller = currentSearchController();
     if (controller) {
@@ -232,7 +215,6 @@ export const useNetworkSearch = (): UseNetworkSearchReturn => {
     setIsSearching(false);
   };
 
-  // Clear search results
   const clearResults = () => {
     setResults([]);
     setError(null);
@@ -242,12 +224,10 @@ export const useNetworkSearch = (): UseNetworkSearchReturn => {
     setCulturalResources([]);
   };
 
-  // Download document from peer
   const downloadFromPeer = async (result: NetworkSearchResult) => {
     await transferFacade.downloadLink(result.document.filePath, result.document.title);
   };
 
-  // Cleanup on unmount
   onCleanup(() => {
     cancelSearch();
   });

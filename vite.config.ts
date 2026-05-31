@@ -76,7 +76,7 @@ export default defineConfig(() => ({
 
           if (
             id.includes('/src/pages/DocumentManagement/DocumentManagement.tsx') ||
-            id.includes('/src/pages/Browse/Browse.tsx') ||
+            id.includes('/src/pages/Browse/BrowsePage.tsx') ||
             id.includes('/src/pages/Trending/Trending.tsx')
           ) {
             return 'pages-secondary';

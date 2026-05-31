@@ -92,6 +92,7 @@ export interface NetworkHealthDashboardProps {
   onIssueDetected?: (issue: NetworkIssue) => void;
   showDetailedMetrics?: boolean;
   enableRealTimeUpdates?: boolean;
+  timeRange?: '1h' | '6h' | '24h' | '7d';
 }
 
 /**

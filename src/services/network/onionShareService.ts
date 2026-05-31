@@ -158,9 +158,21 @@ export async function onionShareStart(): Promise<OnionShareStartResponse> {
   return safeInvoke<OnionShareStartResponse>('onion_share_start');
 }
 
-/** Second startup stage after splash: Tor + onion share (same as Start button; emits init-progress). */
+/** Second startup stage after splash: Tor + onion share (blocking; emits init-progress). */
 export async function bootstrapOnionOverlay(): Promise<OnionShareStartResponse> {
   return safeInvoke<OnionShareStartResponse>('bootstrap_onion_overlay');
+}
+
+/** Non-blocking bootstrap: app opens immediately; Tor connects in background. */
+export async function bootstrapOnionOverlayBackground(): Promise<{
+  started?: boolean;
+  background?: boolean;
+  alreadyRunning?: boolean;
+  bootstrapping?: boolean;
+  onion?: string;
+  localPort?: number;
+}> {
+  return safeInvoke('bootstrap_onion_overlay_background');
 }
 
 export async function onionShareStop(): Promise<void> {

@@ -2,6 +2,8 @@
 
 Each section lists **UI intent** (from existing design), **current state**, and **tasks** to reach production wiring. Assume POC pages **Global Acervo** and **Onion mesh (live)** are removed per [02-poc-retirement-and-capability-migration.md](./02-poc-retirement-and-capability-migration.md).
 
+> **May 2026 — Search Network polish + mock cleanup:** Discovery Search Network slice complete (offline cache, extension filters, Download All, stats). Mock cleanup complete (`Browse.tsx`, `documentApi`, simulation UI). Completed downloads from SQLite. See mock checklist at bottom.
+
 ---
 
 ## Global shell
@@ -30,7 +32,7 @@ Each section lists **UI intent** (from existing design), **current state**, and 
 | Route | Status | Task |
 |-------|--------|------|
 | `/settings` | ✅ Registered | [x] Register `SettingsPage`; link project/download folders |
-| `/new-arrivals` | ❌ Placeholder div | [ ] Register `NewArrivalsPage` when data wired |
+| `/new-arrivals` | ✅ Registered | [x] Register `NewArrivalsPage` when data wired |
 | `/acervo` | Removed | [x] **Remove** after Search Network default browse works |
 
 ---
@@ -41,17 +43,17 @@ Each section lists **UI intent** (from existing design), **current state**, and 
 
 | Block | Current | Task |
 |-------|---------|------|
-| Peers / health / Mbps | ⚠️ Peers OK; Mbps 0 | [ ] Mbps from `get_network_metrics` when backend ready |
+| Peers / health / Mbps | ✅ Peers + Mbps from `get_network_metrics` | [x] Mbps from `get_network_metrics` when backend ready |
 | NetworkGraph | ❌ Mock data | [ ] Nodes from cached peers or simplified peer count viz |
 | Activity lists | ⚠️ downloadManager + activity_log | [x] `activity_log` + active transfers |
-| DownloadManager tab | ⚠️ Empty transfers | [ ] Bind to shared `downloadManager` + outbound shares |
-| Quick action Share | ⚠️ Navigates only | [ ] Pick file → `onionShareAddFile` or open Documents upload |
+| DownloadManager tab | ✅ `downloadManager` subscribe | [x] Bind to shared `downloadManager` + outbound shares |
+| Quick action Share | ✅ `pickAnyFiles` + `shareWithToast` | [x] Pick file → `transferFacade.addShare` with toast (May 2026) |
 
 ### Documents & Search `/documents`, `/search`
 
 | Feature | Current | Task |
 |---------|---------|------|
-| Scan / list / search local | ✅ `documentService`, `searchService` | [ ] Sync list with `documents` table |
+| Scan / list / search local | ✅ `documentService`, `searchService` | [x] Scan upserts `documents` table; list UI sync still optional polish |
 | Upload + validation | ✅ | — |
 | Share action | ✅ `transferFacade.addShare` + toast | [x] `onionShareAddFile(doc.filePath)` + toast with onion link |
 | Download action | ✅ Opens unified document page | [x] Open local file or network fetch if remote |
@@ -105,37 +107,37 @@ Each section lists **UI intent** (from existing design), **current state**, and 
 
 | Feature | Current | Task |
 |---------|---------|------|
-| Title search | ✅ Tracker lobby filter | [ ] Also query SQLite cache when offline |
+| Title search | ✅ Tracker lobby filter | [x] Also query SQLite cache when offline (`networkFacade.searchFiles`) |
 | Empty query = all files | ✅ | [x] Auto-run on mount when Tor ready (replaces Global Acervo) |
-| Tor gate | ⚠️ `torAdapter` | [ ] Gate on `onionShareStatus` + tracker reachability |
+| Tor gate | ✅ `networkFacade.getPresence` | [x] Search allows cache-only offline; downloads require onion running |
 | Download result | ✅ `transferFacade.downloadLink` | [x] Onion link via transferFacade + hash resolution |
 | Open result | ✅ `/document/:hash` unified page | [x] Single document page with focus/HUD toggle |
-| Download All | ❌ No handler | [ ] Queue all result links |
-| Scope / type filters | ❌ UI only | [ ] Apply to search query (extension filter minimum) |
-| Stats ribbon | ✅ Partial | [ ] Add total size from lobby |
+| Download All | ✅ `transferFacade.downloadAll` | [x] Queue all result links (sequential) |
+| Scope / type filters | ✅ Extension filter | [x] `fileTypes` → `networkFacade.searchFiles` extensions; scope toggles disabled (P2) |
+| Stats ribbon | ✅ | [x] Lobby total vs Results total size labels |
 
 ### Browse Categories `/browse`
 
 | Feature | Current | Task |
 |---------|---------|------|
-| Categories | ❌ Mock setTimeout data | [ ] Derive from local `documents.categories` + network filename clustering |
-| Subcategory counts | ❌ | [ ] SQL `GROUP BY` |
-| Open category | ❌ | [ ] Navigate to Search Network with prefilled filter |
+| Categories | ✅ `list_browse_categories` | [x] Derive from local `documents.file_type` + network extension counts |
+| Subcategory counts | — | [x] SQL `GROUP BY` (single-level categories) |
+| Open category | ✅ | [x] Navigate to Search Network with prefilled filter |
 
 ### Trending `/trending`
 
 | Feature | Current | Task |
 |---------|---------|------|
-| All data | ❌ `generateMockData()` | [ ] `list_trending_network_files` + local popularity |
+| All data | ✅ `list_trending_network_files` | [x] `list_trending_network_files` + local popularity |
 | Charts / growth | ❌ | [ ] Requires cache history (P2) |
 
 ### New Arrivals `/new-arrivals`
 
 | Feature | Current | Task |
 |---------|---------|------|
-| Route | ❌ Not registered | [ ] Add route |
-| Documents | ❌ `useDocuments()` stub | [ ] `list_recent_network_files` + recent local imports |
-| Time filters | UI ready | [ ] Wire to query `first_seen_at` / `created_at` |
+| Route | ✅ Registered | [x] Add route |
+| Documents | ✅ `discoveryService` | [x] `list_recent_network_files` + recent local imports |
+| Time filters | ✅ Wired | [x] Wire to query `first_seen_at` / `created_at` |
 
 ---
 
@@ -147,16 +149,17 @@ Each section lists **UI intent** (from existing design), **current state**, and 
 |---------|---------|------|
 | Stats cards | ✅ Tracker + cache | [x] `network_peers` count, cache file count, onion status |
 | Peer list | ✅ `useNetworkPeers` | [x] Map `networkFacade.listPeers()` / SQLite peers |
+| Manual tracker sync | ✅ Deduped | [x] No routine “Sync tracker now”; retry only when `lobby.syncError()` (manual sync → Configurations Advanced) |
 | Trust / capabilities | ❌ Mock fields | [ ] P2: reputation table; hide until real |
 
 ### Network Health `/network-health`
 
 | Feature | Current | Task |
 |---------|---------|------|
-| Peer count | ✅ Tracker | — |
-| Throughput / latency | ❌ Zeros | [ ] Backend metrics |
-| Map / history | ❌ Fabricated | [ ] Hide or feed real samples |
-| NetworkHealthDashboard | ⚠️ | [ ] Same metrics source as page |
+| Peer count | ✅ `networkStore` | — |
+| Throughput / latency | ✅ Download rate from store; latency hidden | [x] Real download Mbps + rolling history charts (May 2026) |
+| Map / history | ✅ Client-side history | [x] `metricsHistory` buffer + sparklines; mock map/topology removed |
+| NetworkHealthDashboard | ✅ `networkStore` | [x] Same metrics source; performance chart with series toggles |
 
 ### Sharing & downloads `/transfers`
 
@@ -174,9 +177,11 @@ Each section lists **UI intent** (from existing design), **current state**, and 
 | Feature | Current | Task |
 |---------|---------|------|
 | Tracker URL / node id | ✅ | — |
-| Project / download folder | ❌ Not on page | [ ] Add paths section (or Settings page) |
-| Bandwidth / peer sliders | ❌ Simulation | [ ] Hide or wire P2 |
-| Sync diagnostics | ⚠️ | [ ] Show `trackerGetLastSyncDiag` |
+| Project / download folder | ✅ Resolved paths + DB path | [x] `resolvedPaths` from Rust; sync diag below tracker save |
+| Bandwidth / peer sliders | ❌ Removed with simulation UI | [ ] Hide or wire P2 if reintroduced |
+| Sync diagnostics | ✅ | [x] Show `trackerGetLastSyncDiag` |
+| Advanced: manual lobby refresh | ✅ | [x] Collapsible Advanced → `networkFacade.refreshLobby()` (May 2026) |
+| Simulation UI (RAM/Mbps bars) | ✅ Removed | [x] No `MockUsageMetric` in production build (May 2026) |
 
 ### Settings `/settings` (page exists)
 
@@ -184,7 +189,7 @@ Each section lists **UI intent** (from existing design), **current state**, and 
 |---------|---------|------|
 | Route | ✅ | [x] Add to `App.tsx` |
 | Theme / i18n | UI | [ ] `save_app_settings` |
-| Library paths | ✅ | [x] Full folder picker integration |
+| Library paths | ✅ | [x] Full folder picker + `resolvedPaths.databaseFile` display |
 
 ---
 
@@ -203,24 +208,37 @@ Each section lists **UI intent** (from existing design), **current state**, and 
 
 - [x] `PeerTransfers`: `MOCK_OUTBOUND`, `MOCK_INBOUND`, `MOCK_COMPLETED`, `THROUGHPUT_SAMPLES`
 - [x] `PeerNetworkPage`: `mockConnectedPeers`, fake `networkStats`
-- [ ] `Browse.tsx`: mock categories `createEffect`
-- [ ] `Trending.tsx`: `generateMockData`
+- [x] `BrowsePage.tsx`: mock categories removed → `list_browse_categories`
+- [x] `Trending.tsx`: `generateMockData` removed → `list_trending_network_files`
 - [x] `Favorites.tsx`: inline mock array
 - [x] `Recent.tsx`: `mockDocuments`
 - [x] `Home.tsx`: `recentDownloads`, `networkActivity` arrays
-- [ ] `useDocuments.ts`: hardcoded two documents
-- [ ] `documentApi.ts`: mock invoke — delete or make dev-only
+- [x] `NewArrivalsPage.tsx`: `useDocuments` stub replaced with `discoveryService`
+- [x] `Browse.tsx`: duplicate page removed (routing uses `BrowsePage`)
+- [x] `documentApi.ts`: mock invoke deleted
 - [x] `useNetworkSearch.downloadFromPeer`: timeout mock
-- [ ] `ConnectionManager`: `MockUsageMetric` static values (or label “preview”)
+- [x] `ConnectionManager`: simulation UI removed; Advanced section with manual lobby refresh
+- [x] `NetworkSettingsPanel.tsx`: unused duplicate removed
+- [x] Completed downloads: SQLite via `list_recent_transfers` (not localStorage)
 
 ---
 
 ## Suggested implementation order
 
-1. `networkFacade` + fix Search Network download + `/settings` route  
-2. Sharing & downloads real tables only; remove Onion mesh panel  
-3. Peer Network + Sidebar live counts — **done**
-4. DocumentDetail → real document load; Library share action  
-5. Favorites + Recent from SQLite  
-6. Browse / Trending / New Arrivals from cache  
-7. Remove Global Acervo route and page  
+### Completed
+
+1. [x] `networkFacade` + Search Network download + `/settings` route  
+2. [x] Sharing & downloads real tables; Onion mesh panel removed  
+3. [x] Peer Network + Sidebar live counts  
+4. [x] DocumentDetail real load; Library share/delete wired  
+5. [x] Favorites + Recent from SQLite  
+6. [x] Browse / Trending / New Arrivals from cache  
+7. [x] Global Acervo route removed  
+8. [x] Search Network polish + mock cleanup (May 2026): offline cache, filters, Download All, SQLite transfers, Connection Manager Advanced  
+
+### Next
+
+1. Collections backend audit (implement or hide UI)
+2. Shared components: `NetworkFileCard`, `useTransferState`, `OnionStatusBar`
+3. Home NetworkGraph → cached peer viz
+4. `get_swarm` + optional parallel download UX

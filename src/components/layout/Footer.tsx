@@ -7,7 +7,7 @@ import { useNetworkPresenceResource } from '@/hooks/network/useNetworkPresence';
 const Footer: Component = () => {
   const store = useNetworkStore();
   const lobby = useNetworkLobby();
-  const presence = useNetworkPresenceResource();
+  const { presence } = useNetworkPresenceResource();
 
   const connectedPeers = createMemo(() => Math.max(store.connectedPeers(), lobby.onlineNodes()));
 
