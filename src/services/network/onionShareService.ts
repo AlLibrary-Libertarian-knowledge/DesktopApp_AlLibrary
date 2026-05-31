@@ -291,14 +291,15 @@ export async function trackerStopWsLoop(): Promise<void> {
 export async function onionShareFetch(
   link: string,
   outDir: string,
-  fileName?: string
+  fileName?: string,
+  clientTransferId?: string
 ): Promise<string> {
   const linkTrim = link.trim();
   return new Promise((resolve, reject) => {
     void (async () => {
       const unlisten = await listen<OnionShareFetchDonePayload>('onion-share-fetch-done', e => {
         const p = e.payload;
-        if (p.link !== linkTrim) return;
+        if (p.link !== linkTrim && p.transferId !== clientTransferId) return;
         unlisten();
         if (p.ok && p.path) resolve(p.path);
         else reject(new Error(p.error ?? 'download failed'));
@@ -308,6 +309,7 @@ export async function onionShareFetch(
           link: linkTrim,
           outDir,
           fileName: fileName ?? null,
+          clientTransferId: clientTransferId ?? null,
         });
       } catch (err) {
         unlisten();

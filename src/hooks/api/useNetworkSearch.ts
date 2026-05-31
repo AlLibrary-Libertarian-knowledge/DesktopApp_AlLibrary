@@ -46,6 +46,8 @@ export interface NetworkSearchResult {
   peerCount: number;
   /** Swarm link when available */
   swarmLink?: string;
+  /** Direct peer opoc:// or .onion link (preferred for fetch) */
+  directLink?: string;
   /** Peer location */
   peerLocation?: string;
   /** Peer reputation score */
@@ -110,6 +112,7 @@ export const useNetworkSearch = (): UseNetworkSearchReturn => {
   const [culturalResources, setCulturalResources] = createSignal<string[]>([]);
   const [currentSearchController, setCurrentSearchController] =
     createSignal<AbortController | null>(null);
+  let searchGeneration = 0;
 
   const runNetworkSearch = async (
     filters: NetworkSearchFilters,
@@ -127,7 +130,7 @@ export const useNetworkSearch = (): UseNetworkSearchReturn => {
         title: f.name,
         author: 'P2P Network',
         description: `Available via ${f.peerCount} peer(s)`,
-        filePath: f.swarmLink || f.link,
+        filePath: f.link,
         fileSize: f.size,
         fileType: (f.name.split('.').pop() as string) || 'pdf',
         uploadDate: new Date(),
@@ -142,6 +145,7 @@ export const useNetworkSearch = (): UseNetworkSearchReturn => {
       peerId: f.peers[0]?.nodeId || '',
       peerCount: f.peerCount,
       swarmLink: f.swarmLink,
+      directLink: f.link,
       peerReputation: 5,
       relevanceScore: 100,
     }));
@@ -149,10 +153,10 @@ export const useNetworkSearch = (): UseNetworkSearchReturn => {
   };
 
   const search = async (filters: NetworkSearchFilters, options: NetworkSearchOptions = {}) => {
+    const generation = ++searchGeneration;
     try {
       cancelSearch();
 
-      setResults([]);
       setError(null);
       setPeersSearched(0);
       setTotalPeers(0);
@@ -180,13 +184,24 @@ export const useNetworkSearch = (): UseNetworkSearchReturn => {
 
       const searchResults = await Promise.race([searchPromise, timeoutPromise]);
 
+      if (generation !== searchGeneration) {
+        return;
+      }
+
       const limitedResults = searchResults.slice(0, searchOptions.maxResults);
 
-      limitedResults.sort((a, b) => b.relevanceScore - a.relevanceScore);
+      limitedResults.sort(
+        (a, b) =>
+          a.document.id.localeCompare(b.document.id) ||
+          a.document.title.localeCompare(b.document.title)
+      );
 
       setResults(limitedResults);
       setSearchProgress(100);
     } catch (err) {
+      if (generation !== searchGeneration) {
+        return;
+      }
       if (err instanceof Error) {
         if (err.name === 'AbortError') {
           setError('Search cancelled');
@@ -197,8 +212,10 @@ export const useNetworkSearch = (): UseNetworkSearchReturn => {
         setError('Unknown search error');
       }
     } finally {
-      setIsSearching(false);
-      setCurrentSearchController(null);
+      if (generation === searchGeneration) {
+        setIsSearching(false);
+        setCurrentSearchController(null);
+      }
     }
   };
 

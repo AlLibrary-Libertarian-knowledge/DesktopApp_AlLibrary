@@ -3,7 +3,7 @@
  * Enhanced to match HomePage and DocumentManagement sophisticated patterns
  */
 
-import { type Component, createSignal, onMount, Show, For, createEffect } from 'solid-js';
+import { type Component, createSignal, onMount, Show, For } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
 import { Search, Shield, Filter, Download, BookOpen, ArrowRight, Users } from 'lucide-solid';
 
@@ -29,6 +29,7 @@ import { useNetworkStore } from '@/stores/network/networkStore';
 import { useNetworkPresenceResource } from '@/hooks/network/useNetworkPresence';
 import { useToast } from '@/hooks/ui/useToast';
 import { downloadWithToast } from '@/utils/downloadActions';
+import { documentService } from '@/services/documentService';
 
 // Types
 import type { Document } from '@/types/core';
@@ -57,7 +58,6 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
   const [showFilters, setShowFilters] = createSignal(false);
   const [anonymousMode, setAnonymousMode] = createSignal(props.anonymousMode || false);
   const [torEstablishing, setTorEstablishing] = createSignal(false);
-  const [autoSearchDone, setAutoSearchDone] = createSignal(false);
   const [downloadingAll, setDownloadingAll] = createSignal(false);
 
   const { presence } = useNetworkPresenceResource();
@@ -91,23 +91,10 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
       }
     };
     window.addEventListener('keydown', keyHandler);
+    void handleSearch();
     return () => {
       window.removeEventListener('keydown', keyHandler);
     };
-  });
-
-  createEffect(() => {
-    if (!autoSearchDone()) {
-      setAutoSearchDone(true);
-      void handleSearch();
-    }
-  });
-
-  createEffect(() => {
-    fileTypes();
-    if (autoSearchDone()) {
-      void handleSearch();
-    }
   });
 
   const formatTotalSize = (bytes: number) => {
@@ -141,9 +128,12 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
     }
   };
 
+  const downloadTargetFor = (result: NetworkSearchResult) =>
+    result.directLink || result.document.filePath || result.swarmLink || result.document.id;
+
   const handleFileDownload = async (result: NetworkSearchResult) => {
     setDownloadError(null);
-    const target = result.swarmLink || result.document.filePath || result.document.id;
+    const target = downloadTargetFor(result);
     await downloadWithToast(
       result.document.title,
       () => transfer.startDownload(target, result.document.title),
@@ -160,11 +150,7 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
         if (r.peerCount <= 0) continue;
         await downloadWithToast(
           r.document.title,
-          () =>
-            transfer.startDownload(
-              r.swarmLink || r.document.filePath || r.document.id,
-              r.document.title
-            ),
+          () => transfer.startDownload(downloadTargetFor(r), r.document.title),
           toast
         );
       }
@@ -179,8 +165,13 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
     setSearchQuery(value);
   };
 
-  const handleDocumentOpen = (document: Document) => {
-    navigate(`/document/${document.id}`);
+  const handleDocumentOpen = async (result: NetworkSearchResult) => {
+    const resolved = await documentService.resolveDocumentById(result.document.id);
+    if (resolved?.source === 'local' && resolved.filePath) {
+      navigate(documentService.buildDocumentUrl(resolved.id));
+      return;
+    }
+    toast.info('Download this file first — it will open in the reader once saved to your library.');
   };
 
   // Removed unused hasSearched state
@@ -350,6 +341,7 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
                                 ? types.filter(t => t !== 'pdf')
                                 : [...types, 'pdf']
                             );
+                            void handleSearch();
                           }}
                         >
                           PDF
@@ -364,6 +356,7 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
                                 ? types.filter(t => t !== 'epub')
                                 : [...types, 'epub']
                             );
+                            void handleSearch();
                           }}
                         >
                           EPUB
@@ -455,20 +448,6 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
               </div>
             </Show>
 
-            <Show when={isSearching()}>
-              <div class={styles['search-progress']}>
-                <LoadingSpinner
-                  variant="ring"
-                  size="md"
-                  message={`Searching across ${net.connectedPeers()} connected peers...`}
-                  showMessage
-                />
-              </div>
-              <div class={styles['skeleton-grid']}>
-                <For each={[1, 2, 3, 4, 5, 6]}>{() => <div class={styles['skeleton-card']} />}</For>
-              </div>
-            </Show>
-
             <Show when={downloadError() && activeTab() === 'results'}>
               <p class={styles['download-error']} role="alert">
                 {downloadError()}
@@ -481,30 +460,47 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
               class={styles['transfer-queue']}
             />
 
-            <Show when={results() && results()!.length > 0}>
-              <div class={styles['results-grid']}>
-                <For each={results()}>
-                  {result => {
-                    const target =
-                      result.swarmLink || result.document.filePath || result.document.id;
-                    const active = () => transfer.findActiveDownload(target);
-                    return (
-                      <NetworkFileCard
-                        contentHash={result.document.id}
-                        name={result.document.title}
-                        size={result.document.fileSize}
-                        link={result.document.filePath || ''}
-                        peerCount={result.peerCount}
-                        canDownload={canDownload()}
-                        downloadProgress={active()?.progress}
-                        downloadStatus={active()?.status}
-                        onOpen={() => handleDocumentOpen(result.document)}
-                        onDownload={() => handleFileDownload(result)}
-                        onDownloadError={msg => setDownloadError(msg)}
-                      />
-                    );
-                  }}
-                </For>
+            <Show
+              when={isSearching() && !(results()?.length ?? 0)}
+              fallback={
+                <Show when={(results()?.length ?? 0) > 0}>
+                  <div class={styles['results-grid']}>
+                    <For each={results()} keyed={result => result.document.id}>
+                      {result => {
+                        const target = downloadTargetFor(result);
+                        const row = () => transfer.findDownloadForTarget(target);
+                        return (
+                          <NetworkFileCard
+                            contentHash={result.document.id}
+                            name={result.document.title}
+                            size={result.document.fileSize}
+                            link={result.document.filePath || ''}
+                            peerCount={result.peerCount}
+                            canDownload={canDownload()}
+                            downloadProgress={row()?.progress}
+                            downloadStatus={row()?.status}
+                            downloadError={row()?.error}
+                            onOpen={() => void handleDocumentOpen(result)}
+                            onDownload={() => handleFileDownload(result)}
+                            onDownloadError={msg => setDownloadError(msg)}
+                          />
+                        );
+                      }}
+                    </For>
+                  </div>
+                </Show>
+              }
+            >
+              <div class={styles['search-progress']}>
+                <LoadingSpinner
+                  variant="ring"
+                  size="md"
+                  message={`Searching across ${net.connectedPeers()} connected peers...`}
+                  showMessage
+                />
+              </div>
+              <div class={styles['skeleton-grid']}>
+                <For each={[1, 2, 3, 4, 5, 6]}>{() => <div class={styles['skeleton-card']} />}</For>
               </div>
             </Show>
 

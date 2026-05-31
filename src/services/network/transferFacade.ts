@@ -297,12 +297,16 @@ export const transferFacade = {
       if (
         !resolved.available &&
         resolved.peerCount === 0 &&
-        !looksLikeDownloadLink(resolved.link)
+        !looksLikeDownloadLink(resolved.link) &&
+        !looksLikeDownloadLink(item.sourceInput || '')
       ) {
         throw new Error('No online peers are seeding this file.');
       }
 
-      const trimmedLink = resolved.link.trim();
+      const trimmedLink =
+        resolved.linkKind === 'swarm' && looksLikeDownloadLink(item.sourceInput || '')
+          ? (item.sourceInput || resolved.link).trim()
+          : resolved.link.trim();
       if (!trimmedLink) {
         throw new Error('Could not resolve a download link for this file.');
       }
@@ -312,8 +316,7 @@ export const transferFacade = {
       return await downloadManager.executeFetch(id);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      downloadManager.updateItem(id, { status: 'failed', error: msg });
-      downloadManager.removeActive(id);
+      downloadManager.failActive(id, msg);
       throw err;
     }
   },

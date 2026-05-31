@@ -15,6 +15,7 @@ export interface NetworkFileCardProps {
   canDownload?: boolean;
   downloadProgress?: number;
   downloadStatus?: TransferView['status'];
+  downloadError?: string;
   onOpen?: () => void;
   onDownload?: () => Promise<void>;
   onDownloadError?: (message: string) => void;
@@ -47,8 +48,12 @@ export const NetworkFileCard: Component<NetworkFileCardProps> = props => {
     props.downloadStatus === 'resolving' ||
     props.downloadStatus === 'active';
 
+  const isFailed = () => props.downloadStatus === 'failed';
+  const isCompleted = () => props.downloadStatus === 'completed';
+
   const peersAvailable = () => (props.peerCount ?? 1) > 0;
-  const canDownloadNow = () => props.canDownload !== false && peersAvailable() && !inQueue();
+  const canDownloadNow = () =>
+    props.canDownload !== false && peersAvailable() && !inQueue() && !isFailed() && !isCompleted();
 
   const handleDownload = async () => {
     if (!canDownloadNow() && !submitting()) return;
@@ -86,6 +91,8 @@ export const NetworkFileCard: Component<NetworkFileCardProps> = props => {
 
   const buttonLabel = () => {
     if (submitting()) return 'Adding…';
+    if (isFailed()) return 'Retry';
+    if (isCompleted()) return 'Downloaded';
     if (props.downloadStatus === 'queued' || props.downloadStatus === 'resolving')
       return 'In queue';
     if (props.downloadStatus === 'active') {
@@ -119,12 +126,12 @@ export const NetworkFileCard: Component<NetworkFileCardProps> = props => {
                 {hashSnippet(props.contentHash)}
               </div>
             </Show>
-            <Show when={statusMessage()}>
+            <Show when={statusMessage() || props.downloadError}>
               <p class={styles.statusMessage} role="status">
-                {statusMessage()}
+                {statusMessage() || props.downloadError}
               </p>
             </Show>
-            <Show when={inQueue()}>
+            <Show when={inQueue() || (props.downloadStatus === 'active' && !isFailed())}>
               <div class={styles.progressWrap}>
                 <div class={styles.progressBar}>
                   <div class={styles.progressFill} style={{ width: `${progressPct() ?? 0}%` }} />
@@ -149,7 +156,7 @@ export const NetworkFileCard: Component<NetworkFileCardProps> = props => {
         <Button
           variant="primary"
           size="sm"
-          disabled={!canDownloadNow()}
+          disabled={!canDownloadNow() && !isFailed()}
           loading={submitting()}
           onClick={() => void handleDownload()}
           aria-label={`Download ${props.name}`}

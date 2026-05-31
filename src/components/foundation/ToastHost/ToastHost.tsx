@@ -1,6 +1,7 @@
-import { type Component, For, Show } from 'solid-js';
+import { type Component, For, Show, onCleanup, onMount } from 'solid-js';
 import { X } from 'lucide-solid';
 import { useToast, type ToastState } from '@/hooks/ui/useToast';
+import type { DownloadOutcomeDetail } from '@/services/network/downloadManager';
 import styles from './ToastHost.module.css';
 
 function toastClass(type: ToastState['type']): string {
@@ -21,6 +22,27 @@ function toastClass(type: ToastState['type']): string {
 
 export const ToastHost: Component = () => {
   const toast = useToast();
+
+  onMount(() => {
+    const onOutcome = (event: Event) => {
+      const detail = (event as CustomEvent<DownloadOutcomeDetail>).detail;
+      if (!detail?.name) return;
+      if (detail.ok) {
+        toast.success(`"${detail.name}" is ready in your library.`, {
+          title: 'Download complete',
+          duration: 8000,
+        });
+      } else {
+        const msg = detail.error ?? 'Download failed';
+        toast.error(msg.length > 120 ? `${msg.slice(0, 117)}…` : msg, {
+          title: `Could not download "${detail.name}"`,
+          duration: 12000,
+        });
+      }
+    };
+    window.addEventListener('allibrary-download-outcome', onOutcome);
+    onCleanup(() => window.removeEventListener('allibrary-download-outcome', onOutcome));
+  });
 
   return (
     <div class={styles.host} aria-live="polite" aria-relevant="additions">

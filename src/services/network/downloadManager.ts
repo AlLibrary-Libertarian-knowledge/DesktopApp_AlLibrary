@@ -24,6 +24,18 @@ export interface DownloadItem {
 
 type Listener = (active: DownloadItem[], completed: DownloadItem[]) => void;
 
+export type DownloadOutcomeDetail = {
+  name: string;
+  ok: boolean;
+  error?: string;
+  path?: string;
+};
+
+function emitDownloadOutcome(detail: DownloadOutcomeDetail) {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new CustomEvent('allibrary-download-outcome', { detail }));
+}
+
 interface TransferRow {
   id: string;
   link: string;
@@ -95,7 +107,9 @@ class DownloadManager {
 
   private handleProgress(payload: TransferProgressPayload) {
     const item =
-      this.active.find(i => i.id === payload.id) ?? this.active.find(i => i.link === payload.link);
+      this.active.find(i => i.id === payload.id) ??
+      this.active.find(i => i.link === payload.link) ??
+      this.active.find(i => i.sourceInput === payload.link);
     if (!item) return;
     item.progress = Math.min(1, Math.max(0, payload.progress));
     if (payload.bytesMoved != null) {
@@ -134,12 +148,24 @@ class DownloadManager {
   private handleFetchDone(payload: OnionShareFetchDonePayload) {
     const idx = this.active.findIndex(
       item =>
-        item.link === payload.link || (payload.transferId != null && item.id === payload.transferId)
+        item.id === payload.transferId ||
+        item.link === payload.link ||
+        (payload.transferId != null && item.id === payload.transferId)
     );
+    const item = idx !== -1 ? this.active[idx] : undefined;
     if (idx !== -1) {
       this.active.splice(idx, 1);
-      void this.refreshCompletedFromDb();
     }
+    void this.refreshCompletedFromDb().then(() => {
+      if (item) {
+        emitDownloadOutcome({
+          name: item.name,
+          ok: payload.ok,
+          error: payload.error,
+          path: payload.path,
+        });
+      }
+    });
   }
 
   public getById(id: string): DownloadItem | undefined {
@@ -193,6 +219,23 @@ class DownloadManager {
     }
   }
 
+  public failActive(id: string, error: string): void {
+    const idx = this.findActiveIndex(id);
+    if (idx === -1) return;
+    const item = this.active[idx];
+    const failed: DownloadItem = {
+      ...item,
+      status: 'failed',
+      error,
+      progress: item.progress,
+    };
+    this.active.splice(idx, 1);
+    this.completed = [failed, ...this.completed.filter(c => c.id !== id)];
+    this.notify();
+    emitDownloadOutcome({ name: failed.name, ok: false, error });
+    void this.refreshCompletedFromDb();
+  }
+
   public async executeFetch(id: string): Promise<string> {
     const item = this.getById(id);
     if (!item) {
@@ -209,14 +252,11 @@ class DownloadManager {
     this.notify();
 
     try {
-      const path = await onionShareFetch(link, item.outDir, item.name);
+      const path = await onionShareFetch(link, item.outDir, item.name, id);
       return path;
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      item.status = 'failed';
-      item.error = msg;
-      this.removeActive(id);
-      void this.refreshCompletedFromDb();
+      this.failActive(id, msg);
       throw err;
     }
   }

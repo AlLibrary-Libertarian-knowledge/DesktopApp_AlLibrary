@@ -43,6 +43,35 @@ const DEFAULT_CHUNK: usize = 256 * 1024;
 /// Re-announce before tracker `last_seen` TTL (30s in POC) when not using WS.
 const HTTP_ANNOUNCE_HEARTBEAT_SECS: u64 = 20;
 
+async fn clone_active_handle(state: &OnionShareState) -> Option<Arc<ShareServerHandle>> {
+    state.handle.lock().await.clone()
+}
+
+async fn run_tracker_sync(
+    state: &OnionShareState,
+    app: Option<&AppHandle>,
+    handle: Option<Arc<ShareServerHandle>>,
+    skip_if_busy: bool,
+) -> Option<Result<tracker_client::TrackerSyncOutcome, String>> {
+    let handle_ref = handle.as_ref().map(|h| h.as_ref());
+    let cached = state.cached_lobby.clone();
+    let gate = Arc::clone(&state.tracker_sync_gate);
+    let tr = tracker_client::sync_tracker_result_gated(
+        &gate,
+        skip_if_busy,
+        handle_ref,
+        cached,
+    )
+    .await?;
+    persist_tracker_diag(Arc::clone(&state.tracker_last_sync), app, &tr).await;
+    if tr.is_ok() {
+        if let Some(a) = app {
+            persist_lobby_to_sqlite(a, state).await;
+        }
+    }
+    Some(tr)
+}
+
 fn tracker_epoch_ms() -> i64 {
     std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
@@ -126,6 +155,13 @@ fn status_json_from_snapshot(
 }
 
 async fn finalize_running_onion(app: &AppHandle, state: &OnionShareState) {
+    if state
+        .background_loops_started
+        .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+        .is_err()
+    {
+        return;
+    }
     restart_http_announce_heartbeat(app.clone(), state).await;
     spawn_tracker_ws_loop(app, state).await;
     restore_local_shares_from_db(app, state).await;
@@ -275,8 +311,6 @@ async fn restart_http_announce_heartbeat(app: AppHandle, state: &OnionShareState
 
     let stop = Arc::clone(&state.http_announce_stop);
     let handle_arc = Arc::clone(&state.handle);
-    let lobby_arc = Arc::clone(&state.cached_lobby);
-    let diag_arc = Arc::clone(&state.tracker_last_sync);
     let state_clone = state.clone();
     let app_clone = app.clone();
 
@@ -289,16 +323,16 @@ async fn restart_http_announce_heartbeat(app: AppHandle, state: &OnionShareState
             if stop.load(Ordering::SeqCst) {
                 break;
             }
-            let g = handle_arc.lock().await;
-            let Some(ref h) = *g else {
-                drop(g);
+            let h = {
+                let g = handle_arc.lock().await;
+                g.clone()
+            };
+            let Some(h) = h else {
                 break;
             };
-            let tr = tracker_client::sync_tracker_result(Some(h), lobby_arc.clone()).await;
-            drop(g);
-            persist_tracker_diag(diag_arc.clone(), Some(&app_clone), &tr).await;
-            if tr.is_ok() {
-                persist_lobby_to_sqlite(&app_clone, &state_clone).await;
+            let tr = run_tracker_sync(&state_clone, Some(&app_clone), Some(h), true).await;
+            if tr.is_none() {
+                continue;
             }
         }
     });
@@ -318,10 +352,11 @@ async fn spawn_tracker_ws_loop(app: &AppHandle, state: &OnionShareState) {
     let handle_arc = Arc::clone(&state.handle);
     let lobby_arc = Arc::clone(&state.cached_lobby);
     let stop = Arc::clone(&state.tracker_stop);
+    let sync_gate = Arc::clone(&state.tracker_sync_gate);
     let on_lobby_updated = Some(lobby_persist_callback(app.clone(), state.clone()));
 
     let task = tokio::spawn(async move {
-        tracker_client::run_tracker_ws_loop(handle_arc, lobby_arc, stop, on_lobby_updated).await;
+        tracker_client::run_tracker_ws_loop(handle_arc, lobby_arc, sync_gate, stop, on_lobby_updated).await;
     });
 
     state.tracker_task.lock().await.replace(task);
@@ -334,10 +369,10 @@ async fn connect_local_tracker_fallback(app: &AppHandle, state: &OnionShareState
         return;
     }
 
-    let tr = tracker_client::sync_tracker_result(None, state.cached_lobby.clone()).await;
-    persist_tracker_diag(Arc::clone(&state.tracker_last_sync), Some(app), &tr).await;
+    let tr = run_tracker_sync(state, Some(app), None, false)
+        .await
+        .unwrap_or(Err("Tracker sync skipped".into()));
     if tr.is_ok() {
-        persist_lobby_to_sqlite(app, state).await;
         spawn_tracker_ws_loop(app, state).await;
         let _ = app.emit("network-presence-changed", json!({}));
     } else if let Err(e) = &tr {
@@ -380,17 +415,11 @@ pub async fn bootstrap_onion_share(
     state: &OnionShareState,
 ) -> Result<serde_json::Value, String> {
     {
-        let guard = state.handle.lock().await;
-        if let Some(ref h) = *guard {
+        let existing = clone_active_handle(state).await;
+        if let Some(h) = existing {
             let onion = h.onion_addr.clone();
             let port = h.local_port;
-            let tr = tracker_client::sync_tracker_result(Some(h), state.cached_lobby.clone()).await;
-            let sink = Arc::clone(&state.tracker_last_sync);
-            persist_tracker_diag(sink, Some(app), &tr).await;
-            if tr.is_ok() {
-                persist_lobby_to_sqlite(app, state).await;
-            }
-            drop(guard);
+            let _ = run_tracker_sync(state, Some(app), Some(h), true).await;
             update_bootstrap_snapshot(state, |s| {
                 s.mode = "ready".to_string();
                 s.bootstrap_percent = 100;
@@ -398,7 +427,6 @@ pub async fn bootstrap_onion_share(
                 s.last_error = None;
             })
             .await;
-            finalize_running_onion(app, state).await;
             return Ok(json!({"onion": onion, "localPort": port}));
         }
     }
@@ -529,16 +557,10 @@ pub async fn bootstrap_onion_share(
     let tor_data_dir = handle_srv.tor_data_dir();
     {
         let mut guard = state.handle.lock().await;
-        *guard = Some(handle_srv);
-        let lobby = state.cached_lobby.clone();
-        if let Some(ref h) = *guard {
-            let tr = tracker_client::sync_tracker_result(Some(h), lobby).await;
-            let sink = Arc::clone(&state.tracker_last_sync);
-            persist_tracker_diag(sink, Some(app), &tr).await;
-            if tr.is_ok() {
-                persist_lobby_to_sqlite(app, state).await;
-            }
-        }
+        *guard = Some(Arc::new(handle_srv));
+    }
+    if let Some(h) = clone_active_handle(state).await {
+        let _ = run_tracker_sync(state, Some(app), Some(h), false).await;
     }
 
     {
@@ -764,13 +786,18 @@ pub async fn stop_onion_share_internal(app: &AppHandle, state: &OnionShareState)
     drop(tg);
 
     state.http_announce_stop.store(true, Ordering::SeqCst);
+    state.background_loops_started.store(false, Ordering::SeqCst);
     if let Some(t) = state.http_announce_task.lock().await.take() {
         t.abort();
     }
 
     let mut guard = state.handle.lock().await;
     if let Some(h) = guard.take() {
-        h.stop().await;
+        if let Ok(h) = Arc::try_unwrap(h) {
+            h.stop().await;
+        } else {
+            warn!("Share server still referenced during stop; skipping graceful shutdown");
+        }
     }
     let _ = app.emit("network-presence-changed", json!({}));
 }
@@ -863,21 +890,24 @@ pub async fn onion_share_status(
     state: State<'_, OnionShareState>,
 ) -> Result<serde_json::Value, String> {
     let snap = state.bootstrap.read().await.clone();
-    let guard = state.handle.lock().await;
-    match guard.as_ref() {
-        None => Ok(status_json_from_snapshot(
-            false,
-            serde_json::Value::Null,
-            serde_json::Value::Null,
-            &snap,
-        )),
-        Some(h) => Ok(status_json_from_snapshot(
-            true,
-            json!(h.onion_addr),
-            json!(h.local_port),
-            &snap,
-        )),
-    }
+    let status = {
+        let guard = state.handle.lock().await;
+        match guard.as_ref() {
+            None => status_json_from_snapshot(
+                false,
+                serde_json::Value::Null,
+                serde_json::Value::Null,
+                &snap,
+            ),
+            Some(h) => status_json_from_snapshot(
+                true,
+                json!(h.onion_addr),
+                json!(h.local_port),
+                &snap,
+            ),
+        }
+    };
+    Ok(status)
 }
 
 #[tauri::command]
@@ -888,7 +918,11 @@ pub async fn reset_tor_overlay_data(
     {
         let mut guard = state.handle.lock().await;
         if let Some(h) = guard.take() {
-            h.stop().await;
+            if let Ok(h) = Arc::try_unwrap(h) {
+                h.stop().await;
+            } else {
+                warn!("Share server still referenced during Tor reset; skipping graceful shutdown");
+            }
         }
     }
     let outcome = TorProcess::reset_data_dir().await;
@@ -936,16 +970,12 @@ pub async fn tracker_refresh_lobby(
     app: AppHandle,
     state: State<'_, OnionShareState>,
 ) -> Result<NetworkLobby, String> {
-    let guard = state.handle.lock().await;
-    let tr = if let Some(ref srv) = *guard {
-        tracker_client::sync_tracker_result(Some(srv), state.cached_lobby.clone()).await
-    } else {
-        tracker_client::sync_tracker_result(None, state.cached_lobby.clone()).await
-    };
-    drop(guard);
-    persist_tracker_diag(Arc::clone(&state.tracker_last_sync), Some(&app), &tr).await;
-    tr.map_err(|e| format!("Cannot reach tracker: {e}"))?;
-    persist_lobby_to_sqlite(&app, state.inner()).await;
+    let h = clone_active_handle(state.inner()).await;
+    match run_tracker_sync(state.inner(), Some(&app), h, false).await {
+        Some(Ok(_)) => {}
+        Some(Err(e)) => return Err(format!("Cannot reach tracker: {e}")),
+        None => return Err("Tracker sync skipped".into()),
+    }
 
     tracker_get_cached_inner(&app, state.inner()).await
 }
@@ -1008,6 +1038,7 @@ pub async fn onion_share_fetch(
     out_dir: String,
     state: State<'_, OnionShareState>,
     file_name: Option<String>,
+    client_transfer_id: Option<String>,
 ) -> Result<String, String> {
     let socks = {
         let g = state.handle.lock().await;
@@ -1017,7 +1048,10 @@ pub async fn onion_share_fetch(
         return Err("Start onion sharing first so Tor SOCKS is available (POC-aligned).".to_string());
     };
 
-    let transfer_id = Uuid::new_v4().to_string();
+    let transfer_id = client_transfer_id
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+        .unwrap_or_else(|| Uuid::new_v4().to_string());
     if let Ok(pool) = ensure_node_database(&app).await {
         let _ = insert_transfer_pool(
             &pool,

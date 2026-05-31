@@ -293,11 +293,28 @@ pub async fn sync_tracker_result(
     ))
 }
 
+/// Runs tracker sync under a shared gate. When `skip_if_busy`, returns `None` if another sync is in flight.
+pub async fn sync_tracker_result_gated(
+    gate: &Arc<tokio::sync::Mutex<()>>,
+    skip_if_busy: bool,
+    handle: Option<&ShareServerHandle>,
+    cached_lobby: Arc<tokio::sync::RwLock<NetworkLobby>>,
+) -> Option<Result<TrackerSyncOutcome, String>> {
+    if skip_if_busy {
+        let _guard = gate.try_lock().ok()?;
+        Some(sync_tracker_result(handle, cached_lobby).await)
+    } else {
+        let _guard = gate.lock().await;
+        Some(sync_tracker_result(handle, cached_lobby).await)
+    }
+}
+
 pub type LobbyUpdatedCallback = Arc<dyn Fn() + Send + Sync>;
 
 pub async fn run_tracker_ws_loop(
-    handle: Arc<tokio::sync::Mutex<Option<ShareServerHandle>>>,
+    handle: Arc<tokio::sync::Mutex<Option<Arc<ShareServerHandle>>>>,
     cached_lobby: Arc<tokio::sync::RwLock<NetworkLobby>>,
+    sync_gate: Arc<tokio::sync::Mutex<()>>,
     stop: Arc<std::sync::atomic::AtomicBool>,
     on_lobby_updated: Option<LobbyUpdatedCallback>,
 ) {
@@ -307,6 +324,7 @@ pub async fn run_tracker_ws_loop(
         }
 
         let cfg = AppConfig::load();
+        let sync_gate_loop = Arc::clone(&sync_gate);
         let (ws_url, use_socks, socks_addr_str) = {
             let guard = handle.lock().await;
             if let Some(ref h) = *guard {
@@ -367,14 +385,22 @@ pub async fn run_tracker_ws_loop(
             }
             Err(e) => {
                 warn!("Tracker WebSocket error ({}): {}", ws_url, e);
-                let g = handle.lock().await;
-                if g.is_some() {
-                    sync_tracker(g.as_ref(), cached_lobby.clone()).await;
+                let h = {
+                    let g = handle.lock().await;
+                    g.clone()
+                };
+                if let Some(href) = h.as_ref().map(|v| v.as_ref()) {
+                    let _ = sync_tracker_result_gated(
+                        &sync_gate_loop,
+                        true,
+                        Some(href),
+                        cached_lobby.clone(),
+                    )
+                    .await;
                 } else if cfg.try_local_tracker_fallback {
                     let _ =
                         sync_lobby_http_only(LOCAL_TRACKER_HTTP, cached_lobby.clone()).await;
                 }
-                drop(g);
                 tokio::time::sleep(Duration::from_secs(3)).await;
             }
         }
@@ -383,7 +409,7 @@ pub async fn run_tracker_ws_loop(
 
 async fn ws_comm_loop<S>(
     mut ws_stream: S,
-    handle: Arc<tokio::sync::Mutex<Option<ShareServerHandle>>>,
+    handle: Arc<tokio::sync::Mutex<Option<Arc<ShareServerHandle>>>>,
     cached_lobby: Arc<tokio::sync::RwLock<NetworkLobby>>,
     stop: Arc<std::sync::atomic::AtomicBool>,
     on_lobby_updated: Option<LobbyUpdatedCallback>,
@@ -402,10 +428,13 @@ where
                 }
                 let cfg = AppConfig::load();
                 let payload = {
-                    let g = handle.lock().await;
-                    match g.as_ref() {
+                    let h = {
+                        let g = handle.lock().await;
+                        g.clone()
+                    };
+                    match h {
                         Some(h) => {
-                            let files = announced_files(h, &cfg).await;
+                            let files = announced_files(h.as_ref(), &cfg).await;
                             Some(WsClientMessage::Announce {
                                 node_id: cfg.node_id.clone(),
                                 onion: h.onion_addr.clone(),

@@ -104,7 +104,6 @@ export function useTransferState() {
 
   const startDownload = async (linkOrHash: string, fileName: string, outDir?: string) => {
     setError(null);
-    await refreshOnionStatus();
     if (!onionRunning() || !onionAddress()) {
       const msg =
         'Tor onion sharing is not ready. Open Sharing & downloads and wait for Onion status to turn ready.';
@@ -170,6 +169,20 @@ export function useTransferState() {
     );
   };
 
+  const findDownloadForTarget = (linkOrHash: string) => {
+    const active = findActiveDownload(linkOrHash);
+    if (active) return active;
+    const key = linkOrHash.trim().toLowerCase();
+    return completedDownloads().find(
+      d =>
+        d.link?.toLowerCase() === key ||
+        d.link?.toLowerCase().includes(key) ||
+        d.sourceInput?.toLowerCase() === key ||
+        d.sourceInput?.toLowerCase().includes(key) ||
+        d.name.toLowerCase() === key
+    );
+  };
+
   const findActiveProgress = (linkOrHash: string) => findActiveDownload(linkOrHash)?.progress;
 
   return {
@@ -196,5 +209,6 @@ export function useTransferState() {
     stopOnionShare,
     findActiveProgress,
     findActiveDownload,
+    findDownloadForTarget,
   };
 }

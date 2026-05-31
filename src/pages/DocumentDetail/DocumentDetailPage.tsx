@@ -227,8 +227,12 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
   });
 
   const viewerContentReady = createMemo(() => {
+    const doc = detailDocument();
     const type = documentType();
-    if (type === 'pdf' || type === 'epub') return !!documentBytes();
+    if (type === 'pdf') {
+      return Boolean(doc?.filePath) || !!documentBytes();
+    }
+    if (type === 'epub') return !!documentBytes();
     return !!documentUrl();
   });
 

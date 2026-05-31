@@ -183,6 +183,11 @@ export const DocumentViewer: Component<DocumentViewerProps> = props => {
   const readingMode = () => props.readingMode || 'normal';
   const searchTerm = () => props.searchTerm || '';
 
+  /** Prefer local disk path (PDFium) over URL or in-memory bytes (pdf.js). */
+  const [preferPdfJs, setPreferPdfJs] = createSignal(false);
+  const pdfNativeSource = () =>
+    preferPdfJs() ? undefined : props.documentPath || props.documentUrl;
+
   // Canvas for either PDF.js or native raster images
   const [pdfCanvas, setPdfCanvas] = createSignal<any | null>(null);
   const [canvasWrapper, setCanvasWrapper] = createSignal<any | null>(null);
@@ -200,9 +205,9 @@ export const DocumentViewer: Component<DocumentViewerProps> = props => {
 
     // Render new page for PDF
     if (props.documentType === 'pdf') {
-      if (props.documentUrl) {
-        // Native render path
-        renderNativePDFPage(props.documentUrl, newPage, Math.max(0.25, zoomLevel() / 100));
+      const nativePath = pdfNativeSource();
+      if (nativePath) {
+        void renderNativePDFPage(nativePath, newPage, Math.max(0.25, zoomLevel() / 100));
       } else if (pdfDocument()) {
         // pdf.js fallback
         renderPDFPage(newPage);
@@ -312,10 +317,13 @@ export const DocumentViewer: Component<DocumentViewerProps> = props => {
     props.onZoomChange?.(newZoom);
 
     // Re-render with new zoom for PDF
-    if (props.documentType === 'pdf' && pdfDocument()) {
-      renderPDFPage(currentPage());
-    } else if (props.documentType === 'pdf' && props.documentUrl) {
-      renderNativePDFPage(props.documentUrl, currentPage(), Math.max(0.25, newZoom / 100));
+    if (props.documentType === 'pdf') {
+      const nativePath = pdfNativeSource();
+      if (nativePath) {
+        renderNativePDFPage(nativePath, currentPage(), Math.max(0.25, newZoom / 100));
+      } else if (pdfDocument()) {
+        renderPDFPage(currentPage());
+      }
     }
 
     // Update zoom for EPUB
@@ -492,9 +500,15 @@ export const DocumentViewer: Component<DocumentViewerProps> = props => {
   };
 
   // Native PDFium rendering: draw current page as PNG onto canvas
-  const renderNativePDFPage = async (filePath: string, page: number, scale: number) => {
+  const renderNativePDFPage = async (
+    filePath: string,
+    page: number,
+    scale: number
+  ): Promise<boolean> => {
     const canvas = pdfCanvas();
-    if (!canvas) return;
+    if (!canvas) {
+      return false;
+    }
     try {
       setIsLoading(true);
       const pngBytes = await documentService.pdfRenderPagePng(filePath, page - 1, scale);
@@ -507,7 +521,7 @@ export const DocumentViewer: Component<DocumentViewerProps> = props => {
         (img as any).src = url;
       });
       const ctx = canvas.getContext('2d');
-      if (!ctx) return;
+      if (!ctx) return false;
       canvas.width = (img as any).width;
       canvas.height = (img as any).height;
       const wrapper = canvasWrapper();
@@ -517,10 +531,29 @@ export const DocumentViewer: Component<DocumentViewerProps> = props => {
       }
       (ctx as any).drawImage(img, 0, 0);
       (window as any).URL.revokeObjectURL(url);
-    } catch {
+      setError(null);
+      return true;
+    } catch (err) {
+      if (props.documentBytes && !pdfDocument()) {
+        setPreferPdfJs(true);
+        await initializePDF(props.documentBytes);
+        return true;
+      }
       setError('Failed to render PDF page');
+      return false;
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const retryPdfRender = () => {
+    setError(null);
+    setPreferPdfJs(false);
+    const path = props.documentPath || props.documentUrl;
+    if (path) {
+      void renderNativePDFPage(path, currentPage(), Math.max(0.25, zoomLevel() / 100));
+    } else if (props.documentBytes) {
+      void initializePDF(props.documentBytes);
     }
   };
 
@@ -615,26 +648,40 @@ export const DocumentViewer: Component<DocumentViewerProps> = props => {
     }
   };
 
+  // Initialize PDF when canvas is mounted (native PDFium, pdf.js fallback)
+  createEffect(() => {
+    if (props.documentType !== 'pdf' || error()) return;
+    const path = pdfNativeSource();
+    const canvas = pdfCanvas();
+    if (!path || !canvas) return;
+
+    const page = currentPage();
+    const zoom = zoomLevel();
+    void (async () => {
+      const ok = await renderNativePDFPage(path, page, Math.max(0.25, zoom / 100));
+      if (ok && totalPages() <= 1) {
+        try {
+          const total = await documentService.pdfGetPageCount(path);
+          if (total > 0) setTotalPages(total);
+        } catch {
+          /* ignore */
+        }
+      }
+    })();
+  });
+
   // Initialize document based on type
   onMount(async () => {
-    const { documentUrl, documentBytes } = props;
+    const { documentBytes } = props;
     if (props.documentType === 'pdf') {
-      if (documentUrl) {
-        await renderNativePDFPage(documentUrl, currentPage(), Math.max(0.25, zoomLevel() / 100));
-        try {
-          const total = await documentService.pdfGetPageCount(documentUrl);
-          setTotalPages(total);
-        } catch {
-          // ignore
-        }
-      } else if (documentBytes) {
+      if (!pdfNativeSource() && documentBytes) {
         await initializePDF(documentBytes);
-      } else {
+      } else if (!pdfNativeSource() && !documentBytes) {
         setIsLoading(false);
       }
     } else if (props.documentType === 'epub') {
       if (documentBytes) await initializeEPUB(documentBytes as ArrayBuffer);
-      else if (documentUrl) await initializeEPUB(documentUrl);
+      else if (props.documentUrl) await initializeEPUB(props.documentUrl);
       else setIsLoading(false);
     } else {
       setIsLoading(false);
@@ -708,7 +755,7 @@ export const DocumentViewer: Component<DocumentViewerProps> = props => {
             <AlertTriangle size={28} />
           </div>
           <div class={styles.errorText}>{error()}</div>
-          <button class={styles.retryButton} onClick={() => setError(null)}>
+          <button class={styles.retryButton} onClick={retryPdfRender}>
             Retry
           </button>
         </div>
