@@ -1,8 +1,19 @@
+use crate::core::database::resolve_database_path;
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
 use tauri::{AppHandle, Manager};
 use tracing::{error, info};
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ResolvedPaths {
+    #[serde(rename = "databaseFile")]
+    pub database_file: String,
+    #[serde(rename = "documentsFolder")]
+    pub documents_folder: String,
+    #[serde(rename = "downloadFolder")]
+    pub download_folder: String,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AppSettings {
@@ -14,6 +25,8 @@ pub struct AppSettings {
     pub language: String,
     pub accessibility: AccessibilitySettings,
     pub cultural: CulturalSettings,
+    #[serde(rename = "resolvedPaths", skip_serializing, default)]
+    pub resolved_paths: Option<ResolvedPaths>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -238,7 +251,18 @@ fn get_default_settings() -> AppSettings {
             educational_level: "beginner".to_string(),
             community_memberships: vec![],
         },
+        resolved_paths: None,
     }
+}
+
+fn populate_resolved_paths(settings: &mut AppSettings) {
+    settings.resolved_paths = Some(ResolvedPaths {
+        database_file: resolve_database_path(settings)
+            .to_string_lossy()
+            .into_owned(),
+        documents_folder: settings.folder_structure.documents_folder.clone(),
+        download_folder: settings.project.download_folder_path.clone(),
+    });
 }
 
 #[tauri::command]
@@ -250,9 +274,9 @@ pub async fn load_app_settings(app_handle: AppHandle) -> Result<AppSettings, Str
 
     if !settings_path.exists() {
         info!("Settings file not found, creating default settings");
-        let default_settings = get_default_settings();
+        let mut default_settings = get_default_settings();
+        populate_resolved_paths(&mut default_settings);
         
-        // Save default settings
         let settings_json = serde_json::to_string_pretty(&default_settings)
             .map_err(|e| format!("Failed to serialize default settings: {}", e))?;
         
@@ -265,11 +289,13 @@ pub async fn load_app_settings(app_handle: AppHandle) -> Result<AppSettings, Str
     let settings_content = fs::read_to_string(&settings_path)
         .map_err(|e| format!("Failed to read settings file: {}", e))?;
 
-    let settings: AppSettings = serde_json::from_str(&settings_content)
+    let mut settings: AppSettings = serde_json::from_str(&settings_content)
         .unwrap_or_else(|e| {
             error!("Failed to parse settings, using defaults: {}", e);
             get_default_settings()
         });
+
+    populate_resolved_paths(&mut settings);
 
     info!("App settings loaded successfully");
     Ok(settings)
@@ -317,6 +343,7 @@ pub async fn apply_project_paths(
     }
 
     save_app_settings(app_handle, settings.clone()).await?;
+    populate_resolved_paths(&mut settings);
     info!(
         "Applied project paths: project={}, download={}",
         settings.project.project_folder_path, settings.project.download_folder_path

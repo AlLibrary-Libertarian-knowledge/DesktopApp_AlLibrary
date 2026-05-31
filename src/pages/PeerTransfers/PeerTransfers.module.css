@@ -495,6 +495,15 @@
 .statusBar {
   margin-bottom: 1.25rem;
   padding: 1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.statusActionsExtra {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .statusRow {
@@ -584,8 +593,38 @@
   font-weight: 600;
 }
 
+.hubTabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.hubTab,
+.hubTabActive {
+  padding: 0.45rem 0.9rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-color, #1f2430);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.hubTabActive {
+  background: rgba(34, 211, 238, 0.12);
+  border-color: rgba(34, 211, 238, 0.35);
+  color: #22d3ee;
+}
+
 .modalActions {
   display: flex;
   justify-content: flex-end;
   gap: 0.5rem;
+}
+
+.resolveHint {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary, #94a3b8);
+  margin: 0;
 }

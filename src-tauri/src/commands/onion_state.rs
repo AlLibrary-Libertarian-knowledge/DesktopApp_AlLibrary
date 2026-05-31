@@ -38,7 +38,7 @@ impl Default for TorBootstrapSnapshot {
 
 #[derive(Clone)]
 pub struct OnionShareState {
-    pub handle: Arc<Mutex<Option<ShareServerHandle>>>,
+    pub handle: Arc<Mutex<Option<Arc<ShareServerHandle>>>>,
     pub tracker_stop: Arc<AtomicBool>,
     pub tracker_task: Arc<Mutex<Option<tokio::task::JoinHandle<()>>>>,
     pub cached_lobby: Arc<RwLock<NetworkLobby>>,
@@ -50,6 +50,10 @@ pub struct OnionShareState {
     pub bootstrap_in_progress: Arc<AtomicBool>,
     /// Paths waiting for onion share when Tor was not ready.
     pub pending_seeds: Arc<Mutex<Vec<PathBuf>>>,
+    /// Serializes tracker HTTP announce/lobby sync (one at a time; heartbeats skip if busy).
+    pub tracker_sync_gate: Arc<Mutex<()>>,
+    /// Prevents spawning duplicate WS / HTTP heartbeat background tasks.
+    pub background_loops_started: Arc<AtomicBool>,
 }
 
 impl Default for OnionShareState {
@@ -66,6 +70,8 @@ impl Default for OnionShareState {
             bootstrap: Arc::new(RwLock::new(TorBootstrapSnapshot::default())),
             bootstrap_in_progress: Arc::new(AtomicBool::new(false)),
             pending_seeds: Arc::new(Mutex::new(Vec::new())),
+            tracker_sync_gate: Arc::new(Mutex::new(())),
+            background_loops_started: Arc::new(AtomicBool::new(false)),
         }
     }
 }

@@ -231,3 +231,54 @@ pub async fn list_seed_eligible_paths_pool(pool: &SqlitePool) -> Result<Vec<Stri
     .map_err(|e| format!("Failed to list seed-eligible paths: {e}"))?;
     Ok(rows)
 }
+
+#[derive(Debug, Clone)]
+pub struct LocalDocumentSummary {
+    pub id: String,
+    pub title: String,
+    pub file_type: String,
+    pub file_size: i64,
+    pub local_path: Option<String>,
+    pub content_hash: Option<String>,
+    pub is_treated: bool,
+    pub created_at: String,
+}
+
+pub async fn list_recent_local_documents_pool(
+    pool: &SqlitePool,
+    since_days: u32,
+    limit: u32,
+) -> Result<Vec<LocalDocumentSummary>, String> {
+    let rows = sqlx::query_as::<_, (String, String, String, i64, Option<String>, Option<String>, i64, String)>(
+        r#"
+        SELECT id, title, file_type, file_size, local_path, content_hash, is_treated, created_at
+        FROM documents
+        WHERE created_at >= datetime('now', ?)
+        ORDER BY created_at DESC
+        LIMIT ?
+        "#,
+    )
+    .bind(format!("-{} days", since_days.max(1)))
+    .bind(limit.max(1) as i64)
+    .fetch_all(pool)
+    .await
+    .map_err(|e| format!("Failed to list recent local documents: {e}"))?;
+
+    Ok(rows
+        .into_iter()
+        .map(
+            |(id, title, file_type, file_size, local_path, content_hash, is_treated, created_at)| {
+                LocalDocumentSummary {
+                    id,
+                    title,
+                    file_type,
+                    file_size,
+                    local_path,
+                    content_hash,
+                    is_treated: is_treated != 0,
+                    created_at,
+                }
+            },
+        )
+        .collect())
+}

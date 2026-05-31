@@ -1,5 +1,6 @@
 // Derived from onion-poc (MIT): download logic from POC-Tracker-Onion-Share/src/gui/bg.rs
 use std::path::PathBuf;
+use std::sync::Arc;
 
 use anyhow::Context;
 use serde::Deserialize;
@@ -9,6 +10,8 @@ use crate::onion_share::link::parse_any;
 use crate::onion_share::link::ParsedLink;
 use crate::onion_share::server::routes;
 use crate::onion_share::tracker_proto::NetworkFile;
+
+pub type FetchProgressCb = Arc<dyn Fn(u32, u32, u64) + Send + Sync>;
 
 pub fn build_http_client(base_url: &str, socks_addr: Option<String>) -> anyhow::Result<reqwest::Client> {
     let mut builder = reqwest::Client::builder()
@@ -23,11 +26,18 @@ pub fn build_http_client(base_url: &str, socks_addr: Option<String>) -> anyhow::
     Ok(builder.build()?)
 }
 
+fn report_progress(cb: &Option<FetchProgressCb>, completed: u32, total: u32, bytes: u64) {
+    if let Some(ref p) = cb {
+        p(completed, total, bytes);
+    }
+}
+
 /// Download direct or swarm link; returns path to saved file.
 pub async fn fetch_to_directory(
     link_str: &str,
     socks_addr: Option<String>,
     out_dir: PathBuf,
+    progress_cb: Option<FetchProgressCb>,
 ) -> anyhow::Result<PathBuf> {
     let parsed = parse_any(link_str)?;
     tokio::fs::create_dir_all(&out_dir).await.ok();
@@ -47,8 +57,10 @@ pub async fn fetch_to_directory(
                 .json()
                 .await?;
 
+            let total = manifest.total_chunks.max(1) as u32;
             let out_path = out_dir.join(&manifest.file_name);
             let mut out_file = tokio::fs::File::create(&out_path).await?;
+            let mut bytes_moved = 0u64;
 
             for idx in 0..manifest.total_chunks {
                 let ct = client
@@ -60,7 +72,9 @@ pub async fn fetch_to_directory(
                     .await?;
 
                 let pt = crypto::decrypt_chunk(&link.key, link.file_id, idx, &ct)?;
+                bytes_moved += pt.len() as u64;
                 tokio::io::AsyncWriteExt::write_all(&mut out_file, &pt).await?;
+                report_progress(&progress_cb, (idx + 1) as u32, total, bytes_moved);
             }
             tokio::io::AsyncWriteExt::flush(&mut out_file).await?;
             Ok(out_path)
@@ -109,6 +123,7 @@ pub async fn fetch_to_directory(
                 .json()
                 .await?;
 
+            let total = manifest.total_chunks.max(1) as u32;
             let file_key = crypto::key_from_content_hash(&network_file.content_hash)?;
             let out_path = out_dir.join(&manifest.file_name);
 
@@ -148,9 +163,14 @@ pub async fn fetch_to_directory(
 
             let mut chunks: Vec<Option<Vec<u8>>> =
                 vec![None; manifest.total_chunks as usize];
+            let mut completed = 0u32;
+            let mut bytes_moved = 0u64;
             while let Some(res) = join_set.join_next().await {
                 let (idx, pt) = res??;
+                bytes_moved += pt.len() as u64;
                 chunks[idx as usize] = Some(pt);
+                completed += 1;
+                report_progress(&progress_cb, completed, total, bytes_moved);
             }
 
             let mut out_file = tokio::fs::File::create(&out_path).await?;

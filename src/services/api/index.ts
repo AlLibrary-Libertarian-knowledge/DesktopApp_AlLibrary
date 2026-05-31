@@ -20,29 +20,12 @@ export type {
 } from './categoryApi';
 export { CategoryType } from './categoryApi';
 
-// Cultural context API
-export { culturalApi } from './culturalApi';
-export type {
-  CulturalContext,
-  TraditionalClassification,
-  CulturalEducationContent,
-} from './culturalApi';
+// Cultural context API — removed
 
 // Peer network API
 export { peerApi } from './peerApi';
 export type { PeerInfo as PeerApiInfo, NetworkHealth, ContentExchange } from './peerApi';
 export { PeerStatus, PeerCapability, ExchangeStatus } from './peerApi';
-
-// Document management API
-export { documentApi } from './documentApi';
-export type {
-  DocumentUploadConfig,
-  DocumentUploadResult,
-  CulturalValidationResult,
-  SecurityValidationResult,
-  DocumentSearchParams,
-  DocumentSearchResult,
-} from './documentApi';
 
 // Network operations API
 export { networkApi } from './networkApi';

@@ -1,5 +1,6 @@
 import { type Component, createMemo } from 'solid-js';
 import './Footer.css';
+import { APP_FOOTER_VERSION } from '@/config/appMeta';
 import { useNetworkStore } from '@/stores/network/networkStore';
 import { useNetworkLobby } from '@/hooks/api/useNetworkLobby';
 import { useNetworkPresenceResource } from '@/hooks/network/useNetworkPresence';
@@ -7,7 +8,7 @@ import { useNetworkPresenceResource } from '@/hooks/network/useNetworkPresence';
 const Footer: Component = () => {
   const store = useNetworkStore();
   const lobby = useNetworkLobby();
-  const presence = useNetworkPresenceResource();
+  const { presence } = useNetworkPresenceResource();
 
   const connectedPeers = createMemo(() => Math.max(store.connectedPeers(), lobby.onlineNodes()));
 
@@ -41,16 +42,9 @@ const Footer: Component = () => {
           </div>
         </div>
 
-        <div class="footer-center">
-          <div class="cultural-notice">
-            <span class="respect-icon">🌿</span>
-            <span class="respect-text">Respecting cultural heritage and traditional knowledge</span>
-          </div>
-        </div>
-
         <div class="footer-right">
           <div class="version-info">
-            <span class="app-version">AlLibrary v1.0.11</span>
+            <span class="app-version">{APP_FOOTER_VERSION}</span>
             <span class="build-info">P2P Onion-Routing Active</span>
           </div>
 
@@ -63,11 +57,6 @@ const Footer: Component = () => {
             <span class="status-item">
               <span class="status-dot privacy-protected" title="Privacy: Protected" />
               <span class="status-label">Private</span>
-            </span>
-
-            <span class="status-item">
-              <span class="status-dot cultural-aware" title="Cultural Sensitivity: Active" />
-              <span class="status-label">Cultural</span>
             </span>
           </div>
         </div>

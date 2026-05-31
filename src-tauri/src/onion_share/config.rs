@@ -34,6 +34,8 @@ pub struct AppConfig {
     pub bootstrap_peers: Vec<String>,
     /// Tor bridge lines (one per entry), passed as `--Bridge` when non-empty.
     pub tor_bridges: Vec<String>,
+    /// Last successful Tor overlay data directory (warm-start reuse).
+    pub tor_overlay_data_dir: Option<String>,
 }
 
 impl Default for AppConfig {
@@ -49,6 +51,7 @@ impl Default for AppConfig {
             try_local_tracker_fallback: true,
             bootstrap_peers: Vec::new(),
             tor_bridges: Vec::new(),
+            tor_overlay_data_dir: None,
         }
     }
 }
@@ -86,8 +89,9 @@ impl AppConfig {
     }
 
     pub fn tor_available(&self) -> bool {
-        std::process::Command::new(self.tor_bin())
-            .arg("--version")
+        let mut cmd = std::process::Command::new(self.tor_bin());
+        crate::onion_share::platform::hide_console(&mut cmd);
+        cmd.arg("--version")
             .stdout(std::process::Stdio::null())
             .stderr(std::process::Stdio::null())
             .status()

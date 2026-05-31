@@ -1,4 +1,4 @@
-import { type Component, createSignal, onMount, onCleanup } from 'solid-js';
+import { type Component, createSignal, onMount, createEffect, Show } from 'solid-js';
 import { Button, Card, Modal } from '../../components/foundation';
 import {
   NetworkGraph,
@@ -6,7 +6,8 @@ import {
   StatCard,
   type ActivityItemProps,
 } from '../../components/composite';
-import { DownloadManager, StatusBar, SecurityPanel } from '../../components/domain/dashboard';
+import { StatusBar, SecurityPanel } from '../../components/domain/dashboard';
+import { TransferQueuePanel } from '@/components/domain/network/TransferQueuePanel';
 import { useTranslation } from '../../i18n/hooks';
 import {
   Download,
@@ -29,18 +30,13 @@ import {
 import styles from './Home.module.css';
 import { useNavigate } from '@solidjs/router';
 import { settingsService } from '@/services/storage/settingsService';
-import { invoke } from '@tauri-apps/api/core';
 import { useNetworkStore } from '@/stores/network/networkStore';
-import { downloadManager } from '@/services/network/downloadManager';
 import { activityService } from '@/services/activityService';
-
-const formatDownloadBytes = (bytes?: number): string => {
-  if (!bytes) return '';
-  const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return `${parseFloat((bytes / k ** i).toFixed(1))} ${sizes[i]}`;
-};
+import { useTransferState } from '@/hooks/api/useTransferState';
+import type { TransferView } from '@/services/network/transferFacade';
+import { pickAnyFiles } from '@/services/system/fileDialogs';
+import { shareWithToast } from '@/utils/documentActions';
+import { useToast } from '@/hooks/ui/useToast';
 
 const HomePage: Component = () => {
   // Initialize i18n translation hooks
@@ -54,18 +50,19 @@ const HomePage: Component = () => {
 
   const net = useNetworkStore();
   const navigate = useNavigate();
+  const toast = useToast();
+  const transfer = useTransferState();
 
   const [recentDownloads, setRecentDownloads] = createSignal<ActivityItemProps[]>([]);
   const [networkActivity, setNetworkActivity] = createSignal<ActivityItemProps[]>([]);
 
-  const mapDownloadItems = (
-    active: ReturnType<typeof downloadManager.getActive>,
-    completed: ReturnType<typeof downloadManager.getCompleted>
+  const mapTransferViews = (
+    active: TransferView[],
+    completed: TransferView[]
   ): ActivityItemProps[] => {
     const items: ActivityItemProps[] = active.map(item => ({
       type: 'downloading' as const,
       title: item.name,
-      fileSize: formatDownloadBytes(item.sizeBytes),
       progress: Math.round(item.progress * 100),
       status: tc('activityList.status.downloading'),
       metadata: tc('activityList.metadata.complete', {
@@ -76,12 +73,15 @@ const HomePage: Component = () => {
       items.push({
         type: 'completed',
         title: item.name,
-        fileSize: formatDownloadBytes(item.sizeBytes),
         status: tc('activityList.status.complete'),
       });
     }
     return items;
   };
+
+  createEffect(() => {
+    setRecentDownloads(mapTransferViews(transfer.activeDownloads(), transfer.completedDownloads()));
+  });
 
   const loadNetworkActivity = async () => {
     const entries = await activityService.loadActivityDocuments({ limit: 20 });
@@ -108,14 +108,6 @@ const HomePage: Component = () => {
       setShowModal(true);
       globalThis.localStorage?.setItem('allibrary-visited', 'true');
     }
-
-    setRecentDownloads(
-      mapDownloadItems(downloadManager.getActive(), downloadManager.getCompleted())
-    );
-    const unsubscribe = downloadManager.subscribe((active, completed) => {
-      setRecentDownloads(mapDownloadItems(active, completed));
-    });
-    onCleanup(() => unsubscribe());
 
     void loadNetworkActivity();
   });
@@ -448,21 +440,22 @@ const HomePage: Component = () => {
                   data-testid="upload-button"
                   aria-label={t('home.quickActions.shareDocument')}
                   onClick={async () => {
-                    // Open file picker via backend and stage into Document Management
-                    const projectPath = await settingsService.getProjectFolder();
-                    if (!projectPath) {
-                      navigate('/documents');
-                      return;
-                    }
                     try {
-                      const files = await invoke<string[] | null>('pick_document_files');
-                      if (files && files.length) {
-                        navigate('/documents');
-                      } else {
-                        navigate('/documents');
+                      const paths = await pickAnyFiles();
+                      if (!paths.length) return;
+
+                      for (const filePath of paths) {
+                        const base = filePath.split(/[\\/]/).pop() ?? 'document';
+                        const title = base.replace(/\.[^.]+$/, '') || base;
+                        await shareWithToast({ title, filePath }, toast);
                       }
-                    } catch {
-                      navigate('/documents');
+                      await loadNetworkActivity();
+                    } catch (e: unknown) {
+                      toast.show({
+                        type: 'error',
+                        title: 'Share failed',
+                        message: e instanceof Error ? e.message : String(e),
+                      });
                     }
                   }}
                 >
@@ -562,30 +555,19 @@ const HomePage: Component = () => {
                     variant="primary"
                     size="sm"
                     aria-label={t('home.downloadsSection.addDownload')}
+                    onClick={() => navigate('/transfers')}
                   >
                     <Plus size={14} aria-hidden="true" />
                     {t('home.downloadsSection.addDownload')}
                   </Button>
-                  <Button variant="ghost" size="sm" aria-label={t('home.downloadsSection.queue')}>
+                  <Button variant="primary" size="sm" onClick={() => navigate('/transfers')}>
                     <ClipboardList size={14} aria-hidden="true" />
-                    {t('home.downloadsSection.queue')}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    aria-label={t('home.downloadsSection.preferences')}
-                  >
-                    <Settings size={14} aria-hidden="true" />
-                    {t('home.downloadsSection.preferences')}
+                    Open full queue
+                    <Show when={transfer.activeCount() > 0}> ({transfer.activeCount()})</Show>
                   </Button>
                 </div>
               </div>
-              <Card class={styles['download-container']!}>
-                <DownloadManager
-                  onItemSelect={item => console.log('Selected:', item)}
-                  onItemAction={(action, item) => console.log('Action:', action, item)}
-                />
-              </Card>
+              <TransferQueuePanel variant="compact" showOutbound={false} />
             </section>
           </div>
         )}

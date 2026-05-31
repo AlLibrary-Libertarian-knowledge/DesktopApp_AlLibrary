@@ -1,16 +1,17 @@
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 use std::fs;
 use std::path::{Path, PathBuf};
 use tracing::info;
 use crate::core::document::type_detection::TypeDetection;
 use crate::core::document::file_operations::FileOperations;
 use crate::core::document::pipeline::{
-    compute_fingerprint_from_bytes, is_treated_file, legacy_full_file_hash, read_sidecar,
-    run_pipeline_to_file, PipelineProgress,
+    compute_fingerprint_from_bytes, fingerprint_for_treated_bytes, is_sidecar_file, is_treated_file,
+    legacy_full_file_hash, read_sidecar, run_pipeline_to_file, write_sidecar, PipelineProgress,
 };
 use crate::core::database::{
     delete_document_by_id_pool, document_seed_enabled_pool, remap_document_id_pool,
-    upsert_treated_document_pool, TreatedDocumentRow,
+    upsert_treated_document_pool, upsert_untreated_by_path_pool, TreatedDocumentRow,
 };
 use crate::commands::seed_sync::notify_document_treated;
 use tauri::{AppHandle, Emitter};
@@ -18,6 +19,14 @@ use crate::commands::settings::load_app_settings;
 use crate::core::database::node_db::ensure_node_database;
 use crate::core::database::delete_local_share_by_path_pool;
 use crate::core::database::activity_log::insert_activity_pool;
+
+fn pdf_magic_ok(bytes: &[u8]) -> bool {
+    bytes.len() >= 4 && &bytes[..4] == b"%PDF"
+}
+
+fn path_has_incoming_segment(path: &Path) -> bool {
+    path.components().any(|c| c.as_os_str() == "incoming")
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DocumentInfo {
@@ -118,8 +127,16 @@ pub async fn scan_documents_folder(
     }
     
     let scan_duration = start_time.elapsed().as_millis() as u64;
-    
-    info!("Document scan completed: {} documents found, {} bytes total, {}ms duration", 
+
+    if let Ok(pool) = ensure_node_database(&app).await {
+        for doc in &documents {
+            if let Err(e) = upsert_scanned_document(&pool, doc).await {
+                errors.push(format!("DB upsert {}: {e}", doc.file_path));
+            }
+        }
+    }
+
+    info!("Document scan completed: {} documents found, {} bytes total, {}ms duration",
           documents_found, total_size, scan_duration);
     
     Ok(ScanResult {
@@ -212,6 +229,9 @@ pub async fn list_documents_in_folder(
             if let Ok(entry) = entry {
                 let entry_path = entry.path();
                 if entry_path.is_file() {
+                    if is_sidecar_file(&entry_path) {
+                        continue;
+                    }
                     if let Ok(document_info) = create_document_info(&entry_path, Some(&app)).await {
                         documents.push(document_info);
                     }
@@ -248,6 +268,7 @@ pub async fn process_document(
         .to_string();
     let dest_path = dst_dir.join(&filename);
     let dest_for_pipeline = dest_path.clone();
+    let src_for_log = src.clone();
 
     let app_emit = app_handle.clone();
     let progress_cb: Option<Box<dyn Fn(PipelineProgress) + Send + Sync>> =
@@ -320,7 +341,20 @@ pub async fn process_document(
         let _ = insert_activity_pool(&pool, "upload", Some(&info.id), Some(&payload)).await;
     }
 
+    let _ = app_handle.emit(
+        "document-pipeline-progress",
+        serde_json::json!({
+            "step": 7,
+            "label": "Complete",
+            "percent": 100,
+        }),
+    );
+
     notify_document_treated(&app_handle, &info.file_path);
+
+    if src_for_log != dest_path && path_has_incoming_segment(&src_for_log) {
+        let _ = fs::remove_file(&src_for_log);
+    }
 
     Ok(info)
 }
@@ -432,6 +466,18 @@ pub async fn process_downloaded_file_internal(
     expected_content_hash: Option<String>,
     user_title: Option<String>,
 ) -> Result<DocumentInfo, String> {
+    if let Ok(info) = import_downloaded_treated_file(
+        app_handle,
+        &raw_path,
+        &library_dir,
+        expected_content_hash.as_deref(),
+        user_title.as_deref(),
+    )
+    .await
+    {
+        return Ok(info);
+    }
+
     process_document(
         app_handle.clone(),
         library_dir.to_string_lossy().to_string(),
@@ -440,6 +486,106 @@ pub async fn process_downloaded_file_internal(
         expected_content_hash,
     )
     .await
+}
+
+/// Preserve network content hash by importing treated bytes as-is (no re-pipeline).
+async fn import_downloaded_treated_file(
+    app_handle: &AppHandle,
+    src: &Path,
+    library_dir: &Path,
+    expected_content_hash: Option<&str>,
+    user_title: Option<&str>,
+) -> Result<DocumentInfo, String> {
+    if !src.exists() || !src.is_file() {
+        return Err("source missing".into());
+    }
+
+    let bytes = fs::read(src).map_err(|e| e.to_string())?;
+    let ext = src
+        .extension()
+        .and_then(|e| e.to_str())
+        .unwrap_or("")
+        .to_lowercase();
+    if ext != "pdf" && ext != "epub" {
+        return Err("unsupported extension for fast import".into());
+    }
+    if ext == "pdf" && !pdf_magic_ok(&bytes) {
+        return Err("downloaded bytes are not a valid PDF".into());
+    }
+
+    let fp = fingerprint_for_treated_bytes(&bytes, &ext)?;
+    if let Some(expected) = expected_content_hash {
+        if fp.content_hash != expected {
+            return Err(format!(
+                "fast import hash mismatch: expected {expected}, got {}",
+                fp.content_hash
+            ));
+        }
+    }
+
+    if !library_dir.exists() {
+        fs::create_dir_all(library_dir).map_err(|e| e.to_string())?;
+    }
+
+    let filename = src
+        .file_name()
+        .and_then(|n| n.to_str())
+        .ok_or("Bad filename")?
+        .to_string();
+    let dest_path = library_dir.join(&filename);
+
+    fs::write(&dest_path, &bytes).map_err(|e| e.to_string())?;
+    write_sidecar(&dest_path, &fp)?;
+
+    let canonical_name =
+        resolve_canonical_name(app_handle, &fp.content_hash, &filename).await;
+
+    let info = build_document_info_from_treated(
+        &dest_path,
+        &fp,
+        &filename,
+        &canonical_name,
+        user_title.map(String::from),
+        fp.page_count,
+        true,
+    )
+    .await?;
+
+    if let Ok(pool) = ensure_node_database(app_handle).await {
+        upsert_treated_document_pool(
+            &pool,
+            &TreatedDocumentRow {
+                id: info.id.clone(),
+                content_hash: info.content_hash.clone().unwrap_or_default(),
+                local_path: info.file_path.clone(),
+                title: info.metadata.title.clone().unwrap_or(filename.clone()),
+                original_filename: filename.clone(),
+                canonical_name,
+                file_type: info.document_type.clone(),
+                file_size: info.file_size as i64,
+                page_count: fp.page_count as i32,
+                chunk_count: fp.chunk_count as i32,
+                hash_scheme: fp.hash_scheme.clone(),
+                is_treated: true,
+                processing_status: "treated".to_string(),
+            },
+        )
+        .await?;
+
+        let payload = serde_json::json!({
+            "title": info.metadata.title,
+            "contentHash": info.content_hash,
+        })
+        .to_string();
+        let _ = insert_activity_pool(&pool, "download", Some(&info.id), Some(&payload)).await;
+    }
+
+    if src != dest_path && path_has_incoming_segment(src) {
+        let _ = fs::remove_file(src);
+    }
+
+    notify_document_treated(app_handle, &info.file_path);
+    Ok(info)
 }
 
 pub async fn ensure_seeding_allowed(path: &Path) -> Result<(), String> {
@@ -484,8 +630,7 @@ pub async fn open_document(file_path: String) -> Result<Vec<u8>, String> {
     }
     
     // Read file content
-    fs::read(&path)
-        .map_err(|e| format!("Failed to read file: {}", e))
+    fs::read(&path).map_err(|e| format!("Failed to read file: {}", e))
 }
 
 // Helper function to recursively scan a directory
@@ -579,6 +724,15 @@ async fn scan_directory_recursive(
                         info!("No extension found for: {}", entry_path.display());
                     }
                 } else if entry_path.is_dir() {
+                    let dir_name = entry_path
+                        .file_name()
+                        .and_then(|n| n.to_str())
+                        .unwrap_or("")
+                        .to_lowercase();
+                    if dir_name == "incoming" || dir_name == "downloads" {
+                        info!("Skipping scan of staging directory: {}", entry_path.display());
+                        continue;
+                    }
                     info!("Found subdirectory: {}", entry_path.display());
                     // Recursively scan subdirectories - use Box::pin to avoid recursion issues
                     let future = Box::pin(scan_directory_recursive(app, &entry_path, documents, errors, total_size, documents_found));
@@ -606,6 +760,59 @@ fn path_staging_id(file_path: &Path) -> String {
         "untreated:{}",
         blake3::hash(file_path.to_string_lossy().as_bytes()).to_hex()
     )
+}
+
+async fn upsert_scanned_document(pool: &sqlx::SqlitePool, doc: &DocumentInfo) -> Result<(), String> {
+    if doc.is_treated {
+        let content_hash = doc.content_hash.clone().unwrap_or_else(|| doc.id.clone());
+        let seed_enabled = document_seed_enabled_pool(pool, &doc.file_path)
+            .await
+            .unwrap_or(doc.seed_enabled);
+        upsert_treated_document_pool(
+            pool,
+            &TreatedDocumentRow {
+                id: doc.id.clone(),
+                content_hash,
+                local_path: doc.file_path.clone(),
+                title: doc
+                    .metadata
+                    .title
+                    .clone()
+                    .unwrap_or_else(|| doc.filename.clone()),
+                original_filename: doc
+                    .original_filename
+                    .clone()
+                    .unwrap_or_else(|| doc.filename.clone()),
+                canonical_name: doc
+                    .canonical_name
+                    .clone()
+                    .unwrap_or_else(|| doc.filename.clone()),
+                file_type: doc.document_type.clone(),
+                file_size: doc.file_size as i64,
+                page_count: doc.metadata.page_count.unwrap_or(0) as i32,
+                chunk_count: 0,
+                hash_scheme: "whiteboard-v2".to_string(),
+                is_treated: true,
+                processing_status: doc.processing_status.clone(),
+            },
+        )
+        .await?;
+        if !seed_enabled {
+            let _ = crate::core::database::set_document_shared_pool(pool, &doc.file_path, false).await;
+        }
+    } else {
+        let path_id = path_staging_id(std::path::Path::new(&doc.file_path));
+        upsert_untreated_by_path_pool(
+            pool,
+            &path_id,
+            &doc.file_path,
+            &doc.filename,
+            &doc.document_type,
+            doc.file_size as i64,
+        )
+        .await?;
+    }
+    Ok(())
 }
 
 async fn build_document_info_from_treated(

@@ -307,15 +307,83 @@
       "viewDetails": "Taipitopito",
       "remove": "Tango mai i te hitori"
     },
-    "toasts": { "removed": "Kua tangohia mai i te hitori", "removeFailed": "I rahua te tango" }
+    "toasts": {
+      "removed": "Kua tangohia mai i te hitori",
+      "removeFailed": "I rahua te tango"
+    }
   },
   "collections": {
     "title": "Kohinga",
-    "subtitle": "Kohinga tuhinga whakaritea",
-    "createNew": "Hanga Kohinga Hou",
-    "manageExisting": "Whakahaere Kohinga",
-    "collaborativeCollections": "Kohinga Mahi Tahi",
-    "culturalCollections": "Kohinga Taonga Ahurea"
+    "subtitle": "Whakarōpū tuhinga ā-rohe ki ngā huinga",
+    "newCollection": "Kohinga hou",
+    "searchPlaceholder": "Rapu kohinga...",
+    "loading": "Uta ana ngā kohinga...",
+    "empty": {
+      "title": "Kāore anō he kohinga",
+      "cta": "Hanga tō kohinga tuatahi"
+    },
+    "card": {
+      "docs": "{{count}} docs",
+      "updated": "Updated {{date}}"
+    },
+    "actions": {
+      "open": "Whakatuwhera",
+      "edit": "Whakatika",
+      "delete": "Muku"
+    },
+    "create": {
+      "title": "Kohinga hou",
+      "subtitle": "Group related documents together for quick access.",
+      "submit": "Hanga"
+    },
+    "edit": {
+      "title": "Whakatika kohinga",
+      "subtitle": "Update the name or description for this collection.",
+      "submit": "Tiaki huringa"
+    },
+    "form": {
+      "name": "Name",
+      "namePlaceholder": "e.g. Research papers, Field notes",
+      "nameHint": "A short, recognizable title for this group.",
+      "description": "Description",
+      "optional": "Optional",
+      "descriptionPlaceholder": "What belongs in this collection?",
+      "bufLabel": "BUF",
+      "nameLabel": "NAME",
+      "charCount": "{{current}} / {{max}}"
+    },
+    "detail": {
+      "fallbackTitle": "Collection",
+      "subtitle": "{{count}} documents · updated {{date}}",
+      "detailsFallback": "Collection details",
+      "docsBadge": "DOCS",
+      "addFromLibrary": "Tāpiri mai i te whare pukapuka",
+      "syncing": "Syncing document index...",
+      "emptyTitle": "No documents in this collection yet.",
+      "emptyHint": "Use \"Add from library\" to attach scanned files.",
+      "remove": "Tango"
+    },
+    "addDocs": {
+      "title": "Tāpiri tuhinga mai i te whare pukapuka",
+      "subtitle": "Select scanned documents to include in this collection.",
+      "loading": "Loading library...",
+      "empty": "No scanned documents found. Scan your library first.",
+      "hint": "{{toAdd}} to add · {{inCollection}} already in collection",
+      "addSelected": "Tāpiri kua tīpakohia ({{count}})",
+      "inCollection": "Kei roto i te kohinga"
+    },
+    "confirmDelete": "Muku \"{{name}}\"? Kāore ngā tuhinga e mukua.",
+    "errors": {
+      "createFailed": "Failed to create collection",
+      "updateFailed": "Failed to update collection",
+      "deleteFailed": "Failed to delete collection",
+      "removeDocFailed": "Failed to remove document",
+      "addDocsFailed": "Failed to add documents"
+    },
+    "createNew": "Create New Collection",
+    "manageExisting": "Manage Collections",
+    "collaborativeCollections": "Collaborative Collections",
+    "culturalCollections": "Collections"
   },
   "network": {
     "title": "Ipurangi",

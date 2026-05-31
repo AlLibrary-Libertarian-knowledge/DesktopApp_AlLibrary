@@ -426,7 +426,12 @@ class DocumentService {
       const scan = await this.scanDocumentsFolder();
       const localHit = scan.documents.find(d => d.id === rawId || d.id === decoded);
       if (localHit) {
-        return docInfoToDetailModel(localHit);
+        try {
+          await this.getDocumentInfo(localHit.file_path);
+          return docInfoToDetailModel(localHit);
+        } catch {
+          /* local index stale — try network sources */
+        }
       }
     } catch {
       /* fall through */

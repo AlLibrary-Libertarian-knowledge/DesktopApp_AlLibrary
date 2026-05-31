@@ -222,8 +222,7 @@
     "uploadNew": "Subir Nuevo Documento",
     "organizeLibrary": "Organizar Biblioteca",
     "culturalContext": "Contexto Cultural",
-    "sensitivityLevel": "Nivel de Sensibilidad",
-    "categories": "Categorías"
+    "sensitivityLevel": "Nivel de Sensibilidad"
   },
   "favorites": {
     "title": "Mis Favoritos",
@@ -310,11 +309,76 @@
   },
   "collections": {
     "title": "Colecciones",
-    "subtitle": "Colecciones organizadas de documentos",
-    "myCollections": "Mis Colecciones",
-    "sharedCollections": "Colecciones Compartidas",
-    "createCollection": "Crear Colección",
-    "empty": "No tienes colecciones aún"
+    "subtitle": "Agrupa documentos locales en conjuntos curados",
+    "newCollection": "Nueva colección",
+    "searchPlaceholder": "Buscar colecciones...",
+    "loading": "Cargando colecciones...",
+    "empty": {
+      "title": "Aún no hay colecciones",
+      "cta": "Crea tu primera colección"
+    },
+    "card": {
+      "docs": "{{count}} docs",
+      "updated": "Actualizado {{date}}"
+    },
+    "actions": {
+      "open": "Abrir",
+      "edit": "Editar",
+      "delete": "Eliminar"
+    },
+    "create": {
+      "title": "Nueva colección",
+      "subtitle": "Agrupa documentos relacionados para acceder rápido.",
+      "submit": "Crear"
+    },
+    "edit": {
+      "title": "Editar colección",
+      "subtitle": "Actualiza el nombre o la descripción.",
+      "submit": "Guardar cambios"
+    },
+    "form": {
+      "name": "Nombre",
+      "namePlaceholder": "p. ej. Artículos de investigación",
+      "nameHint": "Un título breve y reconocible.",
+      "description": "Descripción",
+      "optional": "Opcional",
+      "descriptionPlaceholder": "¿Qué pertenece a esta colección?",
+      "bufLabel": "BUF",
+      "nameLabel": "NOM",
+      "charCount": "{{current}} / {{max}}"
+    },
+    "detail": {
+      "fallbackTitle": "Colección",
+      "subtitle": "{{count}} documentos · actualizado {{date}}",
+      "detailsFallback": "Detalles de la colección",
+      "docsBadge": "DOCS",
+      "addFromLibrary": "Añadir de la biblioteca",
+      "syncing": "Sincronizando índice...",
+      "emptyTitle": "Aún no hay documentos en esta colección.",
+      "emptyHint": "Usa \"Añadir de la biblioteca\" para adjuntar archivos.",
+      "remove": "Quitar"
+    },
+    "addDocs": {
+      "title": "Añadir documentos de la biblioteca",
+      "subtitle": "Selecciona documentos escaneados para incluir.",
+      "loading": "Cargando biblioteca...",
+      "empty": "No se encontraron documentos. Escanea tu biblioteca primero.",
+      "hint": "{{toAdd}} por añadir · {{inCollection}} ya en la colección",
+      "addSelected": "Añadir seleccionados ({{count}})",
+      "inCollection": "En la colección"
+    },
+    "confirmDelete": "¿Eliminar \"{{name}}\"? Los documentos no se eliminan.",
+    "errors": {
+      "createFailed": "Error al crear la colección",
+      "updateFailed": "Error al actualizar la colección",
+      "deleteFailed": "Error al eliminar la colección",
+      "removeDocFailed": "Error al quitar el documento",
+      "addDocsFailed": "Error al añadir documentos"
+    },
+    "createNew": "Create New Collection",
+    "manageExisting": "Manage Collections",
+    "collaborativeCollections": "Collaborative Collections",
+    "culturalCollections": "Collections"
   },
   "network": {
     "title": "Red P2P",

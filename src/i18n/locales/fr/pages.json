@@ -303,16 +303,88 @@
       "share": "Partage",
       "favorite": "Favori"
     },
-    "actions": { "open": "Ouvrir", "viewDetails": "Détails", "remove": "Retirer de l'historique" },
-    "toasts": { "removed": "Retiré de l'historique", "removeFailed": "Échec de la suppression" }
+    "actions": {
+      "open": "Ouvrir",
+      "viewDetails": "Détails",
+      "remove": "Retirer de l'historique"
+    },
+    "toasts": {
+      "removed": "Retiré de l'historique",
+      "removeFailed": "Échec de la suppression"
+    }
   },
   "collections": {
     "title": "Collections",
-    "subtitle": "Collections de documents organisés",
-    "createNew": "Créer une Nouvelle Collection",
-    "manageExisting": "Gérer les Collections",
-    "collaborativeCollections": "Collections Collaboratives",
-    "culturalCollections": "Collections du Patrimoine Culturel"
+    "subtitle": "Regroupez des documents locaux en ensembles",
+    "newCollection": "Nouvelle collection",
+    "searchPlaceholder": "Rechercher des collections...",
+    "loading": "Chargement des collections...",
+    "empty": {
+      "title": "Aucune collection",
+      "cta": "Créez votre première collection"
+    },
+    "card": {
+      "docs": "{{count}} docs",
+      "updated": "Updated {{date}}"
+    },
+    "actions": {
+      "open": "Ouvrir",
+      "edit": "Modifier",
+      "delete": "Supprimer"
+    },
+    "create": {
+      "title": "Nouvelle collection",
+      "subtitle": "Group related documents together for quick access.",
+      "submit": "Créer"
+    },
+    "edit": {
+      "title": "Modifier la collection",
+      "subtitle": "Update the name or description for this collection.",
+      "submit": "Enregistrer"
+    },
+    "form": {
+      "name": "Name",
+      "namePlaceholder": "e.g. Research papers, Field notes",
+      "nameHint": "A short, recognizable title for this group.",
+      "description": "Description",
+      "optional": "Optional",
+      "descriptionPlaceholder": "What belongs in this collection?",
+      "bufLabel": "BUF",
+      "nameLabel": "NAME",
+      "charCount": "{{current}} / {{max}}"
+    },
+    "detail": {
+      "fallbackTitle": "Collection",
+      "subtitle": "{{count}} documents · updated {{date}}",
+      "detailsFallback": "Collection details",
+      "docsBadge": "DOCS",
+      "addFromLibrary": "Ajouter depuis la bibliothèque",
+      "syncing": "Syncing document index...",
+      "emptyTitle": "No documents in this collection yet.",
+      "emptyHint": "Use \"Add from library\" to attach scanned files.",
+      "remove": "Retirer"
+    },
+    "addDocs": {
+      "title": "Ajouter des documents",
+      "subtitle": "Select scanned documents to include in this collection.",
+      "loading": "Loading library...",
+      "empty": "No scanned documents found. Scan your library first.",
+      "hint": "{{toAdd}} to add · {{inCollection}} already in collection",
+      "addSelected": "Ajouter la sélection ({{count}})",
+      "inCollection": "Dans la collection"
+    },
+    "confirmDelete": "Supprimer \"{{name}}\" ? Les documents ne seront pas supprimés.",
+    "errors": {
+      "createFailed": "Failed to create collection",
+      "updateFailed": "Failed to update collection",
+      "deleteFailed": "Failed to delete collection",
+      "removeDocFailed": "Failed to remove document",
+      "addDocsFailed": "Failed to add documents"
+    },
+    "createNew": "Create New Collection",
+    "manageExisting": "Manage Collections",
+    "collaborativeCollections": "Collaborative Collections",
+    "culturalCollections": "Collections"
   },
   "network": {
     "title": "Réseau",

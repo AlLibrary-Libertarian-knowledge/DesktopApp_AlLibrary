@@ -294,6 +294,194 @@ impl CollectionOperations {
 
         Ok(result.rows_affected() > 0)
     }
+
+    pub async fn count_documents(pool: &SqlitePool, collection_id: &str) -> Result<i32> {
+        let count: (i64,) = sqlx::query_as(
+            "SELECT COUNT(*) FROM document_collections WHERE collection_id = ?",
+        )
+        .bind(collection_id)
+        .fetch_one(pool)
+        .await?;
+        Ok(count.0 as i32)
+    }
+
+    pub async fn list_document_ids(pool: &SqlitePool, collection_id: &str) -> Result<Vec<String>> {
+        let rows = sqlx::query_scalar::<_, String>(
+            "SELECT document_id FROM document_collections WHERE collection_id = ? ORDER BY added_at",
+        )
+        .bind(collection_id)
+        .fetch_all(pool)
+        .await?;
+        Ok(rows)
+    }
+
+    pub async fn add_documents(
+        pool: &SqlitePool,
+        collection_id: &str,
+        document_ids: &[String],
+    ) -> Result<()> {
+        let now = Utc::now();
+        for doc_id in document_ids {
+            sqlx::query(
+                "INSERT OR IGNORE INTO document_collections (document_id, collection_id, added_at) VALUES (?, ?, ?)",
+            )
+            .bind(doc_id)
+            .bind(collection_id)
+            .bind(now)
+            .execute(pool)
+            .await?;
+        }
+        Ok(())
+    }
+
+    pub async fn remove_documents(
+        pool: &SqlitePool,
+        collection_id: &str,
+        document_ids: &[String],
+    ) -> Result<()> {
+        for doc_id in document_ids {
+            sqlx::query(
+                "DELETE FROM document_collections WHERE document_id = ? AND collection_id = ?",
+            )
+            .bind(doc_id)
+            .bind(collection_id)
+            .execute(pool)
+            .await?;
+        }
+        Ok(())
+    }
+
+    pub async fn list_documents(pool: &SqlitePool, collection_id: &str) -> Result<Vec<Document>> {
+        let rows = sqlx::query_as::<_, Document>(
+            r#"
+            SELECT
+                d.id, d.title, d.description, d.content_hash, d.file_type, d.file_size,
+                d.created_at, d.updated_at, d.language_code, d.publication_date, d.page_count,
+                d.cultural_origin, d.traditional_knowledge_protocols, d.indigenous_permissions,
+                d.local_path, d.is_shared, d.processing_status, d.content_verification_hash,
+                d.malware_scan_status, d.javascript_stripped, d.peer_availability_count,
+                d.last_availability_check, d.download_priority
+            FROM documents d
+            INNER JOIN document_collections dc ON d.id = dc.document_id
+            WHERE dc.collection_id = ?
+            ORDER BY dc.added_at DESC
+            "#,
+        )
+        .bind(collection_id)
+        .fetch_all(pool)
+        .await?;
+        Ok(rows)
+    }
+}
+
+#[cfg(test)]
+mod collection_ops_tests {
+    use super::*;
+    use crate::core::database::migrations::run_migrations;
+    use sqlx::sqlite::SqlitePoolOptions;
+
+    async fn test_pool() -> SqlitePool {
+        let db_path = std::env::temp_dir().join(format!(
+            "collection_ops_test_{}.db",
+            uuid::Uuid::new_v4()
+        ));
+        if let Some(parent) = db_path.parent() {
+            std::fs::create_dir_all(parent).expect("temp dir");
+        }
+        let options = sqlx::sqlite::SqliteConnectOptions::new()
+            .filename(&db_path)
+            .create_if_missing(true);
+        let pool = SqlitePoolOptions::new()
+            .max_connections(1)
+            .connect_with(options)
+            .await
+            .expect("connect");
+        run_migrations(&pool).await.expect("migrate");
+        pool
+    }
+
+    async fn insert_test_document(pool: &SqlitePool, id: &str) {
+        let now = Utc::now();
+        sqlx::query(
+            "INSERT INTO documents (id, title, description, content_hash, file_type, file_size, created_at, updated_at, is_shared, processing_status, malware_scan_status, javascript_stripped, peer_availability_count, download_priority) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        )
+        .bind(id)
+        .bind(format!("Doc {id}"))
+        .bind(None::<String>)
+        .bind(format!("hash-{id}"))
+        .bind("pdf")
+        .bind(100_i64)
+        .bind(now)
+        .bind(now)
+        .bind(false)
+        .bind("active")
+        .bind("clean")
+        .bind(false)
+        .bind(0_i32)
+        .bind(0_i32)
+        .execute(pool)
+        .await
+        .expect("insert document");
+    }
+
+    #[tokio::test]
+    async fn document_membership_round_trip() {
+        let pool = test_pool().await;
+        let collection = CollectionOperations::create(
+            &pool,
+            Collection {
+                id: String::new(),
+                name: "Test".to_string(),
+                description: None,
+                created_at: Utc::now(),
+                updated_at: Utc::now(),
+            },
+        )
+        .await
+        .expect("create collection");
+
+        insert_test_document(&pool, "doc-1").await;
+        insert_test_document(&pool, "doc-2").await;
+
+        CollectionOperations::add_documents(&pool, &collection.id, &["doc-1".into(), "doc-2".into()])
+            .await
+            .expect("add");
+        CollectionOperations::add_documents(&pool, &collection.id, &["doc-1".into()])
+            .await
+            .expect("dedupe add");
+
+        assert_eq!(
+            CollectionOperations::count_documents(&pool, &collection.id)
+                .await
+                .unwrap(),
+            2
+        );
+
+        let docs = CollectionOperations::list_documents(&pool, &collection.id)
+            .await
+            .expect("list");
+        assert_eq!(docs.len(), 2);
+
+        CollectionOperations::remove_documents(&pool, &collection.id, &["doc-1".into()])
+            .await
+            .expect("remove");
+        assert_eq!(
+            CollectionOperations::count_documents(&pool, &collection.id)
+                .await
+                .unwrap(),
+            1
+        );
+
+        assert!(CollectionOperations::delete(&pool, &collection.id)
+            .await
+            .unwrap());
+        assert_eq!(
+            CollectionOperations::count_documents(&pool, &collection.id)
+                .await
+                .unwrap(),
+            0
+        );
+    }
 }
 
 pub struct TagOperations;

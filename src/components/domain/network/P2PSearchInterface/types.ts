@@ -27,6 +27,7 @@ export interface SearchOptions {
   enableEducationalContext: boolean;
   supportAlternativeNarratives: boolean;
   resistCensorship: boolean;
+  extensions?: string[];
 }
 
 export interface SearchResult {

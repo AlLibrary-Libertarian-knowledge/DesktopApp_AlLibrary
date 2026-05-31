@@ -42,7 +42,7 @@ export const PeerNetworkPage: Component = () => {
   );
   const [viewMode, setViewMode] = createSignal<'grid' | 'list'>('grid');
 
-  const presence = useNetworkPresenceResource();
+  const { presence } = useNetworkPresenceResource();
   const lobby = useNetworkLobby();
   const networkPeers = useNetworkPeers();
 
@@ -81,8 +81,8 @@ export const PeerNetworkPage: Component = () => {
     },
   ]);
 
-  const handleRefreshPeers = async () => {
-    await Promise.all([lobby.refresh(true), networkPeers.refresh(true)]);
+  const handleRetrySync = async () => {
+    await lobby.refresh(true);
   };
 
   const isOnline = () => presence().online;
@@ -168,15 +168,6 @@ export const PeerNetworkPage: Component = () => {
                   <p class={styles['section-subtitle']}>Live counts from tracker lobby cache</p>
                 </div>
                 <div class={styles['header-actions']}>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleRefreshPeers}
-                    disabled={isRefreshing()}
-                  >
-                    <RefreshCw size={16} />
-                    {isRefreshing() ? 'Refreshing…' : 'Refresh'}
-                  </Button>
                   <Button variant="outline" size="sm" onClick={() => setActiveTab('peers')}>
                     View All Peers
                     <ArrowRight size={16} />
@@ -230,7 +221,15 @@ export const PeerNetworkPage: Component = () => {
 
               <Show when={lobby.syncError()}>
                 <p style={{ color: 'var(--color-warning, #b45309)', 'margin-top': '1rem' }}>
-                  Sync warning: {lobby.syncError()}
+                  Sync warning: {lobby.syncError()}{' '}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => void handleRetrySync()}
+                    disabled={isRefreshing()}
+                  >
+                    Retry sync
+                  </Button>
                 </p>
               </Show>
             </section>
@@ -238,14 +237,6 @@ export const PeerNetworkPage: Component = () => {
             <section class={styles['actions-section']}>
               <h2 class={styles['section-title']}>Network Actions</h2>
               <div class={styles['actions-grid']}>
-                <button
-                  class={styles['action-button']}
-                  onClick={handleRefreshPeers}
-                  disabled={isRefreshing()}
-                >
-                  <RefreshCw size={20} />
-                  <span>Refresh Network</span>
-                </button>
                 <button class={styles['action-button']} onClick={() => setActiveTab('health')}>
                   <Activity size={20} />
                   <span>Network Health</span>
@@ -267,15 +258,6 @@ export const PeerNetworkPage: Component = () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={handleRefreshPeers}
-                  disabled={isRefreshing()}
-                >
-                  <RefreshCw size={14} />
-                  {isRefreshing() ? 'Refreshing…' : 'Refresh'}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
                   onClick={() => setViewMode(viewMode() === 'grid' ? 'list' : 'grid')}
                 >
                   <Users size={14} />
@@ -291,7 +273,8 @@ export const PeerNetworkPage: Component = () => {
                   <div style={{ padding: '2rem', 'text-align': 'center' }}>
                     <p>No peers in cache yet.</p>
                     <p style={{ opacity: 0.75, 'margin-top': '0.5rem' }}>
-                      Start onion share and sync the tracker from Configurations → Sync now.
+                      Start onion share; lobby sync runs automatically. Use Configurations →
+                      Advanced → Refresh lobby if sync fails.
                     </p>
                   </div>
                 </Card>
@@ -337,15 +320,17 @@ export const PeerNetworkPage: Component = () => {
             <div class={styles['section-header']}>
               <h2>Network Health</h2>
               <div class={styles['health-controls']}>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleRefreshPeers}
-                  disabled={isRefreshing()}
-                >
-                  <RefreshCw size={14} />
-                  Refresh Status
-                </Button>
+                <Show when={lobby.syncError()}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => void handleRetrySync()}
+                    disabled={isRefreshing()}
+                  >
+                    <RefreshCw size={14} />
+                    Retry sync
+                  </Button>
+                </Show>
               </div>
             </div>
 
@@ -443,17 +428,19 @@ export const PeerNetworkPage: Component = () => {
                   </div>
                 </div>
 
-                <div class={styles['emergency-actions']}>
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    onClick={handleRefreshPeers}
-                    disabled={isRefreshing()}
-                  >
-                    <RefreshCw size={16} />
-                    {isRefreshing() ? 'Syncing…' : 'Sync tracker now'}
-                  </Button>
-                </div>
+                <Show when={lobby.syncError()}>
+                  <div class={styles['emergency-actions']}>
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      onClick={() => void handleRetrySync()}
+                      disabled={isRefreshing()}
+                    >
+                      <RefreshCw size={16} />
+                      {isRefreshing() ? 'Syncing…' : 'Retry tracker sync'}
+                    </Button>
+                  </div>
+                </Show>
               </div>
             </Card>
           </section>

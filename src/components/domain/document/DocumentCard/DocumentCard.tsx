@@ -16,7 +16,6 @@ import {
 } from 'lucide-solid';
 import { Button } from '../../../foundation/Button';
 import { Badge } from '../../../foundation/Badge';
-import { CulturalIndicator } from '../../../cultural/CulturalIndicator';
 import styles from './DocumentCard.module.css';
 
 export interface DocumentCardDocument {
@@ -48,7 +47,6 @@ export interface DocumentCardDocument {
 export interface DocumentCardProps {
   document: DocumentCardDocument;
   variant?: 'default' | 'compact' | 'detailed' | 'grid';
-  showCulturalContext?: boolean;
   showActions?: boolean;
   showMetadata?: boolean;
   onOpen?: (document: DocumentCardDocument) => void;
@@ -68,11 +66,6 @@ export interface DocumentCardProps {
 export const DocumentCard: Component<DocumentCardProps> = props => {
   const document = () => props.document;
   const variant = () => props.variant || 'default';
-  const indicatorLevel = (): 1 | 2 | 3 => {
-    const level = document().culturalMetadata?.sensitivityLevel;
-    if (level === 2 || level === 3) return level;
-    return 1;
-  };
 
   const getFileIcon = () => {
     switch (document().type?.toLowerCase()) {
@@ -191,23 +184,6 @@ export const DocumentCard: Component<DocumentCardProps> = props => {
       <Show when={variant() === 'detailed' && document().description}>
         <div class={styles.description}>
           <p>{document().description}</p>
-        </div>
-      </Show>
-
-      {/* Cultural Context */}
-      <Show when={props.showCulturalContext !== false && document().culturalMetadata}>
-        <div class={styles.culturalContext}>
-          <CulturalIndicator
-            level={indicatorLevel()}
-            size="sm"
-            informationOnly={true}
-            class={styles.culturalIndicator}
-          />
-          <Show when={document().culturalMetadata?.origin}>
-            <Badge variant="outline" size="sm" class={styles.culturalBadge}>
-              {document().culturalMetadata?.origin}
-            </Badge>
-          </Show>
         </div>
       </Show>
 

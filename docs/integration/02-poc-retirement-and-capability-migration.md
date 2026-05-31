@@ -36,7 +36,7 @@ Also remove from navigation (`Sidebar.tsx`): **Global Acervo** nav item; optiona
 | Download progress | **Sharing & downloads** inbound table + **Home** downloads tab | Single `downloadManager` subscription |
 | Empty state (“start onion share”) | **Sharing & downloads** header + **Home** network strip | When `!onionShareStatus().running` |
 | Stats ribbon (nodes, docs, size) | **Search Network** overview, **Home** overview, **Sidebar** footer | Already partial in Sidebar |
-| Refresh lobby | **Connection Manager** (“Sync now”) + background WS loop | `tracker_refresh_lobby` + `tracker_start_ws_loop` on boot |
+| Refresh lobby | **Connection Manager Advanced** (manual retry) + background WS loop | `networkFacade.refreshLobby()` + `tracker_start_ws_loop` on boot |
 
 ### Migration tasks
 
@@ -84,7 +84,7 @@ Also remove from navigation (`Sidebar.tsx`): **Global Acervo** nav item; optiona
 - [x] Wire outbound table **only** to real data; empty state CTA “Add files to share”
 - [x] Wire inbound table **only** to `downloadManager`; remove `MOCK_INBOUND` / `MOCK_COMPLETED`
 - [x] Consolidate manual fetch form into one “Download from network link” dialog (not full debug panel)
-- [ ] Connection Manager: optional “Advanced” collapsible with tracker sync diag (`trackerGetLastSyncDiag`) replacing lobby snippet textarea
+- [x] Connection Manager: “Advanced” collapsible with sync diag + manual lobby refresh (`networkFacade.refreshLobby()`) — May 2026
 
 ---
 

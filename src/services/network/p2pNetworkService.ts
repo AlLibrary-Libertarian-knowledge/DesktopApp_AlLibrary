@@ -1,3 +1,4 @@
+import { invoke } from '@tauri-apps/api/core';
 import { onionShareStart, onionShareStatus, trackerGetConfig } from './onionShareService';
 import { networkFacade } from './networkFacade';
 import { transferFacade } from './transferFacade';
@@ -23,7 +24,7 @@ import type {
   CommunityNetwork,
   NetworkParticipation,
   JoinNetworkRequest,
-} from '../../components/cultural/CommunityNetworks/types/CommunityNetworksTypes';
+} from '../../types/CommunityNetwork';
 
 const defaultNetworkStatus = (): NetworkStatus =>
   ({
@@ -143,6 +144,7 @@ class P2PNetworkServiceImpl implements P2PNetworkService {
     console.log('P2PNetworkService: Node started successfully');
   }
 
+  /** @deprecated Legacy stub — use transferFacade.stopOnionShare instead. */
   async stopNode(): Promise<void> {}
 
   async getNodeStatus(): Promise<NetworkStatus> {
@@ -235,14 +237,40 @@ class P2PNetworkServiceImpl implements P2PNetworkService {
     return s.onion || '';
   }
   async getNetworkMetrics(): Promise<NetworkMetrics> {
+    try {
+      const raw = await invoke<{
+        active_downloads?: number;
+        active_seeding?: number;
+        active_discovery?: number;
+        download_rate?: number;
+        upload_rate?: number;
+        transfers?: unknown[];
+      }>('get_network_metrics', { nodeId: null });
+      const base = defaultNetworkMetrics();
+      if (raw && typeof raw === 'object') {
+        return {
+          ...base,
+          performance: {
+            ...base.performance,
+            totalBandwidth: Number(raw.download_rate ?? 0) + Number(raw.upload_rate ?? 0),
+          },
+          ...(raw as object),
+        } as NetworkMetrics;
+      }
+    } catch {
+      // fall through
+    }
     return defaultNetworkMetrics();
   }
   async testCensorshipResistance(): Promise<boolean> {
     return true;
   }
 
-  async searchNetwork(query: string, _options: SearchOptions): Promise<SearchResult[]> {
-    const matches = await networkFacade.searchFiles(query);
+  async searchNetwork(query: string, options: SearchOptions): Promise<SearchResult[]> {
+    const matches = await networkFacade.searchFiles(query, {
+      extensions: options.extensions,
+      limit: options.maxResults ?? 50,
+    });
 
     return matches.map(
       f =>

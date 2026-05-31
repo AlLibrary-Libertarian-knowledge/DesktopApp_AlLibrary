@@ -9,5 +9,6 @@ pub use fingerprint::{
 };
 pub use runner::{
     run_pipeline, run_pipeline_to_file, fingerprint_for_treated_bytes, fingerprint_for_treated_path,
-    is_treated_file, read_sidecar, sidecar_path, write_sidecar, PipelineOutput, PipelineProgress,
+    is_sidecar_file, is_treated_file, read_sidecar, sidecar_path, write_sidecar, PipelineOutput,
+    PipelineProgress,
 };

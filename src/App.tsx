@@ -152,7 +152,7 @@ const App: Component = () => {
 
       fallbackTimer = globalThis.setTimeout(() => {
         console.warn(
-          'Tauri initialization timeout (baseline + onion can take ~5 min); forcing dismiss'
+          'Tauri initialization timeout; opening app (Tor may still connect in background)'
         );
         setIsLoading(false);
         try {
@@ -161,63 +161,9 @@ const App: Component = () => {
           /* ignore */
         }
         cleanup = null;
-      }, 300000);
+      }, 45000);
 
-      try {
-        const { invoke } = await import('@tauri-apps/api/core');
-        const onionShare = await import('@/services/network/onionShareService');
-
-        // 1) Fast baseline + close native splash (splash.html).
-        await invoke('initialize_app');
-
-        // Bundled / detected Tor exe (Windows Expert Bundle download) before hidden service bootstrap.
-        try {
-          await invoke('ensure_tor_for_onion_share');
-        } catch (torEns: unknown) {
-          console.warn('ensure_tor_for_onion_share skipped or failed:', torEns);
-        }
-
-        // 2) Heavy Tor / onion bootstrap + tracker announce — Loading overlay stays up.
-        try {
-          await onionShare.bootstrapOnionOverlay();
-
-          // One-time legacy migration from localStorage → SQLite (via add_file)
-          try {
-            const raw = globalThis.localStorage?.getItem('allibrary_shared_paths');
-            if (raw) {
-              const existing = await onionShare.onionShareListLocal();
-              const restoredPaths = new Set(
-                existing.map(s => s.diskPath).filter((p): p is string => Boolean(p))
-              );
-              const paths: string[] = JSON.parse(raw);
-              for (const path of paths) {
-                if (restoredPaths.has(path)) continue;
-                try {
-                  console.log('Migrating legacy shared path to SQLite:', path);
-                  await onionShare.onionShareAddFile(path);
-                } catch (shareErr) {
-                  console.warn('Failed to migrate legacy shared path:', path, shareErr);
-                }
-              }
-              globalThis.localStorage?.removeItem('allibrary_shared_paths');
-            }
-          } catch (migrateErr) {
-            console.warn('Legacy share path migration failed:', migrateErr);
-          }
-        } catch (onionErr) {
-          console.warn('Onion overlay bootstrap failed:', onionErr);
-        }
-
-        // Legacy shell Tor node (optional; separate from embedded onion-share Tor).
-        try {
-          await invoke('init_tor_node', { config: { bridge_support: true } });
-        } catch (torErr) {
-          console.warn(
-            'Tor init skipped or failed (onion share uses its own Tor when running):',
-            torErr
-          );
-        }
-
+      const dismissLoadingSoon = () => {
         if (fallbackTimer) {
           globalThis.clearTimeout(fallbackTimer);
           fallbackTimer = null;
@@ -230,20 +176,72 @@ const App: Component = () => {
             /* ignore */
           }
           cleanup = null;
-        }, 450);
+        }, 400);
+      };
+
+      const runPostBootstrapTasks = async () => {
+        const { invoke: tauriInvoke } = await import('@tauri-apps/api/core');
+        const onionShare = await import('@/services/network/onionShareService');
+        try {
+          const raw = globalThis.localStorage?.getItem('allibrary_shared_paths');
+          if (raw) {
+            const existing = await onionShare.onionShareListLocal();
+            const restoredPaths = new Set(
+              existing.map(s => s.diskPath).filter((p): p is string => Boolean(p))
+            );
+            const paths: string[] = JSON.parse(raw);
+            for (const path of paths) {
+              if (restoredPaths.has(path)) continue;
+              try {
+                console.log('Migrating legacy shared path to SQLite:', path);
+                await onionShare.onionShareAddFile(path);
+              } catch (shareErr) {
+                console.warn('Failed to migrate legacy shared path:', path, shareErr);
+              }
+            }
+            globalThis.localStorage?.removeItem('allibrary_shared_paths');
+          }
+        } catch (migrateErr) {
+          console.warn('Legacy share path migration failed:', migrateErr);
+        }
+
+        try {
+          await tauriInvoke('init_tor_node', { config: { bridge_support: true } });
+        } catch (torErr) {
+          console.warn(
+            'Tor init skipped or failed (onion share uses its own Tor when running):',
+            torErr
+          );
+        }
+      };
+
+      try {
+        const { invoke } = await import('@tauri-apps/api/core');
+        const onionShare = await import('@/services/network/onionShareService');
+
+        // 1) Fast baseline + close native splash (splash.html).
+        await invoke('initialize_app');
+
+        // Bundled / detected Tor exe before hidden service bootstrap.
+        try {
+          await invoke('ensure_tor_for_onion_share');
+        } catch (torEns: unknown) {
+          console.warn('ensure_tor_for_onion_share skipped or failed:', torEns);
+        }
+
+        // 2) Tor / onion bootstrap in background — do not block the UI.
+        try {
+          await onionShare.bootstrapOnionOverlayBackground();
+        } catch (onionErr) {
+          console.warn('Onion overlay background bootstrap failed:', onionErr);
+        }
+
+        // Open app quickly; Tor continues via tor-bootstrap-progress + recovery watchdog.
+        dismissLoadingSoon();
+        void runPostBootstrapTasks();
       } catch (error) {
         console.warn('Failed during Tauri initialization:', error);
-        if (fallbackTimer) {
-          globalThis.clearTimeout(fallbackTimer);
-          fallbackTimer = null;
-        }
-        setIsLoading(false);
-        try {
-          cleanup?.();
-        } catch {
-          /* ignore */
-        }
-        cleanup = null;
+        dismissLoadingSoon();
       }
     } catch (error) {
       console.error('App initialization error:', error);

@@ -158,7 +158,8 @@ export class ValidationService {
 
       // Always provide default public analysis - never block
       return {
-        detectedLevel: 1, // CulturalSensitivityLevel.PUBLIC
+        detectedLevel: CulturalSensitivityLevel.PUBLIC,
+        sensitivityLevel: CulturalSensitivityLevel.PUBLIC,
         confidence: 0,
         detectedSymbols: [],
         suggestedContext: 'Cultural analysis unavailable - content accessible',
@@ -324,7 +325,8 @@ export class ValidationService {
     return {
       valid: false,
       culturalAnalysis: {
-        detectedLevel: 1, // CulturalSensitivityLevel.PUBLIC
+        detectedLevel: CulturalSensitivityLevel.PUBLIC,
+        sensitivityLevel: CulturalSensitivityLevel.PUBLIC,
         confidence: 0,
         detectedSymbols: [],
         analysisMetadata: {

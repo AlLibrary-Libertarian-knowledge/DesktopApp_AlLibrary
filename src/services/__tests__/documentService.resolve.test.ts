@@ -51,6 +51,18 @@ describe('documentService.resolveDocumentById', () => {
           errors: [],
         };
       }
+      if (cmd === 'get_document_info') {
+        return {
+          id: 'hash-abc',
+          filename: 'paper.pdf',
+          file_path: 'D:\\AlLibrary\\paper.pdf',
+          file_size: 100,
+          document_type: 'pdf',
+          created_at: '1',
+          modified_at: '2',
+          metadata: { tags: [], categories: [], title: 'paper.pdf' },
+        };
+      }
       throw new Error(`unexpected ${cmd}`);
     });
 

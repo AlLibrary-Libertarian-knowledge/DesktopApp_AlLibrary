@@ -21,8 +21,7 @@ export const ConnectionManager: Component = () => {
         <h1 class={styles.pageTitle}>Configurations</h1>
         <p class={styles.pageDescription}>
           Set your Docker tracker URL (Tor lobby) below — it is saved with the onion-share stack.
-          Bandwidth and peer sliders remain simulation-only until those limits are wired to transfer
-          code.
+          Use Advanced for manual lobby sync when automatic sync fails.
         </p>
       </div>
 

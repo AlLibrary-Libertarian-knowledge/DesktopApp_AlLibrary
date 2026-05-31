@@ -1,4 +1,10 @@
 use serde::{Deserialize, Serialize};
+use tauri::{AppHandle, Manager};
+
+use crate::commands::onion_bridge::OnionShareState;
+use crate::core::database::{
+    ensure_node_database, list_recent_transfers_pool, load_lobby_from_db, transfer_metrics_pool,
+};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TorConfig {
@@ -157,8 +163,68 @@ pub async fn discover_peers(_node_id: Option<String>, _options: Option<serde_jso
 }
 
 #[tauri::command]
-pub async fn get_network_metrics(_node_id: Option<String>) -> NetworkMetrics {
-    NetworkMetrics::default()
+pub async fn get_network_metrics(app: AppHandle, _node_id: Option<String>) -> NetworkMetrics {
+    let mut metrics = NetworkMetrics::default();
+
+    if let Ok(pool) = ensure_node_database(&app).await {
+        if let Ok((active, bytes_5m, completed_24h)) = transfer_metrics_pool(&pool).await {
+            metrics.active_downloads = active;
+            metrics.download_rate = bytes_5m / 300;
+            metrics.active_seeding = completed_24h;
+        }
+
+        if let Ok(rows) = list_recent_transfers_pool(&pool, 20).await {
+            metrics.transfers = rows
+                .into_iter()
+                .map(|t| {
+                    let name = t
+                        .name
+                        .filter(|n| !n.is_empty())
+                        .unwrap_or_else(|| t.link.chars().take(48).collect());
+                    TransferItem {
+                        id: t.id,
+                        name,
+                        size: t.bytes_moved.max(0) as u64,
+                        downloaded: ((t.progress * t.bytes_moved.max(0) as f64) as u64),
+                        download_speed: if t.status == "active" {
+                            metrics.download_rate
+                        } else {
+                            0
+                        },
+                        upload_speed: 0,
+                        peers: 0,
+                        seeders: 0,
+                        eta_secs: 0,
+                        status: t.status.clone(),
+                        health: if t.status == "completed" {
+                            100
+                        } else if t.status == "failed" {
+                            0
+                        } else {
+                            (t.progress * 100.0) as u8
+                        },
+                        ratio: 0.0,
+                    }
+                })
+                .collect();
+        }
+    }
+
+    if let Ok(lobby) = load_lobby_from_db(&app).await {
+        metrics.active_discovery = lobby.files.len() as u32;
+        if metrics.active_seeding == 0 {
+            metrics.active_seeding = lobby.online_nodes as u32;
+        }
+    }
+
+    if let Some(state) = app.try_state::<OnionShareState>() {
+        let guard = state.handle.lock().await;
+        if guard.is_none() && metrics.download_rate == 0 {
+            metrics.active_downloads = 0;
+        }
+    }
+
+    metrics
 }
 
 #[tauri::command]
