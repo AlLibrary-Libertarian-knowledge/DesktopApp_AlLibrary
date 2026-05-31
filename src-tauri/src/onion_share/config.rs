@@ -89,8 +89,9 @@ impl AppConfig {
     }
 
     pub fn tor_available(&self) -> bool {
-        std::process::Command::new(self.tor_bin())
-            .arg("--version")
+        let mut cmd = std::process::Command::new(self.tor_bin());
+        crate::onion_share::platform::hide_console(&mut cmd);
+        cmd.arg("--version")
             .stdout(std::process::Stdio::null())
             .stderr(std::process::Stdio::null())
             .status()

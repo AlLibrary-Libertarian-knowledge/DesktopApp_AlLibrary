@@ -5,6 +5,7 @@ pub mod config;
 pub mod crypto;
 pub mod fetch;
 pub mod link;
+pub mod platform;
 pub mod server;
 pub mod share;
 pub mod tor;

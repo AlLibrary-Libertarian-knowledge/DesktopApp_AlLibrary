@@ -11,6 +11,7 @@ use tokio::sync::watch;
 use tracing::{info, warn};
 
 use super::TorControl;
+use super::super::platform::hide_console_async;
 
 #[derive(Debug, Clone, Default)]
 pub struct TorStartOptions {
@@ -246,6 +247,7 @@ impl TorProcess {
             .context("create tor data_dir failed")?;
 
         let mut cmd = Command::new(tor_path);
+        hide_console_async(&mut cmd);
         cmd.arg("--SocksPort")
             .arg(format!("127.0.0.1:{}", socks_port))
             .arg("--ControlPort")
@@ -362,7 +364,9 @@ impl TorProcess {
 
     #[cfg(windows)]
     async fn force_kill_windows(pid: u32) {
-        match Command::new("taskkill")
+        let mut cmd = Command::new("taskkill");
+        hide_console_async(&mut cmd);
+        match cmd
             .args(["/F", "/PID", &pid.to_string()])
             .status()
             .await
