@@ -194,11 +194,7 @@ export const transferFacade = {
       if (!link) continue;
       if (downloadManager.getActive().some(a => a.link === link)) continue;
       if (completedLinks.has(link)) continue;
-      try {
-        await this.downloadLink(link, item.name || link, outDir);
-      } catch (e) {
-        throw e;
-      }
+      await this.downloadLink(link, item.name || link, outDir);
     }
   },
 };

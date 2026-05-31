@@ -12,8 +12,17 @@ export class CulturalValidator {
     return {
       sensitivityLevel: CulturalSensitivityLevel.PUBLIC,
       detectedLevel: CulturalSensitivityLevel.PUBLIC,
+      confidence: 0,
+      detectedSymbols: [],
+      suggestedContext: 'Content accessible — cultural analysis disabled',
+      recommendedInformation: [],
       informationOnly: true,
       educationalPurpose: true,
+      analysisMetadata: {
+        analyzedAt: new Date(),
+        analysisVersion: 'stub',
+        reviewRequired: false,
+      },
     };
   }
 
@@ -21,7 +30,11 @@ export class CulturalValidator {
     _documentId: string,
     _userId: string
   ): Promise<CulturalInformation> {
-    return { informationOnly: true, educationalPurpose: true };
+    return {
+      informationOnly: true,
+      educationalPurpose: true,
+      culturalContext: 'Cultural information unavailable in minimal product mode',
+    };
   }
 }
 
