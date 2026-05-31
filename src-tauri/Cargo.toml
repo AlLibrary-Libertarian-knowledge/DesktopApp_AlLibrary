@@ -1,6 +1,6 @@
 [package]
 name = "desktopapp_allibrary"
-version = "1.0.2"
+version = "0.0.1"
 default-run = "desktopapp_allibrary"
 description = "A Tauri App"
 authors = ["you"]
@@ -89,4 +89,5 @@ tokio-socks = "0.5"
 [target.'cfg(windows)'.dependencies]
 flate2 = "1"
 tar = "0.4"
+
 
