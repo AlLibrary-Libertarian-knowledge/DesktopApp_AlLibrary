@@ -19,9 +19,10 @@ use crate::onion_share::tracker_proto::NetworkLobby;
 use crate::onion_share::tracker_proto::lobby_fingerprint;
 use crate::onion_share::wizard::installer;
 use crate::core::database::{
-    delete_local_share_by_path_pool, delete_local_share_pool, ensure_node_database,
-    list_local_shares_pool, load_lobby_from_db, local_share_disk_path_map_pool,
-    sync_lobby_to_db, upsert_local_share_pool,
+    complete_transfer_pool, delete_local_share_by_path_pool, delete_local_share_pool,
+    ensure_node_database, insert_transfer_pool, list_local_shares_pool, load_lobby_from_db,
+    local_share_disk_path_map_pool, sync_lobby_to_db, update_transfer_progress_pool,
+    upsert_local_share_pool,
 };
 use crate::core::database::activity_log::insert_activity_pool;
 use crate::core::database::models::LocalShareRow;
@@ -908,7 +909,8 @@ pub async fn onion_share_fetch(
     link: String,
     out_dir: String,
     state: State<'_, OnionShareState>,
-) -> Result<(), String> {
+    file_name: Option<String>,
+) -> Result<String, String> {
     let socks = {
         let g = state.handle.lock().await;
         g.as_ref().map(|h| h.socks_addr())
@@ -917,12 +919,58 @@ pub async fn onion_share_fetch(
         return Err("Start onion sharing first so Tor SOCKS is available (POC-aligned).".to_string());
     };
 
+    let transfer_id = Uuid::new_v4().to_string();
+    if let Ok(pool) = ensure_node_database(&app).await {
+        let _ = insert_transfer_pool(
+            &pool,
+            &transfer_id,
+            &link,
+            file_name.as_deref(),
+        )
+        .await;
+    }
+
     let out = std::path::PathBuf::from(out_dir);
     let link_owned = link;
     let app_for_fetch = app.clone();
     let share_state = state.inner().clone();
+    let tid = transfer_id.clone();
     tokio::spawn(async move {
-        let res = fetch::fetch_to_directory(&link_owned, Some(socks), out.clone()).await;
+        let tid_progress = tid.clone();
+        let app_progress = app_for_fetch.clone();
+        let link_progress = link_owned.clone();
+        let progress_cb: fetch::FetchProgressCb = Arc::new(move |completed, total, bytes| {
+            let progress = if total > 0 {
+                (completed as f64) / (total as f64)
+            } else {
+                0.0
+            };
+            let app_emit = app_progress.clone();
+            let tid_emit = tid_progress.clone();
+            let link_emit = link_progress.clone();
+            tauri::async_runtime::spawn(async move {
+                if let Ok(pool) = ensure_node_database(&app_emit).await {
+                    let _ = update_transfer_progress_pool(&pool, &tid_emit, progress, bytes as i64).await;
+                }
+                let _ = app_emit.emit(
+                    "transfer-progress",
+                    json!({
+                        "id": tid_emit,
+                        "link": link_emit,
+                        "progress": progress,
+                        "bytesMoved": bytes,
+                    }),
+                );
+            });
+        });
+
+        let res = fetch::fetch_to_directory(
+            &link_owned,
+            Some(socks),
+            out.clone(),
+            Some(progress_cb),
+        )
+        .await;
 
         match res {
             Ok(raw_path) => {
@@ -976,6 +1024,15 @@ pub async fn onion_share_fetch(
                                 Some(&payload),
                             )
                             .await;
+                            let _ = complete_transfer_pool(
+                                &pool,
+                                &tid,
+                                "completed",
+                                1.0,
+                                Some(&info.file_path),
+                                None,
+                            )
+                            .await;
                         }
                         let _ = app_for_fetch.emit(
                             "onion-share-fetch-done",
@@ -983,25 +1040,41 @@ pub async fn onion_share_fetch(
                                 "ok": true,
                                 "path": info.file_path,
                                 "link": link_owned,
+                                "transferId": tid,
                             }),
                         );
                     }
                     Err(e) => {
+                        if let Ok(pool) = ensure_node_database(&app_for_fetch).await {
+                            let _ = complete_transfer_pool(
+                                &pool,
+                                &tid,
+                                "failed",
+                                0.0,
+                                None,
+                                Some(&e),
+                            )
+                            .await;
+                        }
                         let _ = app_for_fetch.emit(
                             "onion-share-fetch-done",
-                            json!({"ok": false, "error": e, "link": link_owned}),
+                            json!({"ok": false, "error": e, "link": link_owned, "transferId": tid}),
                         );
                     }
                 }
             }
             Err(e) => {
+                let err = e.to_string();
+                if let Ok(pool) = ensure_node_database(&app_for_fetch).await {
+                    let _ = complete_transfer_pool(&pool, &tid, "failed", 0.0, None, Some(&err)).await;
+                }
                 let _ = app_for_fetch.emit(
                     "onion-share-fetch-done",
-                    json!({"ok": false, "error": e.to_string(), "link": link_owned}),
+                    json!({"ok": false, "error": err, "link": link_owned, "transferId": tid}),
                 );
             }
         }
     });
 
-    Ok(())
+    Ok(transfer_id)
 }

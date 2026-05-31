@@ -1,4 +1,4 @@
-import { type Component, For, createSignal, onMount } from 'solid-js';
+import { type Component, For, Show, createSignal, onMount } from 'solid-js';
 import { Card } from '@/components/foundation/Card';
 import { Button } from '@/components/foundation/Button';
 import { Select } from '@/components/foundation/Select';
@@ -8,8 +8,12 @@ import {
   trackerGetConfig,
   trackerSetConfig,
   syncAllEnabledSeeds,
+  trackerGetLastSyncDiag,
   type TrackerNetworkConfig,
+  type TrackerSyncDiagnostics,
 } from '@/services/network/onionShareService';
+import { invoke } from '@tauri-apps/api/core';
+import type { AppSettings } from '@/types/Settings';
 import styles from './ConnectionManager.module.css';
 
 type ConfigProfile = 'balanced' | 'lowBandwidth' | 'highThroughput' | 'conservative';
@@ -33,6 +37,8 @@ export const ConnectionManager: Component<ConnectionManagerProps> = props => {
   const [pauseAllSeeding, setPauseAllSeeding] = createSignal(false);
   const [trackerBusy, setTrackerBusy] = createSignal(false);
   const [trackerToast, setTrackerToast] = createSignal('');
+  const [syncDiag, setSyncDiag] = createSignal<TrackerSyncDiagnostics | null>(null);
+  const [resolvedDbPath, setResolvedDbPath] = createSignal('');
 
   const [downloadLimitMbps, setDownloadLimitMbps] = createSignal(24);
   const [uploadLimitMbps, setUploadLimitMbps] = createSignal(8);
@@ -117,6 +123,16 @@ export const ConnectionManager: Component<ConnectionManagerProps> = props => {
       setTrackerUrl(c.trackerUrl?.trim() ?? '');
       setNodeId(c.nodeId ?? '');
       setPauseAllSeeding(!(c.sharePublicly ?? true));
+      const diag = await trackerGetLastSyncDiag();
+      setSyncDiag(diag);
+      try {
+        const settings = await invoke<AppSettings>('load_app_settings');
+        if (settings.resolvedPaths?.databaseFile) {
+          setResolvedDbPath(settings.resolvedPaths.databaseFile);
+        }
+      } catch {
+        // ignore outside Tauri
+      }
     } catch (e) {
       setTrackerToast(String(e instanceof Error ? e.message : e));
     } finally {
@@ -144,6 +160,8 @@ export const ConnectionManager: Component<ConnectionManagerProps> = props => {
       };
       await trackerSetConfig(cfg);
       await syncAllEnabledSeeds();
+      const diag = await trackerGetLastSyncDiag();
+      setSyncDiag(diag);
       props.onConfigChange?.(cfg);
       setTrackerToast(
         pauseAllSeeding()
@@ -227,6 +245,23 @@ export const ConnectionManager: Component<ConnectionManagerProps> = props => {
           </Button>
         </div>
         {trackerToast() && <div class={styles.toast}>{trackerToast()}</div>}
+        <Show when={syncDiag()}>
+          {diag => (
+            <div class={styles.trackerMeta}>
+              <p class={styles.subtitle}>
+                Last lobby sync: {diag().ok ? 'OK' : 'Failed'}
+                {diag().urlUsed ? ` via ${diag().urlUsed}` : ''}
+                {diag().usedLocalhostFallback ? ' (localhost fallback)' : ''}
+                {diag().error ? ` — ${diag().error}` : ''}
+              </p>
+            </div>
+          )}
+        </Show>
+        <Show when={resolvedDbPath()}>
+          <p class={styles.subtitle}>
+            Node database: <code class={styles.inlineCode}>{resolvedDbPath()}</code>
+          </p>
+        </Show>
       </Card>
 
       <Card class={styles.sectionCard}>

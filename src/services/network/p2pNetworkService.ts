@@ -1,3 +1,4 @@
+import { invoke } from '@tauri-apps/api/core';
 import { onionShareStart, onionShareStatus, trackerGetConfig } from './onionShareService';
 import { networkFacade } from './networkFacade';
 import { transferFacade } from './transferFacade';
@@ -235,6 +236,29 @@ class P2PNetworkServiceImpl implements P2PNetworkService {
     return s.onion || '';
   }
   async getNetworkMetrics(): Promise<NetworkMetrics> {
+    try {
+      const raw = await invoke<{
+        active_downloads?: number;
+        active_seeding?: number;
+        active_discovery?: number;
+        download_rate?: number;
+        upload_rate?: number;
+        transfers?: unknown[];
+      }>('get_network_metrics', { nodeId: null });
+      const base = defaultNetworkMetrics();
+      if (raw && typeof raw === 'object') {
+        return {
+          ...base,
+          performance: {
+            ...base.performance,
+            totalBandwidth: Number(raw.download_rate ?? 0) + Number(raw.upload_rate ?? 0),
+          },
+          ...(raw as object),
+        } as NetworkMetrics;
+      }
+    } catch {
+      // fall through
+    }
     return defaultNetworkMetrics();
   }
   async testCensorshipResistance(): Promise<boolean> {

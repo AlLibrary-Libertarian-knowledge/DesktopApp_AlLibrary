@@ -98,6 +98,10 @@ pub use onion_bridge::{
 };
 pub use onion_state::SeedNotifySender;
 pub use seed_sync::{set_document_seed_enabled, sync_all_enabled_seeds_cmd};
-pub use network_cache::{list_network_peers, search_network_cached};
+pub use network_cache::{
+    list_browse_categories, list_network_peers, list_recent_local_documents,
+    list_recent_network_files, list_trending_network_files, search_network_cached,
+    BrowseCategoryDto, LocalDocumentDto,
+};
 pub use favorites::{is_favorite, toggle_favorite, list_favorites, FavoriteToggleResult};
 pub use activity::{log_activity, list_activity, delete_activity};

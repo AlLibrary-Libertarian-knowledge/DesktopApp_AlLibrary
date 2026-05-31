@@ -61,7 +61,11 @@ import MainLayout from '../../components/layout/MainLayout';
 import { PageHeader } from '../../components/layout/PageHeader/PageHeader';
 
 // Hooks and Services
-import { useDocuments } from '../../hooks/api/useDocuments';
+import {
+  listRecentItems,
+  timeFilterToSinceDays,
+  type RecentItem,
+} from '../../services/network/discoveryService';
 import { useCulturalContext } from '../../hooks/cultural/useCulturalContext';
 import { useLocalStorage } from '../../hooks/data/useLocalStorage';
 
@@ -112,7 +116,34 @@ export const NewArrivalsPage: Component<NewArrivalsPageProps> = props => {
   const [showCulturalInfo, setShowCulturalInfo] = createSignal(props.showCulturalContext || false);
 
   // Hooks
-  const { documents, isLoading, error, loadDocuments } = useDocuments();
+  const [documents, setDocuments] = createSignal<Document[]>([]);
+  const [isLoading, setIsLoading] = createSignal(false);
+  const [error, setError] = createSignal<string | null>(null);
+
+  const mapRecentItem = (item: RecentItem): Document => ({
+    id: item.id,
+    title: item.title,
+    description:
+      item.source === 'network' ? 'Recently seen on the network' : 'Recently added locally',
+    fileSize: item.fileSize,
+    createdAt: item.createdAt,
+    source: item.source,
+    tags: [item.source],
+  });
+
+  const loadDocuments = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const sinceDays = timeFilterToSinceDays(timeFilter());
+      const items = await listRecentItems(sinceDays, 100);
+      setDocuments(items.map(mapRecentItem));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to load new arrivals');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const { context, loadCulturalContext } = useCulturalContext();
 
@@ -286,7 +317,8 @@ export const NewArrivalsPage: Component<NewArrivalsPageProps> = props => {
 
   // Load documents on mount and filter changes
   createEffect(() => {
-    loadDocuments();
+    timeFilter();
+    void loadDocuments();
   });
 
   // Initialize from preferences

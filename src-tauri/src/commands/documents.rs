@@ -10,7 +10,7 @@ use crate::core::document::pipeline::{
 };
 use crate::core::database::{
     delete_document_by_id_pool, document_seed_enabled_pool, remap_document_id_pool,
-    upsert_treated_document_pool, TreatedDocumentRow,
+    upsert_treated_document_pool, upsert_untreated_by_path_pool, TreatedDocumentRow,
 };
 use crate::commands::seed_sync::notify_document_treated;
 use tauri::{AppHandle, Emitter};
@@ -118,8 +118,16 @@ pub async fn scan_documents_folder(
     }
     
     let scan_duration = start_time.elapsed().as_millis() as u64;
-    
-    info!("Document scan completed: {} documents found, {} bytes total, {}ms duration", 
+
+    if let Ok(pool) = ensure_node_database(&app).await {
+        for doc in &documents {
+            if let Err(e) = upsert_scanned_document(&pool, doc).await {
+                errors.push(format!("DB upsert {}: {e}", doc.file_path));
+            }
+        }
+    }
+
+    info!("Document scan completed: {} documents found, {} bytes total, {}ms duration",
           documents_found, total_size, scan_duration);
     
     Ok(ScanResult {
@@ -606,6 +614,59 @@ fn path_staging_id(file_path: &Path) -> String {
         "untreated:{}",
         blake3::hash(file_path.to_string_lossy().as_bytes()).to_hex()
     )
+}
+
+async fn upsert_scanned_document(pool: &sqlx::SqlitePool, doc: &DocumentInfo) -> Result<(), String> {
+    if doc.is_treated {
+        let content_hash = doc.content_hash.clone().unwrap_or_else(|| doc.id.clone());
+        let seed_enabled = document_seed_enabled_pool(pool, &doc.file_path)
+            .await
+            .unwrap_or(doc.seed_enabled);
+        upsert_treated_document_pool(
+            pool,
+            &TreatedDocumentRow {
+                id: doc.id.clone(),
+                content_hash,
+                local_path: doc.file_path.clone(),
+                title: doc
+                    .metadata
+                    .title
+                    .clone()
+                    .unwrap_or_else(|| doc.filename.clone()),
+                original_filename: doc
+                    .original_filename
+                    .clone()
+                    .unwrap_or_else(|| doc.filename.clone()),
+                canonical_name: doc
+                    .canonical_name
+                    .clone()
+                    .unwrap_or_else(|| doc.filename.clone()),
+                file_type: doc.document_type.clone(),
+                file_size: doc.file_size as i64,
+                page_count: doc.metadata.page_count.unwrap_or(0) as i32,
+                chunk_count: 0,
+                hash_scheme: "whiteboard-v2".to_string(),
+                is_treated: true,
+                processing_status: doc.processing_status.clone(),
+            },
+        )
+        .await?;
+        if !seed_enabled {
+            let _ = crate::core::database::set_document_shared_pool(pool, &doc.file_path, false).await;
+        }
+    } else {
+        let path_id = path_staging_id(std::path::Path::new(&doc.file_path));
+        upsert_untreated_by_path_pool(
+            pool,
+            &path_id,
+            &doc.file_path,
+            &doc.filename,
+            &doc.document_type,
+            doc.file_size as i64,
+        )
+        .await?;
+    }
+    Ok(())
 }
 
 async fn build_document_info_from_treated(

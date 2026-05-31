@@ -345,6 +345,175 @@ pub async fn list_network_peers_pool(pool: &SqlitePool) -> Result<Vec<NetworkPee
     .map_err(|e| format!("Failed to list network_peers: {e}"))
 }
 
+#[derive(Debug, Clone)]
+pub struct BrowseCategoryRow {
+    pub id: String,
+    pub name: String,
+    pub document_count: u32,
+    pub source: String,
+}
+
+pub async fn list_trending_network_files_pool(
+    pool: &SqlitePool,
+    limit: u32,
+) -> Result<Vec<NetworkFile>, String> {
+    let cutoff = cache_cutoff_rfc3339();
+    let file_rows: Vec<NetworkFileRow> = sqlx::query_as(
+        r#"
+        SELECT content_hash, name, size, canonical_link, peer_count, first_seen_at, last_seen_at
+        FROM network_files
+        WHERE last_seen_at >= ?
+        ORDER BY peer_count DESC, last_seen_at DESC
+        LIMIT ?
+        "#,
+    )
+    .bind(&cutoff)
+    .bind(limit.max(1) as i64)
+    .fetch_all(pool)
+    .await
+    .map_err(|e| format!("Failed to list trending network files: {e}"))?;
+
+    rows_to_network_files(pool, file_rows).await
+}
+
+pub async fn list_recent_network_files_pool(
+    pool: &SqlitePool,
+    since_days: u32,
+    limit: u32,
+) -> Result<Vec<NetworkFile>, String> {
+    let cutoff = cache_cutoff_rfc3339();
+    let since = format!("-{} days", since_days.max(1));
+    let file_rows: Vec<NetworkFileRow> = sqlx::query_as(
+        r#"
+        SELECT content_hash, name, size, canonical_link, peer_count, first_seen_at, last_seen_at
+        FROM network_files
+        WHERE last_seen_at >= ?
+          AND (first_seen_at >= datetime('now', ?) OR last_seen_at >= datetime('now', ?))
+        ORDER BY COALESCE(first_seen_at, last_seen_at) DESC
+        LIMIT ?
+        "#,
+    )
+    .bind(&cutoff)
+    .bind(&since)
+    .bind(&since)
+    .bind(limit.max(1) as i64)
+    .fetch_all(pool)
+    .await
+    .map_err(|e| format!("Failed to list recent network files: {e}"))?;
+
+    rows_to_network_files(pool, file_rows).await
+}
+
+pub async fn list_browse_categories_pool(pool: &SqlitePool) -> Result<Vec<BrowseCategoryRow>, String> {
+    let mut categories: Vec<BrowseCategoryRow> = Vec::new();
+
+    let local_rows: Vec<(String, i64)> = sqlx::query_as(
+        r#"
+        SELECT COALESCE(NULLIF(file_type, ''), 'Unknown') AS ft, COUNT(*) AS cnt
+        FROM documents
+        GROUP BY ft
+        ORDER BY cnt DESC
+        "#,
+    )
+    .fetch_all(pool)
+    .await
+    .map_err(|e| format!("Failed to list local browse categories: {e}"))?;
+
+    for (name, count) in local_rows {
+        let id = format!("local:{}", name.to_lowercase().replace(' ', "-"));
+        categories.push(BrowseCategoryRow {
+            id,
+            name: name.clone(),
+            document_count: count.max(0) as u32,
+            source: "local".to_string(),
+        });
+    }
+
+    let cutoff = cache_cutoff_rfc3339();
+    let network_rows: Vec<(String, i64)> = sqlx::query_as(
+        r#"
+        SELECT
+            COALESCE(
+                NULLIF(LOWER(substr(name, instr(name, '.') + 1)), ''),
+                'unknown'
+            ) AS ext,
+            COUNT(*) AS cnt
+        FROM network_files
+        WHERE last_seen_at >= ?
+        GROUP BY ext
+        ORDER BY cnt DESC
+        "#,
+    )
+    .bind(&cutoff)
+    .fetch_all(pool)
+    .await
+    .map_err(|e| format!("Failed to list network browse categories: {e}"))?;
+
+    for (ext, count) in network_rows {
+        let label = ext.to_uppercase();
+        categories.push(BrowseCategoryRow {
+            id: format!("network:{}", ext),
+            name: label,
+            document_count: count.max(0) as u32,
+            source: "network".to_string(),
+        });
+    }
+
+    Ok(categories)
+}
+
+async fn rows_to_network_files(
+    pool: &SqlitePool,
+    file_rows: Vec<NetworkFileRow>,
+) -> Result<Vec<NetworkFile>, String> {
+    let mut results = Vec::with_capacity(file_rows.len());
+    for row in file_rows {
+        let peer_rows: Vec<NetworkFilePeerRow> = sqlx::query_as(
+            r#"
+            SELECT content_hash, node_id, file_id, link
+            FROM network_file_peers
+            WHERE content_hash = ?
+            "#,
+        )
+        .bind(&row.content_hash)
+        .fetch_all(pool)
+        .await
+        .map_err(|e| format!("Failed to query file peers: {e}"))?;
+
+        let mut peers = Vec::new();
+        for pr in peer_rows {
+            let onion: Option<String> = sqlx::query_scalar(
+                "SELECT onion FROM network_peers WHERE node_id = ?",
+            )
+            .bind(&pr.node_id)
+            .fetch_optional(pool)
+            .await
+            .map_err(|e| format!("Failed to query peer onion: {e}"))?;
+
+            peers.push(PeerLocation {
+                node_id: pr.node_id,
+                onion: onion.unwrap_or_default(),
+                file_id: uuid::Uuid::parse_str(&pr.file_id).unwrap_or_else(|_| uuid::Uuid::nil()),
+                link: pr.link,
+            });
+        }
+
+        results.push(NetworkFile {
+            name: row.name,
+            size: row.size as u64,
+            link: row.canonical_link.unwrap_or_default(),
+            content_hash: row.content_hash,
+            peer_count: if row.peer_count > 0 {
+                row.peer_count as usize
+            } else {
+                peers.len()
+            },
+            peers,
+        });
+    }
+    Ok(results)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -132,6 +132,15 @@ export interface OnionShareFetchDonePayload {
   path?: string;
   error?: string;
   link: string;
+  transferId?: string;
+}
+
+/** Emitted per chunk during onion share fetch. */
+export interface TransferProgressPayload {
+  id: string;
+  link: string;
+  progress: number;
+  bytesMoved?: number;
 }
 
 /** Emitted during first-run Tor bundle download/extract (Windows) or quick detection. */
@@ -265,9 +274,13 @@ export async function trackerStopWsLoop(): Promise<void> {
 }
 
 /**
- * Starts a background download; resolves when `onion-share-fetch-done` matches `link`.
+ * Starts a background download; resolves with saved path when `onion-share-fetch-done` matches `link`.
  */
-export async function onionShareFetch(link: string, outDir: string): Promise<string> {
+export async function onionShareFetch(
+  link: string,
+  outDir: string,
+  fileName?: string
+): Promise<string> {
   const linkTrim = link.trim();
   return new Promise((resolve, reject) => {
     void (async () => {
@@ -279,13 +292,23 @@ export async function onionShareFetch(link: string, outDir: string): Promise<str
         else reject(new Error(p.error ?? 'download failed'));
       });
       try {
-        await safeInvoke('onion_share_fetch', { link: linkTrim, outDir });
+        await safeInvoke('onion_share_fetch', {
+          link: linkTrim,
+          outDir,
+          fileName: fileName ?? null,
+        });
       } catch (err) {
         unlisten();
         reject(err);
       }
     })();
   });
+}
+
+export function listenTransferProgress(
+  handler: (payload: TransferProgressPayload) => void
+): Promise<() => void> {
+  return listen<TransferProgressPayload>('transfer-progress', e => handler(e.payload));
 }
 
 export function listenOnionShareFetchDone(

@@ -1,5 +1,10 @@
 import { listen } from '@tauri-apps/api/event';
-import { onionShareFetch, type OnionShareFetchDonePayload } from './onionShareService';
+import {
+  listenTransferProgress,
+  onionShareFetch,
+  type OnionShareFetchDonePayload,
+  type TransferProgressPayload,
+} from './onionShareService';
 
 export interface DownloadItem {
   id: string;
@@ -40,7 +45,7 @@ class DownloadManager {
     try {
       globalThis.localStorage?.setItem(
         'allibrary_completed_downloads',
-        JSON.stringify(this.completed.slice(0, 50)) // Limit to last 50
+        JSON.stringify(this.completed.slice(0, 50))
       );
     } catch (e) {
       console.error('Failed to save completed downloads:', e);
@@ -53,17 +58,27 @@ class DownloadManager {
     }
   }
 
+  private handleProgress(payload: TransferProgressPayload) {
+    const item = this.active.find(i => i.link === payload.link || i.id === payload.id);
+    if (!item) return;
+    item.progress = Math.min(1, Math.max(0, payload.progress));
+    if (payload.bytesMoved != null) {
+      item.sizeBytes = payload.bytesMoved;
+    }
+    this.notify();
+  }
+
   public subscribe(listener: Listener): () => void {
     this.listeners.add(listener);
-    // Initial call
     listener([...this.active], [...this.completed]);
 
-    // Setup global listener once
     if (!this.initialized) {
       this.initialized = true;
       void listen<OnionShareFetchDonePayload>('onion-share-fetch-done', e => {
-        const p = e.payload;
-        this.handleFetchDone(p);
+        this.handleFetchDone(e.payload);
+      });
+      void listenTransferProgress(payload => {
+        this.handleProgress(payload);
       });
     }
 
@@ -94,7 +109,6 @@ class DownloadManager {
       this.completed.unshift(completedItem);
       this.saveCompleted();
       this.notify();
-      // Seeding handled by backend after download pipeline + auto-seed
     }
   }
 
@@ -110,31 +124,17 @@ class DownloadManager {
       name,
       outDir,
       status: 'active',
-      progress: 0.1, // Show initial progress
+      progress: 0,
       timestamp: Date.now(),
     };
 
     this.active.push(newItem);
     this.notify();
 
-    // Spawn an interval to simulate minor progress steps (since Tor download is slow and we don't have block-level events)
-    const interval = setInterval(() => {
-      const current = this.active.find(item => item.link === link);
-      if (current && current.progress < 0.9) {
-        current.progress = parseFloat((current.progress + 0.05).toFixed(2));
-        this.notify();
-      } else {
-        clearInterval(interval);
-      }
-    }, 4000);
-
     try {
-      const path = await onionShareFetch(link, outDir);
-      clearInterval(interval);
+      const path = await onionShareFetch(link, outDir, name);
       return path;
     } catch (err) {
-      clearInterval(interval);
-      // Remove from active if it failed immediately before emitting event
       const idx = this.active.findIndex(item => item.link === link);
       if (idx !== -1) {
         const item = this.active[idx];
