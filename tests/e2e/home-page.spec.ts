@@ -200,7 +200,7 @@ test.describe('AlLibrary Home Page', () => {
     await expect(
       page
         .getByRole('banner', { name: 'Welcome to AlLibrary' })
-        .getByText('Decentralized Cultural Heritage Preservation Network')
+        .getByText('Decentralized document library and P2P network')
     ).toBeVisible();
     await expect(page.locator('[data-testid="stats-section"]')).toBeVisible();
   });
