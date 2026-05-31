@@ -72,7 +72,12 @@ describe('downloadManager', () => {
 
     const path = await downloadManager.executeFetch(id);
     expect(path).toBe('/downloads/file.pdf');
-    expect(onionShareFetchMock).toHaveBeenCalledWith('http://peer.onion/f/1', '/tmp/dl', 'doc.pdf');
+    expect(onionShareFetchMock).toHaveBeenCalledWith(
+      'http://peer.onion/f/1',
+      '/tmp/dl',
+      'doc.pdf',
+      id
+    );
   });
 
   it('deduplicates enqueue by source input', async () => {

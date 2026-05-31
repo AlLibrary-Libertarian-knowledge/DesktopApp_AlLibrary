@@ -465,8 +465,8 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
               fallback={
                 <Show when={(results()?.length ?? 0) > 0}>
                   <div class={styles['results-grid']}>
-                    <For each={results()} keyed={result => result.document.id}>
-                      {result => {
+                    <For each={results()}>
+                      {(result: NetworkSearchResult) => {
                         const target = downloadTargetFor(result);
                         const row = () => transfer.findDownloadForTarget(target);
                         return (

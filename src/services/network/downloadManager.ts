@@ -222,7 +222,7 @@ class DownloadManager {
   public failActive(id: string, error: string): void {
     const idx = this.findActiveIndex(id);
     if (idx === -1) return;
-    const item = this.active[idx];
+    const item = this.active[idx]!;
     const failed: DownloadItem = {
       ...item,
       status: 'failed',

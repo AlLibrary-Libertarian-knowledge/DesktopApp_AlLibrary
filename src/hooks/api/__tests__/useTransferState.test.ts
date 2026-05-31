@@ -77,14 +77,16 @@ describe('useTransferState', () => {
     const { useTransferState } = await import('../useTransferState');
 
     await new Promise<void>(resolve => {
-      createRoot(async dispose => {
+      createRoot(dispose => {
         const state = useTransferState();
-        const id = await state.startDownload('hash-abc', 'file.pdf');
-        expect(id).toBe('dl-queued-1');
-        expect(beginDownloadMock).toHaveBeenCalledWith('hash-abc', 'file.pdf', undefined);
-        expect(runDownloadMock).toHaveBeenCalledWith('dl-queued-1');
-        dispose();
-        resolve();
+        globalThis.setTimeout(async () => {
+          const id = await state.startDownload('hash-abc', 'file.pdf');
+          expect(id).toBe('dl-queued-1');
+          expect(beginDownloadMock).toHaveBeenCalledWith('hash-abc', 'file.pdf', undefined);
+          expect(runDownloadMock).toHaveBeenCalledWith('dl-queued-1');
+          dispose();
+          resolve();
+        }, 0);
       });
     });
   });

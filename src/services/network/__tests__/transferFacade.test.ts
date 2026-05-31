@@ -28,6 +28,8 @@ const getByIdMock = vi.fn((id: string) => ({
 const executeFetchMock = vi.fn(async (_id: string) => '/home/user/downloads/report.pdf');
 const removeActiveMock = vi.fn();
 
+const failActiveMock = vi.fn();
+
 vi.mock('../downloadManager', () => ({
   downloadManager: {
     enqueueDownload: (name: string, link: string, outDir: string) =>
@@ -36,6 +38,7 @@ vi.mock('../downloadManager', () => ({
     getById: (id: string) => getByIdMock(id),
     executeFetch: (id: string) => executeFetchMock(id),
     removeActive: (id: string) => removeActiveMock(id),
+    failActive: (id: string, error: string) => failActiveMock(id, error),
     getActive: vi.fn(() => []),
     getCompleted: vi.fn(() => []),
     subscribe: vi.fn(() => () => {}),
