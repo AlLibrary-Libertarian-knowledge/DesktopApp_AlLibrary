@@ -1,12 +1,14 @@
-import { type Component, onCleanup, onMount } from 'solid-js';
+import { type Component, onCleanup, onMount, Show } from 'solid-js';
 import './Header.css';
 import logoSvg from '/src/assets/logo.svg';
 import { LanguageSwitcher } from '@/components/foundation/LanguageSwitcher';
 import { ThemeSwitcher } from '@/components/foundation/ThemeSwitcher';
 import { useTranslation } from '@/i18n';
 import { Bell, Menu, Search as SearchIcon, Settings as SettingsIcon } from 'lucide-solid';
-import { Badge } from '@/components/foundation/Badge';
-import { useNetworkPresenceResource, onionBadgeLabel } from '@/hooks/network/useNetworkPresence';
+import { useNetworkPresenceResource } from '@/hooks/network/useNetworkPresence';
+import { TorBootstrapStatus } from '@/components/domain/network/TorBootstrapStatus';
+import { OnionStatusBar } from '@/components/domain/network/OnionStatusBar';
+import { DownloadStatusPill } from '@/components/domain/network/DownloadStatusPill';
 
 interface HeaderProps {
   sidebarCollapsed?: boolean;
@@ -16,7 +18,7 @@ interface HeaderProps {
 const Header: Component<HeaderProps> = props => {
   const { t } = useTranslation();
 
-  const presence = useNetworkPresenceResource();
+  const { presence, isBootstrapping } = useNetworkPresenceResource();
 
   // Global keyboard shortcut: Ctrl/Cmd + B to toggle sidebar
   onMount(() => {
@@ -77,6 +79,8 @@ const Header: Component<HeaderProps> = props => {
       </div>
 
       <div class="header-right">
+        <DownloadStatusPill />
+
         <LanguageSwitcher
           variant="compact"
           showFlags={true}
@@ -111,28 +115,29 @@ const Header: Component<HeaderProps> = props => {
 
         <div
           class="network-status"
-          style={{ display: 'flex', 'align-items': 'center', gap: '8px' }}
+          style={{ display: 'flex', 'align-items': 'center', gap: '8px', 'flex-wrap': 'wrap' }}
         >
-          <span
-            class={`status-indicator ${presence().online ? 'online' : 'offline'}`}
-            title={
-              presence().online ? t('common.status.connected') : t('common.status.disconnected')
-            }
-          />
-          <span class="network-text">
-            {presence().online ? t('common.status.online') : t('common.status.offline')}
-          </span>
-          <Badge
-            variant={
-              presence().onionActive
-                ? 'success'
-                : presence().mode === 'bootstrapping'
-                  ? 'warning'
-                  : 'secondary'
+          <Show
+            when={isBootstrapping()}
+            fallback={
+              <>
+                <span
+                  class={`status-indicator ${presence().online ? 'online' : 'offline'}`}
+                  title={
+                    presence().online
+                      ? t('common.status.connected')
+                      : t('common.status.disconnected')
+                  }
+                />
+                <span class="network-text">
+                  {presence().online ? t('common.status.online') : t('common.status.offline')}
+                </span>
+                <OnionStatusBar variant="compact" />
+              </>
             }
           >
-            {onionBadgeLabel(presence())}
-          </Badge>
+            <TorBootstrapStatus variant="compact" />
+          </Show>
         </div>
       </div>
     </header>

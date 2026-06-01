@@ -5,185 +5,49 @@
  * ANTI-CENSORSHIP: Cultural information for education only, never restricts access.
  */
 
-import { type Component, createSignal, createEffect, For, Show } from 'solid-js';
+import { type Component, createSignal, onMount, For, Show } from 'solid-js';
+import { useNavigate } from '@solidjs/router';
 import { Card } from '../../components/foundation/Card';
 import { Button } from '../../components/foundation/Button';
 import { Input } from '../../components/foundation/Input';
-import { BookOpen, Search, Grid, List, FolderOpen, Users, Globe } from 'lucide-solid';
-import { CulturalSensitivityLevel } from '../../types/Cultural';
+import { BookOpen, Search, Grid, List, FolderOpen, Globe } from 'lucide-solid';
+import { listBrowseCategories, type BrowseCategory } from '@/services/network/discoveryService';
 import styles from './BrowsePage.module.css';
 
-interface Category {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  documentCount: number;
-  culturalOrigin?: string;
-  sensitivityLevel: CulturalSensitivityLevel;
-  subcategories: SubCategory[];
-  color: string;
-}
-
-interface SubCategory {
-  id: string;
-  name: string;
-  documentCount: number;
-}
-
-/**
- * Enhanced Browse Categories Page Component
- * Implements comprehensive category browsing with cultural awareness and cyberpunk emerald theme
- */
 export const BrowsePage: Component = () => {
-  const [categories, setCategories] = createSignal<Category[]>([]);
+  const navigate = useNavigate();
+  const [categories, setCategories] = createSignal<BrowseCategory[]>([]);
   const [searchQuery, setSearchQuery] = createSignal('');
-  const [selectedSensitivity, setSelectedSensitivity] = createSignal<
-    CulturalSensitivityLevel | 'all'
-  >('all');
   const [viewMode, setViewMode] = createSignal<'grid' | 'list'>('grid');
   const [loading, setLoading] = createSignal(true);
+  const [error, setError] = createSignal<string | null>(null);
 
-  // Mock data for development
-  createEffect(() => {
-    setTimeout(() => {
-      setCategories([
-        {
-          id: 'traditional-knowledge',
-          name: 'Traditional Knowledge',
-          description: 'Indigenous wisdom, practices, and cultural heritage',
-          icon: '🌿',
-          documentCount: 234,
-          culturalOrigin: 'Global Indigenous Communities',
-          sensitivityLevel: CulturalSensitivityLevel.COMMUNITY,
-          color: '#00ff88',
-          subcategories: [
-            { id: 'medicine', name: 'Traditional Medicine', documentCount: 67 },
-            { id: 'astronomy', name: 'Indigenous Astronomy', documentCount: 23 },
-            { id: 'agriculture', name: 'Traditional Agriculture', documentCount: 89 },
-            { id: 'crafts', name: 'Traditional Crafts', documentCount: 55 },
-          ],
-        },
-        {
-          id: 'science-technology',
-          name: 'Science & Technology',
-          description: 'Scientific papers, technical documentation, and research',
-          icon: '🔬',
-          documentCount: 1847,
-          culturalOrigin: 'Global Scientific Community',
-          sensitivityLevel: CulturalSensitivityLevel.PUBLIC,
-          color: '#00cc66',
-          subcategories: [
-            { id: 'physics', name: 'Physics', documentCount: 423 },
-            { id: 'biology', name: 'Biology', documentCount: 567 },
-            { id: 'computer-science', name: 'Computer Science', documentCount: 789 },
-            { id: 'engineering', name: 'Engineering', documentCount: 68 },
-          ],
-        },
-        {
-          id: 'literature-arts',
-          name: 'Literature & Arts',
-          description: 'Literary works, poetry, and artistic expressions',
-          icon: '📚',
-          documentCount: 892,
-          culturalOrigin: 'Global Cultural Communities',
-          sensitivityLevel: CulturalSensitivityLevel.EDUCATIONAL,
-          color: '#44ff99',
-          subcategories: [
-            { id: 'poetry', name: 'Poetry', documentCount: 234 },
-            { id: 'novels', name: 'Novels & Stories', documentCount: 345 },
-            { id: 'theater', name: 'Theater & Performance', documentCount: 123 },
-            { id: 'visual-arts', name: 'Visual Arts', documentCount: 190 },
-          ],
-        },
-        {
-          id: 'history-culture',
-          name: 'History & Culture',
-          description: 'Historical documents, cultural studies, and heritage',
-          icon: '🏛️',
-          documentCount: 1203,
-          culturalOrigin: 'Various Cultural Communities',
-          sensitivityLevel: CulturalSensitivityLevel.EDUCATIONAL,
-          color: '#aa44ff',
-          subcategories: [
-            { id: 'ancient-history', name: 'Ancient History', documentCount: 312 },
-            { id: 'cultural-studies', name: 'Cultural Studies', documentCount: 445 },
-            { id: 'archaeology', name: 'Archaeology', documentCount: 267 },
-            { id: 'anthropology', name: 'Anthropology', documentCount: 179 },
-          ],
-        },
-        {
-          id: 'education-learning',
-          name: 'Education & Learning',
-          description: 'Educational materials, tutorials, and learning resources',
-          icon: '🎓',
-          documentCount: 756,
-          culturalOrigin: 'Educational Communities',
-          sensitivityLevel: CulturalSensitivityLevel.PUBLIC,
-          color: '#ffaa00',
-          subcategories: [
-            { id: 'textbooks', name: 'Textbooks', documentCount: 234 },
-            { id: 'tutorials', name: 'Tutorials & Guides', documentCount: 267 },
-            { id: 'research-methods', name: 'Research Methods', documentCount: 123 },
-            { id: 'language-learning', name: 'Language Learning', documentCount: 132 },
-          ],
-        },
-        {
-          id: 'community-resources',
-          name: 'Community Resources',
-          description: 'Local community documents, guidelines, and resources',
-          icon: '🏘️',
-          documentCount: 445,
-          culturalOrigin: 'Local Communities',
-          sensitivityLevel: CulturalSensitivityLevel.COMMUNITY,
-          color: '#ff4466',
-          subcategories: [
-            { id: 'governance', name: 'Community Governance', documentCount: 89 },
-            { id: 'guidelines', name: 'Guidelines & Protocols', documentCount: 156 },
-            { id: 'events', name: 'Community Events', documentCount: 123 },
-            { id: 'projects', name: 'Community Projects', documentCount: 77 },
-          ],
-        },
-      ]);
+  onMount(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const rows = await listBrowseCategories();
+      setCategories(rows);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to load categories');
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   });
 
   const filteredCategories = () => {
-    return categories().filter(category => {
-      const matchesSearch =
-        category.name.toLowerCase().includes(searchQuery().toLowerCase()) ||
-        category.description.toLowerCase().includes(searchQuery().toLowerCase()) ||
-        category.subcategories.some(sub =>
-          sub.name.toLowerCase().includes(searchQuery().toLowerCase())
-        );
-
-      const matchesSensitivity =
-        selectedSensitivity() === 'all' || category.sensitivityLevel === selectedSensitivity();
-
-      return matchesSearch && matchesSensitivity;
-    });
+    const q = searchQuery().toLowerCase();
+    return categories().filter(
+      category =>
+        !q || category.name.toLowerCase().includes(q) || category.source.toLowerCase().includes(q)
+    );
   };
 
-  const getSensitivityColor = (level: CulturalSensitivityLevel) => {
-    switch (level) {
-      case CulturalSensitivityLevel.PUBLIC:
-        return '#00ff88';
-      case CulturalSensitivityLevel.EDUCATIONAL:
-        return '#00cc66';
-      case CulturalSensitivityLevel.COMMUNITY:
-        return '#ffaa00';
-      case CulturalSensitivityLevel.GUARDIAN:
-        return '#aa44ff';
-      case CulturalSensitivityLevel.SACRED:
-        return '#ff4466';
-      default:
-        return '#00ff88';
-    }
-  };
+  const getTotalDocuments = () =>
+    filteredCategories().reduce((total, category) => total + category.documentCount, 0);
 
-  const getTotalDocuments = () => {
-    return filteredCategories().reduce((total, category) => total + category.documentCount, 0);
+  const openCategory = (category: BrowseCategory) => {
+    navigate(`/search-network?q=${encodeURIComponent(category.name)}`);
   };
 
   return (
@@ -236,16 +100,12 @@ export const BrowsePage: Component = () => {
 
         <div class={styles.filterPanel}>
           <select
-            value={selectedSensitivity()}
-            onChange={e => setSelectedSensitivity(e.target.value as any)}
+            value="all"
+            disabled
             class={styles.filterSelect}
+            title="Categories from local library and network cache"
           >
-            <option value="all">All Sensitivity Levels</option>
-            <option value={CulturalSensitivityLevel.PUBLIC}>🌍 Public</option>
-            <option value={CulturalSensitivityLevel.EDUCATIONAL}>📚 Educational</option>
-            <option value={CulturalSensitivityLevel.COMMUNITY}>🏘️ Community</option>
-            <option value={CulturalSensitivityLevel.GUARDIAN}>👥 Guardian</option>
-            <option value={CulturalSensitivityLevel.SACRED}>🔒 Sacred</option>
+            <option value="all">All sources</option>
           </select>
         </div>
       </div>
@@ -267,33 +127,21 @@ export const BrowsePage: Component = () => {
           </div>
         </div>
         <div class={styles.statCard}>
-          <Users class={styles.statIcon} />
-          <div>
-            <h3>
-              {
-                categories().filter(c => c.sensitivityLevel === CulturalSensitivityLevel.COMMUNITY)
-                  .length
-              }
-            </h3>
-            <p>Community Categories</p>
-          </div>
-        </div>
-        <div class={styles.statCard}>
           <Globe class={styles.statIcon} />
           <div>
-            <h3>
-              {
-                categories().filter(c => c.sensitivityLevel === CulturalSensitivityLevel.PUBLIC)
-                  .length
-              }
-            </h3>
-            <p>Public Categories</p>
+            <h3>{categories().filter(c => c.source === 'network').length}</h3>
+            <p>Network Categories</p>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
       <main class={styles.mainContent}>
+        <Show when={error()}>
+          <div class={styles.emptyState}>
+            <p>{error()}</p>
+          </div>
+        </Show>
         <Show
           when={!loading()}
           fallback={
@@ -310,9 +158,9 @@ export const BrowsePage: Component = () => {
                 <BookOpen class={styles.emptyIcon} />
                 <h3>No categories found</h3>
                 <p>
-                  {searchQuery() || selectedSensitivity() !== 'all'
-                    ? 'Try adjusting your filters to find more categories.'
-                    : 'Categories are being organized by the community.'}
+                  {searchQuery()
+                    ? 'Try adjusting your search to find more categories.'
+                    : 'Categories appear after library scan or tracker lobby sync.'}
                 </p>
                 <Button variant="primary" onClick={() => (window.location.href = '/documents')}>
                   Explore All Documents
@@ -326,57 +174,35 @@ export const BrowsePage: Component = () => {
                   {category => (
                     <Card class={styles.categoryCard}>
                       <div class={styles.cardHeader}>
-                        <div class={styles.categoryIcon} style={{ color: category.color }}>
-                          {category.icon}
+                        <div class={styles.categoryIcon} style={{ color: '#00ff88' }}>
+                          {category.source === 'network' ? '🌐' : '📁'}
                         </div>
                         <div
                           class={styles.sensitivityBadge}
-                          style={{
-                            'background-color': getSensitivityColor(category.sensitivityLevel),
-                          }}
+                          style={{ 'background-color': '#00cc66' }}
                         >
-                          {category.sensitivityLevel}
+                          {category.source}
                         </div>
                       </div>
 
                       <div class={styles.cardContent}>
                         <h3 class={styles.categoryTitle}>{category.name}</h3>
-                        <p class={styles.categoryDescription}>{category.description}</p>
+                        <p class={styles.categoryDescription}>
+                          {category.source === 'network'
+                            ? 'Files seen on the tracker lobby cache'
+                            : 'Documents in your local library'}
+                        </p>
 
                         <div class={styles.categoryMeta}>
                           <span class={styles.documentCount}>
                             📄 {category.documentCount.toLocaleString()} documents
                           </span>
-                          {category.culturalOrigin && (
-                            <span class={styles.culturalOrigin}>📍 {category.culturalOrigin}</span>
-                          )}
-                        </div>
-
-                        <div class={styles.subcategories}>
-                          <h4>Popular Topics:</h4>
-                          <div class={styles.subcategoryList}>
-                            <For each={category.subcategories.slice(0, 3)}>
-                              {sub => (
-                                <span class={styles.subcategory}>
-                                  {sub.name} ({sub.documentCount})
-                                </span>
-                              )}
-                            </For>
-                            {category.subcategories.length > 3 && (
-                              <span class={styles.subcategoryMore}>
-                                +{category.subcategories.length - 3} more
-                              </span>
-                            )}
-                          </div>
                         </div>
                       </div>
 
                       <div class={styles.cardActions}>
-                        <Button variant="primary" size="sm">
+                        <Button variant="primary" size="sm" onClick={() => openCategory(category)}>
                           Explore Category
-                        </Button>
-                        <Button variant="secondary" size="sm">
-                          View Subcategories
                         </Button>
                       </div>
                     </Card>

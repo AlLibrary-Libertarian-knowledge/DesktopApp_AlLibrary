@@ -315,11 +315,81 @@
   },
   "collections": {
     "title": "Coleções",
-    "subtitle": "Coleções organizadas de documentos",
-    "createNew": "Criar Nova Coleção",
-    "manageExisting": "Gerenciar Coleções",
-    "collaborativeCollections": "Coleções Colaborativas",
-    "culturalCollections": "Coleções de Patrimônio Cultural"
+    "subtitle": "Agrupe documentos locais em conjuntos curados",
+    "newCollection": "Nova coleção",
+    "searchPlaceholder": "Pesquisar coleções...",
+    "loading": "Carregando coleções...",
+    "empty": {
+      "title": "Nenhuma coleção ainda",
+      "cta": "Crie sua primeira coleção"
+    },
+    "card": {
+      "docs": "{{count}} docs",
+      "updated": "Atualizado {{date}}"
+    },
+    "stats": {
+      "collections": "Coleções",
+      "documents": "Documentos agrupados",
+      "showing": "Correspondem à busca"
+    },
+    "actions": {
+      "open": "Abrir",
+      "edit": "Editar",
+      "delete": "Excluir"
+    },
+    "create": {
+      "title": "Nova coleção",
+      "subtitle": "Group related documents together for quick access.",
+      "submit": "Criar"
+    },
+    "edit": {
+      "title": "Editar coleção",
+      "subtitle": "Update the name or description for this collection.",
+      "submit": "Salvar alterações"
+    },
+    "form": {
+      "name": "Name",
+      "namePlaceholder": "e.g. Research papers, Field notes",
+      "nameHint": "A short, recognizable title for this group.",
+      "description": "Description",
+      "optional": "Optional",
+      "descriptionPlaceholder": "What belongs in this collection?",
+      "bufLabel": "BUF",
+      "nameLabel": "NAME",
+      "charCount": "{{current}} / {{max}}"
+    },
+    "detail": {
+      "fallbackTitle": "Collection",
+      "subtitle": "{{count}} documents · updated {{date}}",
+      "detailsFallback": "Collection details",
+      "docsBadge": "DOCS",
+      "addFromLibrary": "Adicionar da biblioteca",
+      "syncing": "Syncing document index...",
+      "emptyTitle": "No documents in this collection yet.",
+      "emptyHint": "Use \"Add from library\" to attach scanned files.",
+      "remove": "Remover"
+    },
+    "addDocs": {
+      "title": "Adicionar documentos da biblioteca",
+      "subtitle": "Select scanned documents to include in this collection.",
+      "loading": "Loading library...",
+      "empty": "No scanned documents found. Scan your library first.",
+      "hint": "{{toAdd}} to add · {{inCollection}} already in collection",
+      "addSelected": "Adicionar selecionados ({{count}})",
+      "inCollection": "Na coleção"
+    },
+    "confirmDelete": "Excluir \"{{name}}\"? Os documentos não serão excluídos.",
+    "errors": {
+      "createFailed": "Failed to create collection",
+      "updateFailed": "Failed to update collection",
+      "deleteFailed": "Failed to delete collection",
+      "removeDocFailed": "Failed to remove document",
+      "addDocsFailed": "Failed to add documents"
+    },
+    "createNew": "Create New Collection",
+    "manageExisting": "Manage Collections",
+    "collaborativeCollections": "Collaborative Collections",
+    "culturalCollections": "Collections"
   },
   "network": {
     "title": "Rede",

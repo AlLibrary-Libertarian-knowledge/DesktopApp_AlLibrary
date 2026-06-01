@@ -1,19 +1,10 @@
 /**
- * NewArrivalsPage - Time-based content discovery interface
+ * New ArrivalsPage - Time-based content discovery interface
  *
  * Features:
  * - Chronological document display with time filtering
- * - Cultural context display (information only)
  * - Time-based categorization and filtering
  * - Document preview and quick actions
- * - Educational cultural resources integration
- * - Anti-censorship compliance
- *
- * @cultural-considerations
- * - Displays cultural sensitivity indicators for information only
- * - Shows educational resources for cultural understanding
- * - Supports traditional knowledge context display
- * - NO ACCESS RESTRICTIONS - information only
  *
  * @accessibility
  * - Keyboard navigation support
@@ -29,19 +20,7 @@
 
 import { type Component, createSignal, createEffect, onMount, Show, For } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
-import {
-  Calendar,
-  Clock,
-  Filter,
-  Grid,
-  List,
-  Search,
-  ChevronDown,
-  Eye,
-  Download,
-  Share2,
-  BookOpen,
-} from 'lucide-solid';
+import { Calendar, Clock, Filter, Grid, List, Search, ChevronDown } from 'lucide-solid';
 
 // Foundation Components
 import { Button } from '../../components/foundation/Button';
@@ -53,16 +32,17 @@ import { Loading } from '../../components/foundation/Loading';
 
 // Domain Components
 import { DocumentCard } from '../../components/domain/document/DocumentCard';
-import { CulturalIndicator } from '../../components/cultural/CulturalIndicator';
-import { TimeFilter } from '../../components/domain/time/TimeFilter';
 
 // Layout Components
 import MainLayout from '../../components/layout/MainLayout';
 import { PageHeader } from '../../components/layout/PageHeader/PageHeader';
 
 // Hooks and Services
-import { useDocuments } from '../../hooks/api/useDocuments';
-import { useCulturalContext } from '../../hooks/cultural/useCulturalContext';
+import {
+  listRecentItems,
+  timeFilterToSinceDays,
+  type RecentItem,
+} from '../../services/network/discoveryService';
 import { useLocalStorage } from '../../hooks/data/useLocalStorage';
 
 // Types
@@ -81,7 +61,6 @@ type TimeFilterType =
 interface NewArrivalsPreferences {
   viewMode: 'grid' | 'list';
   timeFilter: TimeFilterType;
-  showCulturalInfo: boolean;
 }
 
 // Styles
@@ -92,8 +71,6 @@ export interface NewArrivalsPageProps {
   initialTimeFilter?: TimeFilterType;
   /** Initial view mode */
   initialViewMode?: 'grid' | 'list';
-  /** Show cultural context by default */
-  showCulturalContext?: boolean;
 }
 
 export const NewArrivalsPage: Component<NewArrivalsPageProps> = props => {
@@ -106,21 +83,44 @@ export const NewArrivalsPage: Component<NewArrivalsPageProps> = props => {
   const [viewMode, setViewMode] = createSignal<'grid' | 'list'>(props.initialViewMode || 'grid');
   const [searchQuery, setSearchQuery] = createSignal('');
   const [selectedCategories, setSelectedCategories] = createSignal<string[]>([]);
-  const [sortBy, setSortBy] = createSignal<'date' | 'title' | 'size' | 'cultural-level'>('date');
+  const [sortBy, setSortBy] = createSignal<'date' | 'title' | 'size'>('date');
   const [sortOrder, setSortOrder] = createSignal<'asc' | 'desc'>('desc');
   const [showFilters, setShowFilters] = createSignal(false);
-  const [showCulturalInfo, setShowCulturalInfo] = createSignal(props.showCulturalContext || false);
 
   // Hooks
-  const { documents, isLoading, error, loadDocuments } = useDocuments();
+  const [documents, setDocuments] = createSignal<Document[]>([]);
+  const [isLoading, setIsLoading] = createSignal(false);
+  const [error, setError] = createSignal<string | null>(null);
 
-  const { context, loadCulturalContext } = useCulturalContext();
+  const mapRecentItem = (item: RecentItem): Document => ({
+    id: item.id,
+    title: item.title,
+    description:
+      item.source === 'network' ? 'Recently seen on the network' : 'Recently added locally',
+    fileSize: item.fileSize,
+    createdAt: item.createdAt,
+    source: item.source,
+    tags: [item.source],
+  });
+
+  const loadDocuments = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const sinceDays = timeFilterToSinceDays(timeFilter());
+      const items = await listRecentItems(sinceDays, 100);
+      setDocuments(items.map(mapRecentItem));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to load new arrivals');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const preferences = useLocalStorage<NewArrivalsPreferences>('newArrivals-preferences', {
     defaultValue: {
       viewMode: 'grid',
       timeFilter: 'last-week',
-      showCulturalInfo: false,
     },
   });
 
@@ -141,7 +141,6 @@ export const NewArrivalsPage: Component<NewArrivalsPageProps> = props => {
     { value: 'date', label: 'Date Added' },
     { value: 'title', label: 'Title' },
     { value: 'size', label: 'File Size' },
-    { value: 'cultural-level', label: 'Cultural Context Level' },
   ];
 
   // Filtered and sorted documents
@@ -219,11 +218,15 @@ export const NewArrivalsPage: Component<NewArrivalsPageProps> = props => {
   };
 
   // Apply sorting
-  const applySorting = (docs: Document[], sortBy: string, order: 'asc' | 'desc'): Document[] => {
+  const applySorting = (
+    docs: Document[],
+    sortField: 'date' | 'title' | 'size',
+    order: 'asc' | 'desc'
+  ): Document[] => {
     const sorted = [...docs].sort((a, b) => {
       let comparison = 0;
 
-      switch (sortBy) {
+      switch (sortField) {
         case 'date':
           comparison = new Date(a.createdAt ?? 0).getTime() - new Date(b.createdAt ?? 0).getTime();
           break;
@@ -232,11 +235,6 @@ export const NewArrivalsPage: Component<NewArrivalsPageProps> = props => {
           break;
         case 'size':
           comparison = (a.fileSize || 0) - (b.fileSize || 0);
-          break;
-        case 'cultural-level':
-          comparison =
-            (a.culturalMetadata?.sensitivityLevel || 0) -
-            (b.culturalMetadata?.sensitivityLevel || 0);
           break;
       }
 
@@ -249,12 +247,6 @@ export const NewArrivalsPage: Component<NewArrivalsPageProps> = props => {
   // Handle document selection
   const handleDocumentOpen = (document: Document) => {
     navigate(`/document/${document.id}`);
-  };
-
-  // Handle quick actions
-  const handleQuickView = (document: Document) => {
-    // TODO: Implement quick view modal
-    console.log('Quick view:', document.title);
   };
 
   const handleDownload = (document: Document) => {
@@ -278,15 +270,10 @@ export const NewArrivalsPage: Component<NewArrivalsPageProps> = props => {
     preferences.setValue(prev => ({ ...prev, viewMode: mode }));
   };
 
-  const handleCulturalInfoToggle = () => {
-    const newValue = !showCulturalInfo();
-    setShowCulturalInfo(newValue);
-    preferences.setValue(prev => ({ ...prev, showCulturalInfo: newValue }));
-  };
-
   // Load documents on mount and filter changes
   createEffect(() => {
-    loadDocuments();
+    timeFilter();
+    void loadDocuments();
   });
 
   // Initialize from preferences
@@ -294,7 +281,6 @@ export const NewArrivalsPage: Component<NewArrivalsPageProps> = props => {
     const prefs = preferences.value();
     setViewMode(prefs.viewMode);
     setTimeFilter(prefs.timeFilter);
-    setShowCulturalInfo(prefs.showCulturalInfo);
   });
 
   return (
@@ -355,17 +341,6 @@ export const NewArrivalsPage: Component<NewArrivalsPageProps> = props => {
           </div>
 
           <div class={styles.controlsRight}>
-            {/* Cultural Info Toggle */}
-            <Button
-              variant={showCulturalInfo() ? 'primary' : 'outline'}
-              size="sm"
-              onClick={handleCulturalInfoToggle}
-              title="Toggle cultural context display"
-            >
-              <BookOpen size={16} />
-              Cultural Context
-            </Button>
-
             {/* View Mode Toggle */}
             <div class={styles.viewModeToggle}>
               <Button
@@ -388,7 +363,12 @@ export const NewArrivalsPage: Component<NewArrivalsPageProps> = props => {
 
             {/* Sort Controls */}
             <div class={styles.sortControls}>
-              <Select value={sortBy()} onChange={setSortBy} options={sortOptions} size="sm" />
+              <Select
+                value={sortBy()}
+                onChange={value => setSortBy(value as 'date' | 'title' | 'size')}
+                options={sortOptions}
+                size="sm"
+              />
               <Button
                 variant="outline"
                 size="sm"
@@ -412,53 +392,7 @@ export const NewArrivalsPage: Component<NewArrivalsPageProps> = props => {
                   {/* TODO: Implement category multi-select */}
                   <div class={styles.categoryTags}>
                     <Badge variant="outline">Academic</Badge>
-                    <Badge variant="outline">Cultural</Badge>
-                    <Badge variant="outline">Traditional</Badge>
                     <Badge variant="outline">Educational</Badge>
-                  </div>
-                </div>
-
-                {/* Cultural Sensitivity Filter */}
-                <div class={styles.filterGroup}>
-                  <label class={styles.filterLabel}>Cultural Context Level</label>
-                  <div class={styles.culturalLevelFilter}>
-                    <For each={[1, 2, 3, 4, 5]}>
-                      {level => (
-                        <Badge variant="outline" class={styles.culturalLevelBadge}>
-                          Level {level}
-                        </Badge>
-                      )}
-                    </For>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </div>
-        </Show>
-
-        {/* Cultural Education Resources */}
-        <Show when={showCulturalInfo() && context()}>
-          <div class={styles.culturalResources}>
-            <Card class={styles.culturalResourcesCard}>
-              <div class={styles.culturalResourcesContent}>
-                <h3 class={styles.culturalResourcesTitle}>
-                  Cultural Context & Educational Resources
-                </h3>
-                <p class={styles.culturalResourcesDescription}>
-                  Learn about the cultural contexts and traditional knowledge represented in these
-                  documents. Information provided for educational purposes only.
-                </p>
-                <div class={styles.culturalResourcesList}>
-                  <div class={styles.culturalResource}>
-                    <CulturalIndicator
-                      level={context()?.sensitivityLevel || 1}
-                      informationOnly={true}
-                      culturalOrigin={context()?.origin}
-                      traditionalKnowledge={context()?.traditionalKnowledge}
-                    />
-                    <span class={styles.resourceTitle}>
-                      {context()?.description || 'General cultural context available'}
-                    </span>
                   </div>
                 </div>
               </div>
@@ -509,7 +443,6 @@ export const NewArrivalsPage: Component<NewArrivalsPageProps> = props => {
                   <DocumentCard
                     document={document}
                     variant={viewMode() === 'grid' ? 'grid' : 'default'}
-                    showCulturalContext={showCulturalInfo()}
                     onOpen={() => handleDocumentOpen(document)}
                     onDownload={() => handleDownload(document)}
                     onShare={() => handleShare(document)}

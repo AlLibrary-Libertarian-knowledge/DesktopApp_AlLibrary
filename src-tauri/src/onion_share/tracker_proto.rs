@@ -27,6 +27,8 @@ pub struct NetworkFile {
     pub content_hash: String,
     pub peer_count: usize,
     pub peers: Vec<PeerLocation>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub swarm_link: Option<String>,
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
@@ -92,6 +94,7 @@ mod serde_tests {
                 content_hash: "h1".into(),
                 peer_count: 1,
                 peers: vec![],
+                swarm_link: None,
             }],
         };
         let b = a.clone();

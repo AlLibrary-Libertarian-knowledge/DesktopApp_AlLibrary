@@ -1,7 +1,7 @@
 {
   "home": {
     "title": "Welcome to AlLibrary",
-    "subtitle": "Decentralized Cultural Heritage Preservation Network",
+    "subtitle": "Decentralized document library and P2P network",
     "networkStatus": {
       "online": "Network Online",
       "offline": "Network Offline",
@@ -155,13 +155,13 @@
     },
     "welcomeModal": {
       "title": "Welcome to AlLibrary",
-      "description": "AlLibrary is a sophisticated decentralized platform for preserving and sharing cultural heritage documents. Built on advanced P2P technology with TOR integration, we ensure traditional knowledge is preserved securely.",
+      "description": "AlLibrary is a decentralized platform for organizing, sharing, and discovering documents. Built on P2P technology with Tor integration for private network access.",
       "features": {
         "encryption": "Military-grade encryption with TOR anonymity",
         "globalNetwork": "Global P2P network with 156+ institutions",
         "performance": "High-performance libp2p with DHT routing",
-        "culturalProtection": "Cultural protection protocols & permissions",
-        "advancedSearch": "Advanced search with cultural context filtering",
+        "culturalProtection": "Document organization and sharing tools",
+        "advancedSearch": "Advanced search with network and local filters",
         "realTimeAnalytics": "Real-time network analytics & monitoring",
         "decentralized": "Fully decentralized architecture",
         "preservation": "Long-term digital preservation",
@@ -314,11 +314,81 @@
   },
   "collections": {
     "title": "Collections",
-    "subtitle": "Organized document collections",
+    "subtitle": "Group local documents into curated sets",
+    "newCollection": "New collection",
+    "searchPlaceholder": "Search collections...",
+    "loading": "Loading collections...",
+    "empty": {
+      "title": "No collections yet",
+      "cta": "Create your first collection"
+    },
+    "card": {
+      "docs": "{{count}} docs",
+      "updated": "Updated {{date}}"
+    },
+    "stats": {
+      "collections": "Collections",
+      "documents": "Documents grouped",
+      "showing": "Matching search"
+    },
+    "actions": {
+      "open": "Open",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "create": {
+      "title": "New collection",
+      "subtitle": "Group related documents together for quick access.",
+      "submit": "Create"
+    },
+    "edit": {
+      "title": "Edit collection",
+      "subtitle": "Update the name or description for this collection.",
+      "submit": "Save changes"
+    },
+    "form": {
+      "name": "Name",
+      "namePlaceholder": "e.g. Research papers, Field notes",
+      "nameHint": "A short, recognizable title for this group.",
+      "description": "Description",
+      "optional": "Optional",
+      "descriptionPlaceholder": "What belongs in this collection?",
+      "bufLabel": "BUF",
+      "nameLabel": "NAME",
+      "charCount": "{{current}} / {{max}}"
+    },
+    "detail": {
+      "fallbackTitle": "Collection",
+      "subtitle": "{{count}} documents · updated {{date}}",
+      "detailsFallback": "Collection details",
+      "docsBadge": "DOCS",
+      "addFromLibrary": "Add from library",
+      "syncing": "Syncing document index...",
+      "emptyTitle": "No documents in this collection yet.",
+      "emptyHint": "Use \"Add from library\" to attach scanned files.",
+      "remove": "Remove"
+    },
+    "addDocs": {
+      "title": "Add documents from library",
+      "subtitle": "Select scanned documents to include in this collection.",
+      "loading": "Loading library...",
+      "empty": "No scanned documents found. Scan your library first.",
+      "hint": "{{toAdd}} to add · {{inCollection}} already in collection",
+      "addSelected": "Add selected ({{count}})",
+      "inCollection": "In collection"
+    },
+    "confirmDelete": "Delete \"{{name}}\"? Documents are not deleted.",
+    "errors": {
+      "createFailed": "Failed to create collection",
+      "updateFailed": "Failed to update collection",
+      "deleteFailed": "Failed to delete collection",
+      "removeDocFailed": "Failed to remove document",
+      "addDocsFailed": "Failed to add documents"
+    },
     "createNew": "Create New Collection",
     "manageExisting": "Manage Collections",
     "collaborativeCollections": "Collaborative Collections",
-    "culturalCollections": "Cultural Heritage Collections"
+    "culturalCollections": "Collections"
   },
   "network": {
     "title": "Network",

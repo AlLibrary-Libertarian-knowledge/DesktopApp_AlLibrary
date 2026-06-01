@@ -456,6 +456,31 @@
   background: rgba(239, 68, 68, 0.05);
 }
 
+.connection-status.connecting {
+  border-color: rgba(245, 158, 11, 0.35);
+  background: rgba(245, 158, 11, 0.06);
+}
+
+.connection-status.connecting .connection-icon {
+  color: rgba(245, 158, 11, 0.9);
+}
+
+.connection-bootstrap-panel {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  background: rgba(245, 158, 11, 0.06);
+  animation: slideInFromLeftFooter 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.connection-bootstrap-panel .connection-icon {
+  display: flex;
+  justify-content: center;
+  color: rgba(245, 158, 11, 0.9);
+  margin: 0 auto;
+}
+
 .connection-icon {
   display: flex;
   align-items: center;

@@ -127,7 +127,7 @@ describe('Button Component', () => {
         const tooltip = screen.getByRole('tooltip');
         expect(tooltip).toBeInTheDocument();
         expect(tooltip).toHaveTextContent('Traditional knowledge sharing');
-        expect(tooltip).toHaveTextContent('Traditional Knowledge');
+        expect(tooltip).toHaveTextContent('Document');
         expect(tooltip).toHaveTextContent(
           'Cultural context provided for educational purposes only'
         );

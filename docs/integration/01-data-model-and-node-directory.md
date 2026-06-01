@@ -157,9 +157,9 @@ CREATE TABLE activity_log (
 
 - [x] **Migration runner** — Versioned migrations in `core/database/migrations.rs`; `ensure_node_database` runs on app init and before collection commands.
 - [x] **Lobby sync command** — `sync_lobby_to_db` runs on HTTP refresh, bootstrap, heartbeat, and WS lobby push; emits `lobby-updated`.
-- [ ] **Query commands for UI** — `search_network_cached`, `list_network_peers` registered; full screen wiring in Task 4.
-- [ ] **Persist transfers** — Rust owns transfer rows; emit events to frontend; remove `localStorage` `allibrary_completed_downloads`.
-- [ ] **Mirror local shares** — On `onion_share_add_file` / `remove`, upsert/delete `local_shares`.
+- [x] **Query commands for UI** — `search_network_cached`, `list_network_peers`, `list_trending_network_files`, `list_recent_network_files`, `list_browse_categories`, `list_recent_local_documents` registered and wired (Browse, Trending, New Arrivals, Search Network fallback).
+- [x] **Persist transfers** — Rust owns transfer rows (`008_transfers`); emits `transfer-progress` + `onion-share-fetch-done`. Frontend loads completed via `list_recent_transfers` (localStorage mirror removed May 2026).
+- [x] **Mirror local shares** — On `onion_share_add_file` / `remove`, upsert/delete `local_shares`.
 - [x] **Favorites commands** — Implement `list_favorites`, `toggle_favorite`, `is_favorite` against SQLite (frontend already calls them).
 - [x] **Activity log** — Record view/download/share for Recent page.
 

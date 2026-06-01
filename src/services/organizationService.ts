@@ -6,10 +6,22 @@
  */
 
 import { invoke } from '@tauri-apps/api/core';
-import type { Collection, OrganizationRule } from '../types/Collection';
+import type { Collection } from '../types/Collection';
 import type { Document } from '../types/Document';
 import type { CulturalMetadata } from '../types/Cultural';
 import { CulturalSensitivityLevel } from '../types/Cultural';
+
+export interface OrganizationRule {
+  id: string;
+  name: string;
+  type?: string;
+  value?: unknown;
+  field?: string;
+  operator?: string;
+  action?: { type?: string; value?: string };
+  condition?: { field?: string; operator?: string };
+  [key: string]: unknown;
+}
 
 /**
  * Auto-tagging suggestion with confidence score
@@ -809,7 +821,7 @@ class OrganizationServiceImpl implements OrganizationService {
     // Check if rule action involves cultural content
     if (rule.action?.type === 'set_cultural_context') {
       // Ensure educational purpose
-      if (!rule.action.value.includes('educational') && !rule.action.value.includes('learning')) {
+      if (!rule.action.value?.includes('educational') && !rule.action.value?.includes('learning')) {
         throw new Error('Cultural context rules must include educational purpose');
       }
     }

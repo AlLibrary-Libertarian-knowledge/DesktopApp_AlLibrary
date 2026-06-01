@@ -1,6 +1,7 @@
 import { type Component, createSignal, createEffect, Show, For, Switch, Match } from 'solid-js';
 import { Card, Button, Input } from '../../components/foundation';
 import { Search, Heart, Globe, Shield, Users, Code, Book } from 'lucide-solid';
+import { APP_VERSION } from '@/config/appMeta';
 import styles from './About.module.css';
 
 // About page sections configuration
@@ -588,8 +589,8 @@ const AboutPage: Component = () => {
       {/* Footer */}
       <div class={styles.aboutFooter}>
         <p>
-          Last Updated: {new Date().toLocaleDateString()} | Version: 1.0.0 | Built with respect for
-          cultural sovereignty and information freedom
+          Last Updated: {new Date().toLocaleDateString()} | Version: {APP_VERSION} | Built with
+          respect for cultural sovereignty and information freedom
         </p>
       </div>
     </div>

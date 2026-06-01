@@ -297,6 +297,28 @@ fn get_migrations() -> Vec<Migration> {
                 UPDATE documents SET is_shared = 1 WHERE is_treated = 1 AND is_shared = 0;
             "#.to_string(),
         },
+        Migration {
+            version: "008_transfers".to_string(),
+            description: "Create transfers table for download progress persistence".to_string(),
+            sql: r#"
+                CREATE TABLE transfers (
+                    id TEXT PRIMARY KEY,
+                    direction TEXT NOT NULL DEFAULT 'inbound',
+                    link TEXT NOT NULL,
+                    name TEXT,
+                    status TEXT NOT NULL,
+                    progress REAL NOT NULL DEFAULT 0,
+                    bytes_moved INTEGER DEFAULT 0,
+                    local_path TEXT,
+                    error TEXT,
+                    started_at TEXT NOT NULL,
+                    completed_at TEXT
+                );
+
+                CREATE INDEX idx_transfers_status ON transfers(status);
+                CREATE INDEX idx_transfers_started_at ON transfers(started_at);
+            "#.to_string(),
+        },
     ]
 }
 

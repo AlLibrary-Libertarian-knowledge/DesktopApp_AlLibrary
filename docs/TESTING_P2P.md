@@ -66,14 +66,43 @@ Alvo pós-integração: só Search Network + cache SQLite.
 
 ## 5. Testar download
 
-1. Com ficheiro no lobby, clicar **Download** (Global Acervo) ou corrigir fluxo em Search Network
-2. Pasta destino: first-run / `settingsService.getDownloadFolder()`
-3. Progresso: `downloadManager` (percentagem simulada até evento final)
-4. Sucesso: evento `onion-share-fetch-done`, badge “Saved”
+### Fluxo UI unificado (Search Network + Sharing & downloads)
 
-**Mesma máquina:** evitar descarregar link do **próprio** `.onion` (guard no Global Acervo).
+**Golden path (optimistic queue):**
 
-**Dois PCs:** dois clientes, tracker acessível (localhost ou `.onion`), cada um partilha ficheiros diferentes.
+1. **Seeder (PC A):** Sharing & downloads → **Sharing** tab → Add files → confirm outbound table + lobby com `peer_count ≥ 1`
+2. **Downloader (PC B):** Search Network → **Download** num resultado
+   - Dentro de **1 s**: toast *Added to downloads* com acção **View queue**
+   - Fila compacta visível na própria página Search Network (status **Queued** / **Connecting…**)
+   - Pill no header: `↓ N downloading` → clique abre `/transfers`
+   - Badge no sidebar em **Sharing & downloads** enquanto houver downloads activos
+3. Em **Sharing & downloads** → tab **Downloads**: progresso actualiza; ao concluir: **Open** e **Folder** (Windows)
+4. Falha: motivo visível + botão **Retry**
+5. **Home → Downloads tab**: fila compacta (últimos 5 activos + 5 concluídos) + **Open full queue**
+6. Downloads usam **swarm-first** (`opocswarm://` via `resolve_download_link`) quando há vários peers
+7. **Download All** não bloqueia a UI — cada ficheiro entra na fila imediatamente
+
+### Comportamento esperado
+
+- Pasta destino: first-run / `settingsService.getDownloadFolder()`
+- Progresso: `downloadManager` (queued → resolving → active) + eventos `transfer-progress` / `onion-share-fetch-done`
+- Sem peers online: botão Download desactivado ou erro imediato *No online peers are seeding this file* (não hang silencioso)
+- Colar hash/link: modal **Add download** em `/transfers` (tab Downloads) mostra peer count antes de **Add to queue**
+
+**Mesma máquina:** evitar descarregar link do **próprio** `.onion` (guard em `transferFacade.downloadLink`).
+
+**Dois PCs:** dois clientes, tracker acessível (localhost ou `.onion`), cada um partilha ficheiros diferentes — o downloader deve resolver swarm link, não só o primeiro peer directo.
+
+### Checklist dois nós
+
+| Passo | PC A (seeder) | PC B (downloader) |
+|-------|---------------|-------------------|
+| Onion activo | ✓ | ✓ |
+| Ficheiro no lobby | ✓ | — |
+| Search Network vê ficheiro | — | ✓ |
+| Download + toast | — | ✓ |
+| Progresso em `/transfers` | — | ✓ |
+| Parar seeder | peer_count → 0 | Download desactivado / erro rápido |
 
 ---
 

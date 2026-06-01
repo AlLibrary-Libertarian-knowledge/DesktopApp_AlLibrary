@@ -13,6 +13,8 @@ pub mod network_cache;
 pub mod tor_setup;
 pub mod favorites;
 pub mod activity;
+pub mod transfers;
+pub mod transfer_resolve;
 
 pub use app::{initialize_app, get_app_ready_state, close_splash_screen, InitProgress};
 pub use security::{get_security_info, refresh_security_info, SecurityInfo};
@@ -23,7 +25,10 @@ pub use system::{
 pub use tor_setup::{ensure_tor_for_onion_share, TorSetupProgress};
 pub use settings::{apply_project_paths, load_app_settings, save_app_settings, AppSettings};
 pub use search::{get_search_history, clear_search_history, get_search_index_info, SearchIndex};
-pub use collections::{create_collection, get_collections, get_collection, update_collection, delete_collection};
+pub use collections::{
+    create_collection, get_collections, get_collection, update_collection, delete_collection,
+    add_documents_to_collection, remove_documents_from_collection, get_collection_documents,
+};
 pub use documents::{
   scan_documents_folder,
   get_folder_info,
@@ -76,6 +81,8 @@ pub use network_shell::{
 };
 pub use onion_bridge::{
     bootstrap_onion_overlay,
+    bootstrap_onion_overlay_background,
+    stop_onion_share_internal,
     onion_share_add_file,
     onion_share_fetch,
     onion_share_list_local,
@@ -98,6 +105,15 @@ pub use onion_bridge::{
 };
 pub use onion_state::SeedNotifySender;
 pub use seed_sync::{set_document_seed_enabled, sync_all_enabled_seeds_cmd};
-pub use network_cache::{list_network_peers, search_network_cached};
+pub use network_cache::{
+    list_browse_categories, list_network_peers, list_recent_local_documents,
+    list_recent_network_files, list_trending_network_files, search_network_cached,
+    BrowseCategoryDto, LocalDocumentDto,
+};
 pub use favorites::{is_favorite, toggle_favorite, list_favorites, FavoriteToggleResult};
 pub use activity::{log_activity, list_activity, delete_activity};
+pub use transfers::{list_recent_transfers, TransferDto};
+pub use transfer_resolve::{
+    build_swarm_link, get_swarm_availability, resolve_download_link, ResolvedDownloadLink,
+    PeerLocationDto,
+};

@@ -308,15 +308,83 @@
       "viewDetails": "Details",
       "remove": "Aus Verlauf entfernen"
     },
-    "toasts": { "removed": "Aus Verlauf entfernt", "removeFailed": "Entfernen fehlgeschlagen" }
+    "toasts": {
+      "removed": "Aus Verlauf entfernt",
+      "removeFailed": "Entfernen fehlgeschlagen"
+    }
   },
   "collections": {
     "title": "Sammlungen",
-    "subtitle": "Organisierte Dokumentensammlungen",
-    "createNew": "Neue Sammlung erstellen",
-    "manageExisting": "Bestehende Sammlungen verwalten",
-    "collaborativeCollections": "Kollaborative Sammlungen",
-    "culturalCollections": "Kulturelle Erbsammlungen"
+    "subtitle": "Gruppieren Sie lokale Dokumente in kuratierte Sets",
+    "newCollection": "Neue Sammlung",
+    "searchPlaceholder": "Sammlungen suchen...",
+    "loading": "Sammlungen werden geladen...",
+    "empty": {
+      "title": "Noch keine Sammlungen",
+      "cta": "Erste Sammlung erstellen"
+    },
+    "card": {
+      "docs": "{{count}} docs",
+      "updated": "Updated {{date}}"
+    },
+    "actions": {
+      "open": "Öffnen",
+      "edit": "Bearbeiten",
+      "delete": "Löschen"
+    },
+    "create": {
+      "title": "Neue Sammlung",
+      "subtitle": "Group related documents together for quick access.",
+      "submit": "Erstellen"
+    },
+    "edit": {
+      "title": "Sammlung bearbeiten",
+      "subtitle": "Update the name or description for this collection.",
+      "submit": "Änderungen speichern"
+    },
+    "form": {
+      "name": "Name",
+      "namePlaceholder": "e.g. Research papers, Field notes",
+      "nameHint": "A short, recognizable title for this group.",
+      "description": "Description",
+      "optional": "Optional",
+      "descriptionPlaceholder": "What belongs in this collection?",
+      "bufLabel": "BUF",
+      "nameLabel": "NAME",
+      "charCount": "{{current}} / {{max}}"
+    },
+    "detail": {
+      "fallbackTitle": "Collection",
+      "subtitle": "{{count}} documents · updated {{date}}",
+      "detailsFallback": "Collection details",
+      "docsBadge": "DOCS",
+      "addFromLibrary": "Aus Bibliothek hinzufügen",
+      "syncing": "Syncing document index...",
+      "emptyTitle": "No documents in this collection yet.",
+      "emptyHint": "Use \"Add from library\" to attach scanned files.",
+      "remove": "Entfernen"
+    },
+    "addDocs": {
+      "title": "Dokumente aus Bibliothek hinzufügen",
+      "subtitle": "Select scanned documents to include in this collection.",
+      "loading": "Loading library...",
+      "empty": "No scanned documents found. Scan your library first.",
+      "hint": "{{toAdd}} to add · {{inCollection}} already in collection",
+      "addSelected": "Auswahl hinzufügen ({{count}})",
+      "inCollection": "In Sammlung"
+    },
+    "confirmDelete": "\"{{name}}\" löschen? Dokumente werden nicht gelöscht.",
+    "errors": {
+      "createFailed": "Failed to create collection",
+      "updateFailed": "Failed to update collection",
+      "deleteFailed": "Failed to delete collection",
+      "removeDocFailed": "Failed to remove document",
+      "addDocsFailed": "Failed to add documents"
+    },
+    "createNew": "Create New Collection",
+    "manageExisting": "Manage Collections",
+    "collaborativeCollections": "Collaborative Collections",
+    "culturalCollections": "Collections"
   },
   "network": {
     "title": "Netzwerk",

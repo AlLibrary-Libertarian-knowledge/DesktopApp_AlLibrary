@@ -1,7 +1,9 @@
 // Application Configuration
+import { APP_NAME, APP_VERSION } from '@/config/appMeta';
+
 export const appConfig = {
-  name: 'AlLibrary',
-  version: '1.0.0',
+  name: APP_NAME,
+  version: APP_VERSION,
   environment: import.meta.env.DEV ? 'development' : 'production',
   features: {
     culturalInformation: true,

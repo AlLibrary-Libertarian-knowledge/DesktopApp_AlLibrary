@@ -60,6 +60,7 @@ fn aggregate_lobby(
                 content_hash: file.content_hash.clone(),
                 peer_count: 0,
                 peers: Vec::new(),
+                swarm_link: None,
             });
 
             entry.peers.push(PeerLocation {

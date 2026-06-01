@@ -1,4 +1,5 @@
-// Cultural Information Constants (NO ACCESS CONTROL - INFORMATION ONLY)
+/** Legacy constants — cultural sensitivity UI removed; kept for foundation component props. */
+
 export const CULTURAL_SENSITIVITY_LEVELS = {
   PUBLIC: 1,
   COMMUNITY: 2,
@@ -7,17 +8,17 @@ export const CULTURAL_SENSITIVITY_LEVELS = {
   CEREMONIAL: 5,
 };
 
-export const CULTURAL_LABELS = {
-  [CULTURAL_SENSITIVITY_LEVELS.PUBLIC]: 'General Cultural Context',
-  [CULTURAL_SENSITIVITY_LEVELS.COMMUNITY]: 'Community Knowledge',
-  [CULTURAL_SENSITIVITY_LEVELS.TRADITIONAL]: 'Traditional Knowledge',
-  [CULTURAL_SENSITIVITY_LEVELS.SACRED]: 'Sacred Content',
-  [CULTURAL_SENSITIVITY_LEVELS.CEREMONIAL]: 'Ceremonial Content',
+export const CULTURAL_LABELS: Record<number, string> = {
+  [CULTURAL_SENSITIVITY_LEVELS.PUBLIC]: 'Document',
+  [CULTURAL_SENSITIVITY_LEVELS.COMMUNITY]: 'Document',
+  [CULTURAL_SENSITIVITY_LEVELS.TRADITIONAL]: 'Document',
+  [CULTURAL_SENSITIVITY_LEVELS.SACRED]: 'Document',
+  [CULTURAL_SENSITIVITY_LEVELS.CEREMONIAL]: 'Document',
 };
 
 export const CULTURAL_INFORMATION = {
-  EDUCATIONAL_PURPOSE: 'This content provides cultural context for educational purposes',
-  NO_ACCESS_CONTROL: 'Cultural information is provided for learning - not for access restriction',
-  MULTIPLE_PERSPECTIVES: 'AlLibrary supports diverse cultural interpretations equally',
-  INFORMATION_FREEDOM: 'Cultural context enhances understanding without limiting access',
+  EDUCATIONAL_PURPOSE: 'Additional context may be available for this document.',
+  NO_ACCESS_CONTROL: 'All documents remain accessible.',
+  MULTIPLE_PERSPECTIVES: 'AlLibrary supports open document sharing.',
+  INFORMATION_FREEDOM: 'Context is informational only.',
 };

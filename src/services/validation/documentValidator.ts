@@ -185,6 +185,7 @@ export class DocumentValidator {
       return {
         valid: false,
         culturalAnalysis: {
+          sensitivityLevel: CulturalSensitivityLevel.PUBLIC,
           detectedLevel: CulturalSensitivityLevel.PUBLIC,
           confidence: 0,
           detectedSymbols: [],

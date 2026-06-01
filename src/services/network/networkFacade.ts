@@ -19,6 +19,7 @@ export interface NetworkFileView {
   name: string;
   size: number;
   link: string;
+  swarmLink?: string;
   peerCount: number;
   peers: Array<{ nodeId: string; onion: string; link: string; fileId: string }>;
 }
@@ -42,6 +43,7 @@ interface CachedNetworkFileWire {
   link: string;
   content_hash: string;
   peer_count: number;
+  swarm_link?: string;
   peers: Array<{
     node_id: string;
     onion: string;
@@ -62,6 +64,7 @@ function mapFile(file: CachedNetworkFileWire | NetworkLobby['files'][number]): N
     name: file.name,
     size: file.size,
     link: file.link,
+    swarmLink: 'swarm_link' in file ? file.swarm_link : undefined,
     peerCount: file.peer_count,
     peers: (file.peers || []).map(p => ({
       nodeId: p.node_id,
@@ -101,6 +104,34 @@ function matchesExtension(name: string, extensions?: string[]): boolean {
   if (!extensions?.length) return true;
   const ext = name.split('.').pop()?.toLowerCase() || '';
   return extensions.some(e => e.replace(/^\./, '').toLowerCase() === ext);
+}
+
+/** Stable ordering so UI cards do not jump when lobby/cache refreshes. */
+function sortSearchResults(files: NetworkFileView[]): NetworkFileView[] {
+  return [...files].sort(
+    (a, b) => a.contentHash.localeCompare(b.contentHash) || a.name.localeCompare(b.name)
+  );
+}
+
+/** One lobby row per filename — avoids duplicate cards when re-pipeline changes hash. */
+function dedupeNetworkFiles(files: NetworkFileView[]): NetworkFileView[] {
+  const byName = new Map<string, NetworkFileView>();
+  for (const file of files) {
+    const key = file.name.trim().toLowerCase();
+    const existing = byName.get(key);
+    if (!existing) {
+      byName.set(key, file);
+      continue;
+    }
+    const prefer =
+      file.peerCount > existing.peerCount ||
+      (file.peerCount === existing.peerCount &&
+        file.contentHash.localeCompare(existing.contentHash) < 0);
+    if (prefer) {
+      byName.set(key, file);
+    }
+  }
+  return sortSearchResults([...byName.values()]);
 }
 
 async function searchCached(query: string, limit?: number): Promise<NetworkFileView[]> {
@@ -150,14 +181,17 @@ export const networkFacade = {
     try {
       const presence = await this.getPresence();
       if (presence.running) {
-        const lobby = await trackerRefreshLobby();
-        return filterFiles((lobby.files || []).map(mapFile));
+        const lobby = await trackerGetCachedLobby();
+        const filtered = filterFiles((lobby.files || []).map(mapFile));
+        const sorted = dedupeNetworkFiles(filtered);
+        return sorted;
       }
     } catch {
       /* fall through to SQLite cache */
     }
 
-    return filterFiles(await searchCached(q, limit));
+    const cached = filterFiles(await searchCached(q, limit));
+    return dedupeNetworkFiles(cached);
   },
 
   async listPeers(): Promise<Array<{ nodeId: string; onion: string; lastSeenAt: string }>> {

@@ -6,9 +6,8 @@
  */
 
 import { createSignal, onCleanup } from 'solid-js';
-import { torAdapter } from '@/services/network/torAdapter';
 import { transferFacade } from '@/services/network/transferFacade';
-import { p2pNetworkService } from '@/services/network/p2pNetworkService';
+import { networkFacade } from '@/services/network/networkFacade';
 import type { Document } from '@/types/core';
 
 export interface NetworkSearchFilters {
@@ -16,6 +15,8 @@ export interface NetworkSearchFilters {
   query: string;
   /** Document type filter */
   documentType?: 'pdf' | 'epub' | 'all';
+  /** File extension filter (e.g. pdf, epub) */
+  extensions?: string[];
   /** File size range */
   sizeRange?: {
     min: number;
@@ -41,6 +42,12 @@ export interface NetworkSearchResult {
   document: Document;
   /** Peer providing the document */
   peerId: string;
+  /** Number of peers seeding this file */
+  peerCount: number;
+  /** Swarm link when available */
+  swarmLink?: string;
+  /** Direct peer opoc:// or .onion link (preferred for fetch) */
+  directLink?: string;
   /** Peer location */
   peerLocation?: string;
   /** Peer reputation score */
@@ -96,7 +103,6 @@ export interface UseNetworkSearchReturn {
 }
 
 export const useNetworkSearch = (): UseNetworkSearchReturn => {
-  // State management
   const [results, setResults] = createSignal<NetworkSearchResult[]>([]);
   const [isSearching, setIsSearching] = createSignal(false);
   const [error, setError] = createSignal<string | null>(null);
@@ -106,66 +112,51 @@ export const useNetworkSearch = (): UseNetworkSearchReturn => {
   const [culturalResources, setCulturalResources] = createSignal<string[]>([]);
   const [currentSearchController, setCurrentSearchController] =
     createSignal<AbortController | null>(null);
+  let searchGeneration = 0;
 
-  // Real network search: Tor-gated, title-only
   const runNetworkSearch = async (
     filters: NetworkSearchFilters,
     options: NetworkSearchOptions = {},
-    signal: AbortSignal
+    _signal: AbortSignal
   ): Promise<NetworkSearchResult[]> => {
-    const st = await torAdapter.status();
-    if (!st?.circuitEstablished) throw new Error('TOR circuit not established');
-    // Title-only mode; request service to search titles
     const q = (filters.query || '').trim();
-    // Empty query returns full network lobby (the "acervo")
-    // Delegate to service (it should aggregate peers via libp2p/Tor)
-    const raw = await p2pNetworkService.searchNetwork(q, {
-      type: 'content',
-      includeAnonymous: options.anonymous !== false,
-      includeCulturalContext: options.includeCulturalEducation !== false,
-      searchDepth: 'network',
-      maxResults: options.maxResults ?? 50,
-      enableEducationalContext: true,
-      supportAlternativeNarratives: true,
-      resistCensorship: true,
+    const matches = await networkFacade.searchFiles(q, {
+      extensions: filters.extensions,
+      limit: options.maxResults ?? 50,
     });
-    // Adapt to NetworkSearchResult
-    const mapped: NetworkSearchResult[] = (raw || []).map((r: any) => ({
+    const mapped: NetworkSearchResult[] = matches.map(f => ({
       document: {
-        id: r.id,
-        title: r.title,
-        author: r.author || '',
-        description: r.description || '',
-        filePath: r.filePath || '',
-        fileSize: r.fileSize || 0,
-        fileType: r.fileType || 'pdf',
-        uploadDate: r.uploadDate ? new Date(r.uploadDate) : new Date(),
-        tags: r.tags || [],
-        culturalSensitivityLevel: r.culturalLevel || 1,
+        id: f.contentHash,
+        title: f.name,
+        author: 'P2P Network',
+        description: `Available via ${f.peerCount} peer(s)`,
+        filePath: f.link,
+        fileSize: f.size,
+        fileType: (f.name.split('.').pop() as string) || 'pdf',
+        uploadDate: new Date(),
+        tags: ['p2p', 'decentralized'],
+        culturalSensitivityLevel: 1,
         isLocal: false,
-        downloadCount: r.downloadCount || 0,
-        rating: r.rating || 0,
-        language: r.language || 'en',
-        culturalOrigin: r.culturalOrigin || '',
-      } as any,
-      peerId: r.peerId || '',
-      peerLocation: r.peerLocation,
-      peerReputation: r.peerReputation || 0,
-      culturalContext: options.includeCulturalEducation ? r.culturalContext : undefined,
-      relevanceScore: r.relevanceScore || 0,
-      estimatedDownloadTime: r.estimatedDownloadTime,
+        downloadCount: 0,
+        rating: 0,
+        language: 'en',
+        culturalOrigin: '',
+      } as unknown as Document,
+      peerId: f.peers[0]?.nodeId || '',
+      peerCount: f.peerCount,
+      swarmLink: f.swarmLink,
+      directLink: f.link,
+      peerReputation: 5,
+      relevanceScore: 100,
     }));
     return mapped;
   };
 
-  // Perform network search
   const search = async (filters: NetworkSearchFilters, options: NetworkSearchOptions = {}) => {
+    const generation = ++searchGeneration;
     try {
-      // Cancel any ongoing search
       cancelSearch();
 
-      // Reset state
-      setResults([]);
       setError(null);
       setPeersSearched(0);
       setTotalPeers(0);
@@ -173,11 +164,9 @@ export const useNetworkSearch = (): UseNetworkSearchReturn => {
       setCulturalResources([]);
       setIsSearching(true);
 
-      // Create abort controller for this search
       const controller = new AbortController();
       setCurrentSearchController(controller);
 
-      // Set default options
       const searchOptions: NetworkSearchOptions = {
         maxResults: 50,
         timeout: 30000,
@@ -187,26 +176,32 @@ export const useNetworkSearch = (): UseNetworkSearchReturn => {
         ...options,
       };
 
-      // Perform search with timeout
       const timeoutPromise = new Promise<never>((_, reject) => {
         setTimeout(() => reject(new Error('Search timeout')), searchOptions.timeout);
       });
 
-      // Limit filters to title-only
-      const titleOnly: NetworkSearchFilters = { ...filters, query: filters.query } as any;
-      const searchPromise = runNetworkSearch(titleOnly, searchOptions, controller.signal);
+      const searchPromise = runNetworkSearch(filters, searchOptions, controller.signal);
 
-      const results = await Promise.race([searchPromise, timeoutPromise]);
+      const searchResults = await Promise.race([searchPromise, timeoutPromise]);
 
-      // Apply max results limit
-      const limitedResults = results.slice(0, searchOptions.maxResults);
+      if (generation !== searchGeneration) {
+        return;
+      }
 
-      // Sort by relevance score
-      limitedResults.sort((a, b) => b.relevanceScore - a.relevanceScore);
+      const limitedResults = searchResults.slice(0, searchOptions.maxResults);
+
+      limitedResults.sort(
+        (a, b) =>
+          a.document.id.localeCompare(b.document.id) ||
+          a.document.title.localeCompare(b.document.title)
+      );
 
       setResults(limitedResults);
       setSearchProgress(100);
     } catch (err) {
+      if (generation !== searchGeneration) {
+        return;
+      }
       if (err instanceof Error) {
         if (err.name === 'AbortError') {
           setError('Search cancelled');
@@ -217,12 +212,13 @@ export const useNetworkSearch = (): UseNetworkSearchReturn => {
         setError('Unknown search error');
       }
     } finally {
-      setIsSearching(false);
-      setCurrentSearchController(null);
+      if (generation === searchGeneration) {
+        setIsSearching(false);
+        setCurrentSearchController(null);
+      }
     }
   };
 
-  // Cancel ongoing search
   const cancelSearch = () => {
     const controller = currentSearchController();
     if (controller) {
@@ -232,7 +228,6 @@ export const useNetworkSearch = (): UseNetworkSearchReturn => {
     setIsSearching(false);
   };
 
-  // Clear search results
   const clearResults = () => {
     setResults([]);
     setError(null);
@@ -242,12 +237,10 @@ export const useNetworkSearch = (): UseNetworkSearchReturn => {
     setCulturalResources([]);
   };
 
-  // Download document from peer
   const downloadFromPeer = async (result: NetworkSearchResult) => {
-    await transferFacade.downloadLink(result.document.filePath, result.document.title);
+    await transferFacade.downloadByHashOrLink(result.document.id, result.document.title);
   };
 
-  // Cleanup on unmount
   onCleanup(() => {
     cancelSearch();
   });

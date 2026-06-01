@@ -54,6 +54,7 @@ import {
 } from 'lucide-solid';
 import type { Document } from '@/types/Document';
 import { CulturalSensitivityLevel } from '@/types/Cultural';
+import { listTrendingNetworkFiles } from '@/services/network/discoveryService';
 import styles from './Trending.module.css';
 
 interface TrendingDocument {
@@ -131,8 +132,8 @@ export const Trending: Component = () => {
   createEffect(() => {
     if (realTimeUpdates()) {
       refreshTimer = setInterval(() => {
-        simulateRealTimeUpdate();
-      }, 30000); // Update every 30 seconds
+        void loadTrendingData(true);
+      }, 30000);
     }
 
     onCleanup(() => {
@@ -141,96 +142,54 @@ export const Trending: Component = () => {
   });
 
   onMount(() => {
-    loadTrendingData();
+    void loadTrendingData();
   });
 
-  // Mock data generation with more realistic content
-  const generateMockData = (): TrendingDocument[] => [
-    {
-      trendingScore: 98,
-      trendingReason: 'community-interest',
-      trendingPeriod: 'day',
-      communityEndorsements: 156,
-      culturalImportance: 'high',
-      growthRate: 45.2,
-      peakTime: new Date(Date.now() - 1000 * 60 * 30),
-      networkReach: 89,
-      stats: {
-        views: 2847,
-        downloads: 756,
-        shares: 234,
-        favorites: 445,
-      },
-      document: {
-        id: 'trend1',
-        title: 'Indigenous Climate Adaptation Strategies',
-        description:
-          'Traditional ecological knowledge for climate resilience, featuring time-tested strategies from Pacific Island communities for environmental adaptation and sustainable resource management.',
-        format: 'pdf' as any,
-        contentType: 'cultural' as any,
-        status: 'active' as any,
-        filePath: '/documents/climate-adaptation.pdf',
-        originalFilename: 'climate-adaptation.pdf',
-        fileSize: 5600000,
-        fileHash: 'hash1',
-        mimeType: 'application/pdf',
-        createdAt: new Date('2024-01-20'),
-        updatedAt: new Date('2024-01-25'),
-        createdBy: 'pacific-council',
-        version: 2,
-        culturalMetadata: {
-          sensitivityLevel: CulturalSensitivityLevel.EDUCATIONAL,
-          culturalOrigin: 'Pacific Island Communities',
-        } as any,
-        tags: ['climate', 'adaptation', 'indigenous-knowledge', 'sustainability', 'environment'],
-        categories: ['Environment', 'Traditional Knowledge'],
-        language: 'en',
-        authors: [],
-        accessHistory: [],
-        relationships: [],
-        securityValidation: {} as any,
-        contentVerification: {} as any,
-        sourceAttribution: {} as any,
-      },
-    },
-    {
-      trendingScore: 87,
+  const mapNetworkFileToTrending = (file: {
+    name: string;
+    size: number;
+    link: string;
+    content_hash: string;
+    peer_count: number;
+  }): TrendingDocument => {
+    const peerScore = Math.min(100, file.peer_count * 10);
+    return {
+      trendingScore: peerScore,
       trendingReason: 'downloads',
       trendingPeriod: 'week',
-      communityEndorsements: 89,
+      communityEndorsements: file.peer_count,
       culturalImportance: 'medium',
-      growthRate: 23.8,
-      peakTime: new Date(Date.now() - 1000 * 60 * 60 * 2),
-      networkReach: 67,
+      growthRate: 0,
+      peakTime: new Date(),
+      networkReach: Math.min(100, file.peer_count * 5),
       stats: {
-        views: 1892,
-        downloads: 1234,
-        shares: 156,
-        favorites: 289,
+        views: file.peer_count * 10,
+        downloads: file.peer_count,
+        shares: 0,
+        favorites: 0,
       },
       document: {
-        id: 'trend2',
-        title: 'Open Source Quantum Computing Fundamentals',
-        description:
-          'Collaborative research on quantum algorithms and implementations, making quantum computing accessible to global research communities through open-source development.',
+        id: file.content_hash,
+        title: file.name,
+        description: `Available from ${file.peer_count} peer(s) on the network cache`,
         format: 'pdf' as any,
         contentType: 'technical' as any,
         status: 'active' as any,
-        filePath: '/documents/quantum-computing.pdf',
-        originalFilename: 'quantum-computing.pdf',
-        fileSize: 12400000,
-        fileHash: 'hash2',
-        mimeType: 'application/pdf',
-        createdAt: new Date('2024-01-18'),
-        updatedAt: new Date('2024-01-24'),
-        createdBy: 'quantum-collective',
+        filePath: file.link,
+        originalFilename: file.name,
+        fileSize: file.size,
+        fileHash: file.content_hash,
+        mimeType: 'application/octet-stream',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        createdBy: 'network',
         version: 1,
         culturalMetadata: {
           sensitivityLevel: CulturalSensitivityLevel.PUBLIC,
-          culturalOrigin: 'Global Research Community',
+          culturalOrigin: 'P2P Network',
         } as any,
-        tags: ['quantum', 'computing', 'open-source', 'research', 'algorithms'],
-        categories: ['Technology', 'Research'],
+        tags: ['network', 'trending'],
+        categories: [],
         language: 'en',
         authors: [],
         accessHistory: [],
@@ -239,101 +198,31 @@ export const Trending: Component = () => {
         contentVerification: {} as any,
         sourceAttribution: {} as any,
       },
-    },
-    {
-      trendingScore: 76,
-      trendingReason: 'cultural-significance',
-      trendingPeriod: 'month',
-      communityEndorsements: 234,
-      culturalImportance: 'critical',
-      growthRate: 67.4,
-      peakTime: new Date(Date.now() - 1000 * 60 * 45),
-      networkReach: 92,
-      stats: {
-        views: 3456,
-        downloads: 445,
-        shares: 567,
-        favorites: 789,
-      },
-      document: {
-        id: 'trend3',
-        title: 'Traditional Healing Practices Documentation',
-        description:
-          'Comprehensive documentation of traditional healing methods from various indigenous communities, preserving ancient knowledge for future generations with proper cultural attribution.',
-        format: 'pdf' as any,
-        contentType: 'cultural' as any,
-        status: 'active' as any,
-        filePath: '/documents/traditional-healing.pdf',
-        originalFilename: 'traditional-healing.pdf',
-        fileSize: 8900000,
-        fileHash: 'hash3',
-        mimeType: 'application/pdf',
-        createdAt: new Date('2024-01-15'),
-        updatedAt: new Date('2024-01-22'),
-        createdBy: 'cultural-council',
-        version: 3,
-        culturalMetadata: {
-          sensitivityLevel: CulturalSensitivityLevel.COMMUNITY,
-          culturalOrigin: 'Global Indigenous Communities',
-        } as any,
-        tags: ['healing', 'traditional', 'medicine', 'cultural-heritage', 'documentation'],
-        categories: ['Health', 'Traditional Knowledge', 'Cultural Heritage'],
-        language: 'en',
-        authors: [],
-        accessHistory: [],
-        relationships: [],
-        securityValidation: {} as any,
-        contentVerification: {} as any,
-        sourceAttribution: {} as any,
-      },
-    },
-  ];
+    };
+  };
 
-  const loadTrendingData = async () => {
-    setLoading(true);
+  const loadTrendingData = async (quiet = false) => {
+    if (!quiet) setLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      const mockData = generateMockData();
-      setTrendingDocs(mockData);
-
-      // Calculate metrics
-      const totalViews = mockData.reduce((sum, doc) => sum + doc.stats.views, 0);
-      const totalDownloads = mockData.reduce((sum, doc) => sum + doc.stats.downloads, 0);
-      const totalShares = mockData.reduce((sum, doc) => sum + doc.stats.shares, 0);
+      const files = await listTrendingNetworkFiles(50);
+      const mapped = files.map(mapNetworkFileToTrending);
+      setTrendingDocs(mapped);
 
       setMetrics({
-        totalViews,
-        totalDownloads,
-        totalShares,
-        activeUsers: 1247,
-        networkHealth: 94,
-        culturalDiversity: 87,
+        totalViews: mapped.reduce((sum, doc) => sum + doc.stats.views, 0),
+        totalDownloads: mapped.reduce((sum, doc) => sum + doc.stats.downloads, 0),
+        totalShares: 0,
+        activeUsers: files.reduce((sum, f) => sum + f.peer_count, 0),
+        networkHealth: files.length > 0 ? 85 : 0,
+        culturalDiversity: 0,
       });
 
       setLastUpdated(new Date());
     } catch (error) {
       console.error('Failed to load trending data:', error);
     } finally {
-      setLoading(false);
+      if (!quiet) setLoading(false);
     }
-  };
-
-  const simulateRealTimeUpdate = () => {
-    setTrendingDocs(prev =>
-      prev.map(doc => ({
-        ...doc,
-        stats: {
-          ...doc.stats,
-          views: doc.stats.views + Math.floor(Math.random() * 10),
-          downloads: doc.stats.downloads + Math.floor(Math.random() * 3),
-          shares: doc.stats.shares + Math.floor(Math.random() * 2),
-        },
-        trendingScore: Math.min(100, doc.trendingScore + (Math.random() - 0.5) * 2),
-      }))
-    );
-    setLastUpdated(new Date());
   };
 
   const handleRefresh = async () => {
@@ -341,8 +230,6 @@ export const Trending: Component = () => {
     await loadTrendingData();
     setRefreshing(false);
   };
-
-  // Enhanced filtering logic
   const filteredTrendingDocs = () => {
     const filtered = trendingDocs().filter(item => {
       const matchesSearch =
@@ -482,7 +369,7 @@ export const Trending: Component = () => {
               Trending Content Discovery
             </h1>
             <p class={styles['page-subtitle']}>
-              Real-time trending analysis across the decentralized cultural heritage network
+              Real-time trending analysis across the decentralized network
             </p>
           </div>
 

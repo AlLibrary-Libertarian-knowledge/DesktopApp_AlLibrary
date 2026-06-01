@@ -33,8 +33,11 @@ import {
 } from 'lucide-solid';
 import './Sidebar.css';
 import { useNetworkPresenceResource } from '@/hooks/network/useNetworkPresence';
+import { TorBootstrapStatus } from '@/components/domain/network/TorBootstrapStatus';
+import { OnionStatusBar } from '@/components/domain/network/OnionStatusBar';
 import { useNetworkLobby } from '@/hooks/api/useNetworkLobby';
 import { useNetworkPeers } from '@/hooks/api/useNetworkPeers';
+import { useTransferState } from '@/hooks/api/useTransferState';
 
 interface NavItem {
   path: string;
@@ -101,9 +104,10 @@ const NAV_SECTIONS: NavSection[] = [
 
 const Sidebar: Component<SidebarProps> = props => {
   const [activeSection, setActiveSection] = createSignal('');
-  const presence = useNetworkPresenceResource();
+  const { presence, isBootstrapping } = useNetworkPresenceResource();
   const lobby = useNetworkLobby();
   const networkPeers = useNetworkPeers();
+  const transfer = useTransferState();
   const [isTransitioning, setIsTransitioning] = createSignal(false);
   const [wasCollapsed, setWasCollapsed] = createSignal(false);
   const [pendingSection, setPendingSection] = createSignal<string | null>(null);
@@ -116,6 +120,10 @@ const Sidebar: Component<SidebarProps> = props => {
     }
     if (path === '/peers') {
       const n = networkPeers.peerCount();
+      return n > 0 ? String(n) : undefined;
+    }
+    if (path === '/transfers') {
+      const n = transfer.activeCount();
       return n > 0 ? String(n) : undefined;
     }
     return undefined;
@@ -278,71 +286,64 @@ const Sidebar: Component<SidebarProps> = props => {
 
       {/* Enhanced Footer */}
       <div class="sidebar-footer">
-        <Show when={!props.collapsed}>
-          {/* Storage Information */}
-          <div class="storage-info">
-            <div class="storage-header">
-              <HardDrive size={14} />
-              <span class="storage-label">Storage</span>
-            </div>
-            <div class="storage-bar">
-              <div class="storage-used" style={`width: ${storagePercentage()}%`} />
-            </div>
-            <span class="storage-text">
-              {storageUsed()} / {storageTotal()}
-            </span>
-            <Show when={diskInfo()}>
-              <div
-                class="storage-path"
-                style={{
-                  opacity: '0.75',
-                  'font-size': '12px',
-                  overflow: 'hidden',
-                  'text-overflow': 'ellipsis',
-                  'white-space': 'nowrap',
-                }}
-              >
-                {diskInfo()?.project_path}
+        <Show
+          when={isBootstrapping()}
+          fallback={
+            <>
+              <Show when={!props.collapsed}>
+                <div class="storage-info">
+                  <div class="storage-header">
+                    <HardDrive size={14} />
+                    <span class="storage-label">Storage</span>
+                  </div>
+                  <div class="storage-bar">
+                    <div class="storage-used" style={`width: ${storagePercentage()}%`} />
+                  </div>
+                  <span class="storage-text">
+                    {storageUsed()} / {storageTotal()}
+                  </span>
+                  <Show when={diskInfo()}>
+                    <div
+                      class="storage-path"
+                      style={{
+                        opacity: '0.75',
+                        'font-size': '12px',
+                        overflow: 'hidden',
+                        'text-overflow': 'ellipsis',
+                        'white-space': 'nowrap',
+                      }}
+                    >
+                      {diskInfo()?.project_path}
+                    </div>
+                  </Show>
+                </div>
+              </Show>
+
+              <div class={`connection-status ${presence().online ? 'online' : 'offline'}`}>
+                <span class="connection-icon">
+                  {presence().online ? <Wifi size={14} /> : <WifiOff size={14} />}
+                </span>
+                <Show when={!props.collapsed}>
+                  <span class="connection-text">
+                    {presence().online ? 'Network Online' : 'Network Offline'}
+                  </span>
+                  <div class="connection-indicator">
+                    <div class="signal-dot" />
+                    <div class="signal-dot" />
+                    <div class="signal-dot" />
+                  </div>
+                  <OnionStatusBar variant="sidebar" showNodeCount />
+                </Show>
               </div>
+            </>
+          }
+        >
+          <div class="connection-bootstrap-panel">
+            <Show when={!props.collapsed} fallback={<Wifi size={14} class="connection-icon" />}>
+              <TorBootstrapStatus variant="sidebar" showSteps />
             </Show>
           </div>
         </Show>
-
-        {/* Connection Status */}
-        <div class={`connection-status ${presence().online ? 'online' : 'offline'}`}>
-          <span class="connection-icon">
-            {presence().online ? <Wifi size={14} /> : <WifiOff size={14} />}
-          </span>
-          <Show when={!props.collapsed}>
-            <span class="connection-text">
-              {presence().online ? 'Network Online' : 'Network Offline'}
-            </span>
-            <div class="connection-indicator">
-              <div class="signal-dot" />
-              <div class="signal-dot" />
-              <div class="signal-dot" />
-            </div>
-            <div
-              class="tor-status-pill"
-              title={presence().onionActive ? 'Onion routing active' : 'Onion routing inactive'}
-            >
-              <span class={`pill-dot ${presence().onionActive ? 'on' : 'off'}`} />
-              <span class="pill-text">{presence().onionActive ? 'Onion' : 'No Onion'}</span>
-            </div>
-            <Show when={lobby.onlineNodes() > 0 || lobby.lastSyncAt()}>
-              <div
-                class="tor-status-pill"
-                title="Nodes connected to the global tracker"
-                style={{ 'margin-top': '4px', cursor: 'default' }}
-              >
-                <span class="pill-dot on" />
-                <span class="pill-text">
-                  {lobby.onlineNodes()} node{lobby.onlineNodes() !== 1 ? 's' : ''} online
-                </span>
-              </div>
-            </Show>
-          </Show>
-        </div>
       </div>
     </aside>
   );

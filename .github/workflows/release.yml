@@ -27,7 +27,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -44,14 +44,30 @@ jobs:
       - name: Install frontend dependencies
         run: pnpm install
 
+      - name: Sync app version from .env
+        run: |
+          cp .env.example .env
+          pnpm run sync:version
+
+      - name: Generate release notes
+        id: release_notes
+        shell: bash
+        run: |
+          node scripts/generate-release-notes.cjs > release-body.md
+          DELIMITER="$(openssl rand -hex 16)"
+          echo "body<<${DELIMITER}" >> "$GITHUB_OUTPUT"
+          cat release-body.md >> "$GITHUB_OUTPUT"
+          echo "${DELIMITER}" >> "$GITHUB_OUTPUT"
+
       - name: Build Tauri app
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: v__VERSION__ # tauri-action automatically replaces this with the version from tauri.conf.json
+          tagName: v__VERSION__
           releaseName: "AlLibrary v__VERSION__"
-          releaseBody: "Automated release of AlLibrary with P2P Onion Share integration."
+          releaseBody: ${{ steps.release_notes.outputs.body }}
+          generateReleaseNotes: true
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.platform == 'windows-latest' && '--target x86_64-pc-windows-msvc' || '' }}

@@ -842,6 +842,22 @@
   z-index: 1;
 }
 
+.bootstrap-view {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  min-height: 420px;
+  padding: 2rem 1rem;
+  position: relative;
+  z-index: 1;
+}
+
+.bootstrap-view > div {
+  width: 100%;
+  max-width: 520px;
+}
+
 /* Metrics Grid */
 .metrics-grid {
   display: grid;

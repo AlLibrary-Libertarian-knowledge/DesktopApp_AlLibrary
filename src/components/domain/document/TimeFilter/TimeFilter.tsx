@@ -33,7 +33,6 @@ import { Button } from '@/components/foundation/Button';
 import { Badge } from '@/components/foundation/Badge';
 import { Card } from '@/components/foundation/Card';
 import { Tooltip } from '@/components/foundation/Tooltip';
-import { CulturalIndicator } from '@/components/cultural/CulturalIndicator';
 import type { UICulturalTheme } from '@/types/core';
 import styles from './TimeFilter.module.css';
 
@@ -232,15 +231,6 @@ export const TimeFilter: Component<TimeFilterProps> = props => {
             <Badge variant="secondary" size="sm" class={styles.countBadge}>
               {count}
             </Badge>
-          </Show>
-
-          <Show when={option.culturalContext}>
-            <CulturalIndicator
-              level={Math.max(1, Math.min(3, option.culturalContext!.level)) as 1 | 2 | 3}
-              size="sm"
-              informationOnly={true}
-              class={styles.culturalIndicator}
-            />
           </Show>
         </Button>
       </Tooltip>

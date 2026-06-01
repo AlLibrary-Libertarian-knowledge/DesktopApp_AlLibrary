@@ -2,6 +2,7 @@ import { type Component, type ParentProps, onMount } from 'solid-js';
 import Header from './Header';
 import Sidebar from './Sidebar';
 import Footer from './Footer';
+import { ToastHost } from '@/components/foundation/ToastHost';
 import './MainLayout.css';
 
 interface MainLayoutProps extends ParentProps {
@@ -31,6 +32,7 @@ const MainLayout: Component<MainLayoutProps> = props => {
       </div>
 
       <Footer />
+      <ToastHost />
     </div>
   );
 };
