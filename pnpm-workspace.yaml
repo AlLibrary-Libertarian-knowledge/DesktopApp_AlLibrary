@@ -1,0 +1,17 @@
+# pnpm v11+ reads overrides here (package.json#pnpm is ignored).
+packages:
+  - '.'
+
+overrides:
+  lodash: '>=4.18.0'
+  '@xmldom/xmldom': '>=0.8.13'
+  '@babel/core': '>=7.29.6'
+  postcss: '>=8.5.23'
+  vite: '>=8.0.16'
+  ws: '>=8.20.1'
+  seroval: '>=1.5.3'
+  seroval-plugins: '>=1.5.3'
+  svgo: '>=4.0.2'
+  'nanoid@^3.0.0': '3.3.18'
+  'brace-expansion@2': '2.1.4'
+  'brace-expansion@5': '5.0.9'
