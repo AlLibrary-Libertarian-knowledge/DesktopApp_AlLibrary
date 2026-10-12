@@ -1,4 +1,4 @@
-import { createSignal, createEffect, createMemo, batch } from 'solid-js';
+import { createSignal, createEffect, createMemo, batch, untrack } from 'solid-js';
 import { createStore } from 'solid-js/store';
 import type {
   Node,
@@ -84,13 +84,13 @@ export function useNetworkState() {
   });
 
   const replaceGraph = (nextNodes: Node[], nextLinks: Link[]) => {
-    const merged = mergeGraphPositions(nodes, nextNodes);
+    const merged = untrack(() => mergeGraphPositions(nodes, nextNodes));
     batch(() => {
       setNodes(merged);
       setLinks(nextLinks);
     });
     // Refresh selected/expanded node fields (files, lastSeen) after lobby sync
-    const expandedId = expansionState.expandedNode?.id;
+    const expandedId = untrack(() => expansionState.expandedNode?.id);
     if (expandedId) {
       const fresh = merged.find(n => n.id === expandedId);
       if (fresh) {

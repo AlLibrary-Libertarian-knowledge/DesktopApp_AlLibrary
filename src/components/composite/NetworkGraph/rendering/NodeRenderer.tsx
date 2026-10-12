@@ -1,5 +1,23 @@
 import type { Node } from '../types';
 
+/** roundRect is missing in some test/canvas mocks — fall back to rect. */
+function fillRoundRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number
+) {
+  ctx.beginPath();
+  if (typeof ctx.roundRect === 'function') {
+    ctx.roundRect(x, y, w, h, r);
+  } else {
+    ctx.rect(x, y, w, h);
+  }
+  ctx.fill();
+}
+
 /**
  * Canvas node drawing — planetary peers with transfer “satellites”
  * (orbiting progress dots for downloads / uploads).
@@ -347,9 +365,7 @@ export class NodeRenderer {
     const top = node.y + finalSize + 10;
 
     this.ctx.fillStyle = 'rgba(12, 10, 9, 0.72)';
-    this.ctx.beginPath();
-    this.ctx.roundRect(node.x - blockW / 2, top - 2, blockW, blockH, 6);
-    this.ctx.fill();
+    fillRoundRect(this.ctx, node.x - blockW / 2, top - 2, blockW, blockH, 6);
 
     lines.forEach((line, i) => {
       this.ctx.font = fonts[Math.min(i, fonts.length - 1)]!;

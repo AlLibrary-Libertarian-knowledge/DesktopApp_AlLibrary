@@ -82,9 +82,8 @@ describe('NetworkGraph', () => {
 
     expect(statsContainer).toBeTruthy();
     expect(container.textContent).toContain('Peers');
-    expect(container.textContent).toContain('Bandwidth');
-    expect(container.textContent).toContain('Latency');
-    expect(container.textContent).toContain('Health');
+    expect(container.textContent).toMatch(/Arquivos|Files/);
+    expect(container.textContent).toMatch(/Saúde|Health/);
   });
 
   it('hides network statistics when showStats is false', () => {
@@ -131,17 +130,16 @@ describe('NetworkGraph', () => {
     render(() => <NetworkGraph />);
 
     expect(addEventListenerSpy).toHaveBeenCalledWith('mousemove', expect.any(Function));
-    expect(addEventListenerSpy).toHaveBeenCalledWith('click', expect.any(Function));
+    expect(addEventListenerSpy).toHaveBeenCalledWith('mousedown', expect.any(Function));
+    expect(addEventListenerSpy).toHaveBeenCalledWith('mouseup', expect.any(Function));
   });
 
   it('calculates network statistics correctly', () => {
     const { container } = render(() => <NetworkGraph showStats={true} />);
 
-    // Check that statistics are calculated and displayed
-    expect(container.textContent).toMatch(/\d+\/\d+/); // Peers format
-    expect(container.textContent).toMatch(/\d+\.\d+ MB\/s/); // Bandwidth format
-    expect(container.textContent).toMatch(/\d+ms/); // Latency format
-    expect(container.textContent).toMatch(/\d+%/); // Health percentage
+    // Peers ratio + health % from lobby/mock graph stats
+    expect(container.textContent).toMatch(/\d+\/\d+/);
+    expect(container.textContent).toMatch(/\d+%/);
   });
 
   describe('Responsive behavior', () => {
@@ -203,7 +201,6 @@ describe('NetworkGraph', () => {
       expect(addEventListenerSpy).toHaveBeenCalledWith('mousemove', expect.any(Function));
       expect(addEventListenerSpy).toHaveBeenCalledWith('mousedown', expect.any(Function));
       expect(addEventListenerSpy).toHaveBeenCalledWith('mouseup', expect.any(Function));
-      expect(addEventListenerSpy).toHaveBeenCalledWith('click', expect.any(Function));
 
       unmount();
     });

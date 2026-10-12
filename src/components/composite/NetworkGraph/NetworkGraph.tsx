@@ -5,6 +5,7 @@ import {
   createEffect,
   createSignal,
   createMemo,
+  untrack,
 } from 'solid-js';
 import { useTranslation } from '../../../i18n/hooks';
 import {
@@ -28,6 +29,21 @@ import { formatFileSize } from './utils/formatters';
 import { buildLobbyGraph, nodeHitRadius } from './data/buildLobbyGraph';
 import { buildMockGraph, USE_MOCK_NETWORK_GRAPH } from './data/mockNetworkData';
 import { useNetworkLobby } from '@/hooks/api/useNetworkLobby';
+
+function pathRoundRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number
+) {
+  if (typeof ctx.roundRect === 'function') {
+    ctx.roundRect(x, y, w, h, r);
+    return;
+  }
+  ctx.rect(x, y, w, h);
+}
 import { useNetworkPeers } from '@/hooks/api/useNetworkPeers';
 import { onionShareStatus, trackerGetConfig } from '@/services/network/onionShareService';
 import './NetworkGraph.css';
@@ -126,7 +142,8 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
 
   createEffect(() => {
     if (useMock()) {
-      syncGraph();
+      // untrack: replaceGraph reads the nodes store; tracking it would loop forever
+      untrack(() => syncGraph());
       return;
     }
     // Live lobby: rebuild when peers/files/identity change
@@ -134,7 +151,7 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
     lobby.files();
     selfOnion();
     selfNodeId();
-    syncGraph();
+    untrack(() => syncGraph());
   });
 
   const uniqueFileCount = createMemo(() => {
@@ -597,7 +614,7 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
     ctx.shadowOffsetY = 6;
     ctx.fillStyle = 'rgba(22, 20, 18, 0.96)';
     ctx.beginPath();
-    ctx.roundRect(boxX, boxY, boxW, boxH, 12);
+    pathRoundRect(ctx, boxX, boxY, boxW, boxH, 12);
     ctx.fill();
     ctx.shadowColor = 'transparent';
     ctx.shadowBlur = 0;
@@ -606,13 +623,13 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
     ctx.strokeStyle = 'rgba(255, 138, 61, 0.55)';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.roundRect(boxX, boxY, boxW, boxH, 12);
+    pathRoundRect(ctx, boxX, boxY, boxW, boxH, 12);
     ctx.stroke();
 
     // Accent bar
     ctx.fillStyle = '#ff8a3d';
     ctx.beginPath();
-    ctx.roundRect(boxX, boxY, 3, boxH, 2);
+    pathRoundRect(ctx, boxX, boxY, 3, boxH, 2);
     ctx.fill();
 
     let y = boxY + padY + 14;
@@ -630,7 +647,7 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
     const chipY = boxY + padY + 2;
     ctx.fillStyle = live ? '#3dcfb0' : '#e8b45a';
     ctx.beginPath();
-    ctx.roundRect(chipX, chipY, chipW, 16, 8);
+    pathRoundRect(ctx, chipX, chipY, chipW, 16, 8);
     ctx.fill();
     ctx.fillStyle = live ? '#042f24' : '#3d2a0a';
     ctx.fillText(chip, chipX + 5, chipY + 11);
