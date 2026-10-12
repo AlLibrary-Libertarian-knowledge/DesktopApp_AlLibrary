@@ -94,7 +94,7 @@
     ],
     "package.json": [
       "biome check --write package.json --no-errors-on-unmatched",
-      "pnpm audit --audit-level=moderate"
+      "pnpm audit --audit-level=high"
     ]
   },
   "pnpm": {
@@ -105,12 +105,17 @@
       "postcss": ">=8.5.23",
       "vite": ">=8.0.16",
       "ws": ">=8.20.1",
-      "seroval": ">=1.5.3",
-      "seroval-plugins": ">=1.5.3",
+      "seroval": ">=1.6.3",
+      "seroval-plugins": ">=1.6.3",
       "svgo": ">=4.0.2",
       "nanoid@^3.0.0": "3.3.18",
-      "brace-expansion@2": "2.1.4",
-      "brace-expansion@5": "5.0.9"
+      "brace-expansion@2": "2.1.7",
+      "brace-expansion@5": "5.0.12",
+      "source-map-js": ">=1.2.2",
+      "browserslist": ">=4.28.7",
+      "tinypool": ">=2.1.2",
+      "colord": ">=2.9.4",
+      "postcss-selector-parser": ">=7.1.6"
     }
   }
 }
