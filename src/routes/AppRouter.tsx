@@ -18,8 +18,14 @@ const PeerTransfers = lazy(() => import('../pages/PeerTransfers'));
 const DocumentReader = lazy(() => import('../pages/DocumentReader'));
 
 const RouteLoading = () => (
-  <div class="route-loading">
-    <div class="loading-spinner" aria-label="Loading" />
+  <div class="route-loading" role="status" aria-live="polite" aria-busy="true">
+    <div class="route-loading-glow" aria-hidden="true" />
+    <div class="route-loading-panel">
+      <div class="route-loading-spinner" aria-hidden="true">
+        <span class="route-loading-spinner-ring" />
+        <span class="route-loading-spinner-core" />
+      </div>
+    </div>
   </div>
 );
 

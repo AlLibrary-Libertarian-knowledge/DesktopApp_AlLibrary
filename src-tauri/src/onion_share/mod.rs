@@ -3,7 +3,9 @@
 
 pub mod config;
 pub mod crypto;
+pub mod dht;
 pub mod fetch;
+pub mod gossip;
 pub mod link;
 pub mod platform;
 pub mod server;

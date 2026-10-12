@@ -34,6 +34,9 @@
   },
   "status": {
     "loading": "Carregando...",
+    "loadingPage": "Carregando…",
+    "preparingContent": "Preparando o conteúdo",
+    "loadingSlow": "Isso está demorando mais que o usual",
     "saving": "Salvando...",
     "processing": "Processando...",
     "connecting": "Conectando...",

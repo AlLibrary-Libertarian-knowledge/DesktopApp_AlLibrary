@@ -83,10 +83,9 @@ const Header: Component<HeaderProps> = props => {
 
         <LanguageSwitcher
           variant="compact"
-          showFlags={true}
+          showFlags={false}
           showNativeName={false}
           size="sm"
-          className="header-language-switcher"
           ariaLabel={t('common.actions.changeLanguage')}
         />
 

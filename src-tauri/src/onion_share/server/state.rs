@@ -6,6 +6,8 @@ use std::time::{Duration, Instant};
 use tokio::sync::{watch, Mutex};
 use uuid::Uuid;
 
+use super::super::dht::{DhtPeer, RoutingTable};
+use super::super::gossip::GossipState;
 use super::super::share::Share;
 
 #[derive(Default, Clone, Debug)]
@@ -23,6 +25,9 @@ pub struct AppState {
     pub stats: Arc<Mutex<GlobalStats>>,
     online_tx: Arc<watch::Sender<usize>>,
     pub online_rx: watch::Receiver<usize>,
+    pub dht: Arc<Mutex<RoutingTable>>,
+    pub gossip: Arc<Mutex<GossipState>>,
+    pub local_peer: Arc<Mutex<Option<DhtPeer>>>,
 }
 
 impl AppState {
@@ -35,7 +40,18 @@ impl AppState {
             stats: Arc::new(Mutex::new(GlobalStats::default())),
             online_tx: Arc::new(online_tx),
             online_rx,
+            dht: Arc::new(Mutex::new(RoutingTable::new("bootstrap"))),
+            gossip: Arc::new(Mutex::new(GossipState::new())),
+            local_peer: Arc::new(Mutex::new(None)),
         }
+    }
+
+    pub async fn set_local_peer(&self, peer: DhtPeer) {
+        {
+            let mut t = self.dht.lock().await;
+            *t = RoutingTable::new(peer.node_id.clone());
+        }
+        *self.local_peer.lock().await = Some(peer);
     }
 
     pub async fn add_share(&self, share: Share) {

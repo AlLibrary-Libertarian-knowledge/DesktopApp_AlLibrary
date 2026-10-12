@@ -58,17 +58,40 @@ impl Default for SecurityInfo {
 #[tauri::command]
 pub async fn get_security_info() -> Result<SecurityInfo, String> {
     info!("Starting security analysis...");
-    
+
+    // Hard cap so the UI never spins forever (DNS / flaky endpoints).
+    match tokio::time::timeout(Duration::from_secs(12), collect_security_info()).await {
+        Ok(Ok(info)) => {
+            info!("Security analysis completed with score: {}", info.security_score);
+            Ok(info)
+        }
+        Ok(Err(e)) => {
+            error!("Security analysis failed: {}", e);
+            Err(e)
+        }
+        Err(_) => {
+            warn!("Security analysis timed out — returning partial local snapshot");
+            Ok(partial_security_info("Security analysis timed out; showing local snapshot"))
+        }
+    }
+}
+
+async fn collect_security_info() -> Result<SecurityInfo, String> {
     let mut security_info = SecurityInfo::default();
-    
-    // Get local IP
+
     if let Ok(local_ip) = local_ip_address::local_ip() {
         security_info.local_ip = Some(local_ip.to_string());
         info!("Local IP detected: {}", local_ip);
     }
-    
-    // Get public IP and geolocation
-    match get_public_ip_info().await {
+
+    // Run remote checks in parallel instead of ~20s sequential waits.
+    let (ip_result, latency_ms, ssl_available) = tokio::join!(
+        get_public_ip_info(),
+        test_latency(),
+        test_ssl_availability(),
+    );
+
+    match ip_result {
         Ok(ip_info) => {
             security_info.public_ip = ip_info.query.clone();
             security_info.country = ip_info.country.clone();
@@ -76,42 +99,43 @@ pub async fn get_security_info() -> Result<SecurityInfo, String> {
             security_info.city = ip_info.city.clone();
             security_info.isp = ip_info.isp.clone();
             security_info.timezone = ip_info.timezone.clone();
-            
-            // Analyze for VPN/Proxy
-            analyze_connection_type(&mut security_info, &ip_info).await;
-            
+            analyze_connection_type(&mut security_info, &ip_info);
             info!("IP analysis completed for: {:?}", security_info.public_ip);
         }
         Err(e) => {
             warn!("Failed to get IP info: {}", e);
             security_info.warnings.push("Unable to verify public IP address".to_string());
+            if security_info.connection_type == "Unknown" {
+                security_info.connection_type = "Direct Connection".to_string();
+            }
         }
     }
-    
-    // Test latency
-    security_info.latency_ms = test_latency().await;
-    
-    // Test SSL availability
-    security_info.ssl_available = test_ssl_availability().await;
-    
-    // Calculate security score
+
+    security_info.latency_ms = latency_ms;
+    security_info.ssl_available = ssl_available;
     security_info.security_score = calculate_security_score(&security_info);
-    
-    // Generate cultural heritage specific warnings
     generate_warnings(&mut security_info);
-    
-    info!("Security analysis completed with score: {}", security_info.security_score);
-    
+
     Ok(security_info)
+}
+
+fn partial_security_info(warning: &str) -> SecurityInfo {
+    let mut info = SecurityInfo::default();
+    if let Ok(local_ip) = local_ip_address::local_ip() {
+        info.local_ip = Some(local_ip.to_string());
+    }
+    info.connection_type = "Unknown".to_string();
+    info.warnings.push(warning.to_string());
+    info.security_score = calculate_security_score(&info);
+    info
 }
 
 #[tauri::command]
 pub async fn refresh_security_info(app_handle: AppHandle) -> Result<(), String> {
     info!("Refreshing security information...");
-    
+
     match get_security_info().await {
         Ok(security_info) => {
-            // Emit event to frontend
             if let Err(e) = app_handle.emit("security-info-updated", &security_info) {
                 error!("Failed to emit security update: {}", e);
                 return Err(format!("Failed to broadcast security update: {}", e));
@@ -128,31 +152,83 @@ pub async fn refresh_security_info(app_handle: AppHandle) -> Result<(), String> 
 
 async fn get_public_ip_info() -> Result<IpApiResponse, Box<dyn std::error::Error + Send + Sync>> {
     let client = reqwest::Client::builder()
-        .timeout(Duration::from_secs(10))
+        .timeout(Duration::from_secs(4))
+        .connect_timeout(Duration::from_secs(2))
         .build()?;
-    
-    let response = client
-        .get("http://ip-api.com/json/?fields=status,message,country,countryCode,regionName,city,isp,query,timezone")
-        .send()
-        .await?;
-    
-    let ip_info: IpApiResponse = response.json().await?;
-    Ok(ip_info)
+
+    // Prefer HTTPS; fall back to HTTP if needed.
+    let urls = [
+        "https://ipapi.co/json/",
+        "http://ip-api.com/json/?fields=status,message,country,countryCode,regionName,city,isp,query,timezone",
+    ];
+
+    let mut last_err: Option<Box<dyn std::error::Error + Send + Sync>> = None;
+
+    for url in urls {
+        match client.get(url).send().await {
+            Ok(response) => {
+                if !response.status().is_success() {
+                    last_err = Some(format!("IP lookup HTTP {}", response.status()).into());
+                    continue;
+                }
+
+                let body = response.bytes().await?;
+                if let Ok(mapped) = map_ip_payload(&body, url) {
+                    return Ok(mapped);
+                }
+                last_err = Some("Failed to parse IP lookup payload".into());
+            }
+            Err(e) => {
+                last_err = Some(e.into());
+            }
+        }
+    }
+
+    Err(last_err.unwrap_or_else(|| "IP lookup failed".into()))
 }
 
-async fn analyze_connection_type(security_info: &mut SecurityInfo, ip_info: &IpApiResponse) {
-    // Basic VPN/Proxy detection heuristics
+fn map_ip_payload(
+    body: &[u8],
+    url: &str,
+) -> Result<IpApiResponse, Box<dyn std::error::Error + Send + Sync>> {
+    if url.contains("ipapi.co") {
+        #[derive(Deserialize)]
+        struct IpApiCo {
+            ip: Option<String>,
+            country_name: Option<String>,
+            region: Option<String>,
+            city: Option<String>,
+            org: Option<String>,
+            timezone: Option<String>,
+        }
+
+        let parsed: IpApiCo = serde_json::from_slice(body)?;
+        return Ok(IpApiResponse {
+            query: parsed.ip,
+            country: parsed.country_name,
+            region_name: parsed.region,
+            city: parsed.city,
+            isp: parsed.org,
+            timezone: parsed.timezone,
+        });
+    }
+
+    Ok(serde_json::from_slice::<IpApiResponse>(body)?)
+}
+
+fn analyze_connection_type(security_info: &mut SecurityInfo, ip_info: &IpApiResponse) {
     if let Some(isp) = &ip_info.isp {
         let isp_lower = isp.to_lowercase();
-        
-        // Common VPN/Proxy indicators
+
         let vpn_indicators = [
             "vpn", "proxy", "hosting", "datacenter", "cloud", "server",
-            "digital ocean", "amazonaws", "linode", "vultr", "ovh"
+            "digital ocean", "amazonaws", "linode", "vultr", "ovh",
         ];
-        
-        let is_suspicious = vpn_indicators.iter().any(|indicator| isp_lower.contains(indicator));
-        
+
+        let is_suspicious = vpn_indicators
+            .iter()
+            .any(|indicator| isp_lower.contains(indicator));
+
         if is_suspicious {
             security_info.is_vpn = true;
             security_info.connection_type = "VPN/Proxy Detected".to_string();
@@ -160,9 +236,10 @@ async fn analyze_connection_type(security_info: &mut SecurityInfo, ip_info: &IpA
         } else {
             security_info.connection_type = "Direct Connection".to_string();
         }
+    } else {
+        security_info.connection_type = "Direct Connection".to_string();
     }
-    
-    // Additional Tor detection (simplified)
+
     if let Some(ip) = &security_info.public_ip {
         if ip.starts_with("10.") || ip.starts_with("172.") || ip.starts_with("192.168.") {
             security_info.is_proxy = true;
@@ -173,10 +250,13 @@ async fn analyze_connection_type(security_info: &mut SecurityInfo, ip_info: &IpA
 
 async fn test_latency() -> Option<u64> {
     let start = Instant::now();
-    
-    match reqwest::Client::new()
-        .get("https://www.google.com")
-        .timeout(Duration::from_secs(5))
+
+    match reqwest::Client::builder()
+        .timeout(Duration::from_secs(3))
+        .connect_timeout(Duration::from_secs(2))
+        .build()
+        .ok()?
+        .get("https://www.cloudflare.com/cdn-cgi/trace")
         .send()
         .await
     {
@@ -193,18 +273,23 @@ async fn test_latency() -> Option<u64> {
 }
 
 async fn test_ssl_availability() -> bool {
-    match reqwest::Client::new()
-        .get("https://httpbin.org/get")
-        .timeout(Duration::from_secs(5))
-        .send()
-        .await
+    match reqwest::Client::builder()
+        .timeout(Duration::from_secs(3))
+        .connect_timeout(Duration::from_secs(2))
+        .build()
     {
-        Ok(_) => {
-            info!("SSL/TLS available");
-            true
-        }
+        Ok(client) => match client.get("https://www.cloudflare.com/cdn-cgi/trace").send().await {
+            Ok(_) => {
+                info!("SSL/TLS available");
+                true
+            }
+            Err(e) => {
+                warn!("SSL test failed: {}", e);
+                false
+            }
+        },
         Err(e) => {
-            warn!("SSL test failed: {}", e);
+            warn!("SSL client build failed: {}", e);
             false
         }
     }
@@ -212,21 +297,19 @@ async fn test_ssl_availability() -> bool {
 
 fn calculate_security_score(security_info: &SecurityInfo) -> u32 {
     let mut score = 100u32;
-    
-    // VPN/Proxy penalties for cultural heritage networks
+
     if security_info.is_vpn {
         score = score.saturating_sub(20);
     }
-    
+
     if security_info.is_proxy {
         score = score.saturating_sub(15);
     }
-    
+
     if security_info.is_tor {
         score = score.saturating_sub(30);
     }
-    
-    // Latency penalties
+
     if let Some(latency) = security_info.latency_ms {
         if latency > 500 {
             score = score.saturating_sub(10);
@@ -234,46 +317,45 @@ fn calculate_security_score(security_info: &SecurityInfo) -> u32 {
             score = score.saturating_sub(5);
         }
     }
-    
-    // SSL availability
+
     if !security_info.ssl_available {
         score = score.saturating_sub(15);
     }
-    
-    // Ensure minimum score
-    score.max(0)
+
+    score
 }
 
 fn generate_warnings(security_info: &mut SecurityInfo) {
     if security_info.is_vpn {
         security_info.warnings.push(
-            "VPN detected: May affect cultural heritage repository access policies".to_string()
+            "VPN detected: May affect cultural heritage repository access policies".to_string(),
         );
     }
-    
+
     if security_info.is_proxy {
         security_info.warnings.push(
-            "Proxy connection: Institutional network policies may apply".to_string()
+            "Proxy connection: Institutional network policies may apply".to_string(),
         );
     }
-    
+
     if let Some(latency) = security_info.latency_ms {
         if latency > 500 {
             security_info.warnings.push(
-                "High network latency: May impact cultural data synchronization".to_string()
+                "High network latency: May impact cultural data synchronization".to_string(),
             );
         }
     }
-    
+
     if !security_info.ssl_available {
         security_info.warnings.push(
-            "SSL/TLS unavailable: Secure cultural heritage data transfer at risk".to_string()
+            "SSL/TLS unavailable: Secure cultural heritage data transfer at risk".to_string(),
         );
     }
-    
+
     if security_info.security_score < 50 {
         security_info.warnings.push(
-            "Network security concerns detected: Review connection for heritage preservation".to_string()
+            "Network security concerns detected: Review connection for heritage preservation"
+                .to_string(),
         );
     }
-} 
+}

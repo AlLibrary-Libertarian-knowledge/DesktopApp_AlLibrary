@@ -57,7 +57,6 @@ const SecurityPanel: Component = () => {
   const [lastUpdated, setLastUpdated] = createSignal<Date | null>(null);
   const [hasError, setHasError] = createSignal(false);
   const [showFullIP, setShowFullIP] = createSignal(false);
-  const [expandedCard, setExpandedCard] = createSignal<string | null>(null);
 
   let unlisten: (() => void) | null = null;
 
@@ -172,14 +171,10 @@ const SecurityPanel: Component = () => {
 
   return (
     <div class={styles['security-panel']}>
-      {/* Enhanced Header */}
       <div class={styles['security-panel-header']}>
         <div class={styles['header-left']}>
-          <div class={styles['header-icon-container']}>
-            <div class={styles['header-icon']}>
-              <Shield size={24} />
-            </div>
-            <div class={styles['header-pulse']} />
+          <div class={styles['header-icon']} aria-hidden="true">
+            <Shield size={18} />
           </div>
           <div class={styles['header-text']}>
             <h3>{t('securityPanel.title')}</h3>
@@ -188,11 +183,12 @@ const SecurityPanel: Component = () => {
         </div>
         <div class={styles['header-actions']}>
           <button
+            type="button"
             class={`${styles['refresh-btn']} ${isRefreshing() ? styles['refreshing'] : ''}`}
             onClick={handleRefresh}
             disabled={isRefreshing()}
           >
-            <RefreshCw size={16} />
+            <RefreshCw size={14} aria-hidden="true" />
             <span>
               {isRefreshing() ? t('securityPanel.refreshing') : t('securityPanel.refreshAction')}
             </span>
@@ -235,58 +231,44 @@ const SecurityPanel: Component = () => {
 
       <Show when={!isLoading() && !hasError() && securityInfo()}>
         <div class={styles['security-content']}>
-          {/* Enhanced Security Score Overview */}
           <div class={styles['security-overview']}>
             <div class={styles['score-section']}>
               <div
                 class={`${styles['score-display']} ${styles[getSecurityColor(securityInfo()!.security_score)]}`}
                 style={{
-                  '--score': securityInfo()!.security_score,
-                  '--score-color':
-                    getSecurityColor(securityInfo()!.security_score) === 'excellent'
-                      ? '#22c55e'
-                      : getSecurityColor(securityInfo()!.security_score) === 'good'
-                        ? '#3b82f6'
-                        : getSecurityColor(securityInfo()!.security_score) === 'fair'
-                          ? '#f59e0b'
-                          : '#ef4444',
-                  '--score-color-rgb':
-                    getSecurityColor(securityInfo()!.security_score) === 'excellent'
-                      ? '34, 197, 94'
-                      : getSecurityColor(securityInfo()!.security_score) === 'good'
-                        ? '59, 130, 246'
-                        : getSecurityColor(securityInfo()!.security_score) === 'fair'
-                          ? '245, 158, 11'
-                          : '239, 68, 68',
+                  '--score': String(securityInfo()!.security_score),
                 }}
               >
-                <div class={styles['score-circle-large']}>
+                <div class={styles['score-circle']} aria-hidden="true">
                   <div class={styles['score-inner']}>
-                    <span class={styles['score-number-large']}>
-                      {securityInfo()!.security_score}
-                    </span>
+                    <span class={styles['score-number']}>{securityInfo()!.security_score}</span>
                     <span class={styles['score-label']}>{t('securityPanel.scoreLabel')}</span>
                   </div>
-                  <div class={styles['score-ring']} />
-                  <div class={styles['score-glow']} />
-                </div>
-                <div class={styles['score-icon']}>
-                  {(() => {
-                    const Icon = getSecurityIcon(securityInfo()!.security_score);
-                    return <Icon size={24} />;
-                  })()}
                 </div>
               </div>
 
               <div class={styles['score-details']}>
-                <h4
-                  class={`${styles['security-level']} ${styles[getSecurityColor(securityInfo()!.security_score)]}`}
-                >
-                  {t(
-                    `securityPanel.levels.${getSecurityLevel(securityInfo()!.security_score).toLowerCase()}`
-                  )}{' '}
-                  {t('securityPanel.securityLevel')}
-                </h4>
+                <div class={styles['level-row']}>
+                  {(() => {
+                    const Icon = getSecurityIcon(securityInfo()!.security_score);
+                    return (
+                      <span
+                        class={`${styles['level-icon']} ${styles[getSecurityColor(securityInfo()!.security_score)]}`}
+                        aria-hidden="true"
+                      >
+                        <Icon size={16} />
+                      </span>
+                    );
+                  })()}
+                  <h4
+                    class={`${styles['security-level']} ${styles[getSecurityColor(securityInfo()!.security_score)]}`}
+                  >
+                    {t(
+                      `securityPanel.levels.${getSecurityLevel(securityInfo()!.security_score).toLowerCase()}`
+                    )}{' '}
+                    {t('securityPanel.securityLevel')}
+                  </h4>
+                </div>
                 <p class={styles['score-description']}>
                   {securityInfo()!.security_score >= 80
                     ? t('securityPanel.descriptions.excellent')
@@ -297,19 +279,18 @@ const SecurityPanel: Component = () => {
                         : t('securityPanel.descriptions.poor')}
                 </p>
 
-                {/* Threat Level Indicator */}
                 <div class={`${styles['threat-indicator']} ${styles[getThreatLevel()]}`}>
-                  <div class={styles['threat-icon']}>
+                  <span class={styles['threat-icon']} aria-hidden="true">
                     {getThreatLevel() === 'minimal' ? (
-                      <CheckCircle size={16} />
+                      <CheckCircle size={14} />
                     ) : getThreatLevel() === 'low' ? (
-                      <Info size={16} />
+                      <Info size={14} />
                     ) : getThreatLevel() === 'moderate' ? (
-                      <AlertTriangle size={16} />
+                      <AlertTriangle size={14} />
                     ) : (
-                      <XCircle size={16} />
+                      <XCircle size={14} />
                     )}
-                  </div>
+                  </span>
                   <span class={styles['threat-text']}>
                     {t(`securityPanel.threats.${getThreatLevel()}`)}{' '}
                     {t('securityPanel.threatLevel')}
@@ -318,14 +299,13 @@ const SecurityPanel: Component = () => {
               </div>
             </div>
 
-            {/* Enhanced Quick Stats */}
             <div class={styles['quick-stats']}>
-              <div class={`${styles['stat-item']} ${styles['enhanced']}`}>
+              <div class={styles['stat-item']}>
                 <div class={styles['stat-icon-container']}>
-                  <div class={styles['stat-icon']}>
+                  <div class={styles['stat-icon']} aria-hidden="true">
                     {(() => {
                       const Icon = getConnectionIcon(securityInfo()!.connection_type);
-                      return <Icon size={20} />;
+                      return <Icon size={16} />;
                     })()}
                   </div>
                   <div class={`${styles['stat-indicator']} ${styles['active']}`} />
@@ -336,10 +316,10 @@ const SecurityPanel: Component = () => {
                 </div>
               </div>
 
-              <div class={`${styles['stat-item']} ${styles['enhanced']}`}>
+              <div class={styles['stat-item']}>
                 <div class={styles['stat-icon-container']}>
-                  <div class={styles['stat-icon']}>
-                    <Activity size={20} />
+                  <div class={styles['stat-icon']} aria-hidden="true">
+                    <Activity size={16} />
                   </div>
                   <div
                     class={`${styles['stat-indicator']} ${styles[getLatencyStatus(securityInfo()!.latency_ms).status]}`}
@@ -355,28 +335,28 @@ const SecurityPanel: Component = () => {
                         ? `${securityInfo()!.latency_ms}ms`
                         : t('securityPanel.latency.testing')}
                     </span>
-                    <div class={styles['stat-trend']}>
+                    <span class={styles['stat-trend']} aria-hidden="true">
                       {getLatencyStatus(securityInfo()!.latency_ms).trend === 'up' ? (
-                        <TrendingUp size={14} />
+                        <TrendingUp size={12} />
                       ) : (
-                        <TrendingDown size={14} />
+                        <TrendingDown size={12} />
                       )}
-                    </div>
+                    </span>
                   </div>
                 </div>
               </div>
 
-              <div class={`${styles['stat-item']} ${styles['enhanced']}`}>
+              <div class={styles['stat-item']}>
                 <div class={styles['stat-icon-container']}>
-                  <div class={styles['stat-icon']}>
-                    {securityInfo()!.ssl_available ? <Lock size={20} /> : <Unlock size={20} />}
+                  <div class={styles['stat-icon']} aria-hidden="true">
+                    {securityInfo()!.ssl_available ? <Lock size={16} /> : <Unlock size={16} />}
                   </div>
                   <div
                     class={`${styles['stat-indicator']} ${styles[securityInfo()!.ssl_available ? 'available' : 'unavailable']}`}
                   />
                 </div>
                 <div class={styles['stat-content']}>
-                  <span class={styles['stat-label']}>SSL/TLS Security</span>
+                  <span class={styles['stat-label']}>SSL/TLS</span>
                   <span
                     class={`${styles['stat-value']} ${styles[securityInfo()!.ssl_available ? 'available' : 'unavailable']}`}
                   >
@@ -385,10 +365,10 @@ const SecurityPanel: Component = () => {
                 </div>
               </div>
 
-              <div class={`${styles['stat-item']} ${styles['enhanced']}`}>
+              <div class={styles['stat-item']}>
                 <div class={styles['stat-icon-container']}>
-                  <div class={styles['stat-icon']}>
-                    <Server size={20} />
+                  <div class={styles['stat-icon']} aria-hidden="true">
+                    <Server size={16} />
                   </div>
                   <div class={`${styles['stat-indicator']} ${styles['active']}`} />
                 </div>
@@ -400,187 +380,168 @@ const SecurityPanel: Component = () => {
             </div>
           </div>
 
-          {/* Enhanced Information Grid */}
+          {/* Identity / location / analysis — equal-rhythm detail cards */}
           <div class={styles['info-grid']}>
-            {/* IP Information Card */}
-            <div
-              class={`${styles['info-card']} ${styles['enhanced']} ${expandedCard() === 'ip' ? styles['expanded'] : ''}`}
-              onClick={() => setExpandedCard(expandedCard() === 'ip' ? null : 'ip')}
-            >
-              <div class={styles['info-header']}>
-                <div class={styles['header-icon-wrapper']}>
-                  <Globe size={18} />
+            <article class={`${styles['info-card']} ${styles['card-identity']}`}>
+              <header class={styles['info-header']}>
+                <div class={styles['header-icon-wrapper']} aria-hidden="true">
+                  <Globe size={16} />
                 </div>
-                <h4>Network Identity</h4>
-                <div class={styles['expand-indicator']}>{expandedCard() === 'ip' ? '−' : '+'}</div>
-              </div>
-              <div class={styles['info-content']}>
-                <div class={`${styles['info-row']} ${styles['highlighted']}`}>
-                  <span class={styles['info-label']}>Public IP:</span>
-                  <div class={styles['ip-display']}>
-                    <span class={`${styles['info-value']} ${styles['ip-value']}`}>
+                <div class={styles['header-copy']}>
+                  <h4>Network Identity</h4>
+                  <p>Endpoint addressing</p>
+                </div>
+              </header>
+              <dl class={styles['info-content']}>
+                <div class={`${styles['info-row']} ${styles['primary']}`}>
+                  <dt class={styles['info-label']}>Public IP</dt>
+                  <dd class={styles['ip-display']}>
+                    <span class={`${styles['info-value']} ${styles['mono']}`}>
                       {showFullIP()
                         ? securityInfo()!.public_ip || 'Not detected'
-                        : maskIP(securityInfo()!.public_ip || '')}
+                        : maskIP(securityInfo()!.public_ip || '') || 'Not detected'}
                     </span>
                     <button
+                      type="button"
                       class={styles['ip-toggle']}
-                      onClick={e => {
-                        e.stopPropagation();
-                        setShowFullIP(!showFullIP());
-                      }}
+                      onClick={() => setShowFullIP(!showFullIP())}
+                      aria-label={showFullIP() ? 'Hide IP address' : 'Show full IP address'}
                       title={showFullIP() ? 'Hide IP address' : 'Show full IP address'}
                     >
-                      {showFullIP() ? <EyeOff size={14} /> : <Eye size={14} />}
+                      {showFullIP() ? <EyeOff size={13} /> : <Eye size={13} />}
                     </button>
-                  </div>
+                  </dd>
                 </div>
                 <div class={styles['info-row']}>
-                  <span class={styles['info-label']}>Local IP:</span>
-                  <span class={styles['info-value']}>
+                  <dt class={styles['info-label']}>Local IP</dt>
+                  <dd class={`${styles['info-value']} ${styles['mono']}`}>
                     {securityInfo()!.local_ip || 'Not detected'}
-                  </span>
+                  </dd>
                 </div>
                 <div class={styles['info-row']}>
-                  <span class={styles['info-label']}>Internet Provider:</span>
-                  <span class={styles['info-value']}>{securityInfo()!.isp || 'Unknown'}</span>
+                  <dt class={styles['info-label']}>Provider</dt>
+                  <dd class={styles['info-value']}>{securityInfo()!.isp || 'Unknown'}</dd>
                 </div>
-              </div>
-            </div>
+                <div class={styles['card-spacer']} aria-hidden="true" />
+              </dl>
+            </article>
 
-            {/* Location Information Card */}
-            <div
-              class={`${styles['info-card']} ${styles['enhanced']} ${expandedCard() === 'location' ? styles['expanded'] : ''}`}
-              onClick={() => setExpandedCard(expandedCard() === 'location' ? null : 'location')}
-            >
-              <div class={styles['info-header']}>
-                <div class={styles['header-icon-wrapper']}>
-                  <MapPin size={18} />
+            <article class={`${styles['info-card']} ${styles['card-location']}`}>
+              <header class={styles['info-header']}>
+                <div class={styles['header-icon-wrapper']} aria-hidden="true">
+                  <MapPin size={16} />
                 </div>
-                <h4>Geographic Location</h4>
-                <div class={styles['expand-indicator']}>
-                  {expandedCard() === 'location' ? '−' : '+'}
+                <div class={styles['header-copy']}>
+                  <h4>Geographic Location</h4>
+                  <p>Resolved from public IP</p>
                 </div>
-              </div>
+              </header>
+              <dl class={styles['info-content']}>
+                <div class={`${styles['info-row']} ${styles['primary']}`}>
+                  <dt class={styles['info-label']}>Country</dt>
+                  <dd class={styles['info-value']}>{securityInfo()!.country || 'Unknown'}</dd>
+                </div>
+                <div class={styles['info-row']}>
+                  <dt class={styles['info-label']}>Region</dt>
+                  <dd class={styles['info-value']}>{securityInfo()!.region || 'Unknown'}</dd>
+                </div>
+                <div class={styles['info-row']}>
+                  <dt class={styles['info-label']}>City</dt>
+                  <dd class={styles['info-value']}>{securityInfo()!.city || 'Unknown'}</dd>
+                </div>
+                <div class={styles['info-row']}>
+                  <dt class={styles['info-label']}>Timezone</dt>
+                  <dd class={`${styles['info-value']} ${styles['truncate']}`}>
+                    {securityInfo()!.timezone || 'Unknown'}
+                  </dd>
+                </div>
+              </dl>
+            </article>
+
+            <article class={`${styles['info-card']} ${styles['card-security']}`}>
+              <header class={styles['info-header']}>
+                <div class={styles['header-icon-wrapper']} aria-hidden="true">
+                  <Shield size={16} />
+                </div>
+                <div class={styles['header-copy']}>
+                  <h4>Security Analysis</h4>
+                  <p>Privacy path signals</p>
+                </div>
+              </header>
               <div class={styles['info-content']}>
-                <div class={`${styles['info-row']} ${styles['highlighted']}`}>
-                  <span class={styles['info-label']}>Country:</span>
-                  <span class={styles['info-value']}>{securityInfo()!.country || 'Unknown'}</span>
-                </div>
-                <div class={styles['info-row']}>
-                  <span class={styles['info-label']}>Region:</span>
-                  <span class={styles['info-value']}>{securityInfo()!.region || 'Unknown'}</span>
-                </div>
-                <div class={styles['info-row']}>
-                  <span class={styles['info-label']}>City:</span>
-                  <span class={styles['info-value']}>{securityInfo()!.city || 'Unknown'}</span>
-                </div>
-                <div class={styles['info-row']}>
-                  <span class={styles['info-label']}>Timezone:</span>
-                  <span class={styles['info-value']}>{securityInfo()!.timezone || 'Unknown'}</span>
+                <ul class={styles['signal-list']}>
+                  <li class={styles['signal-row']}>
+                    <div class={styles['signal-copy']}>
+                      <span class={styles['signal-label']}>VPN</span>
+                      <span class={styles['signal-hint']}>Privacy layer</span>
+                    </div>
+                    <span
+                      class={`${styles['status-badge']} ${securityInfo()!.is_vpn ? styles['warning'] : styles['success']}`}
+                    >
+                      {securityInfo()!.is_vpn ? (
+                        <AlertTriangle size={11} />
+                      ) : (
+                        <CheckCircle size={11} />
+                      )}
+                      <span>{securityInfo()!.is_vpn ? 'Detected' : 'Clear'}</span>
+                    </span>
+                  </li>
+                  <li class={styles['signal-row']}>
+                    <div class={styles['signal-copy']}>
+                      <span class={styles['signal-label']}>Proxy</span>
+                      <span class={styles['signal-hint']}>Intermediary hop</span>
+                    </div>
+                    <span
+                      class={`${styles['status-badge']} ${securityInfo()!.is_proxy ? styles['warning'] : styles['success']}`}
+                    >
+                      {securityInfo()!.is_proxy ? (
+                        <AlertTriangle size={11} />
+                      ) : (
+                        <CheckCircle size={11} />
+                      )}
+                      <span>{securityInfo()!.is_proxy ? 'Detected' : 'Clear'}</span>
+                    </span>
+                  </li>
+                  <li class={styles['signal-row']}>
+                    <div class={styles['signal-copy']}>
+                      <span class={styles['signal-label']}>TOR</span>
+                      <span class={styles['signal-hint']}>Onion routing</span>
+                    </div>
+                    <span
+                      class={`${styles['status-badge']} ${securityInfo()!.is_tor ? styles['info'] : styles['success']}`}
+                    >
+                      {securityInfo()!.is_tor ? <Info size={11} /> : <CheckCircle size={11} />}
+                      <span>{securityInfo()!.is_tor ? 'Active' : 'Inactive'}</span>
+                    </span>
+                  </li>
+                </ul>
+
+                <div class={styles['metrics-strip']}>
+                  <div class={styles['metric-cell']}>
+                    <span class={styles['metric-label']}>Method</span>
+                    <span class={`${styles['metric-value']} ${styles['truncate']}`}>
+                      {securityInfo()!.connection_type}
+                    </span>
+                  </div>
+                  <div class={styles['metric-cell']}>
+                    <span class={styles['metric-label']}>Latency</span>
+                    <span
+                      class={`${styles['metric-value']} ${styles['mono']} ${styles[`latency-${getLatencyStatus(securityInfo()!.latency_ms).status}`]}`}
+                    >
+                      {securityInfo()!.latency_ms ? `${securityInfo()!.latency_ms}ms` : '—'}
+                    </span>
+                  </div>
+                  <div class={styles['metric-cell']}>
+                    <span class={styles['metric-label']}>SSL</span>
+                    <span
+                      class={`${styles['metric-value']} ${styles[securityInfo()!.ssl_available ? 'ssl-available' : 'ssl-unavailable']}`}
+                    >
+                      {securityInfo()!.ssl_available ? 'On' : 'Off'}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-
-            {/* Security Details Card */}
-            <div
-              class={`${styles['info-card']} ${styles['enhanced']} ${expandedCard() === 'security' ? styles['expanded'] : ''}`}
-              onClick={() => setExpandedCard(expandedCard() === 'security' ? null : 'security')}
-            >
-              <div class={styles['info-header']}>
-                <div class={styles['header-icon-wrapper']}>
-                  <Shield size={18} />
-                </div>
-                <h4>Security Analysis</h4>
-                <div class={styles['expand-indicator']}>
-                  {expandedCard() === 'security' ? '−' : '+'}
-                </div>
-              </div>
-              <div class={styles['info-content']}>
-                <div class={`${styles['feature-row']} ${styles['enhanced']}`}>
-                  <div class={styles['feature-info']}>
-                    <span class={styles['feature-label']}>VPN Detection:</span>
-                    <span class={styles['feature-description']}>Privacy layer analysis</span>
-                  </div>
-                  <div class={styles['feature-status']}>
-                    {securityInfo()!.is_vpn ? (
-                      <div class={`${styles['status-badge']} ${styles['warning']}`}>
-                        <AlertTriangle size={14} />
-                        <span>Detected</span>
-                      </div>
-                    ) : (
-                      <div class={`${styles['status-badge']} ${styles['success']}`}>
-                        <CheckCircle size={14} />
-                        <span>Clear</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div class={`${styles['feature-row']} ${styles['enhanced']}`}>
-                  <div class={styles['feature-info']}>
-                    <span class={styles['feature-label']}>Proxy Detection:</span>
-                    <span class={styles['feature-description']}>Intermediary server analysis</span>
-                  </div>
-                  <div class={styles['feature-status']}>
-                    {securityInfo()!.is_proxy ? (
-                      <div class={`${styles['status-badge']} ${styles['warning']}`}>
-                        <AlertTriangle size={14} />
-                        <span>Detected</span>
-                      </div>
-                    ) : (
-                      <div class={`${styles['status-badge']} ${styles['success']}`}>
-                        <CheckCircle size={14} />
-                        <span>Clear</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div class={`${styles['feature-row']} ${styles['enhanced']}`}>
-                  <div class={styles['feature-info']}>
-                    <span class={styles['feature-label']}>TOR Network:</span>
-                    <span class={styles['feature-description']}>Anonymous routing detection</span>
-                  </div>
-                  <div class={styles['feature-status']}>
-                    {securityInfo()!.is_tor ? (
-                      <div class={`${styles['status-badge']} ${styles['info']}`}>
-                        <Info size={14} />
-                        <span>Active</span>
-                      </div>
-                    ) : (
-                      <div class={`${styles['status-badge']} ${styles['success']}`}>
-                        <CheckCircle size={14} />
-                        <span>Inactive</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div class={styles['info-row']}>
-                  <span class={styles['info-label']}>Connection Method:</span>
-                  <span class={styles['info-value']}>{securityInfo()!.connection_type}</span>
-                </div>
-
-                <div class={styles['info-row']}>
-                  <span class={styles['info-label']}>Network Latency:</span>
-                  <span
-                    class={`${styles['info-value']} ${styles[`latency-${getLatencyStatus(securityInfo()!.latency_ms).status}`]}`}
-                  >
-                    {securityInfo()!.latency_ms ? `${securityInfo()!.latency_ms}ms` : 'Testing...'}
-                  </span>
-                </div>
-
-                <div class={styles['info-row']}>
-                  <span class={styles['info-label']}>SSL Security:</span>
-                  <span
-                    class={`${styles['info-value']} ${styles[securityInfo()!.ssl_available ? 'ssl-available' : 'ssl-unavailable']}`}
-                  >
-                    {securityInfo()!.ssl_available ? 'Enabled' : 'Disabled'}
-                  </span>
-                </div>
-              </div>
-            </div>
+            </article>
           </div>
 
           {/* Enhanced Warnings Section */}
@@ -621,19 +582,21 @@ const SecurityPanel: Component = () => {
             </div>
           </Show>
 
-          {/* Enhanced Footer */}
           <div class={styles['security-footer']}>
             <div class={styles['footer-content']}>
               <div class={styles['last-updated']}>
-                <Clock size={14} />
+                <Clock size={13} aria-hidden="true" />
                 <span>Last updated: {lastUpdated()?.toLocaleTimeString() || 'Never'}</span>
               </div>
               <div class={styles['footer-actions']}>
                 <button
+                  type="button"
                   class={styles['footer-btn']}
-                  onClick={() => window.open('https://allibrary.org/security', '_blank')}
+                  onClick={() =>
+                    window.open('https://allibrary.org/security', '_blank', 'noopener,noreferrer')
+                  }
                 >
-                  <Info size={14} />
+                  <Info size={13} aria-hidden="true" />
                   <span>Security Guide</span>
                 </button>
               </div>

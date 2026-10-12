@@ -128,13 +128,20 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
   const simulatePhysics = () => {
     if (!physicsEngine) return;
 
+    const frozenIds = [
+      hoveredNode()?.id,
+      selectedNode()?.id,
+      expansionState.expandedNode?.id,
+    ].filter((id): id is string => Boolean(id));
+
     const updatedNodes = physicsEngine.simulatePhysics(
       nodes,
       links,
       dragState.draggedNode,
       dragState.isDragging,
       mousePosition(),
-      dragState.dragOffset
+      dragState.dragOffset,
+      frozenIds
     );
 
     setNodes(updatedNodes);

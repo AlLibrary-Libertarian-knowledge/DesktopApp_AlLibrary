@@ -1,6 +1,7 @@
 // NetworkGraph Component - Complex network visualization
 export { default as NetworkGraph } from './NetworkGraph';
 export { default as NetworkGraphRefactored } from './NetworkGraphRefactored';
+export { USE_MOCK_NETWORK_GRAPH } from './data/mockNetworkData';
 
 // Types and interfaces
 export * from './types';

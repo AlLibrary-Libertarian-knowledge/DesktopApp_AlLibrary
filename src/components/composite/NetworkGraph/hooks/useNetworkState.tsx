@@ -8,13 +8,13 @@ import type {
   DragState,
   ExpansionState,
 } from '../types';
-import { mockNetworkData } from '../data/mockNetworkData';
 import { debounce } from '../../../../utils/performance';
+import { mergeGraphPositions } from '../data/buildLobbyGraph';
 
 export function useNetworkState() {
-  // Node and link data
-  const [nodes, setNodes] = createStore<Node[]>(mockNetworkData.nodes);
-  const [links] = createStore<Link[]>(mockNetworkData.links);
+  // Starts empty; NetworkGraph hydrates from tracker lobby (or keeps last topology).
+  const [nodes, setNodes] = createStore<Node[]>([]);
+  const [links, setLinks] = createStore<Link[]>([]);
 
   // UI State
   const [hoveredNode, setHoveredNode] = createSignal<Node | null>(null);
@@ -38,7 +38,7 @@ export function useNetworkState() {
     expandedPosition: { x: 0, y: 0 },
   });
 
-  // Network Statistics
+  // Network Statistics (peers/files from lobby — no fake bandwidth)
   const [networkStats, setNetworkStats] = createStore<NetworkStatsState>({
     totalPeers: 0,
     activePeers: 0,
@@ -47,41 +47,58 @@ export function useNetworkState() {
     networkHealth: 0,
   });
 
-  // Memoized calculations to avoid recalculating on every node change
   const connectedNodes = createMemo(() => nodes.filter(n => n.status === 'connected'));
 
-  const totalBandwidth = createMemo(() => nodes.reduce((sum, n) => sum + n.bandwidth, 0));
+  const totalSharedFiles = createMemo(() =>
+    nodes.reduce((sum, n) => sum + (n.sharedFileCount ?? 0), 0)
+  );
 
-  const averageLatency = createMemo(() => {
-    const connected = connectedNodes();
-    return connected.length > 0
-      ? Math.round(connected.reduce((sum, n) => sum + n.latency, 0) / connected.length)
-      : 0;
-  });
-
-  // Debounced statistics update to prevent excessive recalculations
   const updateNetworkStats = debounce(() => {
-    const connected = connectedNodes();
-    const activePeers = connected.length;
-    const networkHealth = Math.round((activePeers / nodes.length) * 100);
+    const peers = nodes.filter(n => n.type !== 'self');
+    const activePeers = peers.filter(n => n.status === 'connected').length;
+    const denom = Math.max(peers.length, 1);
+    const networkHealth =
+      peers.length === 0
+        ? nodes.some(n => n.type === 'self')
+          ? 72
+          : 0
+        : Math.round((activePeers / denom) * 100);
 
     batch(() => {
       setNetworkStats({
-        totalPeers: nodes.length - 1,
-        activePeers: activePeers - 1,
-        totalBandwidth: totalBandwidth(),
-        averageLatency: averageLatency(),
+        totalPeers: peers.length,
+        activePeers,
+        // Reuse slot: total shared file announcements (shown as "Files" in UI)
+        totalBandwidth: totalSharedFiles(),
+        averageLatency: 0,
         networkHealth,
       });
     });
-  }, 100); // Update max every 100ms
+  }, 100);
 
-  // Update network statistics when nodes change (debounced)
   createEffect(() => {
-    // Depend on nodes to trigger recalculation
-    nodes.length; // Touch the nodes array
+    nodes.length;
+    connectedNodes();
+    totalSharedFiles();
     updateNetworkStats();
   });
+
+  const replaceGraph = (nextNodes: Node[], nextLinks: Link[]) => {
+    const merged = mergeGraphPositions(nodes, nextNodes);
+    batch(() => {
+      setNodes(merged);
+      setLinks(nextLinks);
+    });
+    // Refresh selected/expanded node fields (files, lastSeen) after lobby sync
+    const expandedId = expansionState.expandedNode?.id;
+    if (expandedId) {
+      const fresh = merged.find(n => n.id === expandedId);
+      if (fresh) {
+        setExpansionState('expandedNode', fresh);
+        setSelectedNode(fresh);
+      }
+    }
+  };
 
   // Optimized drag handling with batched state updates
   const startDrag = (node: Node, mousePos: MousePosition) => {
@@ -139,40 +156,31 @@ export function useNetworkState() {
     }
   };
 
-  // Expansion handling functions
+  // Expansion handling — open modal; second click on same node closes
   const expandNode = (node: Node, position: MousePosition) => {
-    if (expansionState.expandedNode === node) {
+    if (expansionState.expandedNode?.id === node.id && expansionState.isExpanded) {
       closeExpandedNode();
+      setSelectedNode(null);
       return;
     }
 
+    setSelectedNode(node);
     setExpansionState({
       expandedNode: node,
       expandedPosition: position,
-      isExpanding: true,
-      isExpanded: false,
+      isExpanding: false,
+      isExpanded: true,
     });
-
-    setTimeout(() => {
-      setExpansionState({
-        isExpanded: true,
-        isExpanding: false,
-      });
-    }, 75);
   };
 
   const closeExpandedNode = () => {
     setExpansionState({
+      expandedNode: null,
       isExpanded: false,
-      isExpanding: true,
+      isExpanding: false,
+      expandedPosition: { x: 0, y: 0 },
     });
-
-    setTimeout(() => {
-      setExpansionState({
-        expandedNode: null,
-        isExpanding: false,
-      });
-    }, 200);
+    setSelectedNode(null);
   };
 
   // Camera control
@@ -233,9 +241,11 @@ export function useNetworkState() {
 
     // Setters
     setNodes,
+    setLinks,
     setHoveredNode,
     setSelectedNode,
     setMousePosition,
+    replaceGraph,
 
     // Optimized setters
     updateNodePositions,

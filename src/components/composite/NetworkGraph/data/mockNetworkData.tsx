@@ -1,65 +1,82 @@
 import type { Node, Link } from '../types';
 import { physicsConfig } from '../config/physicsConfig';
 
-// Function to initialize orbital properties for nodes
+/** Flip to `false` (or pass `useMockData={false}` on NetworkGraph) when wiring live tracker lobby. */
+export const USE_MOCK_NETWORK_GRAPH = true;
+
 const initializeOrbitalProperties = (node: Node, centerX = 400, centerY = 300): Node => {
   if (node.type === 'self') {
-    // Center node doesn't orbit
-    return {
-      ...node,
-      angle: 0,
-      orbitRadius: 0,
-      orbitSpeed: 0,
-    };
+    return { ...node, angle: 0, orbitRadius: 0, orbitSpeed: 0 };
   }
 
-  // Calculate initial angle based on current position
   const dx = node.x - centerX;
   const dy = node.y - centerY;
   const initialAngle = Math.atan2(dy, dx);
   const distance = Math.sqrt(dx * dx + dy * dy);
-
-  // Set orbital properties based on connection status and type
-  const baseSpeed = physicsConfig.baseOrbitSpeed; // Use centralized physics config
-  const speedVariation = physicsConfig.speedVariation;
-
-  // Add subtle random modifier: ±40% variation per node
-  const subtleModifier = 1 + (Math.random() - 0.5) * 0.8; // ±40% range
-
-  const orbitSpeed = baseSpeed * (1 + Math.random() * speedVariation) * subtleModifier;
+  const subtleModifier = 1 + (Math.random() - 0.5) * 0.8;
+  const orbitSpeed =
+    physicsConfig.baseOrbitSpeed *
+    (1 + Math.random() * physicsConfig.speedVariation) *
+    subtleModifier;
 
   return {
     ...node,
     angle: initialAngle,
-    orbitRadius: Math.max(120, distance), // Ensure minimum orbit distance
-    orbitSpeed, // Will be adjusted by physics engine based on connection status
+    orbitRadius: Math.max(physicsConfig.minOrbitRadius, distance),
+    orbitSpeed,
   };
 };
 
-// AlLibrary P2P Network - Based on Real Project Architecture and Cultural Preservation Use Cases
-export const createMockNodes = (): Node[] => {
+/** Demo topology for the planetary graph (modal + rings + stats). */
+export const createMockNodes = (centerX = 400, centerY = 300): Node[] => {
   const baseNodes: Node[] = [
     {
       id: 'self',
-      label: 'You',
+      label: 'Você',
       type: 'self',
       status: 'connected',
-      x: 400,
-      y: 300,
+      x: centerX,
+      y: centerY,
       vx: 0,
       vy: 0,
-      connections: 8,
+      connections: 4,
       bandwidth: 1024,
       latency: 0,
       reliability: 100,
-      userId: 'user_self',
-      username: '192.168.1.157',
-      location: 'Local Machine',
+      userId: 'local-demo-node',
+      username: 'Você',
+      location: 'Nó local',
       networkType: 'hybrid',
+      onionAddress: 'http://7xdemoYouLocalNodeAlLibraryLab.onion',
+      onionShort: '7xdemo…ryLab.onion',
+      sharedFileCount: 3,
+      sharedBytes: 18_874_368,
+      sharedFiles: [
+        {
+          name: 'Direitos_Indigenas_Brasil_2024.pdf',
+          size: 12_582_912,
+          contentHash: 'a1b2c3d4e5f60718293a4b5c6d7e8f901234abcd',
+          link: 'http://7xdemoYouLocalNodeAlLibraryLab.onion/f/doc1',
+        },
+        {
+          name: 'Metodos_Ciencia_Aberta.epub',
+          size: 4_194_304,
+          contentHash: 'f0e1d2c3b4a5968778695a4b3c2d1e0f99887766',
+          link: 'http://7xdemoYouLocalNodeAlLibraryLab.onion/f/doc2',
+        },
+        {
+          name: 'Catalogo_Patrimonio_Digital.pdf',
+          size: 2_097_152,
+          contentHash: '11223344556677889900aabbccddeeff00112233',
+          link: 'http://7xdemoYouLocalNodeAlLibraryLab.onion/f/doc3',
+        },
+      ],
+      lastSeenLabel: 'agora',
+      isLocalSelf: true,
       activeTransfers: {
         downloading: [
           {
-            fileName: 'Indigenous_Rights_Brazil_2024.pdf',
+            fileName: 'Direitos_Indigenas_Brasil_2024.pdf',
             fileSize: 12288,
             progress: 73,
             speed: 512,
@@ -70,7 +87,7 @@ export const createMockNodes = (): Node[] => {
         ],
         uploading: [
           {
-            fileName: 'Open_Science_Methods.epub',
+            fileName: 'Metodos_Ciencia_Aberta.epub',
             fileSize: 4096,
             progress: 91,
             speed: 256,
@@ -80,45 +97,64 @@ export const createMockNodes = (): Node[] => {
           },
         ],
       },
-      capabilities: {
-        supportsSearch: true,
-        supportsTor: true,
-        maxFileSize: 102400,
-        culturalSpecializations: ['academic', 'open_access'],
-        availableContent: 47,
-        diskSpaceShared: 5120,
-      },
-      networkStats: {
-        totalDataShared: 2048,
-        totalDataReceived: 1536,
-        peersServed: 12,
-        uptime: 86400,
-        lastSeen: new Date(),
-      },
     },
     {
-      id: 'indigenous-br',
-      label: 'Fundação Nacional Indígena',
+      id: 'peer-funai',
+      label: 'FUNAI Archive',
       type: 'institution',
       status: 'connected',
-      x: 400 + 180 * Math.cos(0),
-      y: 300 + 180 * Math.sin(0),
+      x: centerX + 180 * Math.cos(0),
+      y: centerY + 180 * Math.sin(0),
       vx: 0,
       vy: 0,
-      connections: 23,
+      connections: 5,
       bandwidth: 512,
       latency: 35,
       reliability: 95,
-      culturalContext: 'Brazilian Indigenous Heritage Preservation',
-      userId: 'funai_br_001',
-      username: 'FUNAI_Archive',
-      location: 'Brasília, Brazil',
+      userId: 'funai-br-001',
+      username: 'FUNAI Archive',
+      location: 'Brasília',
       networkType: 'internet',
+      onionAddress: 'http://funaiDemoArchiveNodeLabAlLibrary99.onion',
+      onionShort: 'funaiD…ry99.onion',
+      sharedFileCount: 5,
+      sharedBytes: 42_000_000,
+      sharedFiles: [
+        {
+          name: 'Dicionario_Tupi.pdf',
+          size: 12_582_912,
+          contentHash: 'aa11bb22cc33dd44ee55ff6677889900aabbccdd',
+          link: 'http://funaiDemoArchiveNodeLabAlLibrary99.onion/f/tupi',
+        },
+        {
+          name: 'Mapas_Terras_Indigenas.pdf',
+          size: 18_874_368,
+          contentHash: 'bb22cc33dd44ee55ff6677889900aabbccddee11',
+          link: 'http://funaiDemoArchiveNodeLabAlLibrary99.onion/f/mapas',
+        },
+        {
+          name: 'Relatorio_Patrimonio_2023.pdf',
+          size: 5_242_880,
+          contentHash: 'cc33dd44ee55ff6677889900aabbccddeeff2211',
+        },
+        {
+          name: 'Oralidades_Amazonia.epub',
+          size: 3_145_728,
+          contentHash: 'dd44ee55ff6677889900aabbccddeeff11223344',
+        },
+        {
+          name: 'Guia_Preservacao_Digital.pdf',
+          size: 2_154_112,
+          contentHash: 'ee55ff6677889900aabbccddeeff112233445566',
+        },
+      ],
+      lastSeenLabel: 'agora',
+      isLocalSelf: false,
       activeTransfers: {
         downloading: [],
         uploading: [
           {
-            fileName: 'Tupi_Language_Dictionary.pdf',
+            fileName: 'Dicionario_Tupi.pdf',
             fileSize: 12288,
             progress: 42,
             speed: 128,
@@ -128,40 +164,48 @@ export const createMockNodes = (): Node[] => {
           },
         ],
       },
-      capabilities: {
-        supportsSearch: true,
-        supportsTor: false,
-        maxFileSize: 102400,
-        culturalSpecializations: ['indigenous_brazilian', 'traditional_medicine', 'tupi_language'],
-        availableContent: 342,
-        diskSpaceShared: 5120,
-      },
-      networkStats: {
-        totalDataShared: 15360,
-        totalDataReceived: 8192,
-        peersServed: 156,
-        uptime: 259200,
-        lastSeen: new Date(),
-      },
     },
     {
-      id: 'peer-2',
-      label: 'European Research Node',
+      id: 'peer-euro',
+      label: 'EuroAcademic',
       type: 'peer',
       status: 'connected',
-      x: 400 + 160 * Math.cos(Math.PI / 3),
-      y: 300 + 160 * Math.sin(Math.PI / 3),
+      x: centerX + 160 * Math.cos(Math.PI / 3),
+      y: centerY + 160 * Math.sin(Math.PI / 3),
       vx: 0,
       vy: 0,
-      connections: 15,
+      connections: 3,
       bandwidth: 1024,
       latency: 120,
       reliability: 88,
-      culturalContext: 'European Academic Research',
-      userId: 'eu_research_42',
+      userId: 'eu-research-42',
       username: 'EuroAcademic',
-      location: 'Berlin, Germany',
+      location: 'Berlin',
       networkType: 'internet',
+      onionAddress: 'http://euroAcademicDemoPeerBerlinAlLib.onion',
+      onionShort: 'euroAc…AlLib.onion',
+      sharedFileCount: 3,
+      sharedBytes: 22_000_000,
+      sharedFiles: [
+        {
+          name: 'Digital_Humanities_Methods.pdf',
+          size: 8_388_608,
+          contentHash: '1122aabbccddeeff99887766554433221100ffee',
+          link: 'http://euroAcademicDemoPeerBerlinAlLib.onion/f/dh',
+        },
+        {
+          name: 'Open_Science_Handbook.pdf',
+          size: 6_291_456,
+          contentHash: '2233bbccddeeffaa00998877665544332211ffdd',
+        },
+        {
+          name: 'European_Archives_Index.epub',
+          size: 4_194_304,
+          contentHash: '3344ccddeeffaabb11009988776655443322ffcc',
+        },
+      ],
+      lastSeenLabel: 'há 2 min',
+      isLocalSelf: false,
       activeTransfers: {
         downloading: [
           {
@@ -176,109 +220,86 @@ export const createMockNodes = (): Node[] => {
         ],
         uploading: [],
       },
-      capabilities: {
-        supportsSearch: true,
-        supportsTor: true,
-        maxFileSize: 51200,
-        culturalSpecializations: ['european_history', 'digital_humanities', 'open_science'],
-        availableContent: 128,
-        diskSpaceShared: 2560,
-      },
-      networkStats: {
-        totalDataShared: 8192,
-        totalDataReceived: 12288,
-        peersServed: 89,
-        uptime: 172800,
-        lastSeen: new Date(),
-      },
     },
     {
-      id: 'peer-3',
-      label: 'Community Archive',
+      id: 'peer-community',
+      label: 'LocalHistory',
       type: 'community',
       status: 'disconnected',
-      x: 400 + 140 * Math.cos(Math.PI),
-      y: 300 + 140 * Math.sin(Math.PI),
+      x: centerX + 140 * Math.cos(Math.PI),
+      y: centerY + 140 * Math.sin(Math.PI),
       vx: 0,
       vy: 0,
-      connections: 8,
+      connections: 1,
       bandwidth: 256,
       latency: 250,
       reliability: 60,
-      culturalContext: 'Grassroots Community Knowledge',
-      userId: 'community_archive_7',
+      userId: 'community-archive-7',
       username: 'LocalHistory',
-      location: 'Rural Argentina',
+      location: 'Argentina',
       networkType: 'hybrid',
-      activeTransfers: {
-        downloading: [],
-        uploading: [],
-      },
-      capabilities: {
-        supportsSearch: false,
-        supportsTor: true,
-        maxFileSize: 10240,
-        culturalSpecializations: ['local_history', 'oral_traditions', 'community_knowledge'],
-        availableContent: 45,
-        diskSpaceShared: 512,
-      },
-      networkStats: {
-        totalDataShared: 1024,
-        totalDataReceived: 2048,
-        peersServed: 23,
-        uptime: 43200,
-        lastSeen: new Date(Date.now() - 3600000),
-      },
+      onionAddress: 'http://localHistoryCommunityArchiveAR.onion',
+      onionShort: 'localH…veAR.onion',
+      sharedFileCount: 1,
+      sharedBytes: 1_048_576,
+      sharedFiles: [
+        {
+          name: 'Historias_Orais_Pampa.pdf',
+          size: 1_048_576,
+          contentHash: '5566ddeeffaabbcc22110099887766554433ffbb',
+        },
+      ],
+      lastSeenLabel: 'há 1 h',
+      isLocalSelf: false,
+      activeTransfers: { downloading: [], uploading: [] },
     },
     {
-      id: 'peer-4',
-      label: 'Privacy Advocate',
+      id: 'peer-tor',
+      label: 'SecureShare',
       type: 'peer',
       status: 'connecting',
-      x: 400 + 200 * Math.cos(-Math.PI / 4),
-      y: 300 + 200 * Math.sin(-Math.PI / 4),
+      x: centerX + 200 * Math.cos(-Math.PI / 4),
+      y: centerY + 200 * Math.sin(-Math.PI / 4),
       vx: 0,
       vy: 0,
-      connections: 5,
+      connections: 2,
       bandwidth: 768,
       latency: 80,
       reliability: 75,
-      culturalContext: 'Digital Rights and Privacy',
-      userId: 'privacy_guardian_11',
+      userId: 'privacy-guardian-11',
       username: 'SecureShare',
-      location: 'Tor Network',
+      location: 'Tor',
       networkType: 'tor',
-      activeTransfers: {
-        downloading: [],
-        uploading: [],
-      },
-      capabilities: {
-        supportsSearch: true,
-        supportsTor: true,
-        maxFileSize: 25600,
-        culturalSpecializations: ['digital_rights', 'privacy_tools', 'security_research'],
-        availableContent: 67,
-        diskSpaceShared: 1024,
-      },
-      networkStats: {
-        totalDataShared: 3072,
-        totalDataReceived: 4096,
-        peersServed: 34,
-        uptime: 86400,
-        lastSeen: new Date(),
-      },
+      onionAddress: 'http://secureSharePrivacyTorDemoNode99.onion',
+      onionShort: 'secure…de99.onion',
+      sharedFileCount: 2,
+      sharedBytes: 7_340_032,
+      sharedFiles: [
+        {
+          name: 'Privacy_Toolkit_Guide.pdf',
+          size: 3_145_728,
+          contentHash: '6677eeffaabbccdd33221100998877665544ffaa',
+          link: 'http://secureSharePrivacyTorDemoNode99.onion/f/privacy',
+        },
+        {
+          name: 'Tor_Hidden_Services_Notes.pdf',
+          size: 4_194_304,
+          contentHash: '7788ffaabbccddee44332211009988776655ff99',
+        },
+      ],
+      lastSeenLabel: 'agora',
+      isLocalSelf: false,
+      activeTransfers: { downloading: [], uploading: [] },
     },
   ];
 
-  // Initialize orbital properties for all nodes
-  return baseNodes.map(node => initializeOrbitalProperties(node));
+  return baseNodes.map(node => initializeOrbitalProperties(node, centerX, centerY));
 };
 
-// AlLibrary P2P Connection Network - Based on Real Network Topology
 export const createMockLinks = (): Link[] => [
   {
     source: 'self',
-    target: 'indigenous-br',
+    target: 'peer-funai',
     strength: 0.8,
     bandwidth: 512,
     latency: 35,
@@ -286,7 +307,7 @@ export const createMockLinks = (): Link[] => [
   },
   {
     source: 'self',
-    target: 'peer-2',
+    target: 'peer-euro',
     strength: 0.9,
     bandwidth: 1024,
     latency: 120,
@@ -294,21 +315,28 @@ export const createMockLinks = (): Link[] => [
   },
   {
     source: 'self',
-    target: 'peer-4',
+    target: 'peer-tor',
     strength: 0.6,
     bandwidth: 256,
     latency: 80,
     status: 'idle',
   },
   {
-    source: 'indigenous-br',
-    target: 'peer-2',
+    source: 'peer-funai',
+    target: 'peer-euro',
     strength: 0.7,
     bandwidth: 384,
     latency: 150,
     status: 'active',
   },
 ];
+
+export function buildMockGraph(centerX = 400, centerY = 300): { nodes: Node[]; links: Link[] } {
+  return {
+    nodes: createMockNodes(centerX, centerY),
+    links: createMockLinks(),
+  };
+}
 
 export const mockNetworkData = {
   nodes: createMockNodes(),

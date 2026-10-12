@@ -60,8 +60,12 @@ export interface ModalProps extends ParentProps {
   closeOnOutsideClick?: boolean;
   /** Whether ESC key closes modal */
   closeOnEsc?: boolean;
-  /** Custom CSS class */
+  /** Custom CSS class (applied to the overlay) */
   class?: string;
+  /** Custom CSS class applied to the dialog panel */
+  panelClass?: string;
+  /** Custom CSS class applied to the scrollable content area */
+  contentClass?: string;
   /** Test ID for testing */
   'data-testid'?: string;
   /** Optional footer actions below body content */
@@ -131,7 +135,7 @@ export const Modal: Component<ModalProps> = props => {
           aria-labelledby={props.ariaLabel ? undefined : props.title ? 'modal-title' : undefined}
         >
           <div
-            class={`${styles.modal} ${styles[size()]}`}
+            class={`${styles.modal} ${styles[size()]} ${props.panelClass || ''}`}
             data-cultural-theme={props.culturalTheme}
             data-cultural-context={props.culturalContext}
             data-content-type={props.contentType}
@@ -167,7 +171,7 @@ export const Modal: Component<ModalProps> = props => {
             </Show>
 
             {/* Modal Content */}
-            <div class={styles.content}>{props.children}</div>
+            <div class={`${styles.content} ${props.contentClass || ''}`}>{props.children}</div>
 
             <Show when={props.footer}>
               <footer class={styles.footer}>{props.footer}</footer>

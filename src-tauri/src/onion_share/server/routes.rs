@@ -10,6 +10,12 @@ use bytes::Bytes;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+use crate::onion_share::dht::{
+    FindNodeReq, FindNodeRes, FindValueReq, FindValueRes, StoreReq, K_BUCKET,
+};
+use crate::onion_share::dht::DhtPeer;
+use crate::onion_share::gossip::{on_receive, GossipMessage};
+
 use super::state::AppState;
 
 pub fn router(state: AppState) -> Router {
@@ -20,6 +26,10 @@ pub fn router(state: AppState) -> Router {
         .route("/s/:id/ping", post(ping))
         .route("/s/:id/presence", get(presence))
         .route("/files", get(list_files))
+        .route("/dht/find_node", post(dht_find_node))
+        .route("/dht/find_value", post(dht_find_value))
+        .route("/dht/store", post(dht_store))
+        .route("/gossip/recv", post(gossip_recv))
         .with_state(state)
 }
 
@@ -149,4 +159,63 @@ async fn presence(
 ) -> Json<PresenceResponse> {
     let online = state.online_count().await;
     Json(PresenceResponse { online })
+}
+
+async fn dht_find_node(
+    State(state): State<AppState>,
+    Json(req): Json<FindNodeReq>,
+) -> Json<FindNodeRes> {
+    let mut table = state.dht.lock().await;
+    table.upsert(req.from);
+    let peers = table.closest(&req.target_id, K_BUCKET);
+    Json(FindNodeRes { peers })
+}
+
+async fn dht_find_value(
+    State(state): State<AppState>,
+    Json(req): Json<FindValueReq>,
+) -> Json<FindValueRes> {
+    let mut table = state.dht.lock().await;
+    table.upsert(req.from);
+    let providers = table.get_providers(&req.content_hash);
+    let closer = table.closest(&req.content_hash, K_BUCKET);
+    // Local shares also act as providers
+    let mut providers = providers;
+    if let Some(local) = state.local_peer.lock().await.clone() {
+        let shares = state.shares.lock().await;
+        if shares.values().any(|s| s.content_hash == req.content_hash) {
+            if !providers.iter().any(|p| p.node_id == local.node_id) {
+                providers.push(local);
+            }
+        }
+    }
+    Json(FindValueRes { providers, closer })
+}
+
+async fn dht_store(State(state): State<AppState>, Json(req): Json<StoreReq>) -> StatusCode {
+    let mut table = state.dht.lock().await;
+    table.upsert(req.from);
+    table.store_provider(&req.content_hash, req.provider);
+    StatusCode::NO_CONTENT
+}
+
+async fn gossip_recv(State(state): State<AppState>, Json(msg): Json<GossipMessage>) -> StatusCode {
+    let outcome = {
+        let mut g = state.gossip.lock().await;
+        on_receive(&mut g, &msg)
+    };
+    let Some((_metric, _forward)) = outcome else {
+        return StatusCode::NO_CONTENT;
+    };
+    // Treat gossip as provider advertisement for FIND_VALUE
+    let provider = DhtPeer {
+        node_id: msg.from.node_id.clone(),
+        onion: msg.from.onion.clone(),
+    };
+    state
+        .dht
+        .lock()
+        .await
+        .store_provider(&msg.content_hash, provider);
+    StatusCode::NO_CONTENT
 }

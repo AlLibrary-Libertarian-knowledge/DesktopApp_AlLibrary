@@ -84,15 +84,17 @@ const StatusBar: Component = () => {
   // System health not yet wired to real CPU/MEM metrics; derive a basic network-based health
   const currentHealth = getHealthLevel(cpuPct(), memPct());
 
-  return (
-    <div class={`${styles['status-bar']} ${styles.futuristic}`}>
-      <div class={styles['scan-line']} />
+  const lastScanLabel = () =>
+    net.lastSyncAt()
+      ? t('statusBar.cultural.lastScan', { time: t('statusBar.cultural.justNow' as any) })
+      : t('statusBar.cultural.lastScan', { time: '—' });
 
+  return (
+    <div class={`${styles['status-bar']} ${styles.futuristic}`} role="region" aria-label="Status">
       {/* Network Status Card */}
       <div class={`${styles['status-section']} ${styles['network-status']}`} data-status={'good'}>
         <div class={styles['status-icon-container']}>
-          <div class={`${styles['icon-glow']} ${styles.network}`} />
-          <Globe size={20} class={styles['status-icon-main'] as string} />
+          <Globe size={18} class={styles['status-icon-main'] as string} />
           <div class={styles['connection-pulse']} />
         </div>
         <div class={styles['status-content']}>
@@ -116,7 +118,6 @@ const StatusBar: Component = () => {
             </span>
           </div>
         </div>
-        <div class={styles['card-border-flow']} />
       </div>
 
       {/* Downloads Status Card */}
@@ -127,8 +128,7 @@ const StatusBar: Component = () => {
         }
       >
         <div class={styles['status-icon-container']}>
-          <div class={`${styles['icon-glow']} ${styles.download}`} />
-          <Download size={20} class={styles['status-icon-main'] as string} />
+          <Download size={18} class={styles['status-icon-main'] as string} />
           {(Number(net.downloadMbps()) > 0 || Number(net.uploadMbps()) > 0) && (
             <div class={styles['activity-pulse']} />
           )}
@@ -147,9 +147,7 @@ const StatusBar: Component = () => {
               <span class={styles['metric-unit']}>{t('statusBar.downloads.upSpeed')}</span>
             </div>
           </div>
-          <div class={styles['status-footer']} />
         </div>
-        <div class={styles['card-border-flow']} />
       </div>
 
       {/* Storage Status Card */}
@@ -158,8 +156,7 @@ const StatusBar: Component = () => {
         data-usage={ioActivity()}
       >
         <div class={styles['status-icon-container']}>
-          <div class={`${styles['icon-glow']} ${styles.storage}`} />
-          <HardDrive size={20} class={styles['status-icon-main'] as string} />
+          <HardDrive size={18} class={styles['status-icon-main'] as string} />
           <div class={styles['io-indicator']} data-activity={ioActivity()} />
         </div>
         <div class={styles['status-content']}>
@@ -188,7 +185,6 @@ const StatusBar: Component = () => {
             </div>
           </div>
         </div>
-        <div class={styles['card-border-flow']} />
       </div>
 
       {/* System Health Card */}
@@ -197,8 +193,7 @@ const StatusBar: Component = () => {
         data-health={currentHealth}
       >
         <div class={styles['status-icon-container']}>
-          <div class={`${styles['icon-glow']} ${styles.health}`} />
-          <Cpu size={20} class={styles['status-icon-main'] as string} />
+          <Cpu size={18} class={styles['status-icon-main'] as string} />
           <div class={styles['health-pulse']} data-level={currentHealth} />
         </div>
         <div class={styles['status-content']}>
@@ -230,7 +225,6 @@ const StatusBar: Component = () => {
             </div>
           </div>
         </div>
-        <div class={styles['card-border-flow']} />
       </div>
 
       {/* Cultural Protection Card */}
@@ -239,8 +233,7 @@ const StatusBar: Component = () => {
         data-status={net.tor()?.circuitEstablished ? 'active' : 'inactive'}
       >
         <div class={styles['status-icon-container']}>
-          <div class={`${styles['icon-glow']} ${styles.cultural}`} />
-          <Shield size={20} class={styles['status-icon-main'] as string} />
+          <Shield size={18} class={styles['status-icon-main'] as string} />
           <div class={styles['protection-shield']} />
         </div>
         <div class={styles['status-content']}>
@@ -250,23 +243,24 @@ const StatusBar: Component = () => {
           <div class={styles['status-metrics']}>
             <div class={`${styles['metric-row']} ${styles.primary}`}>
               <span class={`${styles['metric-value']} ${styles['cultural-status']}`}>
-                {net.tor()?.circuitEstablished ? 'active' : 'inactive'}
+                {net.tor()?.circuitEstablished
+                  ? t('statusBar.cultural.active' as any)
+                  : t('statusBar.cultural.inactive' as any)}
               </span>
               <span class={styles['metric-unit']}>{t('statusBar.cultural.statusLabel')}</span>
             </div>
             <div class={`${styles['metric-row']} ${styles.secondary}`}>
               <span class={`${styles['metric-value']} ${styles['cultural-sensitivity']}`}>
-                {net.tor()?.circuitEstablished ? 'verified' : 'unknown'}
+                {net.tor()?.circuitEstablished
+                  ? t('statusBar.cultural.verified' as any)
+                  : t('statusBar.cultural.unknown' as any)}
               </span>
             </div>
           </div>
           <div class={styles['status-footer']}>
-            <span class={styles['footer-stat']}>
-              {t('statusBar.cultural.lastScan', { time: net.lastSyncAt() ? 'agora' : '—' })}
-            </span>
+            <span class={styles['footer-stat']}>{lastScanLabel()}</span>
           </div>
         </div>
-        <div class={styles['card-border-flow']} />
       </div>
     </div>
   );

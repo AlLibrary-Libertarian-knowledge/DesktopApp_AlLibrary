@@ -38,6 +38,9 @@
   },
   "status": {
     "loading": "Loading...",
+    "loadingPage": "Loading…",
+    "preparingContent": "Preparing your content",
+    "loadingSlow": "This is taking longer than usual",
     "saving": "Saving...",
     "processing": "Processing...",
     "connecting": "Connecting...",

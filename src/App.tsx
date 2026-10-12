@@ -1,6 +1,7 @@
 import { type Component, createSignal, type ParentProps, Show, onMount, Suspense } from 'solid-js';
 import { settingsService } from '@/services/storage/settingsService';
 import { FirstRunWizard } from '@/components/composite/FirstRunWizard';
+import { TrackerConnectModal } from '@/components/domain/network/TrackerConnectModal';
 import { Router, Route } from '@solidjs/router';
 import { listen } from '@tauri-apps/api/event';
 import MainLayout from './components/layout/MainLayout';
@@ -37,62 +38,46 @@ interface InitProgress {
   bootstrapPercent?: number;
 }
 
-// Route loading wrapper component following optimization principles
+// Route loading wrapper — production-ready Suspense fallback
 const RouteWrapper: Component<{ children: any }> = props => {
-  // Add timeout to prevent infinite loading
+  const { t } = useTranslation('common');
   const [showTimeoutMessage, setShowTimeoutMessage] = createSignal(false);
 
   onMount(() => {
-    // Show timeout message after 10 seconds
-    globalThis.setTimeout(() => {
-      setShowTimeoutMessage(true);
-    }, 10000);
+    const timer = globalThis.setTimeout(() => setShowTimeoutMessage(true), 12000);
+    return () => globalThis.clearTimeout(timer);
   });
 
   return (
     <Suspense
       fallback={
-        <div class="route-loading">
-          <div class="loading-container">
-            <div class="loading-spinner" />
-            <h3>Loading page...</h3>
-            <p>Please wait while we prepare your content</p>
+        <div class="route-loading" role="status" aria-live="polite" aria-busy="true">
+          <div class="route-loading-glow" aria-hidden="true" />
+          <div class="route-loading-panel">
+            <div class="route-loading-spinner" aria-hidden="true">
+              <span class="route-loading-spinner-ring" />
+              <span class="route-loading-spinner-core" />
+            </div>
+            <h3 class="route-loading-title">{t('status.loadingPage' as any)}</h3>
+            <p class="route-loading-subtitle">{t('status.preparingContent' as any)}</p>
+            <div class="route-loading-dots" aria-hidden="true">
+              <span />
+              <span />
+              <span />
+            </div>
 
-            {/* Timeout warning */}
             <Show when={showTimeoutMessage()}>
-              <div
-                style={{
-                  color: '#f59e0b',
-                  'font-size': '14px',
-                  'margin-top': '10px',
-                  'text-align': 'center',
-                }}
-              >
-                ⚠️ Loading is taking longer than expected
+              <div class="route-loading-slow">
+                <p>{t('status.loadingSlow' as any)}</p>
+                <button
+                  type="button"
+                  class="route-loading-retry"
+                  onClick={() => window.location.reload()}
+                >
+                  {t('actions.refresh' as any)}
+                </button>
               </div>
             </Show>
-
-            {/* Component-level debug button */}
-            <button
-              onClick={() => {
-                console.warn('Component loading bypass triggered');
-                // Force the component to render by updating a signal
-                // This is a workaround for Suspense getting stuck
-                window.location.reload();
-              }}
-              style={{
-                background: '#ef4444',
-                color: 'white',
-                border: 'none',
-                padding: '8px 16px',
-                'border-radius': '4px',
-                cursor: 'pointer',
-                'font-size': '12px',
-                'margin-top': '20px',
-              }}
-            >
-              🚨 Force Load Page (Debug)
-            </button>
           </div>
         </div>
       }
@@ -122,6 +107,8 @@ const App: Component = () => {
   const [isLoading, setIsLoading] = createSignal(true);
   const [initProgress, setInitProgress] = createSignal<InitProgress | null>(null);
   const [needsFirstRun, setNeedsFirstRun] = createSignal(false);
+  /** Shown every cold start until the user connects or skips (session only). */
+  const [needsTrackerConnect, setNeedsTrackerConnect] = createSignal(true);
 
   onMount(async () => {
     let cleanup: (() => void) | null = null;
@@ -267,42 +254,18 @@ const App: Component = () => {
     <>
       <Show when={isLoading()}>
         <Loading onComplete={handleLoadingComplete} tauriProgress={initProgress()} />
-        {/* Manual fallback for stuck loading */}
-        <div
-          style={{
-            position: 'fixed',
-            bottom: '20px',
-            right: '20px',
-            'z-index': 10000,
-            background: 'rgba(0,0,0,0.8)',
-            padding: '10px',
-            'border-radius': '8px',
-            border: '1px solid #374151',
-          }}
-        >
-          <button
-            onClick={() => {
-              console.warn('Manual loading completion triggered');
-              setIsLoading(false);
-            }}
-            style={{
-              background: '#ef4444',
-              color: 'white',
-              border: 'none',
-              padding: '8px 16px',
-              'border-radius': '4px',
-              cursor: 'pointer',
-              'font-size': '12px',
-            }}
-          >
-            Skip Loading (Debug)
-          </button>
-        </div>
       </Show>
 
       <Show when={!isLoading()}>
         <Show when={needsFirstRun()}>
           <FirstRunWizard onComplete={() => setNeedsFirstRun(false)} />
+        </Show>
+        <Show when={!needsFirstRun() && needsTrackerConnect()}>
+          <TrackerConnectModal
+            isOpen
+            onConnected={() => setNeedsTrackerConnect(false)}
+            onSkip={() => setNeedsTrackerConnect(false)}
+          />
         </Show>
         <Router root={AppWithLayout}>
           <Route

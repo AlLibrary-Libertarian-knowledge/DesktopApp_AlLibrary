@@ -319,6 +319,63 @@ fn get_migrations() -> Vec<Migration> {
                 CREATE INDEX idx_transfers_started_at ON transfers(started_at);
             "#.to_string(),
         },
+        Migration {
+            version: "009_transfer_telemetry".to_string(),
+            description: "Anonymous transfer measurement columns for analytics export".to_string(),
+            sql: r#"
+                ALTER TABLE transfers ADD COLUMN duration_ms INTEGER;
+                ALTER TABLE transfers ADD COLUMN total_chunks INTEGER;
+                ALTER TABLE transfers ADD COLUMN chunks_completed INTEGER;
+                ALTER TABLE transfers ADD COLUMN parallel_seeders INTEGER;
+                ALTER TABLE transfers ADD COLUMN chunk_failures INTEGER DEFAULT 0;
+                ALTER TABLE transfers ADD COLUMN chunk_size INTEGER;
+                ALTER TABLE transfers ADD COLUMN average_speed_kbps REAL;
+                ALTER TABLE transfers ADD COLUMN content_hash TEXT;
+
+                CREATE INDEX IF NOT EXISTS idx_transfers_content_hash ON transfers(content_hash);
+            "#.to_string(),
+        },
+        Migration {
+            version: "010_experiment_metrics".to_string(),
+            description: "Retries on transfers + DHT/gossip/chunk experiment event tables".to_string(),
+            sql: r#"
+                ALTER TABLE transfers ADD COLUMN retries INTEGER DEFAULT 0;
+
+                CREATE TABLE IF NOT EXISTS chunk_perf_logs (
+                    id TEXT PRIMARY KEY,
+                    transfer_id TEXT NOT NULL,
+                    chunk_index INTEGER NOT NULL,
+                    chunk_size_bytes INTEGER,
+                    latency_ms REAL,
+                    transfer_time_ms REAL,
+                    verification_passed INTEGER NOT NULL DEFAULT 1,
+                    retry_count INTEGER NOT NULL DEFAULT 0,
+                    recorded_at TEXT NOT NULL
+                );
+                CREATE INDEX IF NOT EXISTS idx_chunk_perf_transfer ON chunk_perf_logs(transfer_id);
+
+                CREATE TABLE IF NOT EXISTS lookup_events (
+                    id TEXT PRIMARY KEY,
+                    content_hash TEXT,
+                    hops INTEGER NOT NULL DEFAULT 0,
+                    duration_ms INTEGER NOT NULL,
+                    success INTEGER NOT NULL DEFAULT 0,
+                    peer_count INTEGER NOT NULL DEFAULT 0,
+                    started_at TEXT NOT NULL
+                );
+                CREATE INDEX IF NOT EXISTS idx_lookup_started ON lookup_events(started_at);
+
+                CREATE TABLE IF NOT EXISTS gossip_events (
+                    id TEXT PRIMARY KEY,
+                    msg_id TEXT NOT NULL,
+                    content_hash TEXT NOT NULL,
+                    hop INTEGER NOT NULL DEFAULT 0,
+                    propagation_ms INTEGER NOT NULL,
+                    recorded_at TEXT NOT NULL
+                );
+                CREATE INDEX IF NOT EXISTS idx_gossip_msg ON gossip_events(msg_id);
+            "#.to_string(),
+        },
     ]
 }
 

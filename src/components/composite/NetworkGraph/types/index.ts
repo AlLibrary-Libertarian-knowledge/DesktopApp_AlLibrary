@@ -23,6 +23,21 @@ export interface Node {
   location?: string;
   networkType?: 'internet' | 'tor' | 'hybrid';
 
+  /** Real tracker / onion-share fields (preferred over mock cultural fluff). */
+  onionAddress?: string;
+  sharedFileCount?: number;
+  sharedBytes?: number;
+  sharedFiles?: Array<{
+    name: string;
+    size: number;
+    contentHash: string;
+    link?: string;
+  }>;
+  /** Short onion label for canvas (e.g. abcd…wxyz.onion). */
+  onionShort?: string;
+  lastSeenLabel?: string;
+  isLocalSelf?: boolean;
+
   // Active File Transfers
   activeTransfers?: {
     downloading: Array<FileTransfer>;
@@ -91,6 +106,11 @@ export interface NetworkGraphProps {
   showLegend?: boolean;
   theme?: 'light' | 'dark';
   testMode?: boolean; // Disables continuous animation for testing
+  /**
+   * When true (default while demoing), use simulated peers/files.
+   * Set false — or flip `USE_MOCK_NETWORK_GRAPH` — to use live tracker lobby.
+   */
+  useMockData?: boolean;
 }
 
 export interface PhysicsConfig {

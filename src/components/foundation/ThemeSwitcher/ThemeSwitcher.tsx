@@ -71,11 +71,11 @@ export const ThemeSwitcher: Component<ThemeSwitcherProps> = props => {
   ];
 
   const accessibilityThemes = [
-    { value: 'default', label: 'Default', Icon: Accessibility },
-    { value: 'high-contrast', label: 'High Contrast', Icon: Contrast },
-    { value: 'large-text', label: 'Large Text', Icon: ALargeSmall },
-    { value: 'reduced-motion', label: 'Reduced Motion', Icon: Ban },
-    { value: 'focus-management', label: 'Focus Management', Icon: Focus },
+    { value: 'default', label: 'Default', short: 'DEFAULT', Icon: Accessibility },
+    { value: 'high-contrast', label: 'High Contrast', short: 'CONTRAST', Icon: Contrast },
+    { value: 'large-text', label: 'Large Text', short: 'LARGE', Icon: ALargeSmall },
+    { value: 'reduced-motion', label: 'Reduced Motion', short: 'MOTION', Icon: Ban },
+    { value: 'focus-management', label: 'Focus Management', short: 'FOCUS', Icon: Focus },
   ];
 
   // Handle mode change
@@ -278,56 +278,76 @@ export const ThemeSwitcher: Component<ThemeSwitcherProps> = props => {
 
       <Show when={isOpen()}>
         <div class={styles.backdrop} onClick={() => setIsOpen(false)} />
-        <div class={styles.compactMenu} role="listbox">
-          {/* Mode Themes */}
-          <For each={modeThemes}>
-            {themeOption => {
-              const ModeIcon = themeOption.Icon;
-              return (
-                <button
-                  class={[
-                    styles.compactOption,
-                    theme.currentTheme().mode === themeOption.value ? styles.active : '',
-                  ].join(' ')}
-                  onClick={() => handleModeChange(themeOption.value)}
-                  aria-selected={theme.currentTheme().mode === themeOption.value}
-                  role="option"
-                  title={themeOption.label}
-                >
-                  <span class={styles.themeIcon} aria-hidden>
-                    <ModeIcon size={ICON_TRIGGER} />
-                  </span>
-                  <span class={styles.compactCode}>{themeOption.value.toUpperCase()}</span>
-                </button>
-              );
-            }}
-          </For>
+        <div class={styles.compactMenu} role="group" aria-label="Theme and accessibility">
+          <Show when={showModeToggle}>
+            <section class={styles.compactSection} aria-labelledby="theme-mode-label">
+              <h3 id="theme-mode-label" class={styles.compactSectionTitle}>
+                Tema
+              </h3>
+              <div class={styles.compactGrid} role="listbox" aria-label="Tema">
+                <For each={modeThemes}>
+                  {themeOption => {
+                    const ModeIcon = themeOption.Icon;
+                    return (
+                      <button
+                        type="button"
+                        class={[
+                          styles.compactOption,
+                          theme.currentTheme().mode === themeOption.value ? styles.active : '',
+                        ].join(' ')}
+                        onClick={() => handleModeChange(themeOption.value)}
+                        aria-selected={theme.currentTheme().mode === themeOption.value}
+                        role="option"
+                        title={themeOption.label}
+                      >
+                        <span class={styles.themeIcon} aria-hidden>
+                          <ModeIcon size={ICON_TRIGGER} />
+                        </span>
+                        <span class={styles.compactCode}>{themeOption.value.toUpperCase()}</span>
+                      </button>
+                    );
+                  }}
+                </For>
+              </div>
+            </section>
+          </Show>
 
-          {/* Accessibility Themes */}
-          <For each={accessibilityThemes}>
-            {themeOption => {
-              const A11yIcon = themeOption.Icon;
-              return (
-                <button
-                  class={[
-                    styles.compactOption,
-                    theme.currentTheme().accessibilityTheme === themeOption.value
-                      ? styles.active
-                      : '',
-                  ].join(' ')}
-                  onClick={() => handleAccessibilityThemeChange(themeOption.value)}
-                  aria-selected={theme.currentTheme().accessibilityTheme === themeOption.value}
-                  role="option"
-                  title={themeOption.label}
-                >
-                  <span class={styles.themeIcon} aria-hidden>
-                    <A11yIcon size={ICON_TRIGGER} />
-                  </span>
-                  <span class={styles.compactCode}>{themeOption.value.toUpperCase()}</span>
-                </button>
-              );
-            }}
-          </For>
+          <Show when={showAccessibilityThemes}>
+            <section class={styles.compactSection} aria-labelledby="theme-a11y-label">
+              <h3 id="theme-a11y-label" class={styles.compactSectionTitle}>
+                Acessibilidade
+              </h3>
+              <div class={styles.compactGrid} role="listbox" aria-label="Acessibilidade">
+                <For each={accessibilityThemes}>
+                  {themeOption => {
+                    const A11yIcon = themeOption.Icon;
+                    return (
+                      <button
+                        type="button"
+                        class={[
+                          styles.compactOption,
+                          theme.currentTheme().accessibilityTheme === themeOption.value
+                            ? styles.active
+                            : '',
+                        ].join(' ')}
+                        onClick={() => handleAccessibilityThemeChange(themeOption.value)}
+                        aria-selected={
+                          theme.currentTheme().accessibilityTheme === themeOption.value
+                        }
+                        role="option"
+                        title={themeOption.label}
+                      >
+                        <span class={styles.themeIcon} aria-hidden>
+                          <A11yIcon size={ICON_TRIGGER} />
+                        </span>
+                        <span class={styles.compactCode}>{themeOption.short}</span>
+                      </button>
+                    );
+                  }}
+                </For>
+              </div>
+            </section>
+          </Show>
         </div>
       </Show>
     </div>

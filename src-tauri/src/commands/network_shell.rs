@@ -255,27 +255,9 @@ pub async fn fetch_content(_cid_or_hash: String, _out_path: String) -> Result<St
 }
 
 #[tauri::command]
-pub async fn put_kad_record(_key: String, _value: Vec<u8>) -> Result<String, String> {
-    Err("Network disabled: coming soon".to_string())
-}
-
-#[tauri::command]
-pub async fn get_kad_record(_key: String) -> Result<Vec<u8>, String> {
-    Err("Network disabled: coming soon".to_string())
-}
-
-#[tauri::command]
-pub async fn bootstrap_kad() -> Result<BootstrapResult, String> {
-    Ok(BootstrapResult { success: false, message: "Network disabled: coming soon".to_string() })
-}
-
-#[tauri::command]
 pub async fn announce_peer_presence(_multiaddr: String) -> Result<String, String> {
     Err("Network disabled: coming soon".to_string())
 }
-
-#[tauri::command]
-pub async fn discover_kad_peers() -> Result<Vec<String>, String> { Ok(Vec::new()) }
 
 #[tauri::command]
 pub async fn test_p2p_connection() -> Result<String, String> {

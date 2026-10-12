@@ -1,8 +1,5 @@
 /**
- * LanguageSwitcher Component
- *
- * Beautiful language switcher with country flags, supporting dropdown layouts
- * with smooth animations and excellent accessibility
+ * LanguageSwitcher — compact header control + dark dropdown
  */
 
 import { type Component, createSignal, createMemo, For, Show } from 'solid-js';
@@ -22,42 +19,28 @@ interface LanguageSwitcherProps {
 }
 
 export const LanguageSwitcher: Component<LanguageSwitcherProps> = props => {
-  const {
-    variant = 'dropdown',
-    showFlags = true,
-    showNativeName = true,
-    size = 'md',
-    className = '',
-    ariaLabel,
-    onLanguageChange,
-  } = props;
+  const variant = () => props.variant ?? 'dropdown';
+  const showNativeName = () => props.showNativeName !== false;
+  const size = () => props.size ?? 'md';
+  const className = () => props.className ?? '';
 
-  // Use the i18n system for language management
   const { currentLanguage, changeLanguage, isLoading } = useLanguage();
-
   const [isOpen, setIsOpen] = createSignal(false);
   const [isChanging, setIsChanging] = createSignal(false);
 
-  // Get current language info
   const currentLanguageInfo = createMemo(
     () =>
       SUPPORTED_LANGUAGES.find(lang => lang.code === currentLanguage()) ?? SUPPORTED_LANGUAGES[0]!
   );
 
-  // CSS classes for styling
   const containerClasses = createMemo(() =>
-    [
-      styles.languageSwitcher,
-      styles[`variant--${variant}`],
-      styles[`size--${size}`],
-      isOpen() ? styles.open : '',
-      className,
-    ]
+    [styles.languageSwitcher, styles[`size--${size()}`], isOpen() ? styles.open : '', className()]
       .filter(Boolean)
       .join(' ')
   );
 
-  // Handle language selection
+  const isLoadingState = createMemo(() => isLoading() || isChanging());
+
   const handleLanguageSelect = async (languageCode: SupportedLocale) => {
     if (languageCode === currentLanguage()) {
       setIsOpen(false);
@@ -66,20 +49,9 @@ export const LanguageSwitcher: Component<LanguageSwitcherProps> = props => {
 
     try {
       setIsChanging(true);
-
-      // Call the i18n system to change language with immediate update
       await changeLanguage(languageCode);
-
-      // Also call the optional prop callback
-      if (onLanguageChange) {
-        await onLanguageChange(languageCode);
-      }
-
+      await props.onLanguageChange?.(languageCode);
       setIsOpen(false);
-      console.log('Language changed to:', languageCode);
-
-      // Force a small delay to ensure all components have updated
-      await new Promise(resolve => window.setTimeout(resolve, 1));
     } catch (error) {
       console.error('Failed to change language:', error);
     } finally {
@@ -87,170 +59,103 @@ export const LanguageSwitcher: Component<LanguageSwitcherProps> = props => {
     }
   };
 
-  // Handle dropdown toggle
-  const handleToggle = () => {
-    setIsOpen(!isOpen());
-  };
-
-  // Close dropdown when clicking outside
-  const handleBackdropClick = () => {
-    setIsOpen(false);
-  };
-
-  // Check if we're currently loading/changing language
-  const isLoadingState = createMemo(() => isLoading() || isChanging());
-
-  // Current language display
-  const CurrentLanguageDisplay: Component = () => (
-    <div class={styles.currentLanguage}>
-      <Show when={showFlags}>
-        <span class={styles.flag} role="img" aria-label={currentLanguageInfo().name}>
-          {currentLanguageInfo().flag}
-        </span>
-      </Show>
-      <span class={styles.languageName}>
-        {showNativeName ? currentLanguageInfo().nativeName : currentLanguageInfo().name}
-      </span>
-      <Show when={variant === 'dropdown'}>
-        <svg class={styles.chevron} viewBox="0 0 20 20" fill="currentColor">
-          <path
-            fill-rule="evenodd"
-            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-            clip-rule="evenodd"
-          />
-        </svg>
-      </Show>
-    </div>
-  );
-
-  // Language option component
-  const LanguageOption: Component<{ language: (typeof SUPPORTED_LANGUAGES)[0] }> = props => (
-    <button
-      class={[
-        styles.languageOption,
-        props.language.code === currentLanguage() ? styles.active : '',
-      ].join(' ')}
-      onClick={() => handleLanguageSelect(props.language.code)}
-      disabled={isLoadingState()}
-      aria-selected={props.language.code === currentLanguage()}
-      role="option"
-    >
-      <Show when={showFlags}>
-        <span class={styles.flag} role="img" aria-label={props.language.name}>
-          {props.language.flag}
-        </span>
-      </Show>
-      <div class={styles.languageInfo}>
-        <span class={styles.languageName}>
-          {showNativeName ? props.language.nativeName : props.language.name}
-        </span>
-        <Show when={showNativeName && props.language.name !== props.language.nativeName}>
-          <span class={styles.languageCode}>{props.language.name}</span>
-        </Show>
-      </div>
-      <Show when={props.language.code === currentLanguage()}>
-        <svg class={styles.checkmark} viewBox="0 0 20 20" fill="currentColor">
-          <path
-            fill-rule="evenodd"
-            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-            clip-rule="evenodd"
-          />
-        </svg>
-      </Show>
-    </button>
-  );
-
-  // Dropdown variant
-  const DropdownVariant: Component = () => (
-    <div class={styles.dropdown}>
-      <button
-        class={styles.trigger}
-        onClick={handleToggle}
-        aria-label={ariaLabel || 'Select Language'}
-        aria-expanded={isOpen()}
-        aria-haspopup="listbox"
-        disabled={isLoadingState()}
-      >
-        <CurrentLanguageDisplay />
-      </button>
-
-      <Show when={isOpen()}>
-        <div class={styles.backdrop} onClick={handleBackdropClick} />
-        <div class={styles.menu} role="listbox" aria-label="Available languages">
-          <div class={styles.menuHeader}>
-            <h3 class={styles.menuTitle}>Select Language</h3>
-          </div>
-          <div class={styles.menuContent}>
-            <For each={SUPPORTED_LANGUAGES}>
-              {language => <LanguageOption language={language} />}
-            </For>
-          </div>
-        </div>
-      </Show>
-    </div>
-  );
-
-  // Compact variant
-  const CompactVariant: Component = () => (
-    <div class={styles.compact}>
-      <button
-        class={styles.compactTrigger}
-        onClick={handleToggle}
-        aria-label={ariaLabel || `Current Language: ${currentLanguageInfo().nativeName}`}
-        aria-expanded={isOpen()}
-        disabled={isLoadingState()}
-        title={currentLanguageInfo().nativeName}
-      >
-        <Show when={showFlags}>
-          <span class={styles.flag} role="img" aria-label={currentLanguageInfo().name}>
-            {currentLanguageInfo().flag}
-          </span>
-        </Show>
-        <Show when={showNativeName}>
-          <span class={styles.languageCode}>{currentLanguage().toUpperCase()}</span>
-        </Show>
-      </button>
-
-      <Show when={isOpen()}>
-        <div class={styles.backdrop} onClick={handleBackdropClick} />
-        <div class={styles.compactMenu} role="listbox">
-          <For each={SUPPORTED_LANGUAGES}>
-            {language => (
-              <button
-                class={[
-                  styles.compactOption,
-                  language.code === currentLanguage() ? styles.active : '',
-                ].join(' ')}
-                onClick={() => handleLanguageSelect(language.code)}
-                disabled={isLoadingState()}
-                aria-selected={language.code === currentLanguage()}
-                role="option"
-                title={language.nativeName}
-              >
-                <span class={styles.flag} role="img" aria-label={language.name}>
-                  {language.flag}
-                </span>
-                <Show when={showNativeName}>
-                  <span class={styles.compactCode}>{language.code.toUpperCase()}</span>
-                </Show>
-              </button>
-            )}
-          </For>
-        </div>
-      </Show>
-    </div>
-  );
-
   return (
     <div class={containerClasses()}>
-      <Show when={variant === 'dropdown'}>
-        <DropdownVariant />
-      </Show>
-      <Show when={variant === 'compact'}>
-        <CompactVariant />
+      <Show when={variant() === 'dropdown'}>
+        <div class={styles.dropdown}>
+          <button
+            type="button"
+            class={styles.trigger}
+            onClick={() => setIsOpen(v => !v)}
+            aria-label={props.ariaLabel || 'Select language'}
+            aria-expanded={isOpen()}
+            aria-haspopup="listbox"
+            disabled={isLoadingState()}
+          >
+            <span class={styles.languageCode}>{currentLanguage().toUpperCase()}</span>
+            <Show when={showNativeName()}>
+              <span class={styles.languageName}>{currentLanguageInfo().nativeName}</span>
+            </Show>
+            <svg class={styles.chevron} viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path
+                fill-rule="evenodd"
+                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </button>
+
+          <Show when={isOpen()}>
+            <div class={styles.backdrop} onClick={() => setIsOpen(false)} />
+            <div class={styles.menu} role="listbox" aria-label="Available languages">
+              <div class={styles.menuHeader}>
+                <h3 class={styles.menuTitle}>Language</h3>
+              </div>
+              <div class={styles.menuContent}>
+                <For each={SUPPORTED_LANGUAGES}>
+                  {language => (
+                    <button
+                      type="button"
+                      class={`${styles.languageOption} ${
+                        language.code === currentLanguage() ? styles.active : ''
+                      }`}
+                      onClick={() => handleLanguageSelect(language.code)}
+                      disabled={isLoadingState()}
+                      aria-selected={language.code === currentLanguage()}
+                      role="option"
+                    >
+                      <span class={styles.optionCode}>{language.code.toUpperCase()}</span>
+                      <span class={styles.optionName}>{language.nativeName}</span>
+                    </button>
+                  )}
+                </For>
+              </div>
+            </div>
+          </Show>
+        </div>
       </Show>
 
-      {/* Loading overlay */}
+      <Show when={variant() === 'compact'}>
+        <div class={styles.compact}>
+          <button
+            type="button"
+            class={styles.compactTrigger}
+            onClick={() => setIsOpen(v => !v)}
+            aria-label={props.ariaLabel || `Current language: ${currentLanguageInfo().nativeName}`}
+            aria-expanded={isOpen()}
+            aria-haspopup="listbox"
+            disabled={isLoadingState()}
+            title={currentLanguageInfo().nativeName}
+          >
+            <span class={styles.languageCode}>{currentLanguage().toUpperCase()}</span>
+          </button>
+
+          <Show when={isOpen()}>
+            <div class={styles.backdrop} onClick={() => setIsOpen(false)} />
+            <div class={styles.compactMenu} role="listbox" aria-label="Available languages">
+              <For each={SUPPORTED_LANGUAGES}>
+                {language => (
+                  <button
+                    type="button"
+                    class={`${styles.compactOption} ${
+                      language.code === currentLanguage() ? styles.active : ''
+                    }`}
+                    onClick={() => handleLanguageSelect(language.code)}
+                    disabled={isLoadingState()}
+                    aria-selected={language.code === currentLanguage()}
+                    role="option"
+                    title={language.nativeName}
+                  >
+                    <span class={styles.optionCode}>{language.code.toUpperCase()}</span>
+                    <span class={styles.optionName}>{language.nativeName}</span>
+                  </button>
+                )}
+              </For>
+            </div>
+          </Show>
+        </div>
+      </Show>
+
       <Show when={isLoadingState()}>
         <div class={styles.loadingOverlay}>
           <div class={styles.loadingSpinner} />

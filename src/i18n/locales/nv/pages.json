@@ -130,6 +130,7 @@
       "title": "Download Manager",
       "subtitle": "Manage your downloads and uploads",
       "addDownload": "Add Download",
+      "openFullQueue": "Open full queue",
       "queue": "Queue",
       "preferences": "Preferences",
       "pauseAll": "Pause All",

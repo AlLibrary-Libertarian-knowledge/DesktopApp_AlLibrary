@@ -130,6 +130,7 @@
       "title": "Gestionnaire de Téléchargements",
       "subtitle": "Gérer vos téléchargements et téléversements",
       "addDownload": "Ajouter Téléchargement",
+      "openFullQueue": "Ouvrir la file complète",
       "queue": "File d'attente",
       "preferences": "Préférences",
       "pauseAll": "Tout Suspendre",

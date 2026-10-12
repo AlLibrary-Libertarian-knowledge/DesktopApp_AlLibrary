@@ -18,15 +18,182 @@ body {
   overflow: hidden;
 }
 
-/* Route Loading Styles following CORE_OPTIMIZATION_PHILOSOPHY */
+/* Route Loading — production */
 .route-loading {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 60vh;
-  padding: 2rem;
+  min-height: min(62vh, 560px);
+  padding: 2.5rem 1.5rem;
+  overflow: hidden;
 }
 
+.route-loading-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(420px 200px at 50% 42%, rgba(0, 194, 255, 0.12), transparent 70%),
+    radial-gradient(360px 180px at 50% 70%, rgba(61, 207, 176, 0.08), transparent 72%);
+}
+
+.route-loading-panel {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 360px;
+  width: 100%;
+  animation: routeLoadingIn 0.45s ease-out both;
+}
+
+@keyframes routeLoadingIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.route-loading-spinner {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  margin-bottom: 1.35rem;
+}
+
+.route-loading-spinner-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2.5px solid rgba(86, 159, 255, 0.18);
+  border-top-color: #7cc0ff;
+  border-right-color: rgba(61, 207, 176, 0.85);
+  animation: routeSpin 0.85s linear infinite;
+  box-shadow: 0 0 18px rgba(0, 194, 255, 0.18);
+}
+
+.route-loading-spinner-core {
+  position: absolute;
+  inset: 14px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, rgba(124, 192, 255, 0.35), rgba(13, 27, 50, 0.2));
+  box-shadow: inset 0 0 12px rgba(0, 194, 255, 0.15);
+}
+
+@keyframes routeSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.route-loading-title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+
+.route-loading-subtitle {
+  margin: 0.45rem 0 0;
+  font-size: 0.925rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+  max-width: 32ch;
+}
+
+.route-loading-dots {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 1.15rem;
+}
+
+.route-loading-dots span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(124, 192, 255, 0.55);
+  animation: routeDotPulse 1.2s ease-in-out infinite;
+}
+
+.route-loading-dots span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.route-loading-dots span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes routeDotPulse {
+  0%,
+  80%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.85);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.route-loading-slow {
+  margin-top: 1.35rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid rgba(69, 91, 133, 0.4);
+  width: 100%;
+}
+
+.route-loading-slow p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #d4b06a;
+}
+
+.route-loading-retry {
+  margin-top: 0.75rem;
+  min-width: 110px;
+  height: 34px;
+  padding: 0 0.95rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #d8e6ff;
+  border: 1px solid rgba(112, 130, 169, 0.55);
+  background: rgba(27, 45, 82, 0.85);
+  transition:
+    transform 0.15s ease,
+    filter 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.route-loading-retry:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+  border-color: rgba(124, 192, 255, 0.55);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .route-loading-panel,
+  .route-loading-spinner-ring,
+  .route-loading-dots span {
+    animation: none;
+  }
+
+  .route-loading-spinner-ring {
+    border-top-color: #7cc0ff;
+    opacity: 0.9;
+  }
+}
+
+/* Legacy spinner utilities (kept for other call sites) */
 .loading-container {
   text-align: center;
   max-width: 400px;
@@ -36,30 +203,21 @@ body {
   width: 48px;
   height: 48px;
   margin: 0 auto 1rem;
-  border: 4px solid rgba(79, 70, 229, 0.1);
-  border-left-color: #4f46e5;
+  border: 3px solid rgba(86, 159, 255, 0.15);
+  border-left-color: #7cc0ff;
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: routeSpin 0.85s linear infinite;
 }
 
 .loading-spinner-small {
   width: 20px;
   height: 20px;
-  border: 2px solid rgba(79, 70, 229, 0.1);
-  border-left-color: #4f46e5;
+  border: 2px solid rgba(86, 159, 255, 0.15);
+  border-left-color: #7cc0ff;
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: routeSpin 0.85s linear infinite;
   display: inline-block;
   margin-right: 0.5rem;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
 }
 
 /* Network Graph Loading Styles */

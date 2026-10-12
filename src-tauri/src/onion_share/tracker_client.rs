@@ -38,7 +38,7 @@ pub fn local_tracker_ws_url() -> String {
     tracker_ws_url(LOCAL_TRACKER_HTTP)
 }
 
-async fn fetch_lobby_http(
+pub async fn fetch_lobby_http(
     tracker_url: &str,
     socks_addr: Option<&str>,
 ) -> Result<NetworkLobby, String> {
@@ -62,6 +62,50 @@ async fn fetch_lobby_http(
         .json::<NetworkLobby>()
         .await
         .map_err(|e| format!("Lobby JSON: {e}"))
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TrackerProbeResult {
+    pub online: bool,
+    pub url: String,
+    pub online_nodes: Option<u32>,
+    pub latency_ms: Option<u64>,
+    pub error: Option<String>,
+}
+
+/// Lightweight GET /lobby to show tracker reachability in the connect modal.
+pub async fn probe_tracker(
+    tracker_url: &str,
+    socks_addr: Option<&str>,
+) -> TrackerProbeResult {
+    let url = normalize_tracker_url(tracker_url);
+    if url.is_empty() {
+        return TrackerProbeResult {
+            online: false,
+            url,
+            online_nodes: None,
+            latency_ms: None,
+            error: Some("empty tracker URL".into()),
+        };
+    }
+    let started = std::time::Instant::now();
+    match fetch_lobby_http(&url, socks_addr).await {
+        Ok(lobby) => TrackerProbeResult {
+            online: true,
+            url,
+            online_nodes: Some(lobby.online_nodes.min(u32::MAX as usize) as u32),
+            latency_ms: Some(started.elapsed().as_millis() as u64),
+            error: None,
+        },
+        Err(e) => TrackerProbeResult {
+            online: false,
+            url,
+            online_nodes: None,
+            latency_ms: Some(started.elapsed().as_millis() as u64),
+            error: Some(e),
+        },
+    }
 }
 
 /// Pull lobby over plain HTTP (no announce). Used when Tor/onion is unavailable.

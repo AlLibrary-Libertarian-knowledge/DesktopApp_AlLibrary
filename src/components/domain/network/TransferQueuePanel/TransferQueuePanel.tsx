@@ -8,9 +8,10 @@ import {
   FolderOpen,
   ExternalLink,
   RotateCcw,
+  Search,
+  Inbox,
 } from 'lucide-solid';
 import { A } from '@solidjs/router';
-import { Card } from '@/components/foundation/Card';
 import { Badge } from '@/components/foundation/Badge';
 import { Button } from '@/components/foundation/Button';
 import { useTransferState } from '@/hooks/api/useTransferState';
@@ -91,27 +92,27 @@ export const TransferQueuePanel: Component<TransferQueuePanelProps> = props => {
       <Show when={variant() !== 'embedded'}>
         <div class={styles.summaryRow}>
           <Show when={showOutbound()}>
-            <Card class={styles.summaryCard}>
+            <div class={`${styles.summaryCard} ${styles.summaryShared}`}>
               <span class={styles.summaryLabel}>Shared</span>
               <strong class={styles.summaryValue}>{transfer.shares().length}</strong>
-            </Card>
+            </div>
           </Show>
-          <Card class={styles.summaryCard}>
+          <div class={`${styles.summaryCard} ${styles.summaryActive}`}>
             <span class={styles.summaryLabel}>Active</span>
             <strong class={styles.summaryValue}>{transfer.activeCount()}</strong>
-          </Card>
-          <Card class={styles.summaryCard}>
+          </div>
+          <div class={`${styles.summaryCard} ${styles.summaryCompleted}`}>
             <span class={styles.summaryLabel}>Completed</span>
             <strong class={styles.summaryValue}>{transfer.completedDownloads().length}</strong>
-          </Card>
+          </div>
         </div>
       </Show>
 
       <div class={styles.tablesBlock}>
         <Show when={showOutbound()}>
-          <Card class={styles.tableCard}>
+          <article class={styles.tableCard}>
             <div class={styles.panelHead}>
-              <Upload size={18} aria-hidden />
+              <Upload size={16} aria-hidden="true" />
               <h3 class={styles.panelTitle}>Shared files</h3>
             </div>
             <div class={styles.tableScroll}>
@@ -130,16 +131,22 @@ export const TransferQueuePanel: Component<TransferQueuePanelProps> = props => {
                     fallback={
                       <tr>
                         <td colspan="4" class={styles.emptyCell}>
-                          No shared files.
-                          <Show when={props.onAddShare}>
-                            <Button
-                              variant="primary"
-                              size="sm"
-                              onClick={() => props.onAddShare?.()}
-                            >
-                              <Plus size={14} /> Add files
-                            </Button>
-                          </Show>
+                          <div class={styles.emptyState}>
+                            <div class={styles.emptyIcon} aria-hidden="true">
+                              <Inbox size={18} />
+                            </div>
+                            <p class={styles.emptyTitle}>No shared files</p>
+                            <p class={styles.emptyHint}>Add files to seed them on the network.</p>
+                            <Show when={props.onAddShare}>
+                              <Button
+                                variant="primary"
+                                size="sm"
+                                onClick={() => props.onAddShare?.()}
+                              >
+                                <Plus size={14} /> Add files
+                              </Button>
+                            </Show>
+                          </div>
                         </td>
                       </tr>
                     }
@@ -170,13 +177,13 @@ export const TransferQueuePanel: Component<TransferQueuePanelProps> = props => {
                 </tbody>
               </table>
             </div>
-          </Card>
+          </article>
         </Show>
 
         <Show when={showDownloads()}>
-          <Card class={styles.tableCard}>
+          <article class={styles.tableCard}>
             <div class={styles.panelHead}>
-              <Download size={18} aria-hidden />
+              <Download size={16} aria-hidden="true" />
               <h3 class={styles.panelTitle}>Downloads</h3>
             </div>
             <div class={styles.tableScroll}>
@@ -195,10 +202,19 @@ export const TransferQueuePanel: Component<TransferQueuePanelProps> = props => {
                     fallback={
                       <tr>
                         <td colspan="4" class={styles.emptyCell}>
-                          No downloads in queue.
-                          <A href="/search-network" class={styles.emptyLink}>
-                            Search network
-                          </A>
+                          <div class={styles.emptyState}>
+                            <div class={styles.emptyIcon} aria-hidden="true">
+                              <Download size={18} />
+                            </div>
+                            <p class={styles.emptyTitle}>No downloads in queue</p>
+                            <p class={styles.emptyHint}>
+                              Find documents on the network and start a transfer.
+                            </p>
+                            <A href="/search-network" class={styles.emptyLink}>
+                              <Search size={13} aria-hidden="true" />
+                              Search network
+                            </A>
+                          </div>
                         </td>
                       </tr>
                     }
@@ -231,13 +247,13 @@ export const TransferQueuePanel: Component<TransferQueuePanelProps> = props => {
                 </tbody>
               </table>
             </div>
-          </Card>
+          </article>
         </Show>
 
         <Show when={showCompleted()}>
-          <Card class={styles.tableCard}>
+          <article class={styles.tableCard}>
             <div class={styles.panelHead}>
-              <Activity size={18} aria-hidden />
+              <Activity size={16} aria-hidden="true" />
               <h3 class={styles.panelTitle}>Recently completed</h3>
             </div>
             <div class={styles.tableScroll}>
@@ -255,7 +271,13 @@ export const TransferQueuePanel: Component<TransferQueuePanelProps> = props => {
                     fallback={
                       <tr>
                         <td colspan="3" class={styles.emptyCell}>
-                          No completed downloads yet.
+                          <div class={styles.emptyState}>
+                            <div class={styles.emptyIcon} aria-hidden="true">
+                              <Activity size={18} />
+                            </div>
+                            <p class={styles.emptyTitle}>No completed downloads yet</p>
+                            <p class={styles.emptyHint}>Finished transfers will show up here.</p>
+                          </div>
                         </td>
                       </tr>
                     }
@@ -314,7 +336,7 @@ export const TransferQueuePanel: Component<TransferQueuePanelProps> = props => {
                 </tbody>
               </table>
             </div>
-          </Card>
+          </article>
         </Show>
       </div>
     </section>

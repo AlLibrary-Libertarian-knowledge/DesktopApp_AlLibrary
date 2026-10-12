@@ -258,6 +258,26 @@ export async function trackerSetConfig(config: TrackerNetworkConfig): Promise<vo
   return safeInvoke('tracker_set_config', { config });
 }
 
+/** Lab default when running TrackerRust / Docker on the same PC. */
+export const DEFAULT_LOCAL_TRACKER_URL = 'http://127.0.0.1:8080';
+
+export type TrackerProbeResult = {
+  online: boolean;
+  url: string;
+  onlineNodes?: number | null;
+  latencyMs?: number | null;
+  error?: string | null;
+  defaultLocalUrl: string;
+  defaultOnionUrl: string;
+};
+
+/** GET /lobby reachability check (uses Tor SOCKS only when URL is .onion and overlay is up). */
+export async function trackerProbe(url?: string): Promise<TrackerProbeResult> {
+  return safeInvoke<TrackerProbeResult>('tracker_probe', {
+    url: url?.trim() || null,
+  });
+}
+
 /** Re-announce all seed-eligible treated documents (after library scan or resume global seeding). */
 export async function syncAllEnabledSeeds(): Promise<number> {
   return safeInvoke<number>('sync_all_enabled_seeds_cmd');

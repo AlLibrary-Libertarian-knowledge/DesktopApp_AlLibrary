@@ -130,6 +130,7 @@
       "title": "下载管理器",
       "subtitle": "管理您的下载和上传",
       "addDownload": "添加下载",
+      "openFullQueue": "打开完整队列",
       "queue": "队列",
       "preferences": "偏好设置",
       "pauseAll": "全部暂停",

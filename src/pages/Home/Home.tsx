@@ -1,5 +1,5 @@
-import { type Component, createSignal, onMount, createEffect, Show } from 'solid-js';
-import { Button, Card, Modal } from '../../components/foundation';
+import { type Component, createSignal, onMount, createEffect, createMemo, Show } from 'solid-js';
+import { Button, Modal } from '../../components/foundation';
 import {
   NetworkGraph,
   ActivityListCard,
@@ -22,21 +22,45 @@ import {
   Activity,
   BookOpen,
   Users,
-  University,
+  HardDrive,
   Zap,
   TrendingUp,
   ArrowRight,
+  AlertTriangle,
 } from 'lucide-solid';
 import styles from './Home.module.css';
 import { useNavigate } from '@solidjs/router';
 import { settingsService } from '@/services/storage/settingsService';
 import { useNetworkStore } from '@/stores/network/networkStore';
+import { useNetworkLobby } from '@/hooks/api/useNetworkLobby';
 import { activityService } from '@/services/activityService';
 import { useTransferState } from '@/hooks/api/useTransferState';
 import type { TransferView } from '@/services/network/transferFacade';
 import { pickAnyFiles } from '@/services/system/fileDialogs';
 import { shareWithToast } from '@/utils/documentActions';
 import { useToast } from '@/hooks/ui/useToast';
+import { useTheme } from '@/hooks/ui/useTheme';
+
+function formatLobbyBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 ** 2) return `${(bytes / 1024).toFixed(1)} KB`;
+  if (bytes < 1024 ** 3) return `${(bytes / 1024 ** 2).toFixed(1)} MB`;
+  return `${(bytes / 1024 ** 3).toFixed(2)} GB`;
+}
+
+function lobbyHealthPercent(
+  onlineNodes: number,
+  fileCount: number,
+  syncError: string | undefined,
+  lastSyncAt: Date | null
+): number {
+  if (syncError) return 28;
+  if (!lastSyncAt) return 45;
+  if (onlineNodes === 0 && fileCount === 0) return 72;
+  if (onlineNodes === 0) return 78;
+  if (onlineNodes < 5) return 88;
+  return 96;
+}
 
 const HomePage: Component = () => {
   // Initialize i18n translation hooks
@@ -45,16 +69,87 @@ const HomePage: Component = () => {
 
   const [showModal, setShowModal] = createSignal(false);
   const [activeTab, setActiveTab] = createSignal<'overview' | 'network' | 'downloads'>('overview');
+  /** Keep heavy panels mounted after first visit so tab switches stay instant. */
+  const [visitedTabs, setVisitedTabs] = createSignal<Set<'overview' | 'network' | 'downloads'>>(
+    new Set(['overview'])
+  );
+
+  const theme = useTheme();
+  /** Only unmount tab panels in reduced-motion mode (less GPU/animation work). */
+  const unmountInactiveTabs = createMemo(
+    () => theme.currentTheme().accessibilityTheme === 'reduced-motion'
+  );
+
+  const shouldMountTab = (tab: 'overview' | 'network' | 'downloads') =>
+    unmountInactiveTabs() ? activeTab() === tab : visitedTabs().has(tab);
+
+  const selectTab = (tab: 'overview' | 'network' | 'downloads') => {
+    setActiveTab(tab);
+    if (unmountInactiveTabs()) return;
+    // Keep-alive: mount once, then only toggle visibility.
+    setVisitedTabs(prev => {
+      if (prev.has(tab)) return prev;
+      const next = new Set(prev);
+      next.add(tab);
+      return next;
+    });
+  };
 
   const handleModalClose = () => setShowModal(false);
 
   const net = useNetworkStore();
+  const lobby = useNetworkLobby();
   const navigate = useNavigate();
   const toast = useToast();
   const transfer = useTransferState();
 
   const [recentDownloads, setRecentDownloads] = createSignal<ActivityItemProps[]>([]);
   const [networkActivity, setNetworkActivity] = createSignal<ActivityItemProps[]>([]);
+
+  const fileCount = createMemo(() => lobby.files().length);
+  const peerCount = createMemo(() => lobby.onlineNodes());
+  const connectionEdges = createMemo(() =>
+    lobby.files().reduce((sum, f) => sum + (f.peerCount || 0), 0)
+  );
+  const healthPct = createMemo(() =>
+    lobbyHealthPercent(peerCount(), fileCount(), lobby.syncError(), lobby.lastSyncAt())
+  );
+  const healthTrend = createMemo(() => {
+    const pct = healthPct();
+    if (lobby.syncError()) {
+      return {
+        type: 'negative' as const,
+        value: t('home.stats.syncError'),
+        label: t('home.stats.poor'),
+      };
+    }
+    if (pct >= 90) {
+      return {
+        type: 'positive' as const,
+        value: t('home.stats.excellent'),
+        label: undefined,
+      };
+    }
+    if (pct >= 70) {
+      return {
+        type: 'positive' as const,
+        value: t('home.stats.good'),
+        label: undefined,
+      };
+    }
+    if (pct >= 50) {
+      return {
+        type: 'neutral' as const,
+        value: t('home.stats.fair'),
+        label: undefined,
+      };
+    }
+    return {
+      type: 'negative' as const,
+      value: t('home.stats.poor'),
+      label: undefined,
+    };
+  });
 
   const mapTransferViews = (
     active: TransferView[],
@@ -110,6 +205,7 @@ const HomePage: Component = () => {
     }
 
     void loadNetworkActivity();
+    void lobby.refresh(true);
   });
 
   return (
@@ -138,54 +234,67 @@ const HomePage: Component = () => {
           role="status"
           aria-live="polite"
           aria-label={t('home.accessibility.networkStatusAria', {
-            status: t('home.networkStatus.online'),
+            status:
+              net.connectedPeers() > 0
+                ? t('home.networkStatus.online')
+                : t('home.networkStatus.offline'),
             peers: String(net.connectedPeers()),
             health: `${net.networkHealthPct()}%`,
           })}
         >
-          {/* Network Status Indicator */}
           <div class={styles['network-status-main']}>
             <div class={styles['status-row']}>
-              <span class={styles['status-text']}>{t('home.networkStatus.online')}</span>
-              <div class={`${styles['status-indicator']} ${styles.online}`}>
+              <span class={styles['status-text']}>
+                {net.connectedPeers() > 0
+                  ? t('home.networkStatus.online')
+                  : t('home.networkStatus.offline')}
+              </span>
+              <div
+                class={`${styles['status-indicator']} ${
+                  net.connectedPeers() > 0 ? styles.online : styles.offline
+                }`}
+                aria-hidden="true"
+              >
                 <div class={styles['status-pulse']} />
               </div>
             </div>
             <div class={styles['health-row']}>
               <div class={styles['network-health']}>
-                <div class={styles['health-bar']}>
+                <span class={styles['health-text']}>{t('home.networkStatus.health')}</span>
+                <div
+                  class={styles['health-bar']}
+                  role="progressbar"
+                  aria-valuenow={net.networkHealthPct()}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label={t('home.networkStatus.health')}
+                >
                   <div
                     class={styles['health-fill']}
-                    style={`width: ${net.networkHealthPct()}%`}
-                    aria-label={t('home.networkStatus.health')}
+                    style={{ width: `${net.networkHealthPct()}%` }}
                   />
                 </div>
-                <span class={styles['health-text']}>{t('home.networkStatus.health')}</span>
+                <span class={styles['health-pct']}>{net.networkHealthPct()}%</span>
               </div>
             </div>
           </div>
 
-          {/* Live Data Flow Visualization */}
           <div class={styles['data-flow-container']}>
             <div class={styles['flow-section']}>
               <div class={styles['flow-header']}>
                 <span class={`${styles['flow-icon']} ${styles.download}`} aria-hidden="true">
-                  ⬇
+                  <Download size={14} />
                 </span>
                 <span class={styles['flow-label']}>{t('home.dataFlow.download')}</span>
               </div>
               <div class={styles['flow-visual']}>
-                <div class={`${styles['flow-stream']} ${styles['download-stream']}`}>
-                  <div class={styles['flow-particle']} />
-                  <div class={styles['flow-particle']} />
-                  <div class={styles['flow-particle']} />
-                </div>
+                <div class={`${styles['flow-stream']} ${styles['download-stream']}`} />
                 <div class={styles['flow-speed']}>{net.downloadMbps()} MB/s</div>
               </div>
             </div>
 
             <div class={styles['network-center']}>
-              <div class={styles['network-node']}>
+              <div class={styles['network-node']} aria-hidden="true">
                 <div class={styles['node-core']} />
                 <div class={styles['node-ring']} />
                 <div class={styles['node-outer']} />
@@ -199,37 +308,32 @@ const HomePage: Component = () => {
             <div class={styles['flow-section']}>
               <div class={styles['flow-header']}>
                 <span class={`${styles['flow-icon']} ${styles.upload}`} aria-hidden="true">
-                  ⬆
+                  <Upload size={14} />
                 </span>
                 <span class={styles['flow-label']}>{t('home.dataFlow.upload')}</span>
               </div>
               <div class={styles['flow-visual']}>
-                <div class={`${styles['flow-stream']} ${styles['upload-stream']}`}>
-                  <div class={styles['flow-particle']} />
-                  <div class={styles['flow-particle']} />
-                  <div class={styles['flow-particle']} />
-                </div>
+                <div class={`${styles['flow-stream']} ${styles['upload-stream']}`} />
                 <div class={styles['flow-speed']}>{net.uploadMbps()} MB/s</div>
               </div>
             </div>
           </div>
 
-          {/* Network Activity Indicators - live counts */}
           <div class={styles['activity-indicators']}>
             <div class={styles['activity-item']}>
-              <div class={`${styles['activity-dot']} ${styles.active}`} />
+              <div class={`${styles['activity-dot']} ${styles.active}`} aria-hidden="true" />
               <span class={styles['activity-text']}>
                 {net.activeDownloads()} {t('home.activityIndicators.downloads')}
               </span>
             </div>
             <div class={styles['activity-item']}>
-              <div class={`${styles['activity-dot']} ${styles.seeding}`} />
+              <div class={`${styles['activity-dot']} ${styles.seeding}`} aria-hidden="true" />
               <span class={styles['activity-text']}>
                 {net.activeSeeding()} {t('home.activityIndicators.seeding')}
               </span>
             </div>
             <div class={styles['activity-item']}>
-              <div class={`${styles['activity-dot']} ${styles.discovering}`} />
+              <div class={`${styles['activity-dot']} ${styles.discovering}`} aria-hidden="true" />
               <span class={styles['activity-text']}>
                 {net.activeDiscovery()} {t('home.activityIndicators.discovering')}
               </span>
@@ -238,106 +342,117 @@ const HomePage: Component = () => {
         </div>
       </header>
 
-      {/* Enhanced Navigation Tabs */}
-      <div
-        class={styles['dashboard-tabs']}
-        role="tablist"
-        aria-label={t('home.tabs.overview')}
-        data-active={activeTab() === 'overview' ? '0' : activeTab() === 'network' ? '1' : '2'}
-      >
+      <div class={styles['dashboard-tabs']} role="tablist" aria-label={t('home.tabs.label' as any)}>
         <button
+          type="button"
           class={`${styles.tab} ${activeTab() === 'overview' ? styles.active : ''}`}
-          onClick={() => setActiveTab('overview')}
+          onClick={() => selectTab('overview')}
           role="tab"
           aria-selected={activeTab() === 'overview'}
           aria-controls="overview-panel"
           id="overview-tab"
+          tabindex={activeTab() === 'overview' ? 0 : -1}
         >
           <span class={styles['tab-text']}>
-            <BarChart3 size={16} aria-hidden="true" />
+            <BarChart3 size={15} aria-hidden="true" />
             {t('home.tabs.overview')}
           </span>
         </button>
         <button
+          type="button"
           class={`${styles.tab} ${activeTab() === 'network' ? styles.active : ''}`}
-          onClick={() => setActiveTab('network')}
+          onClick={() => selectTab('network')}
           role="tab"
           aria-selected={activeTab() === 'network'}
           aria-controls="network-panel"
           id="network-tab"
+          tabindex={activeTab() === 'network' ? 0 : -1}
         >
           <span class={styles['tab-text']}>
-            <Activity size={16} aria-hidden="true" />
+            <Activity size={15} aria-hidden="true" />
             {t('home.tabs.network')}
           </span>
         </button>
         <button
+          type="button"
           class={`${styles.tab} ${activeTab() === 'downloads' ? styles.active : ''}`}
-          onClick={() => setActiveTab('downloads')}
+          onClick={() => selectTab('downloads')}
           role="tab"
           aria-selected={activeTab() === 'downloads'}
           aria-controls="downloads-panel"
           id="downloads-tab"
+          tabindex={activeTab() === 'downloads' ? 0 : -1}
         >
           <span class={styles['tab-text']}>
-            <Download size={16} aria-hidden="true" />
+            <Download size={15} aria-hidden="true" />
             {t('home.tabs.downloads')}
           </span>
         </button>
       </div>
       <div class={styles['dashboard-content']} id="main-content">
-        {/* Overview Tab */}
-        {activeTab() === 'overview' && (
-          <div role="tabpanel" id="overview-panel" aria-labelledby="overview-tab">
-            {/* Enhanced Stats Section */}
+        {/* Overview — keep-alive unless reduced-motion (then unmount) */}
+        <Show when={shouldMountTab('overview')}>
+          <div
+            role="tabpanel"
+            id="overview-panel"
+            aria-labelledby="overview-tab"
+            class={`${styles['tab-panel']} ${activeTab() === 'overview' ? styles['tab-panel-active'] : ''}`}
+            hidden={!unmountInactiveTabs() && activeTab() !== 'overview'}
+            aria-hidden={activeTab() !== 'overview'}
+          >
             <section
               class={`${styles['stats-section']} ${styles.enhanced}`}
               aria-labelledby="stats-title"
             >
               <h2 id="stats-title" class="sr-only">
-                {t('home.stats.documentsShared')}
+                {t('home.stats.networkHealth')}
               </h2>
               <div class={styles.grid} data-testid="stats-section">
                 <StatCard
                   type="documents"
                   icon={<BookOpen size={24} />}
-                  number="12,847"
+                  number={fileCount().toLocaleString()}
                   label={t('home.stats.documentsShared')}
-                  trendType="positive"
+                  trendType={fileCount() > 0 ? 'positive' : 'neutral'}
                   trendIcon={<TrendingUp size={12} />}
-                  trendValue="+127"
-                  trendLabel={t('home.stats.today')}
+                  trendValue={String(fileCount())}
+                  trendLabel={t('home.stats.inLobby')}
                   graphType="chart"
                 />
                 <StatCard
                   type="peers"
                   icon={<Users size={24} />}
-                  number="89"
+                  number={peerCount().toLocaleString()}
                   label={t('home.stats.connectedPeers')}
-                  trendType="positive"
+                  trendType={peerCount() > 0 ? 'positive' : 'neutral'}
                   trendIcon={<TrendingUp size={14} />}
-                  trendValue="+5"
-                  trendLabel={t('home.stats.online')}
+                  trendValue={String(peerCount())}
+                  trendLabel={lobby.syncError() ? t('home.stats.offline') : t('home.stats.online')}
                   graphType="peers"
                 />
                 <StatCard
                   type="institutions"
-                  icon={<University size={24} />}
-                  number="156"
-                  label={t('home.stats.culturalInstitutions')}
+                  icon={<HardDrive size={24} />}
+                  number={formatLobbyBytes(lobby.totalBytes())}
+                  label={t('home.stats.lobbyStorage')}
                   trendType="neutral"
                   trendIcon={<ArrowRight size={14} />}
-                  trendValue={t('home.stats.stable')}
+                  trendValue={
+                    lobby.lastSyncAt()
+                      ? lobby.lastSyncAt()!.toLocaleTimeString()
+                      : t('home.stats.awaitingSync')
+                  }
                   graphType="map"
                 />
                 <StatCard
                   type="health"
-                  icon={<Zap size={24} />}
-                  number="98%"
+                  icon={lobby.syncError() ? <AlertTriangle size={24} /> : <Zap size={24} />}
+                  number={`${healthPct()}%`}
                   label={t('home.stats.networkHealth')}
-                  trendType="positive"
+                  trendType={healthTrend().type}
                   trendIcon={<TrendingUp size={14} />}
-                  trendValue={t('home.stats.excellent')}
+                  trendValue={healthTrend().value}
+                  trendLabel={healthTrend().label}
                   graphType="health"
                 />
               </div>
@@ -356,38 +471,43 @@ const HomePage: Component = () => {
                   <p class={styles['section-subtitle']}>{t('home.networkTopology.subtitle')}</p>
                 </div>
                 <div class={styles['header-actions']}>
-                  <div class={styles['network-stats']}>
+                  <div class={styles['network-stats']} aria-label={t('home.networkTopology.title')}>
                     <span class={styles['stat-item']}>
                       <span class={styles['stat-dot']} aria-hidden="true" />
-                      89 {t('home.networkStatus.nodes')}
+                      {peerCount()} {t('home.networkStatus.nodes')}
                     </span>
                     <span class={styles['stat-item']}>
-                      <span class={styles['stat-dot']} aria-hidden="true" />
-                      156 {t('home.networkStatus.connections')}
+                      <span
+                        class={`${styles['stat-dot']} ${styles['stat-dot-connections']}`}
+                        aria-hidden="true"
+                      />
+                      {connectionEdges()} {t('home.networkStatus.connections')}
                     </span>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setActiveTab('network')}
+                  <button
+                    type="button"
+                    class={styles['expand-view-btn']}
+                    onClick={() => selectTab('network')}
                     aria-label={t('home.networkTopology.expandView')}
                   >
-                    <ArrowRight size={16} aria-hidden="true" />
                     {t('home.networkTopology.expandView')}
-                  </Button>
+                    <ArrowRight size={15} aria-hidden="true" />
+                  </button>
                 </div>
               </div>
 
-              <NetworkGraph
-                width="100%"
-                height={350}
-                showStats={true}
-                theme="light"
-                aria-label={t('home.accessibility.networkGraphAria', {
-                  nodes: 89,
-                  connections: 156,
-                })}
-              />
+              <div class={styles['network-graph-shell']}>
+                <NetworkGraph
+                  width="100%"
+                  height={350}
+                  showStats={true}
+                  theme="light"
+                  aria-label={t('home.accessibility.networkGraphAria', {
+                    nodes: peerCount(),
+                    connections: connectionEdges(),
+                  })}
+                />
+              </div>
             </section>
 
             {/* Enhanced Activity Section */}
@@ -424,11 +544,14 @@ const HomePage: Component = () => {
               </div>
             </section>
 
-            {/* Quick Actions */}
             <section class={styles['actions-section']} aria-labelledby="quick-actions-title">
-              <h2 id="quick-actions-title" class={styles['section-title']}>
-                {t('home.quickActions.title')}
-              </h2>
+              <div class={styles['section-header']}>
+                <div class={styles['header-content']}>
+                  <h2 id="quick-actions-title" class={styles['section-title']}>
+                    {t('home.quickActions.title')}
+                  </h2>
+                </div>
+              </div>
 
               <div
                 class={styles['actions-grid']}
@@ -436,6 +559,7 @@ const HomePage: Component = () => {
                 aria-labelledby="quick-actions-title"
               >
                 <button
+                  type="button"
                   class={styles['action-button']}
                   data-testid="upload-button"
                   aria-label={t('home.quickActions.shareDocument')}
@@ -459,49 +583,72 @@ const HomePage: Component = () => {
                     }
                   }}
                 >
-                  <Share size={20} aria-hidden="true" />
-                  <span>{t('home.quickActions.shareDocument')}</span>
+                  <span class={styles['action-icon']} aria-hidden="true">
+                    <Share size={20} />
+                  </span>
+                  <span class={styles['action-text']}>{t('home.quickActions.shareDocument')}</span>
                 </button>
 
                 <button
+                  type="button"
                   class={styles['action-button']}
                   aria-label={t('home.quickActions.searchNetwork')}
                   onClick={() => navigate('/search-network')}
                 >
-                  <Search size={20} aria-hidden="true" />
-                  <span>{t('home.quickActions.searchNetwork')}</span>
+                  <span class={styles['action-icon']} aria-hidden="true">
+                    <Search size={20} />
+                  </span>
+                  <span class={styles['action-text']}>{t('home.quickActions.searchNetwork')}</span>
                 </button>
 
                 <button
+                  type="button"
                   class={styles['action-button']}
                   aria-label={t('home.quickActions.analytics')}
                   onClick={() => navigate('/network-health')}
                 >
-                  <BarChart3 size={20} aria-hidden="true" />
-                  <span>{t('home.quickActions.analytics')}</span>
+                  <span class={styles['action-icon']} aria-hidden="true">
+                    <BarChart3 size={20} />
+                  </span>
+                  <span class={styles['action-text']}>{t('home.quickActions.analytics')}</span>
                 </button>
 
                 <button
+                  type="button"
                   class={styles['action-button']}
                   aria-label={t('home.quickActions.settings')}
                   onClick={() => navigate('/settings')}
                 >
-                  <Settings size={20} aria-hidden="true" />
-                  <span>{t('home.quickActions.settings')}</span>
+                  <span class={styles['action-icon']} aria-hidden="true">
+                    <Settings size={20} />
+                  </span>
+                  <span class={styles['action-text']}>{t('home.quickActions.settings')}</span>
                 </button>
               </div>
             </section>
           </div>
-        )}
+        </Show>
 
-        {/* Network Tab */}
-        {activeTab() === 'network' && (
-          <div role="tabpanel" id="network-panel" aria-labelledby="network-tab">
+        {/* Network — keep-alive unless reduced-motion (then unmount) */}
+        <Show when={shouldMountTab('network')}>
+          <div
+            role="tabpanel"
+            id="network-panel"
+            aria-labelledby="network-tab"
+            class={`${styles['tab-panel']} ${activeTab() === 'network' ? styles['tab-panel-active'] : ''}`}
+            hidden={!unmountInactiveTabs() && activeTab() !== 'network'}
+            aria-hidden={activeTab() !== 'network'}
+          >
             <section class={styles['network-section']} aria-labelledby="network-section-title">
               <div class={styles['section-header']}>
                 <h2 id="network-section-title">{t('home.networkSection.title')}</h2>
                 <div class={styles['network-controls']}>
-                  <Button variant="ghost" size="sm" aria-label={t('home.networkSection.refresh')}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    aria-label={t('home.networkSection.refresh')}
+                    onClick={() => void lobby.refresh(true)}
+                  >
                     <RefreshCw size={14} aria-hidden="true" />
                     {t('home.networkSection.refresh')}
                   </Button>
@@ -524,53 +671,72 @@ const HomePage: Component = () => {
                 </div>
               </div>
 
-              <Card class={styles['network-container']!}>
+              <div class={styles['network-container']}>
                 <NetworkGraph
-                  width={1200}
+                  width="100%"
                   height={500}
                   showStats={true}
                   interactive={true}
                   theme="light"
                   aria-label={t('home.accessibility.networkGraphAria', {
-                    nodes: 89,
-                    connections: 156,
+                    nodes: peerCount(),
+                    connections: connectionEdges(),
                   })}
                 />
-              </Card>
+              </div>
 
-              {/* Security Analysis Section */}
               <SecurityPanel />
             </section>
           </div>
-        )}
+        </Show>
 
-        {/* Downloads Tab */}
-        {activeTab() === 'downloads' && (
-          <div role="tabpanel" id="downloads-panel" aria-labelledby="downloads-tab">
+        {/* Downloads — keep-alive unless reduced-motion (then unmount) */}
+        <Show when={shouldMountTab('downloads')}>
+          <div
+            role="tabpanel"
+            id="downloads-panel"
+            aria-labelledby="downloads-tab"
+            class={`${styles['tab-panel']} ${activeTab() === 'downloads' ? styles['tab-panel-active'] : ''}`}
+            hidden={!unmountInactiveTabs() && activeTab() !== 'downloads'}
+            aria-hidden={activeTab() !== 'downloads'}
+          >
             <section class={styles['downloads-section']} aria-labelledby="downloads-section-title">
-              <div class={styles['section-header']}>
+              <div class={`${styles['section-header']} ${styles['downloads-header']}`}>
                 <h2 id="downloads-section-title">{t('home.downloadsSection.title')}</h2>
-                <div class={styles['download-controls']}>
+                <div
+                  class={styles['download-controls']}
+                  role="group"
+                  aria-label={t('home.downloadsSection.title')}
+                >
                   <Button
                     variant="primary"
                     size="sm"
+                    class={styles['download-btn-primary']}
                     aria-label={t('home.downloadsSection.addDownload')}
-                    onClick={() => navigate('/transfers')}
+                    onClick={() => navigate('/search-network')}
                   >
                     <Plus size={14} aria-hidden="true" />
                     {t('home.downloadsSection.addDownload')}
                   </Button>
-                  <Button variant="primary" size="sm" onClick={() => navigate('/transfers')}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    class={styles['download-btn-secondary']}
+                    aria-label={t('home.downloadsSection.openFullQueue')}
+                    onClick={() => navigate('/transfers')}
+                  >
                     <ClipboardList size={14} aria-hidden="true" />
-                    Open full queue
-                    <Show when={transfer.activeCount() > 0}> ({transfer.activeCount()})</Show>
+                    {t('home.downloadsSection.openFullQueue')}
+                    <Show when={transfer.activeCount() > 0}>
+                      <span class={styles['queue-count']}>{transfer.activeCount()}</span>
+                    </Show>
                   </Button>
                 </div>
               </div>
               <TransferQueuePanel variant="compact" showOutbound={false} />
             </section>
           </div>
-        )}
+        </Show>
       </div>
 
       {/* Status Bar — page-level metrics above app footer */}

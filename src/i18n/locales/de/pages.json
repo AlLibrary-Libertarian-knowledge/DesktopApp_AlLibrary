@@ -130,6 +130,7 @@
       "title": "Download-Manager",
       "subtitle": "Downloads und Uploads verwalten",
       "addDownload": "Download Hinzufügen",
+      "openFullQueue": "Vollständige Warteschlange",
       "queue": "Warteschlange",
       "preferences": "Einstellungen",
       "pauseAll": "Alle Pausieren",

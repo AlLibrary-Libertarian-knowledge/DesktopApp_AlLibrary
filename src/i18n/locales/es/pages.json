@@ -30,6 +30,7 @@
       "paused": "pausado"
     },
     "tabs": {
+      "label": "Secciones del panel",
       "overview": "Resumen",
       "network": "Red",
       "downloads": "Descargas",
@@ -39,8 +40,12 @@
       "documentsShared": "Documentos Compartidos",
       "connectedPeers": "Pares Conectados",
       "culturalInstitutions": "Instituciones Culturales",
+      "lobbyStorage": "Almacenamiento en Lobby",
       "networkHealth": "Salud de la Red",
       "totalStorage": "Almacenamiento Total",
+      "inLobby": "en lobby",
+      "awaitingSync": "esperando sync",
+      "syncError": "fallo de sync",
       "availableStorage": "Almacenamiento Disponible",
       "uploadSpeed": "Velocidad de Subida",
       "downloadSpeed": "Velocidad de Descarga",
@@ -130,6 +135,7 @@
       "title": "Gestor de Descargas",
       "subtitle": "Gestiona tus descargas y subidas",
       "addDownload": "Añadir Descarga",
+      "openFullQueue": "Abrir cola completa",
       "queue": "Cola",
       "preferences": "Preferencias",
       "pauseAll": "Pausar Todo",

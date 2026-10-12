@@ -20,10 +20,10 @@ use crate::onion_share::tracker_proto::NetworkLobby;
 use crate::onion_share::tracker_proto::lobby_fingerprint;
 use crate::onion_share::wizard::installer;
 use crate::core::database::{
-    complete_transfer_pool, delete_local_share_by_path_pool, delete_local_share_pool,
-    ensure_node_database, insert_transfer_pool, list_local_shares_pool, load_lobby_from_db,
-    local_share_disk_path_map_pool, sync_lobby_to_db, update_transfer_progress_pool,
-    upsert_local_share_pool,
+    complete_transfer_pool, complete_transfer_with_telemetry_pool, delete_local_share_by_path_pool,
+    delete_local_share_pool, ensure_node_database, insert_transfer_pool, list_local_shares_pool,
+    load_lobby_from_db, local_share_disk_path_map_pool, sync_lobby_to_db,
+    update_transfer_progress_pool, upsert_local_share_pool, TransferTelemetry,
 };
 use crate::core::database::activity_log::insert_activity_pool;
 use crate::core::database::models::LocalShareRow;
@@ -946,6 +946,52 @@ pub async fn tracker_get_config() -> Result<TrackerNetworkConfig, String> {
     })
 }
 
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TrackerProbeDto {
+    pub online: bool,
+    pub url: String,
+    pub online_nodes: Option<u32>,
+    pub latency_ms: Option<u64>,
+    pub error: Option<String>,
+    /// Lab default: http://127.0.0.1:8080
+    pub default_local_url: String,
+    /// Bundled Docker onion tracker preset (needs Tor).
+    pub default_onion_url: String,
+}
+
+#[tauri::command]
+pub async fn tracker_probe(
+    state: State<'_, OnionShareState>,
+    url: Option<String>,
+) -> Result<TrackerProbeDto, String> {
+    let default_local = tracker_client::local_tracker_http_url().to_string();
+    let default_onion = AppConfig::default().tracker_url;
+    let target = url
+        .map(|u| normalize_tracker_url(&u))
+        .filter(|u| !u.is_empty())
+        .unwrap_or_else(|| default_local.clone());
+
+    let socks = if target.contains(".onion") {
+        clone_active_handle(state.inner())
+            .await
+            .map(|h| h.socks_addr())
+    } else {
+        None
+    };
+    let socks_ref = socks.as_deref();
+    let r = tracker_client::probe_tracker(&target, socks_ref).await;
+    Ok(TrackerProbeDto {
+        online: r.online,
+        url: r.url,
+        online_nodes: r.online_nodes,
+        latency_ms: r.latency_ms,
+        error: r.error,
+        default_local_url: default_local,
+        default_onion_url: default_onion,
+    })
+}
+
 #[tauri::command]
 pub async fn tracker_set_config(config: TrackerNetworkConfig) -> Result<(), String> {
     let mut c = AppConfig::load();
@@ -1105,13 +1151,33 @@ pub async fn onion_share_fetch(
         .await;
 
         match res {
-            Ok(raw_path) => {
+            Ok(stats) => {
+                let raw_path = stats.path.clone();
+                let avg_kbps = if stats.duration_ms > 0 {
+                    Some((stats.bytes_moved as f64 / 1024.0) / (stats.duration_ms as f64 / 1000.0))
+                } else {
+                    None
+                };
+                let mut telemetry = TransferTelemetry {
+                    bytes_moved: stats.bytes_moved as i64,
+                    duration_ms: Some(stats.duration_ms as i64),
+                    total_chunks: Some(stats.total_chunks as i64),
+                    chunks_completed: Some(stats.chunks_completed as i64),
+                    parallel_seeders: Some(stats.parallel_seeders as i64),
+                    chunk_failures: Some(stats.chunk_failures as i64),
+                    chunk_size: Some(stats.chunk_size as i64),
+                    average_speed_kbps: avg_kbps,
+                    content_hash: stats.content_hash.clone(),
+                    retries: Some(stats.retries as i64),
+                };
+
                 let expected_hash = parse_any(&link_owned)
                     .ok()
                     .and_then(|p| match p {
                         crate::onion_share::link::ParsedLink::Swarm(s) => Some(s.content_hash),
                         _ => None,
-                    });
+                    })
+                    .or_else(|| stats.content_hash.clone());
 
                 let settings = load_app_settings(app_for_fetch.clone()).await.ok();
                 let library_dir = settings
@@ -1141,6 +1207,9 @@ pub async fn onion_share_fetch(
                 {
                     Ok(info) => {
                         let _ = add_treated_share(&app_for_fetch, &share_state, &info.file_path).await;
+                        if telemetry.content_hash.is_none() {
+                            telemetry.content_hash = info.content_hash.clone();
+                        }
 
                         if let Ok(pool) = ensure_node_database(&app_for_fetch).await {
                             let payload = serde_json::json!({
@@ -1156,13 +1225,14 @@ pub async fn onion_share_fetch(
                                 Some(&payload),
                             )
                             .await;
-                            let _ = complete_transfer_pool(
+                            let _ = complete_transfer_with_telemetry_pool(
                                 &pool,
                                 &tid,
                                 "completed",
                                 1.0,
                                 Some(&info.file_path),
                                 None,
+                                Some(&telemetry),
                             )
                             .await;
                         }
@@ -1173,18 +1243,22 @@ pub async fn onion_share_fetch(
                                 "path": info.file_path,
                                 "link": link_owned,
                                 "transferId": tid,
+                                "durationMs": stats.duration_ms,
+                                "averageSpeedKbps": avg_kbps,
+                                "parallelSeeders": stats.parallel_seeders,
                             }),
                         );
                     }
                     Err(e) => {
                         if let Ok(pool) = ensure_node_database(&app_for_fetch).await {
-                            let _ = complete_transfer_pool(
+                            let _ = complete_transfer_with_telemetry_pool(
                                 &pool,
                                 &tid,
                                 "failed",
                                 0.0,
                                 None,
                                 Some(&e),
+                                Some(&telemetry),
                             )
                             .await;
                         }

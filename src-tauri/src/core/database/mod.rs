@@ -9,6 +9,7 @@ pub mod favorites;
 pub mod activity_log;
 pub mod document_registry;
 pub mod transfers;
+pub mod experiment_events;
 
 pub use connection::*;
 pub use models::*;
@@ -31,8 +32,14 @@ pub use local_shares::{
     list_local_shares_pool, local_share_disk_path_map_pool, upsert_local_share_pool,
 };
 pub use transfers::{
-    complete_transfer_pool, insert_transfer_pool, list_recent_transfers_pool,
-    transfer_metrics_pool, update_transfer_progress_pool, TransferRow,
+    complete_transfer_pool, complete_transfer_with_telemetry_pool, insert_transfer_pool,
+    list_exportable_telemetry_pool, list_recent_transfers_pool, transfer_metrics_pool,
+    update_transfer_progress_pool, TransferRow, TransferTelemetry,
+};
+pub use experiment_events::{
+    insert_chunk_perf_pool, insert_gossip_event_pool, insert_lookup_event_pool,
+    list_chunk_perf_for_transfers_pool, list_gossip_events_pool, list_lookup_events_pool,
+    ChunkPerfRow, GossipEventRow, LookupEventRow,
 };
 
 use crate::utils::error::Result;

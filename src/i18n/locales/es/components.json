@@ -114,6 +114,7 @@
     }
   },
   "activityList": {
+    "empty": "Sin actividad reciente",
     "types": {
       "downloading": "Descargando",
       "seeding": "Compartiendo",
@@ -325,6 +326,11 @@
       "title": "Protección",
       "threats": "{{count}} amenazas bloqueadas",
       "lastScan": "Último escaneo: {{time}}",
+      "justNow": "ahora",
+      "active": "Activo",
+      "inactive": "Inactivo",
+      "verified": "Verificado",
+      "unknown": "Desconocido",
       "status": "Estado: {{status}}",
       "statusLabel": "estado",
       "scanTime": "Último escaneo: {{time}}"

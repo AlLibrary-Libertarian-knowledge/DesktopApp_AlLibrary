@@ -1,4 +1,11 @@
-import { type Component, onMount, onCleanup, For } from 'solid-js';
+import {
+  type Component,
+  onMount,
+  onCleanup,
+  createEffect,
+  createSignal,
+  createMemo,
+} from 'solid-js';
 import { useTranslation } from '../../../i18n/hooks';
 import {
   CanvasRenderer,
@@ -15,20 +22,19 @@ import { useNetworkState } from './hooks/useNetworkState';
 import { PhysicsEngine } from './physics/PhysicsEngine';
 import { NodeRenderer } from './rendering/NodeRenderer';
 import TransferLegend from './components/TransferLegend';
+import PeerNodeModal from './components/PeerNodeModal';
 import { performanceConfig } from './config/physicsConfig';
-import {
-  formatTimeRemaining,
-  formatFileSize,
-  formatBandwidth,
-  formatLatency,
-  formatReliability,
-  formatNodeType,
-  getNetworkTypeIcon,
-} from './utils/formatters';
+import { formatFileSize } from './utils/formatters';
+import { buildLobbyGraph, nodeHitRadius } from './data/buildLobbyGraph';
+import { buildMockGraph, USE_MOCK_NETWORK_GRAPH } from './data/mockNetworkData';
+import { useNetworkLobby } from '@/hooks/api/useNetworkLobby';
+import { useNetworkPeers } from '@/hooks/api/useNetworkPeers';
+import { onionShareStatus, trackerGetConfig } from '@/services/network/onionShareService';
 import './NetworkGraph.css';
 
 const NetworkGraph: Component<NetworkGraphProps> = props => {
   const { t } = useTranslation('components');
+  const useMock = () => props.useMockData ?? USE_MOCK_NETWORK_GRAPH;
 
   let canvasRef: HTMLCanvasElement | undefined;
   let animationId: number;
@@ -58,11 +64,11 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
     mousePosition,
     dragState,
     expansionState,
-    networkStats,
     setNodes,
     setHoveredNode,
     setSelectedNode,
     setMousePosition,
+    replaceGraph,
     startDrag,
     endDrag,
     resetDragFlag,
@@ -74,15 +80,96 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
     updateNodePositions,
   } = useNetworkState();
 
+  const lobby = useNetworkLobby();
+  const networkPeers = useNetworkPeers();
+  const [selfOnion, setSelfOnion] = createSignal<string | null>(null);
+  const [selfNodeId, setSelfNodeId] = createSignal<string | null>(null);
+
   // Smart Animation Management
   let isRenderScheduled = false;
   const lastActivityTime = Date.now(); // Keep as const since it's not reassigned in test mode
 
-  // Track if we had a drag to prevent click - ULTRA ROBUST DETECTION
-  let hadDragOperation = false;
-  let clickBlocked = false;
-  let mouseDownStarted = false;
-  let hasMovedDuringPress = false;
+  /** Click vs drag: only start drag after threshold; open modal on short press. */
+  const DRAG_THRESHOLD_PX = 8;
+  let pressNode: (typeof nodes)[number] | null = null;
+  let pressOrigin: { x: number; y: number } | null = null;
+  let dragArmed = false;
+
+  const graphCenter = () => {
+    if (canvasRef) {
+      const rect = canvasRef.getBoundingClientRect();
+      return {
+        centerX: rect.width * 0.45 || 400,
+        centerY: rect.height * 0.5 || 300,
+      };
+    }
+    return { centerX: 400, centerY: 300 };
+  };
+
+  const syncGraph = () => {
+    const { centerX, centerY } = graphCenter();
+    if (useMock()) {
+      const built = buildMockGraph(centerX, centerY);
+      replaceGraph(built.nodes, built.links);
+      return;
+    }
+    const built = buildLobbyGraph({
+      selfOnion: selfOnion(),
+      selfNodeId: selfNodeId(),
+      peers: networkPeers.peers(),
+      files: lobby.files(),
+      centerX,
+      centerY,
+    });
+    replaceGraph(built.nodes, built.links);
+  };
+
+  createEffect(() => {
+    if (useMock()) {
+      syncGraph();
+      return;
+    }
+    // Live lobby: rebuild when peers/files/identity change
+    networkPeers.peers();
+    lobby.files();
+    selfOnion();
+    selfNodeId();
+    syncGraph();
+  });
+
+  const uniqueFileCount = createMemo(() => {
+    if (!useMock()) return lobby.files().length;
+    const hashes = new Set<string>();
+    for (const n of nodes) {
+      for (const f of n.sharedFiles ?? []) {
+        if (f.contentHash) hashes.add(f.contentHash);
+      }
+    }
+    return hashes.size;
+  });
+
+  /** Live overlay stats from current graph nodes (avoids stale debounced store). */
+  const overlayStats = createMemo(() => {
+    const list = [...nodes];
+    const peers = list.filter(n => n.type !== 'self');
+    const active = peers.filter(n => n.status === 'connected').length;
+    const shareSum = list.reduce((s, n) => s + (n.sharedFileCount ?? 0), 0);
+    const health =
+      peers.length === 0
+        ? list.some(n => n.type === 'self')
+          ? 72
+          : 0
+        : Math.round((active / peers.length) * 100);
+    const tone = health > 80 ? 'good' : health > 50 ? 'fair' : 'poor';
+    return {
+      activePeers: active,
+      totalPeers: peers.length,
+      files: uniqueFileCount(),
+      shares: shareSum,
+      health,
+      tone,
+    };
+  });
 
   const checkNetworkActivity = (): boolean => {
     const hasMovement = nodes.some(
@@ -160,13 +247,20 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
   const simulatePhysics = () => {
     if (!physicsEngine) return;
 
+    const frozenIds = [
+      hoveredNode()?.id,
+      selectedNode()?.id,
+      expansionState.expandedNode?.id,
+    ].filter((id): id is string => Boolean(id));
+
     const updatedNodes = physicsEngine.simulatePhysics(
       nodes,
       links,
       dragState.draggedNode,
       dragState.isDragging,
       mousePosition(),
-      dragState.dragOffset
+      dragState.dragOffset,
+      frozenIds
     );
 
     // Use optimized position updates to avoid unnecessary re-renders
@@ -195,27 +289,22 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
     ]);
   };
 
-  // Grid drawing with continuous animation
+  // Quiet grid — subtle atmosphere, no racing highlight lines
   const drawGrid = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
-    const time = Date.now() * 0.001; // Current time for animations
+    const time = Date.now() * 0.001;
+    const gridSize = 28;
+    const offset = (time * 4) % gridSize;
 
-    // Animated grid
-    ctx.strokeStyle = 'var(--border-color)';
-    ctx.lineWidth = 0.5;
-    ctx.globalAlpha = 0.2 + Math.sin(time * 0.5) * 0.1; // Subtle breathing effect
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+    ctx.lineWidth = 1;
+    ctx.globalAlpha = 1;
 
-    const gridSize = 25;
-    const offset = (time * 10) % gridSize; // Slow moving grid
-
-    // Vertical lines with animation
     for (let x = -offset; x <= width + gridSize; x += gridSize) {
       ctx.beginPath();
       ctx.moveTo(x, 0);
       ctx.lineTo(x, height);
       ctx.stroke();
     }
-
-    // Horizontal lines with animation
     for (let y = -offset; y <= height + gridSize; y += gridSize) {
       ctx.beginPath();
       ctx.moveTo(0, y);
@@ -223,169 +312,173 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
       ctx.stroke();
     }
 
-    // Add some animated highlight lines
-    ctx.strokeStyle = 'rgba(59, 130, 246, 0.3)';
-    ctx.lineWidth = 1;
-    ctx.globalAlpha = 0.4 + Math.sin(time * 2) * 0.2;
-
-    // Animated vertical highlight
-    const highlightX = width / 2 + Math.sin(time * 0.3) * (width * 0.3);
-    ctx.beginPath();
-    ctx.moveTo(highlightX, 0);
-    ctx.lineTo(highlightX, height);
-    ctx.stroke();
-
-    // Animated horizontal highlight
-    const highlightY = height / 2 + Math.cos(time * 0.4) * (height * 0.3);
-    ctx.beginPath();
-    ctx.moveTo(0, highlightY);
-    ctx.lineTo(width, highlightY);
-    ctx.stroke();
-
-    ctx.globalAlpha = 1;
+    // Soft vignette wash
+    const wash = ctx.createRadialGradient(
+      width * 0.5,
+      height * 0.5,
+      Math.min(width, height) * 0.15,
+      width * 0.5,
+      height * 0.5,
+      Math.max(width, height) * 0.65
+    );
+    wash.addColorStop(0, 'rgba(255, 138, 61, 0.03)');
+    wash.addColorStop(1, 'transparent');
+    ctx.fillStyle = wash;
+    ctx.fillRect(0, 0, width, height);
   };
 
-  // Connection drawing with enhanced animations
+  const nodeVisualRadius = (node: (typeof nodes)[number]) => {
+    const base = node.type === 'self' ? 14 : 12;
+    const files = Math.min((node.sharedFileCount ?? node.connections) * 0.45, 6);
+    const busy =
+      (node.activeTransfers?.downloading.length ? 2 : 0) +
+      (node.activeTransfers?.uploading.length ? 2 : 0);
+    return base + files + busy + 4; // pad so stroke meets the rim, not the center
+  };
+
   const drawAllConnections = (ctx: CanvasRenderingContext2D) => {
     links.forEach(link => {
       const sourceNode = nodes.find(n => n.id === link.source);
       const targetNode = nodes.find(n => n.id === link.target);
-
-      if (
-        sourceNode &&
-        targetNode &&
-        sourceNode.status === 'connected' &&
-        targetNode.status === 'connected'
-      ) {
-        drawLink(ctx, sourceNode, targetNode, link);
-      }
+      if (!sourceNode || !targetNode) return;
+      if (sourceNode.status === 'disconnected' || targetNode.status === 'disconnected') return;
+      if (sourceNode.status === 'error' || targetNode.status === 'error') return;
+      drawLink(ctx, sourceNode, targetNode, link);
     });
   };
 
-  // Enhanced link drawing
-  const drawLink = (ctx: CanvasRenderingContext2D, source: any, target: any, link: any) => {
-    let transferType = 'idle';
-    let lineWidth = Math.max(1, (link.bandwidth / 1024) * 3);
-    let isDirWithBandwidth = false;
-    let uploadingNode: any = null;
-    let downloadingNode: any = null;
+  /** Straight edges with soft glow, flow dashes, and clean chevrons. */
+  const drawLink = (
+    ctx: CanvasRenderingContext2D,
+    source: (typeof nodes)[number],
+    target: (typeof nodes)[number],
+    link: (typeof links)[number]
+  ) => {
+    const dx0 = target.x - source.x;
+    const dy0 = target.y - source.y;
+    const dist = Math.hypot(dx0, dy0);
+    if (dist < 8) return;
 
-    // Check transfer activity
-    if (source.activeTransfers) {
-      if (source.activeTransfers.uploading.length > 0) {
-        transferType = 'uploading';
-        uploadingNode = source;
-        lineWidth = Math.max(2, lineWidth * 1.5);
-        isDirWithBandwidth = true;
-      } else if (source.activeTransfers.downloading.length > 0) {
-        transferType = 'downloading';
-        downloadingNode = source;
-        lineWidth = Math.max(2, lineWidth * 1.5);
-        isDirWithBandwidth = true;
-      }
+    const ux = dx0 / dist;
+    const uy = dy0 / dist;
+    const r1 = nodeVisualRadius(source);
+    const r2 = nodeVisualRadius(target);
+    const x1 = source.x + ux * r1;
+    const y1 = source.y + uy * r1;
+    const x2 = target.x - ux * r2;
+    const y2 = target.y - uy * r2;
+    const span = Math.hypot(x2 - x1, y2 - y1);
+    if (span < 4) return;
+
+    let transferType: 'idle' | 'downloading' | 'uploading' = 'idle';
+    let flowTowardTarget = true;
+    const srcUp = (source.activeTransfers?.uploading.length ?? 0) > 0;
+    const srcDown = (source.activeTransfers?.downloading.length ?? 0) > 0;
+    const tgtUp = (target.activeTransfers?.uploading.length ?? 0) > 0;
+    const tgtDown = (target.activeTransfers?.downloading.length ?? 0) > 0;
+
+    if (srcUp || tgtDown) {
+      transferType = 'uploading';
+      flowTowardTarget = srcUp || !tgtUp;
+    } else if (srcDown || tgtUp) {
+      transferType = 'downloading';
+      flowTowardTarget = !srcDown;
     }
 
-    if (target.activeTransfers) {
-      if (target.activeTransfers.uploading.length > 0) {
-        transferType = 'uploading';
-        uploadingNode = target;
-        lineWidth = Math.max(2, lineWidth * 1.5);
-        isDirWithBandwidth = true;
-      } else if (target.activeTransfers.downloading.length > 0 && transferType === 'idle') {
-        transferType = 'downloading';
-        downloadingNode = target;
-        lineWidth = Math.max(2, lineWidth * 1.5);
-        isDirWithBandwidth = true;
-      }
-    }
+    const palette = {
+      downloading: { a: '#60a5fa', b: '#3b82f6', glow: 'rgba(59, 130, 246, 0.35)' },
+      uploading: { a: '#34d399', b: '#10b981', glow: 'rgba(16, 185, 129, 0.35)' },
+      idle: {
+        a: 'rgba(61, 207, 176, 0.75)',
+        b: 'rgba(255, 138, 61, 0.55)',
+        glow: 'rgba(61, 207, 176, 0.15)',
+      },
+    }[transferType];
 
-    // Enhanced color system
-    const transferColors = {
-      downloading: ['#2563eb', '#1d4ed8'],
-      uploading: ['#059669', '#047857'],
-      reconnecting: ['#f59e0b', '#d97706'],
-      interrupted: ['#ef4444', '#dc2626'],
-      corrupted: ['#dc2626', '#b91c1c'],
-      slow: ['#8b5cf6', '#7c3aed'],
-      idle: ['#6b7280', '#9ca3af'],
-      verified: ['#16a34a', '#15803d'],
-    } as const;
+    const active = transferType !== 'idle' || link.status === 'active';
+    const width = transferType === 'idle' ? 1.6 : 2.15;
+    const alpha =
+      source.status === 'connecting' || target.status === 'connecting' ? 0.4 : active ? 0.85 : 0.55;
 
-    const colors =
-      transferColors[transferType as keyof typeof transferColors] || transferColors.idle;
-    const gradient = ctx.createLinearGradient(source.x, source.y, target.x, target.y);
-    gradient.addColorStop(0, colors[0]);
-    gradient.addColorStop(1, colors[1]);
+    const strokePath = () => {
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+    };
 
-    ctx.strokeStyle = gradient;
-    ctx.lineWidth = lineWidth;
-    ctx.globalAlpha = link.strength;
+    ctx.save();
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
 
-    // Enhanced directional flow animations
+    // Soft under-glow
+    ctx.strokeStyle = palette.glow;
+    ctx.lineWidth = width + 3;
+    ctx.globalAlpha = alpha * 0.45;
+    ctx.shadowColor = palette.glow;
+    ctx.shadowBlur = 8;
+    ctx.setLineDash([]);
+    strokePath();
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // Main stroke
+    const grad = ctx.createLinearGradient(x1, y1, x2, y2);
+    grad.addColorStop(0, palette.a);
+    grad.addColorStop(1, palette.b);
+    ctx.strokeStyle = grad;
+    ctx.lineWidth = width;
+    ctx.globalAlpha = alpha;
+
     const time = Date.now() * 0.001;
-
     if (transferType === 'downloading') {
-      const flowOffset = (time * 30) % 30;
-      ctx.setLineDash([8, 22]);
-      ctx.lineDashOffset = downloadingNode === target ? -flowOffset : flowOffset;
-      ctx.shadowColor = '#2563eb';
-      ctx.shadowBlur = 8;
+      ctx.setLineDash([5, 11]);
+      ctx.lineDashOffset = flowTowardTarget ? -(time * 26) : time * 26;
     } else if (transferType === 'uploading') {
-      const flowOffset = (time * 25) % 25;
-      ctx.setLineDash([6, 19]);
-      ctx.lineDashOffset = uploadingNode === source ? -flowOffset : flowOffset;
-      ctx.shadowColor = '#059669';
-      ctx.shadowBlur = 6;
-    } else if (link.status === 'active') {
-      const flowOffset = (time * 15) % 15;
-      ctx.setLineDash([4, 11]);
-      ctx.lineDashOffset = -flowOffset;
+      ctx.setLineDash([4, 10]);
+      ctx.lineDashOffset = flowTowardTarget ? -(time * 22) : time * 22;
+    } else if (active) {
+      ctx.setLineDash([3, 9]);
+      ctx.lineDashOffset = -(time * 10);
     } else {
-      ctx.setLineDash([]);
+      ctx.setLineDash([2, 8]);
     }
 
-    // Draw the main line
-    ctx.beginPath();
-    ctx.moveTo(source.x, source.y);
-    ctx.lineTo(target.x, target.y);
+    strokePath();
     ctx.stroke();
 
-    // Add directional arrow for active transfers
-    if (isDirWithBandwidth) {
-      const dx = target.x - source.x;
-      const dy = target.y - source.y;
-      const length = Math.sqrt(dx * dx + dy * dy);
-      const unitX = dx / length;
-      const unitY = dy / length;
+    // Traveling bead on active links
+    if (transferType !== 'idle') {
+      const t = (((time * 0.35) % 1) + 1) % 1;
+      const u = flowTowardTarget ? t : 1 - t;
+      const bx = x1 + (x2 - x1) * u;
+      const by = y1 + (y2 - y1) * u;
+      ctx.fillStyle = palette.b;
+      ctx.globalAlpha = 0.95;
+      ctx.shadowColor = palette.b;
+      ctx.shadowBlur = 6;
+      ctx.beginPath();
+      ctx.arc(bx, by, 2.4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
 
-      let arrowPos = 0.5;
-      if (transferType === 'downloading' && downloadingNode) {
-        arrowPos = downloadingNode === target ? 0.75 : 0.25;
-      } else if (transferType === 'uploading' && uploadingNode) {
-        arrowPos = uploadingNode === source ? 0.25 : 0.75;
-      }
-
-      const arrowX = source.x + dx * arrowPos;
-      const arrowY = source.y + dy * arrowPos;
-
-      const arrowSize = 6 + Math.sin(time * 4) * 1;
-      ctx.fillStyle = colors[1];
+    // Chevron near the receiving end
+    if (active) {
+      const u = 0.72;
+      const ax = x1 + (x2 - x1) * u;
+      const ay = y1 + (y2 - y1) * u;
+      const size = 5.5;
+      ctx.fillStyle = palette.b;
       ctx.globalAlpha = 0.9;
       ctx.beginPath();
-      ctx.moveTo(arrowX, arrowY);
-      ctx.lineTo(
-        arrowX - arrowSize * unitX - arrowSize * 0.5 * unitY,
-        arrowY - arrowSize * unitY + arrowSize * 0.5 * unitX
-      );
-      ctx.lineTo(
-        arrowX - arrowSize * unitX + arrowSize * 0.5 * unitY,
-        arrowY - arrowSize * unitY - arrowSize * 0.5 * unitX
-      );
+      ctx.moveTo(ax + ux * size, ay + uy * size);
+      ctx.lineTo(ax - ux * size * 0.7 - uy * size * 0.55, ay - uy * size * 0.7 + ux * size * 0.55);
+      ctx.lineTo(ax - ux * size * 0.7 + uy * size * 0.55, ay - uy * size * 0.7 - ux * size * 0.55);
       ctx.closePath();
       ctx.fill();
     }
 
-    // Reset context
+    ctx.restore();
     ctx.globalAlpha = 1;
     ctx.setLineDash([]);
     ctx.shadowBlur = 0;
@@ -417,175 +510,192 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
   // UI overlay drawing
   const drawUIOverlays = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
     const hovered = hoveredNode();
-    const mousePos = mousePosition();
-    if (hovered && mousePos && !dragState.isDragging) {
-      drawTooltip(ctx, hovered, mousePos.x, mousePos.y, width, height);
+    if (hovered && !dragState.isDragging && !expansionState.expandedNode) {
+      // Anchor to frozen node position (not the moving cursor)
+      drawTooltip(ctx, hovered, hovered.x, hovered.y, width, height);
     }
   };
 
-  // Enhanced tooltip drawing
+  /** Compact hover card — Portuguese, amber chrome, node-anchored */
   const drawTooltip = (
     ctx: CanvasRenderingContext2D,
-    node: any,
-    mouseX: number,
-    mouseY: number,
+    node: (typeof nodes)[number],
+    anchorX: number,
+    anchorY: number,
     width: number,
     height: number
   ) => {
-    const padding = 16;
-    const lineHeight = 18;
-    const title = node.username || node.label || 'Unknown Node';
-    const lines: string[] = [];
+    const isSelf = Boolean(node.isLocalSelf || node.type === 'self');
+    const live = node.status === 'connected';
+    const title = isSelf ? 'Você' : node.username || node.label || node.onionShort || 'Peer';
+    const fileCount = node.sharedFileCount ?? node.sharedFiles?.length ?? 0;
+    const sharedBytes =
+      node.sharedBytes ?? (node.sharedFiles || []).reduce((s, f) => s + (f.size || 0), 0);
+    const onion = node.onionShort || node.onionAddress || '';
+    const onionShort = onion.length > 28 ? `${onion.slice(0, 14)}…${onion.slice(-8)}` : onion;
 
-    // Enhanced tooltip content
-    lines.push(
-      `${t('networkGraph.tooltip.type')}: ${node.type.charAt(0).toUpperCase() + node.type.slice(1)} • ${node.status.charAt(0).toUpperCase() + node.status.slice(1)}`
-    );
-
-    if (node.username && node.username !== node.label) {
-      lines.push(`${t('networkGraph.tooltip.ip')}: ${node.username}`);
+    const rows: Array<{ label: string; value: string; muted?: boolean }> = [
+      { label: 'Status', value: live ? 'Online' : 'Ausente' },
+      { label: 'Arquivos', value: String(fileCount) },
+    ];
+    if (sharedBytes > 0) {
+      rows.push({
+        label: 'Volume',
+        value: formatFileSize(Math.max(1, Math.round(sharedBytes / 1024))),
+      });
     }
-    if (node.location && node.location !== 'Unknown') {
-      lines.push(`${t('networkGraph.tooltip.location')}: ${node.location}`);
+    if (node.lastSeenLabel) {
+      rows.push({ label: 'Visto', value: node.lastSeenLabel });
     }
-    if (node.networkType) {
-      lines.push(`${t('networkGraph.tooltip.network')}: ${node.networkType.toUpperCase()}`);
-    }
-
-    lines.push(
-      `${t('networkGraph.tooltip.connections')}: ${node.connections} ${t('networkGraph.tooltip.peers')}`
-    );
-    lines.push(
-      `${t('networkGraph.tooltip.bandwidth')}: ${(node.bandwidth / 1024).toFixed(1)} MB/s`
-    );
-    lines.push(
-      `${t('networkGraph.tooltip.latency')}: ${node.latency.toFixed(0)}ms • ${t('networkGraph.tooltip.reliability')}: ${node.reliability.toFixed(0)}%`
-    );
-
-    // Active File Transfers
-    if (node.activeTransfers) {
-      const downloads = node.activeTransfers.downloading;
-      const uploads = node.activeTransfers.uploading;
-
-      if (downloads.length > 0) {
-        lines.push('');
-        lines.push(`📥 ${t('networkGraph.tooltip.downloading')} (${downloads.length}):`);
-        downloads.slice(0, 2).forEach((dl: any) => {
-          lines.push(`  • ${dl.fileName}`);
-          lines.push(
-            `    ${dl.progress}% • ${(dl.speed / 1024).toFixed(1)} MB/s • ${formatFileSize(dl.fileSize)}`
-          );
-          lines.push(
-            `    ${formatTimeRemaining(dl.timeRemaining)} ${t('networkGraph.tooltip.remaining')}`
-          );
-        });
-        if (downloads.length > 2) {
-          lines.push(`  ... ${t('networkGraph.tooltip.andMore', { count: downloads.length - 2 })}`);
-        }
-      }
-
-      if (uploads.length > 0) {
-        lines.push('');
-        lines.push(`📤 ${t('networkGraph.tooltip.uploading')} (${uploads.length}):`);
-        uploads.slice(0, 2).forEach((ul: any) => {
-          lines.push(`  • ${ul.fileName}`);
-          lines.push(
-            `    ${ul.progress}% • ${(ul.speed / 1024).toFixed(1)} MB/s • ${formatFileSize(ul.fileSize)}`
-          );
-          lines.push(
-            `    ${formatTimeRemaining(ul.timeRemaining)} ${t('networkGraph.tooltip.remaining')}`
-          );
-        });
-        if (uploads.length > 2) {
-          lines.push(`  ... ${t('networkGraph.tooltip.andMore', { count: uploads.length - 2 })}`);
-        }
-      }
+    if (onionShort) {
+      rows.push({ label: 'Onion', value: onionShort, muted: true });
     }
 
-    // Calculate tooltip dimensions
-    const titleFont = 'bold 16px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-    const contentFont = '12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    const sample = (node.sharedFiles || []).slice(0, 2).map(f => f.name);
+    const padX = 14;
+    const padY = 12;
+    const titleFont = '700 14px Syne, Outfit, sans-serif';
+    const labelFont = '600 10px Outfit, sans-serif';
+    const valueFont = '500 12px Outfit, sans-serif';
+    const hintFont = '500 11px Outfit, sans-serif';
+    const rowH = 18;
+    const fileH = 15;
 
     ctx.font = titleFont;
-    const titleWidth = ctx.measureText(title).width;
-    ctx.font = contentFont;
-    const maxContentWidth = Math.max(...lines.map(line => ctx.measureText(line).width));
-    const maxWidth = Math.max(titleWidth, maxContentWidth);
-
-    const tooltipWidth = Math.min(maxWidth + padding * 2, 450);
-    const tooltipHeight = (lines.length + 1) * lineHeight + padding * 2 + 30;
-
-    const offset = 15;
-    let tooltipX = mouseX + offset;
-    let tooltipY = mouseY - tooltipHeight - offset;
-
-    // Position adjustment
-    if (tooltipX + tooltipWidth > width) {
-      tooltipX = mouseX - tooltipWidth - offset;
+    let contentW = ctx.measureText(title).width;
+    ctx.font = valueFont;
+    for (const r of rows) {
+      contentW = Math.max(contentW, ctx.measureText(`${r.label}  ${r.value}`).width);
     }
-    if (tooltipY < 0) {
-      tooltipY = mouseY + offset;
+    for (const name of sample) {
+      contentW = Math.max(contentW, ctx.measureText(`· ${name}`).width * 0.95);
     }
+    contentW = Math.max(contentW, ctx.measureText('Clique para detalhes').width);
 
-    tooltipX = Math.max(5, Math.min(tooltipX, width - tooltipWidth - 5));
-    tooltipY = Math.max(5, Math.min(tooltipY, height - tooltipHeight - 5));
+    const boxW = Math.min(Math.max(contentW + padX * 2, 200), 280);
+    let boxH = padY + 22 + 6 + rows.length * rowH + padY + 18;
+    if (sample.length) boxH += 8 + sample.length * fileH + 4;
 
-    // Gradient background
-    const gradient = ctx.createLinearGradient(
-      tooltipX,
-      tooltipY,
-      tooltipX,
-      tooltipY + tooltipHeight
-    );
-    gradient.addColorStop(0, 'rgba(30, 41, 59, 0.95)');
-    gradient.addColorStop(1, 'rgba(15, 23, 42, 0.95)');
+    const gap = 22;
+    let boxX = anchorX + gap;
+    let boxY = anchorY - boxH / 2;
+    if (boxX + boxW > width - 8) boxX = anchorX - boxW - gap;
+    if (boxX < 8) boxX = 8;
+    if (boxY < 8) boxY = 8;
+    if (boxY + boxH > height - 8) boxY = height - boxH - 8;
 
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-    ctx.shadowBlur = 16;
-    ctx.shadowOffsetX = 2;
-    ctx.shadowOffsetY = 6;
-
-    ctx.fillStyle = gradient;
+    // Soft connector line from node to card
+    ctx.strokeStyle = 'rgba(255, 138, 61, 0.35)';
+    ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.roundRect(tooltipX, tooltipY, tooltipWidth, tooltipHeight, 12);
-    ctx.fill();
-
-    ctx.shadowColor = 'transparent';
-    ctx.shadowBlur = 0;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 0;
-
-    // Node type colored border
-    const typeColors = {
-      self: '#3b82f6',
-      peer: '#10b981',
-      institution: '#a855f7',
-      community: '#f59e0b',
-    };
-
-    ctx.strokeStyle = typeColors[node.type as keyof typeof typeColors];
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.roundRect(tooltipX, tooltipY, tooltipWidth, tooltipHeight, 12);
+    ctx.moveTo(anchorX, anchorY);
+    ctx.lineTo(boxX < anchorX ? boxX + boxW : boxX, boxY + 20);
     ctx.stroke();
 
-    // Title
-    ctx.fillStyle = '#ffffff';
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
+    ctx.shadowBlur = 18;
+    ctx.shadowOffsetY = 6;
+    ctx.fillStyle = 'rgba(22, 20, 18, 0.96)';
+    ctx.beginPath();
+    ctx.roundRect(boxX, boxY, boxW, boxH, 12);
+    ctx.fill();
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetY = 0;
+
+    ctx.strokeStyle = 'rgba(255, 138, 61, 0.55)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(boxX, boxY, boxW, boxH, 12);
+    ctx.stroke();
+
+    // Accent bar
+    ctx.fillStyle = '#ff8a3d';
+    ctx.beginPath();
+    ctx.roundRect(boxX, boxY, 3, boxH, 2);
+    ctx.fill();
+
+    let y = boxY + padY + 14;
+    ctx.fillStyle = '#f4f0ea';
     ctx.font = titleFont;
     ctx.textAlign = 'left';
-    ctx.fillText(title, tooltipX + padding, tooltipY + padding + 18);
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText(title, boxX + padX, y);
 
-    // Content
-    ctx.font = contentFont;
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+    // status chip next to title
+    const chip = live ? 'Online' : 'Ausente';
+    ctx.font = '700 9px Outfit, sans-serif';
+    const chipW = ctx.measureText(chip).width + 10;
+    const chipX = boxX + boxW - padX - chipW;
+    const chipY = boxY + padY + 2;
+    ctx.fillStyle = live ? '#3dcfb0' : '#e8b45a';
+    ctx.beginPath();
+    ctx.roundRect(chipX, chipY, chipW, 16, 8);
+    ctx.fill();
+    ctx.fillStyle = live ? '#042f24' : '#3d2a0a';
+    ctx.fillText(chip, chipX + 5, chipY + 11);
 
-    lines.forEach((line, index) => {
-      const yPos = tooltipY + padding + 28 + 12 + (index + 1) * lineHeight;
-      ctx.fillText(line, tooltipX + padding, yPos);
-    });
+    y += 10;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(boxX + padX, y);
+    ctx.lineTo(boxX + boxW - padX, y);
+    ctx.stroke();
+    y += 16;
+
+    for (const r of rows) {
+      if (r.label === 'Status') continue; // shown as chip
+      ctx.font = labelFont;
+      ctx.fillStyle = '#6b665e';
+      ctx.fillText(r.label.toUpperCase(), boxX + padX, y);
+      ctx.font = valueFont;
+      ctx.fillStyle = r.muted ? '#9c968c' : '#f4f0ea';
+      const labelW = 64;
+      ctx.fillText(r.value, boxX + padX + labelW, y);
+      y += rowH;
+    }
+
+    if (sample.length) {
+      y += 2;
+      ctx.font = labelFont;
+      ctx.fillStyle = '#6b665e';
+      ctx.fillText('ARQUIVOS', boxX + padX, y);
+      y += fileH;
+      ctx.font = '500 11px Outfit, sans-serif';
+      ctx.fillStyle = '#c4bfb6';
+      for (const name of sample) {
+        const clipped = name.length > 28 ? `${name.slice(0, 26)}…` : name;
+        ctx.fillText(`· ${clipped}`, boxX + padX, y);
+        y += fileH;
+      }
+      if (fileCount > sample.length) {
+        ctx.fillStyle = '#6b665e';
+        ctx.fillText(`+${fileCount - sample.length} mais`, boxX + padX, y);
+        y += fileH;
+      }
+    }
+
+    y = boxY + boxH - 10;
+    ctx.font = hintFont;
+    ctx.fillStyle = '#ff8a3d';
+    ctx.fillText('Clique para detalhes', boxX + padX, y);
   };
 
-  // Mouse handling with immediate click blocking
+  const findNodeAt = (x: number, y: number) => {
+    let best: (typeof nodes)[number] | null = null;
+    let bestDist = Infinity;
+    for (const node of nodes) {
+      const distance = Math.sqrt((x - node.x) ** 2 + (y - node.y) ** 2);
+      const radius = nodeHitRadius(node);
+      if (distance < radius && distance < bestDist) {
+        bestDist = distance;
+        best = node;
+      }
+    }
+    return best;
+  };
+
   const handleMouseMoveOptimized = (e: MouseEvent) => {
     if (!canvasRef) return;
 
@@ -594,29 +704,23 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
     const y = e.clientY - rect.top;
 
     setMousePosition({ x, y });
-    updateDragDistance({ x, y });
 
-    // If mouse is down and we're moving, this is definitely a drag operation
-    if (mouseDownStarted && dragState.isDragging) {
-      hasMovedDuringPress = true;
-      clickBlocked = true;
-      hadDragOperation = true;
+    // Arm drag only after threshold — short presses become clicks
+    if (pressNode && pressOrigin && !dragArmed) {
+      const dist = Math.hypot(x - pressOrigin.x, y - pressOrigin.y);
+      if (dist >= DRAG_THRESHOLD_PX) {
+        dragArmed = true;
+        startDrag(pressNode, pressOrigin);
+        canvasRef.style.cursor = 'grabbing';
+      }
     }
 
-    if (dragState.isDragging && dragState.draggedNode) {
+    if (dragState.isDragging) {
+      updateDragDistance({ x, y });
       return;
     }
 
-    // Hover detection
-    const hoveredNodeFound =
-      nodes.find(node => {
-        const baseSize = 12;
-        const nodeSize = baseSize + node.connections * 1.5;
-        const clickRadius = nodeSize + 10;
-        const distance = Math.sqrt((x - node.x) ** 2 + (y - node.y) ** 2);
-        return distance < clickRadius;
-      }) || null;
-
+    const hoveredNodeFound = findNodeAt(x, y);
     setHoveredNode(hoveredNodeFound);
     canvasRef.style.cursor = hoveredNodeFound ? 'pointer' : 'default';
   };
@@ -624,124 +728,62 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
   const handleMouseMove = throttle(handleMouseMoveOptimized, performanceConfig.THROTTLE_INTERVAL);
 
   const handleMouseDown = (e: MouseEvent) => {
-    if (!canvasRef) return;
-
-    // Mark that mouse press started - reset all flags for fresh detection
-    mouseDownStarted = true;
-    hasMovedDuringPress = false;
-    clickBlocked = false;
-    hadDragOperation = false;
+    if (!canvasRef || e.button !== 0) return;
 
     const rect = canvasRef.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    const clickedNode = nodes.find(node => {
-      const baseSize = 12;
-      const nodeSize = baseSize + node.connections * 1.5;
-      const clickRadius = nodeSize + 4;
-      const distance = Math.sqrt((x - node.x) ** 2 + (y - node.y) ** 2);
-      return distance < clickRadius;
-    });
-
-    if (clickedNode) {
-      startDrag(clickedNode, { x, y });
-      if (canvasRef) {
-        canvasRef.style.cursor = 'grabbing';
-      }
-    }
-
+    pressNode = findNodeAt(x, y);
+    pressOrigin = { x, y };
+    dragArmed = false;
     setMousePosition({ x, y });
   };
 
-  const handleMouseUp = () => {
-    mouseDownStarted = false;
-
-    // If we moved during press, definitely block clicks
-    if (hasMovedDuringPress || dragState.hasDraggedDistance) {
-      hadDragOperation = true;
-      clickBlocked = true;
-    }
-
-    // Only end drag if we were actually dragging
-    if (dragState.isDragging) {
-      endDrag();
-    }
-    if (canvasRef) {
-      canvasRef.style.cursor = hoveredNode() ? 'pointer' : 'default';
-    }
-
-    // Clear flags after a substantial delay to ensure click events are blocked
-    if (hadDragOperation || clickBlocked || hasMovedDuringPress) {
-      setTimeout(() => {
-        hadDragOperation = false;
-        clickBlocked = false;
-        hasMovedDuringPress = false;
-        resetDragFlag();
-      }, 250); // Even longer delay for ultra-reliable detection
-    }
-  };
-
-  // Use capture phase to block clicks before they bubble
-  const handleClickCapture = (e: MouseEvent): void => {
-    // Block in capture phase - this fires BEFORE the regular click handler
-    if (
-      hadDragOperation ||
-      clickBlocked ||
-      hasMovedDuringPress ||
-      dragState.hasDraggedDistance ||
-      dragState.isDragging
-    ) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      e.stopPropagation();
-      return;
-    }
-  };
-
-  const handleClick = (e: MouseEvent): void => {
-    // Additional check in regular click handler (though it should be blocked by capture)
-    if (
-      hadDragOperation ||
-      clickBlocked ||
-      hasMovedDuringPress ||
-      dragState.hasDraggedDistance ||
-      dragState.isDragging
-    ) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      e.stopPropagation();
-      return;
-    }
-
+  const handleMouseUp = (e: MouseEvent) => {
     if (!canvasRef) return;
+    // Avoid double-fire from canvas + document listeners
+    if (!pressOrigin && !dragArmed && !dragState.isDragging) return;
 
     const rect = canvasRef.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
+    const wasDragging = dragArmed || dragState.isDragging;
+    const pressed = pressNode;
 
-    const clickedNode = nodes.find(node => {
-      const baseSize = 12;
-      const nodeSize = baseSize + node.connections * 1.5;
-      const clickRadius = nodeSize + 4;
-      const distance = Math.sqrt((x - node.x) ** 2 + (y - node.y) ** 2);
-      return distance < clickRadius;
-    });
+    if (dragState.isDragging) {
+      endDrag();
+      resetDragFlag();
+    }
 
-    if (clickedNode) {
-      // Only expand node on genuine click (not after drag)
-      expandNode(clickedNode, { x: e.clientX, y: e.clientY });
-    } else {
-      // Close expanded node if clicking on empty space
+    pressNode = null;
+    pressOrigin = null;
+    dragArmed = false;
+
+    if (!wasDragging && pressed) {
+      const target = findNodeAt(x, y) ?? pressed;
+      expandNode(target, { x: e.clientX, y: e.clientY });
+    } else if (!wasDragging && !pressed) {
       if (expansionState.expandedNode) {
         closeExpandedNode();
       }
     }
 
-    setSelectedNode(clickedNode || null);
+    canvasRef.style.cursor = hoveredNode() ? 'pointer' : 'default';
   };
 
   onMount(() => {
+    void (async () => {
+      try {
+        const [status, cfg] = await Promise.all([onionShareStatus(), trackerGetConfig()]);
+        setSelfOnion(status.onion ?? null);
+        setSelfNodeId(cfg.nodeId ?? null);
+      } catch {
+        /* outside Tauri */
+      }
+      void lobby.refresh(true);
+    })();
+
     if (canvasRef) {
       const setupCanvas = () => {
         const rect = canvasRef!.getBoundingClientRect();
@@ -779,6 +821,7 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
             nodeRenderer = new NodeRenderer(ctx);
           }
         }
+        syncGraph();
       };
 
       setupCanvas();
@@ -789,10 +832,9 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
       canvasRef.addEventListener('mousemove', handleMouseMove);
       canvasRef.addEventListener('mousedown', handleMouseDown);
       canvasRef.addEventListener('mouseup', handleMouseUp);
-      canvasRef.addEventListener('click', handleClickCapture, true); // Capture phase
-      canvasRef.addEventListener('click', handleClick); // Bubble phase (backup)
 
-      document.addEventListener('mouseup', handleMouseUp);
+      const onDocMouseUp = (ev: MouseEvent) => handleMouseUp(ev);
+      document.addEventListener('mouseup', onDocMouseUp);
 
       smartAnimate();
 
@@ -802,10 +844,8 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
           canvasRef.removeEventListener('mousemove', handleMouseMove);
           canvasRef.removeEventListener('mousedown', handleMouseDown);
           canvasRef.removeEventListener('mouseup', handleMouseUp);
-          canvasRef.removeEventListener('click', handleClickCapture, true);
-          canvasRef.removeEventListener('click', handleClick);
         }
-        document.removeEventListener('mouseup', handleMouseUp);
+        document.removeEventListener('mouseup', onDocMouseUp);
       };
     }
 
@@ -873,240 +913,47 @@ const NetworkGraph: Component<NetworkGraphProps> = props => {
       {/* Transfer Legend Component */}
       {(props.showLegend ?? true) && <TransferLegend />}
 
-      {/* Network Stats */}
       {props.showStats && (
-        <div class="network-stats">
-          <div class="network-stat-item">
-            <span class="network-stat-label">Peers</span>
-            <span class="network-stat-value">
-              {networkStats.activePeers}/{networkStats.totalPeers}
+        <div class="network-stats" aria-label="Resumo da rede">
+          <div class="network-stats-head">
+            <span class="network-stats-kicker">Rede</span>
+            <span class={`network-stats-pill health-${overlayStats().tone}`}>
+              {overlayStats().health}%
             </span>
           </div>
-          <div class="network-stat-item">
-            <span class="network-stat-label">Bandwidth</span>
-            <span class="network-stat-value">
-              {(networkStats.totalBandwidth / 1024).toFixed(1)} MB/s
-            </span>
-          </div>
-          <div class="network-stat-item">
-            <span class="network-stat-label">Latency</span>
-            <span class="network-stat-value">{networkStats.averageLatency}ms</span>
-          </div>
-          <div class="network-stat-item">
-            <span class="network-stat-label">Health</span>
-            <span
-              class={`network-stat-value health-${networkStats.networkHealth > 80 ? 'good' : networkStats.networkHealth > 50 ? 'fair' : 'poor'}`}
-            >
-              {networkStats.networkHealth}%
-            </span>
-          </div>
-        </div>
-      )}
-
-      {/* Selected Node Details */}
-      {selectedNode() && (
-        <div class="node-details">
-          <h4>{selectedNode()!.label}</h4>
-          <div class="detail-grid">
-            <span>Type:</span> <span>{selectedNode()!.type}</span>
-            <span>Status:</span>{' '}
-            <span class={`status-${selectedNode()!.status}`}>{selectedNode()!.status}</span>
-            <span>Connections:</span> <span>{selectedNode()!.connections}</span>
-            <span>Bandwidth:</span> <span>{selectedNode()!.bandwidth} KB/s</span>
-            <span>Latency:</span> <span>{selectedNode()!.latency}ms</span>
-            <span>Reliability:</span> <span>{selectedNode()!.reliability}%</span>
-          </div>
-          {selectedNode()!.culturalContext && (
-            <div class="cultural-context">
-              <strong>Cultural Context:</strong>
-              <p>{selectedNode()!.culturalContext}</p>
+          <div class="network-stats-grid">
+            <div class="network-stat-item">
+              <span class="network-stat-label">Peers</span>
+              <span class="network-stat-value">
+                {overlayStats().activePeers}
+                <span class="network-stat-suffix">/{overlayStats().totalPeers}</span>
+              </span>
             </div>
-          )}
-        </div>
-      )}
-
-      {/* Expanded Node Overlay */}
-      {expansionState.expandedNode && (
-        <div
-          class={`expanded-node-overlay ${expansionState.isExpanded ? 'expanded' : ''}`}
-          onClick={e => {
-            if (e.target === e.currentTarget) {
-              closeExpandedNode();
-            }
-          }}
-        >
-          <div class="expanded-node-content">
-            {/* Header */}
-            <div class="expanded-node-header">
-              <div class="node-avatar">
-                <div class={`node-type-indicator ${expansionState.expandedNode.type}`}>
-                  {expansionState.expandedNode.type === 'self' && '👤'}
-                  {expansionState.expandedNode.type === 'peer' && '🌐'}
-                  {expansionState.expandedNode.type === 'institution' && '🏛️'}
-                  {expansionState.expandedNode.type === 'community' && '🏘️'}
-                </div>
-              </div>
-
-              <div class="node-info">
-                <h1 class="node-title">{expansionState.expandedNode.label}</h1>
-                <p class="node-subtitle">
-                  {formatNodeType(expansionState.expandedNode.type)} Network Node
-                </p>
-                <div class="node-status-badges">
-                  <span class={`status-badge ${expansionState.expandedNode.status}`}>
-                    {expansionState.expandedNode.status}
-                  </span>
-                  <span class="network-badge">
-                    {getNetworkTypeIcon(expansionState.expandedNode.networkType || 'internet')} P2P
-                  </span>
-                </div>
-              </div>
-
-              <button class="close-button" onClick={closeExpandedNode} title="Close">
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path d="m18 6-12 12" />
-                  <path d="m6 6 12 12" />
-                </svg>
-              </button>
+            <div class="network-stat-item">
+              <span class="network-stat-label">Arquivos</span>
+              <span class="network-stat-value">{overlayStats().files}</span>
             </div>
-
-            {/* Body */}
-            <div class="expanded-node-body">
-              <div class="content-columns">
-                <div class="column-left">
-                  {/* Connection Stats */}
-                  <div class="stats-section">
-                    <h3>Connection Statistics</h3>
-                    <div class="stats-grid-compact">
-                      <div class="stat-compact">
-                        <span class="stat-label-compact">Status</span>
-                        <span
-                          class={`stat-value-compact status-${expansionState.expandedNode.status}`}
-                        >
-                          {expansionState.expandedNode.status}
-                        </span>
-                      </div>
-                      <div class="stat-compact">
-                        <span class="stat-label-compact">Connections</span>
-                        <span class="stat-value-compact">
-                          {expansionState.expandedNode.connections}
-                        </span>
-                      </div>
-                      <div class="stat-compact">
-                        <span class="stat-label-compact">Bandwidth</span>
-                        <span class="stat-value-compact">
-                          {formatBandwidth(expansionState.expandedNode.bandwidth)}
-                        </span>
-                      </div>
-                      <div class="stat-compact">
-                        <span class="stat-label-compact">Latency</span>
-                        <span class="stat-value-compact">
-                          {formatLatency(expansionState.expandedNode.latency).text}
-                        </span>
-                      </div>
-                      <div class="stat-compact">
-                        <span class="stat-label-compact">Reliability</span>
-                        <span class="stat-value-compact">
-                          {formatReliability(expansionState.expandedNode.reliability).text}
-                        </span>
-                      </div>
-                      <div class="stat-compact">
-                        <span class="stat-label-compact">Network Type</span>
-                        <span class="stat-value-compact">
-                          {getNetworkTypeIcon(
-                            expansionState.expandedNode.networkType || 'internet'
-                          )}{' '}
-                          {formatNodeType(expansionState.expandedNode.networkType || 'internet')}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Active Transfers */}
-                  {expansionState.expandedNode.activeTransfers &&
-                    (expansionState.expandedNode.activeTransfers.downloading.length > 0 ||
-                      expansionState.expandedNode.activeTransfers.uploading.length > 0) && (
-                      <div class="transfers-section">
-                        <h3>Active Transfers</h3>
-                        <div class="transfers-list">
-                          <div class="transfer-item">
-                            <div class="transfer-info">
-                              <div class="transfer-file">📥 Cultural Archive Data</div>
-                              <div class="transfer-details">{formatFileSize(1024)} • Active</div>
-                            </div>
-                            <div class="transfer-progress">
-                              <div class="progress-bar">
-                                <div class="progress-fill" style={{ width: '75%' }} />
-                              </div>
-                              <div class="progress-text">75%</div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                </div>
-
-                <div class="column-right">
-                  {/* Node Capabilities */}
-                  {expansionState.expandedNode.capabilities && (
-                    <div class="capabilities-section">
-                      <h3>Capabilities</h3>
-                      <div class="capabilities-grid-compact">
-                        <For each={Object.entries(expansionState.expandedNode.capabilities)}>
-                          {([key, value]) => (
-                            <div class="capability-item">
-                              <span class="capability-label">{formatNodeType(key)}</span>
-                              <span class="capability-status">
-                                {typeof value === 'boolean' ? (value ? '✓' : '✗') : String(value)}
-                              </span>
-                            </div>
-                          )}
-                        </For>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Cultural Context */}
-                  {expansionState.expandedNode.culturalContext && (
-                    <div class="cultural-section">
-                      <h3>Cultural Context</h3>
-                      <p class="cultural-description">
-                        {expansionState.expandedNode.culturalContext}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Location & Network Info */}
-                  <div class="location-section">
-                    <h3>Network Information</h3>
-                    <div class="location-grid">
-                      {expansionState.expandedNode.location && (
-                        <>
-                          <span class="location-label">Location</span>
-                          <span class="location-value">{expansionState.expandedNode.location}</span>
-                        </>
-                      )}
-                      <span class="location-label">Node ID</span>
-                      <span class="location-value font-mono">{expansionState.expandedNode.id}</span>
-                      <span class="location-label">Type</span>
-                      <span class="location-value">
-                        {formatNodeType(expansionState.expandedNode.type)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <div class="network-stat-item">
+              <span class="network-stat-label">Anúncios</span>
+              <span class="network-stat-value">{overlayStats().shares}</span>
+            </div>
+            <div class="network-stat-item">
+              <span class="network-stat-label">Saúde</span>
+              <span class={`network-stat-value health-${overlayStats().tone}`}>
+                {overlayStats().health}%
+              </span>
             </div>
           </div>
         </div>
       )}
+
+      <PeerNodeModal
+        node={expansionState.expandedNode}
+        onClose={() => {
+          closeExpandedNode();
+          setSelectedNode(null);
+        }}
+      />
     </div>
   );
 };

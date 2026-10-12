@@ -130,6 +130,7 @@
       "title": "ダウンロードマネージャー",
       "subtitle": "ダウンロードとアップロードを管理",
       "addDownload": "ダウンロードを追加",
+      "openFullQueue": "キューを開く",
       "queue": "キュー",
       "preferences": "設定",
       "pauseAll": "すべて一時停止",

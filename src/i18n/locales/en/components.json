@@ -114,6 +114,7 @@
     }
   },
   "activityList": {
+    "empty": "No recent activity",
     "types": {
       "downloading": "Downloading",
       "seeding": "Seeding",
@@ -325,6 +326,11 @@
       "title": "Protection",
       "threats": "{{count}} threats blocked",
       "lastScan": "Last scan: {{time}}",
+      "justNow": "just now",
+      "active": "Active",
+      "inactive": "Inactive",
+      "verified": "Verified",
+      "unknown": "Unknown",
       "status": "Status: {{status}}",
       "statusLabel": "status",
       "scanTime": "Last scan: {{time}}"

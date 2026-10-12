@@ -15,6 +15,8 @@ pub mod favorites;
 pub mod activity;
 pub mod transfers;
 pub mod transfer_resolve;
+pub mod telemetry_export;
+pub mod experiment_overlay;
 
 pub use app::{initialize_app, get_app_ready_state, close_splash_screen, InitProgress};
 pub use security::{get_security_info, refresh_security_info, SecurityInfo};
@@ -94,6 +96,7 @@ pub use onion_bridge::{
     spawn_tor_recovery_watchdog,
     tracker_get_cached_lobby_cmd,
     tracker_get_config,
+    tracker_probe,
     tracker_refresh_lobby,
     tracker_get_last_sync_diag,
     tracker_set_config,
@@ -113,6 +116,11 @@ pub use network_cache::{
 pub use favorites::{is_favorite, toggle_favorite, list_favorites, FavoriteToggleResult};
 pub use activity::{log_activity, list_activity, delete_activity};
 pub use transfers::{list_recent_transfers, TransferDto};
+pub use telemetry_export::{export_anonymous_telemetry, AnonymousTelemetryEvent};
+pub use experiment_overlay::{
+    bootstrap_kad, discover_kad_peers, get_kad_record, gossip_announce_content, put_kad_record,
+    run_dht_lookup_benchmark,
+};
 pub use transfer_resolve::{
     build_swarm_link, get_swarm_availability, resolve_download_link, ResolvedDownloadLink,
     PeerLocationDto,

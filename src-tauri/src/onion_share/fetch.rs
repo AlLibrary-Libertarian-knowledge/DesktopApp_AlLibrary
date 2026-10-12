@@ -1,6 +1,8 @@
 // Derived from onion-poc (MIT): download logic from POC-Tracker-Onion-Share/src/gui/bg.rs
 use std::path::PathBuf;
+use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::Arc;
+use std::time::Instant;
 
 use anyhow::Context;
 use serde::Deserialize;
@@ -12,6 +14,21 @@ use crate::onion_share::server::routes;
 use crate::onion_share::tracker_proto::NetworkFile;
 
 pub type FetchProgressCb = Arc<dyn Fn(u32, u32, u64) + Send + Sync>;
+
+/// Measured outcome of a completed (or partially measured) onion/swarm fetch.
+#[derive(Debug, Clone)]
+pub struct FetchStats {
+    pub path: PathBuf,
+    pub bytes_moved: u64,
+    pub total_chunks: u64,
+    pub chunks_completed: u64,
+    pub parallel_seeders: u32,
+    pub chunk_failures: u32,
+    pub chunk_size: u32,
+    pub content_hash: Option<String>,
+    pub duration_ms: u64,
+    pub retries: u32,
+}
 
 pub fn build_http_client(base_url: &str, socks_addr: Option<String>) -> anyhow::Result<reqwest::Client> {
     let mut builder = reqwest::Client::builder()
@@ -32,13 +49,14 @@ fn report_progress(cb: &Option<FetchProgressCb>, completed: u32, total: u32, byt
     }
 }
 
-/// Download direct or swarm link; returns path to saved file.
+/// Download direct or swarm link; returns path plus transfer measurements.
 pub async fn fetch_to_directory(
     link_str: &str,
     socks_addr: Option<String>,
     out_dir: PathBuf,
     progress_cb: Option<FetchProgressCb>,
-) -> anyhow::Result<PathBuf> {
+) -> anyhow::Result<FetchStats> {
+    let started = Instant::now();
     let parsed = parse_any(link_str)?;
     tokio::fs::create_dir_all(&out_dir).await.ok();
 
@@ -71,13 +89,25 @@ pub async fn fetch_to_directory(
                     .bytes()
                     .await?;
 
-                let pt = crypto::decrypt_chunk(&link.key, link.file_id, idx, &ct)?;
+                let pt = crypto::decrypt_chunk(&link.key, link.file_id, idx, &ct)
+                    .with_context(|| format!("chunk {} decrypt failed", idx))?;
                 bytes_moved += pt.len() as u64;
                 tokio::io::AsyncWriteExt::write_all(&mut out_file, &pt).await?;
                 report_progress(&progress_cb, (idx + 1) as u32, total, bytes_moved);
             }
             tokio::io::AsyncWriteExt::flush(&mut out_file).await?;
-            Ok(out_path)
+            Ok(FetchStats {
+                path: out_path,
+                bytes_moved,
+                total_chunks: manifest.total_chunks,
+                chunks_completed: manifest.total_chunks,
+                parallel_seeders: 1,
+                chunk_failures: 0,
+                chunk_size: manifest.chunk_size as u32,
+                content_hash: None,
+                duration_ms: started.elapsed().as_millis() as u64,
+                retries: 0,
+            })
         }
         ParsedLink::Swarm(swarm) => {
             let socks = socks_addr.context("socks required for swarm fetch")?;
@@ -126,19 +156,27 @@ pub async fn fetch_to_directory(
             let total = manifest.total_chunks.max(1) as u32;
             let file_key = crypto::key_from_content_hash(&network_file.content_hash)?;
             let out_path = out_dir.join(&manifest.file_name);
+            let parallel_seeders = network_file.peers.len().max(1) as u32;
 
             let mut join_set = tokio::task::JoinSet::new();
             let concurrency = network_file.peers.len().clamp(2, 8);
             let sem = std::sync::Arc::new(tokio::sync::Semaphore::new(concurrency));
+            let fail_counter = Arc::new(AtomicU32::new(0));
+            let retry_counter = Arc::new(AtomicU32::new(0));
 
             for idx in 0..manifest.total_chunks {
                 let permit = sem.clone().acquire_owned().await?;
                 let peers = network_file.peers.clone();
+                let fails = fail_counter.clone();
+                let retries = retry_counter.clone();
                 let client_inner =
                     build_http_client(&format!("http://{}", peers[0].onion), Some(socks.clone()))?;
                 join_set.spawn(async move {
                     let _permit = permit;
                     for offset in 0..peers.len() {
+                        if offset > 0 {
+                            retries.fetch_add(1, Ordering::Relaxed);
+                        }
                         let peer = &peers[(idx as usize + offset) % peers.len()];
                         let pb = format!("http://{}/s/{}", peer.onion, peer.file_id);
                         if let Ok(resp) = client_inner
@@ -148,10 +186,12 @@ pub async fn fetch_to_directory(
                         {
                             if let Ok(ok_resp) = resp.error_for_status() {
                                 if let Ok(bytes) = ok_resp.bytes().await {
-                                    if let Ok(pt) =
-                                        crypto::decrypt_chunk(&file_key, peer.file_id, idx, &bytes)
+                                    match crypto::decrypt_chunk(&file_key, peer.file_id, idx, &bytes)
                                     {
-                                        return Ok::<_, anyhow::Error>((idx, pt));
+                                        Ok(pt) => return Ok::<_, anyhow::Error>((idx, pt)),
+                                        Err(_) => {
+                                            fails.fetch_add(1, Ordering::Relaxed);
+                                        }
                                     }
                                 }
                             }
@@ -179,7 +219,18 @@ pub async fn fetch_to_directory(
                 tokio::io::AsyncWriteExt::write_all(&mut out_file, &chunk).await?;
             }
             tokio::io::AsyncWriteExt::flush(&mut out_file).await?;
-            Ok(out_path)
+            Ok(FetchStats {
+                path: out_path,
+                bytes_moved,
+                total_chunks: manifest.total_chunks,
+                chunks_completed: completed as u64,
+                parallel_seeders,
+                chunk_failures: fail_counter.load(Ordering::Relaxed),
+                chunk_size: manifest.chunk_size as u32,
+                content_hash: Some(network_file.content_hash),
+                duration_ms: started.elapsed().as_millis() as u64,
+                retries: retry_counter.load(Ordering::Relaxed),
+            })
         }
     }
 }

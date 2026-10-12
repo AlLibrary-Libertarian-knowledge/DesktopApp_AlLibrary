@@ -92,10 +92,13 @@ export class PhysicsEngine {
     draggedNode: Node | null,
     isDragging: boolean,
     mousePosition: { x: number; y: number } | null,
-    dragOffset: { x: number; y: number }
+    dragOffset: { x: number; y: number },
+    /** Hover / selection — node stays still (no orbit) while inspected */
+    frozenNodeIds: string[] = []
   ): Node[] {
     const centerNode = nodes.find(node => node.type === 'self');
     if (!centerNode) return nodes;
+    const frozen = new Set(frozenNodeIds.filter(Boolean));
 
     return nodes.map(node => {
       // Handle dragging
@@ -154,6 +157,16 @@ export class PhysicsEngine {
         return {
           ...node,
           isBeingDragged: draggedNode?.id === node.id,
+        };
+      }
+
+      // Freeze on hover / selected detail — keeps hit-testing stable
+      if (frozen.has(node.id) && !node.isBeingDragged) {
+        return {
+          ...node,
+          vx: 0,
+          vy: 0,
+          isBeingDragged: false,
         };
       }
 
