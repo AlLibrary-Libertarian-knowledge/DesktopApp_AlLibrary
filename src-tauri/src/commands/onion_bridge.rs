@@ -36,6 +36,7 @@ use crate::commands::seed_sync::{ensure_document_seeded, flush_pending_seeds, sy
 use crate::commands::telemetry_export::spawn_ingest_transfer_telemetry;
 
 pub use crate::commands::onion_state::{OnionShareState, TorBootstrapSnapshot};
+use crate::commands::onion_state::tracker_transport_for;
 use crate::commands::settings::load_app_settings;
 use crate::core::document::pipeline::is_treated_file;
 use crate::onion_share::link::parse_any;
@@ -48,22 +49,71 @@ async fn clone_active_handle(state: &OnionShareState) -> Option<Arc<ShareServerH
     state.handle.lock().await.clone()
 }
 
+/// Single entry point for tracker announce + lobby sync. Besides running the gated sync, it owns the
+/// `tracker_phase` / `tracker_via` fields of the snapshot so every caller (bootstrap, heartbeat,
+/// manual refresh, smart connect) reports through the same state machine.
 async fn run_tracker_sync(
     state: &OnionShareState,
     app: Option<&AppHandle>,
     handle: Option<Arc<ShareServerHandle>>,
     skip_if_busy: bool,
 ) -> Option<Result<tracker_client::TrackerSyncOutcome, String>> {
+    // While Tor is still bootstrapping there is no onion handle yet; do not silently read the
+    // lobby over localhost — that is what made the UI look "connected" before Tor was up.
+    if handle.is_none() {
+        let mode = state.bootstrap.read().await.mode.clone();
+        if mode == "bootstrapping" {
+            return Some(Err(
+                "Tor overlay is still bootstrapping — tracker sync deferred until it settles.".into(),
+            ));
+        }
+    }
+
+    let was_connected = {
+        let snap = state.bootstrap.read().await;
+        snap.tracker_phase == "connected"
+    };
+    if !was_connected {
+        update_bootstrap_snapshot(state, |s| s.tracker_phase = "syncing".to_string()).await;
+    }
+
     let handle_ref = handle.as_ref().map(|h| h.as_ref());
     let cached = state.cached_lobby.clone();
     let gate = Arc::clone(&state.tracker_sync_gate);
-    let tr = tracker_client::sync_tracker_result_gated(
-        &gate,
-        skip_if_busy,
-        handle_ref,
-        cached,
-    )
-    .await?;
+    let tr = match tracker_client::sync_tracker_result_gated(&gate, skip_if_busy, handle_ref, cached)
+        .await
+    {
+        Some(tr) => tr,
+        None => {
+            // Skipped because another sync holds the gate: leave the phase untouched.
+            if !was_connected {
+                update_bootstrap_snapshot(state, |s| {
+                    if s.tracker_phase == "syncing" {
+                        s.tracker_phase = "idle".to_string();
+                    }
+                })
+                .await;
+            }
+            return None;
+        }
+    };
+
+    match &tr {
+        Ok(outcome) => {
+            let via = outcome.url_used.clone();
+            let transport = tracker_transport_for(&via).to_string();
+            update_bootstrap_snapshot(state, |s| {
+                s.tracker_phase = "connected".to_string();
+                s.tracker_via = Some(via);
+                s.tracker_transport = Some(transport);
+            })
+            .await;
+        }
+        Err(_) => {
+            update_bootstrap_snapshot(state, |s| s.tracker_phase = "failed".to_string()).await;
+        }
+    }
+
     persist_tracker_diag(Arc::clone(&state.tracker_last_sync), app, &tr).await;
     if tr.is_ok() {
         if let Some(a) = app {
@@ -138,6 +188,9 @@ async fn emit_tor_bootstrap_progress(app: &AppHandle, snap: &TorBootstrapSnapsho
             "lastError": snap.last_error,
             "localOnly": snap.local_only,
             "retryCount": snap.retry_count,
+            "trackerPhase": snap.tracker_phase,
+            "trackerVia": snap.tracker_via,
+            "trackerTransport": snap.tracker_transport,
         }),
     );
 }
@@ -157,6 +210,9 @@ fn status_json_from_snapshot(
         "lastError": snap.last_error,
         "localOnly": snap.local_only,
         "retryCount": snap.retry_count,
+        "trackerPhase": snap.tracker_phase,
+        "trackerVia": snap.tracker_via,
+        "trackerTransport": snap.tracker_transport,
     })
 }
 
@@ -425,7 +481,7 @@ pub async fn bootstrap_onion_share(
         if let Some(h) = existing {
             let onion = h.onion_addr.clone();
             let port = h.local_port;
-            let _ = run_tracker_sync(state, Some(app), Some(h), true).await;
+            // Tor is already up: report `ready` first, then (re)sync the tracker as its own phase.
             update_bootstrap_snapshot(state, |s| {
                 s.mode = "ready".to_string();
                 s.bootstrap_percent = 100;
@@ -433,6 +489,7 @@ pub async fn bootstrap_onion_share(
                 s.last_error = None;
             })
             .await;
+            let _ = run_tracker_sync(state, Some(app), Some(h), true).await;
             return Ok(json!({"onion": onion, "localPort": port}));
         }
     }
@@ -565,9 +622,6 @@ pub async fn bootstrap_onion_share(
         let mut guard = state.handle.lock().await;
         *guard = Some(Arc::new(handle_srv));
     }
-    if let Some(h) = clone_active_handle(state).await {
-        let _ = run_tracker_sync(state, Some(app), Some(h), false).await;
-    }
 
     {
         let mut saved_cfg = AppConfig::load();
@@ -575,15 +629,39 @@ pub async fn bootstrap_onion_share(
         let _ = saved_cfg.save();
     }
 
+    // Phase 1 done: Tor circuits + hidden service are up. Report `ready` *now* so the UI stops
+    // showing "Bootstrapping… 100%" while the (potentially slow) onion announce runs.
     update_bootstrap_snapshot(state, |s| {
         s.mode = "ready".to_string();
         s.bootstrap_percent = 100;
         s.local_only = false;
         s.last_error = None;
+        s.tracker_phase = "syncing".to_string();
     })
     .await;
-    let snap = state.bootstrap.read().await.clone();
-    emit_tor_bootstrap_progress(app, &snap, "Onion network ready").await;
+    {
+        let snap = state.bootstrap.read().await.clone();
+        emit_tor_bootstrap_progress(app, &snap, "Onion network ready — syncing tracker lobby…").await;
+    }
+
+    // Phase 2: tracker announce + lobby through the onion handle (tracked as `tracker_phase`).
+    let sync_msg = match clone_active_handle(state).await {
+        Some(h) => match run_tracker_sync(state, Some(app), Some(h), false).await {
+            Some(Ok(outcome)) => format!(
+                "Tracker lobby synced via {} ({})",
+                tracker_transport_for(&outcome.url_used),
+                outcome.url_used
+            ),
+            Some(Err(e)) => format!("Tracker sync failed: {e}"),
+            None => "Tracker sync skipped (another sync in flight)".to_string(),
+        },
+        None => "Onion handle vanished before tracker sync".to_string(),
+    };
+    {
+        let snap = state.bootstrap.read().await.clone();
+        emit_tor_bootstrap_progress(app, &snap, &sync_msg).await;
+    }
+
     finalize_running_onion(app, state).await;
     Ok(json!({"onion": onion, "localPort": port}))
 }
@@ -805,6 +883,17 @@ pub async fn stop_onion_share_internal(app: &AppHandle, state: &OnionShareState)
             warn!("Share server still referenced during stop; skipping graceful shutdown");
         }
     }
+    drop(guard);
+    // Overlay is gone: reset both state machines so the UI does not keep a stale "connected".
+    update_bootstrap_snapshot(state, |s| {
+        s.mode = "idle".to_string();
+        s.bootstrap_percent = 0;
+        s.local_only = false;
+        s.tracker_phase = "idle".to_string();
+        s.tracker_via = None;
+        s.tracker_transport = None;
+    })
+    .await;
     let _ = app.emit("network-presence-changed", json!({}));
 }
 

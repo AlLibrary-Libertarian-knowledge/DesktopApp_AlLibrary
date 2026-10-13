@@ -3,7 +3,7 @@ import './Footer.css';
 import { APP_FOOTER_VERSION } from '@/config/appMeta';
 import { useNetworkStore } from '@/stores/network/networkStore';
 import { useNetworkLobby } from '@/hooks/api/useNetworkLobby';
-import { useNetworkPresenceResource } from '@/hooks/network/useNetworkPresence';
+import { trackerSourceLabel, useNetworkPresenceResource } from '@/hooks/network/useNetworkPresence';
 
 const Footer: Component = () => {
   const store = useNetworkStore();
@@ -13,8 +13,11 @@ const Footer: Component = () => {
   const connectedPeers = createMemo(() => Math.max(store.connectedPeers(), lobby.onlineNodes()));
 
   const torLabel = createMemo(() => {
-    if (presence().onionActive) return 'Onion Active';
-    return store.labelTorMode();
+    const p = presence();
+    const base = p.onionActive ? 'Onion Active' : store.labelTorMode();
+    // Say where the lobby actually comes from (onion / LAN / lab local) instead of implying Tor.
+    const source = trackerSourceLabel(p);
+    return source ? `${base} · ${source}` : base;
   });
   const lastSyncText = createMemo(() => {
     const ts = store.lastSyncAt();

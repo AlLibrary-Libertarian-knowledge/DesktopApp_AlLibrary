@@ -9,6 +9,8 @@ import {
   listenTorBootstrapProgress,
   type OnionShareMode,
   type TorBootstrapProgressPayload,
+  type TrackerPhase,
+  type TrackerTransport,
 } from '@/services/network/onionShareService';
 
 export interface NetworkPresence {
@@ -18,6 +20,11 @@ export interface NetworkPresence {
   localOnly: boolean;
   lastError: string | null;
   bootstrapPercent: number;
+  /** Tracker lobby sync state — independent from the Tor overlay `mode`. */
+  trackerPhase: TrackerPhase;
+  /** Tracker URL of the last successful sync. */
+  trackerVia: string | null;
+  trackerTransport: TrackerTransport | null;
 }
 
 const POLL_MS = 15_000;
@@ -29,7 +36,43 @@ const [presence, setPresence] = createSignal<NetworkPresence>({
   localOnly: false,
   lastError: null,
   bootstrapPercent: 0,
+  trackerPhase: 'idle',
+  trackerVia: null,
+  trackerTransport: null,
 });
+
+/**
+ * Tor overlay reached a terminal state: `ready` (onion up) or gave up (`degraded` / `failed`).
+ * Anything that talks to the tracker should wait for this instead of racing the bootstrap.
+ */
+export function isTorSettled(p: NetworkPresence): boolean {
+  return p.onionActive || p.mode === 'degraded' || p.mode === 'failed';
+}
+
+/** Human label for where the lobby is coming from, e.g. "via .onion" / "via lab local". */
+export function trackerSourceLabel(p: NetworkPresence): string {
+  if (p.trackerPhase === 'syncing') return 'syncing lobby…';
+  if (p.trackerPhase === 'failed') return 'lobby sync failed';
+  if (p.trackerPhase !== 'connected') return '';
+  switch (p.trackerTransport) {
+    case 'onion':
+      return 'lobby via .onion';
+    case 'local':
+      return 'lobby via lab local (127.0.0.1:8080)';
+    case 'lan': {
+      const host = (() => {
+        try {
+          return p.trackerVia ? new URL(p.trackerVia).host : '';
+        } catch {
+          return p.trackerVia ?? '';
+        }
+      })();
+      return host ? `lobby via LAN ${host}` : 'lobby via LAN';
+    }
+    default:
+      return 'lobby synced';
+  }
+}
 
 const [bootstrapMessage, setBootstrapMessage] = createSignal<string | null>(null);
 
@@ -49,6 +92,10 @@ function applyBootstrapPayload(payload: TorBootstrapProgressPayload) {
     online:
       mode === 'bootstrapping' || mode === 'ready' || prev.online || Boolean(payload.localOnly),
     onionActive: mode === 'ready' && !payload.localOnly,
+    trackerPhase: payload.trackerPhase ?? prev.trackerPhase,
+    trackerVia: payload.trackerVia === undefined ? prev.trackerVia : payload.trackerVia,
+    trackerTransport:
+      payload.trackerTransport === undefined ? prev.trackerTransport : payload.trackerTransport,
   }));
 }
 
@@ -73,7 +120,11 @@ function startPresenceSync() {
 
   void (async () => {
     try {
-      for (const event of ['network-presence-changed', 'tracker-ws-started'] as const) {
+      for (const event of [
+        'network-presence-changed',
+        'tracker-ws-started',
+        'tracker-sync-done',
+      ] as const) {
         const u = await listen(event, bump);
         unlisteners.push(u);
       }
@@ -117,6 +168,7 @@ export function useNetworkPresenceResource() {
     presence,
     bootstrapMessage,
     isBootstrapping: () => presence().mode === 'bootstrapping',
+    torSettled: () => isTorSettled(presence()),
   };
 }
 
@@ -125,8 +177,13 @@ export function getPresenceSignal() {
   return presence;
 }
 
+/** Read-only presence accessor for non-component code (stores, services). */
+export const networkPresence = presence;
+
 export function onionBadgeLabel(presence: NetworkPresence): string {
-  if (presence.onionActive) return 'Onion';
+  if (presence.onionActive) {
+    return presence.trackerPhase === 'syncing' ? 'Onion · syncing' : 'Onion';
+  }
   if (presence.mode === 'bootstrapping') {
     if (presence.bootstrapPercent > 0) return `${presence.bootstrapPercent}%`;
     return 'Connecting…';

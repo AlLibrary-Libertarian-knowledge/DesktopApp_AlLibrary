@@ -69,6 +69,10 @@ export type TrackerSmartConnectResult = {
 };
 
 export type OnionShareMode = 'idle' | 'bootstrapping' | 'ready' | 'degraded' | 'failed';
+/** Tracker lobby sync — a separate state machine from the Tor overlay (`OnionShareMode`). */
+export type TrackerPhase = 'idle' | 'syncing' | 'connected' | 'failed';
+/** How the tracker URL in `trackerVia` is reached. */
+export type TrackerTransport = 'onion' | 'local' | 'lan';
 
 export interface OnionShareStatus {
   running: boolean;
@@ -79,6 +83,9 @@ export interface OnionShareStatus {
   lastError?: string | null;
   localOnly?: boolean;
   retryCount?: number;
+  trackerPhase?: TrackerPhase;
+  trackerVia?: string | null;
+  trackerTransport?: TrackerTransport | null;
 }
 
 export interface TorBootstrapProgressPayload {
@@ -88,6 +95,9 @@ export interface TorBootstrapProgressPayload {
   lastError?: string | null;
   localOnly?: boolean;
   retryCount?: number;
+  trackerPhase?: TrackerPhase;
+  trackerVia?: string | null;
+  trackerTransport?: TrackerTransport | null;
 }
 
 export type TrackerSyncDiagnostics = {
@@ -215,6 +225,9 @@ export async function fetchNetworkPresence(): Promise<{
   localOnly: boolean;
   lastError: string | null;
   bootstrapPercent: number;
+  trackerPhase: TrackerPhase;
+  trackerVia: string | null;
+  trackerTransport: TrackerTransport | null;
 }> {
   try {
     const s = await onionShareStatus();
@@ -230,6 +243,9 @@ export async function fetchNetworkPresence(): Promise<{
       localOnly,
       lastError: s.lastError ?? null,
       bootstrapPercent: s.bootstrapPercent ?? 0,
+      trackerPhase: s.trackerPhase ?? 'idle',
+      trackerVia: s.trackerVia ?? null,
+      trackerTransport: s.trackerTransport ?? null,
     };
   } catch {
     return {
@@ -239,6 +255,9 @@ export async function fetchNetworkPresence(): Promise<{
       localOnly: false,
       lastError: null,
       bootstrapPercent: 0,
+      trackerPhase: 'idle',
+      trackerVia: null,
+      trackerTransport: null,
     };
   }
 }

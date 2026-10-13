@@ -2,7 +2,14 @@
  * Singleton lobby + peers cache — one event listener and one poll timer for the whole app.
  */
 
-import { createRoot, createSignal, type Accessor } from 'solid-js';
+import {
+  createEffect,
+  createRoot,
+  createSignal,
+  getOwner,
+  runWithOwner,
+  type Accessor,
+} from 'solid-js';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import {
   networkFacade,
@@ -16,9 +23,19 @@ import {
   peersFromLobbyFiles,
   type NetworkPeerView,
 } from '@/hooks/api/networkPeerView';
+import { isTorSettled, networkPresence } from '@/hooks/network/useNetworkPresence';
 
 const POLL_MS = 30_000;
 const EVENT_DEBOUNCE_MS = 250;
+/**
+ * Safety valve: if presence never leaves `idle` (bootstrap not kicked, unexpected state), start
+ * the lobby anyway instead of leaving the UI empty forever.
+ */
+const TOR_SETTLE_GRACE_MS = 45_000;
+
+function isTauriRuntime(): boolean {
+  return typeof window !== 'undefined' && Boolean((window as any).__TAURI_INTERNALS__);
+}
 
 function mapWireLobby(
   lobby: NetworkLobby,
@@ -78,6 +95,8 @@ export interface NetworkLobbyStore {
 }
 
 function createNetworkLobbyStore(): NetworkLobbyStore {
+  /** Root owner of the singleton — effects created later must attach here, not to a caller. */
+  const storeOwner = getOwner();
   const [onlineNodes, setOnlineNodes] = createSignal(0);
   const [files, setFiles] = createSignal<NetworkFileView[]>([]);
   const [totalBytes, setTotalBytes] = createSignal(0);
@@ -184,9 +203,8 @@ function createNetworkLobbyStore(): NetworkLobbyStore {
     }
   };
 
-  const start = () => {
-    if (started) return;
-    started = true;
+  /** Actual lobby bring-up: first forced sync, Tauri event listeners, poll timer. */
+  const begin = () => {
     void refresh(true);
 
     void (async () => {
@@ -212,6 +230,43 @@ function createNetworkLobbyStore(): NetworkLobbyStore {
       void refresh(false);
       void refreshPeersQuiet(files());
     }, POLL_MS);
+  };
+
+  /**
+   * Do not touch the tracker (or show cached peers as if live) while Tor is still bootstrapping.
+   * Wait for the overlay to settle — `ready`, or `degraded`/`failed` where the localhost / LAN
+   * fallback is the legitimate path — then bring the lobby up. Outside Tauri (tests, browser
+   * dev) there is no bootstrap to wait for.
+   */
+  const start = () => {
+    if (started) return;
+    started = true;
+
+    if (!isTauriRuntime()) {
+      begin();
+      return;
+    }
+
+    let begun = false;
+    let graceTimer: ReturnType<typeof setTimeout> | undefined;
+    const beginOnce = () => {
+      if (begun) return;
+      begun = true;
+      if (graceTimer) clearTimeout(graceTimer);
+      begin();
+    };
+    graceTimer = setTimeout(() => {
+      if (!begun && networkPresence().mode === 'idle') beginOnce();
+    }, TOR_SETTLE_GRACE_MS);
+
+    // `ensureStarted()` is called from components; attach the effect to the store root so it
+    // survives whichever component happened to call first.
+    const watch = () =>
+      createEffect(() => {
+        if (isTorSettled(networkPresence())) beginOnce();
+      });
+    if (storeOwner) runWithOwner(storeOwner, watch);
+    else watch();
   };
 
   return {

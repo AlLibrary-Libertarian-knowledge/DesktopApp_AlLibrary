@@ -13,6 +13,7 @@ use crate::onion_share::tracker_proto::NetworkLobby;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TorBootstrapSnapshot {
+    /// Tor overlay: `idle` | `bootstrapping` | `ready` | `degraded` | `failed`.
     pub mode: String,
     pub bootstrap_percent: u8,
     pub last_error: Option<String>,
@@ -20,6 +21,12 @@ pub struct TorBootstrapSnapshot {
     pub retry_count: u32,
     pub local_only: bool,
     pub retry_window_start_ms: i64,
+    /// Tracker lobby sync, tracked separately from Tor: `idle` | `syncing` | `connected` | `failed`.
+    pub tracker_phase: String,
+    /// Tracker URL that last synced successfully (announce + lobby).
+    pub tracker_via: Option<String>,
+    /// Transport of `tracker_via`: `onion` | `local` | `lan`.
+    pub tracker_transport: Option<String>,
 }
 
 impl Default for TorBootstrapSnapshot {
@@ -32,7 +39,22 @@ impl Default for TorBootstrapSnapshot {
             retry_count: 0,
             local_only: false,
             retry_window_start_ms: 0,
+            tracker_phase: "idle".to_string(),
+            tracker_via: None,
+            tracker_transport: None,
         }
+    }
+}
+
+/// Classifies a tracker URL by how the app reaches it.
+pub fn tracker_transport_for(url: &str) -> &'static str {
+    let u = url.trim();
+    if u.contains(".onion") {
+        "onion"
+    } else if u.contains("127.0.0.1") || u.contains("localhost") {
+        "local"
+    } else {
+        "lan"
     }
 }
 
