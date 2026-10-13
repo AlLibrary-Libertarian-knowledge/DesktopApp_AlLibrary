@@ -25,6 +25,10 @@ export interface TransferQueuePanelProps {
   showDownloads?: boolean;
   showCompleted?: boolean;
   onAddShare?: () => void;
+  /** Hide the Active/Completed summary cards (e.g. when embedded next to other stats). */
+  hideSummary?: boolean;
+  /** Hide the "Search network" link in the empty queue state (e.g. on the search page itself). */
+  hideEmptySearchLink?: boolean;
   class?: string;
 }
 
@@ -89,7 +93,7 @@ export const TransferQueuePanel: Component<TransferQueuePanelProps> = props => {
       class={`${styles.panel} ${styles[variant()]} ${props.class ?? ''}`}
       aria-label="Transfer queue"
     >
-      <Show when={variant() !== 'embedded'}>
+      <Show when={variant() !== 'embedded' && !props.hideSummary}>
         <div class={styles.summaryRow}>
           <Show when={showOutbound()}>
             <div class={`${styles.summaryCard} ${styles.summaryShared}`}>
@@ -210,10 +214,12 @@ export const TransferQueuePanel: Component<TransferQueuePanelProps> = props => {
                             <p class={styles.emptyHint}>
                               Find documents on the network and start a transfer.
                             </p>
-                            <A href="/search-network" class={styles.emptyLink}>
-                              <Search size={13} aria-hidden="true" />
-                              Search network
-                            </A>
+                            <Show when={!props.hideEmptySearchLink}>
+                              <A href="/search-network" class={styles.emptyLink}>
+                                <Search size={13} aria-hidden="true" />
+                                Search network
+                              </A>
+                            </Show>
                           </div>
                         </td>
                       </tr>

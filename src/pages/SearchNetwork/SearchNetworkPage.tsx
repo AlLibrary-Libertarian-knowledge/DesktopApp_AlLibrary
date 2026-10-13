@@ -432,7 +432,7 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
                       downloadStatus={row()?.status}
                       downloadError={row()?.error}
                       onOpen={() => void handleDocumentOpen(result)}
-                      onDownload={() => void handleFileDownload(result)}
+                      onDownload={() => handleFileDownload(result)}
                       onDownloadError={msg => setDownloadError(msg)}
                     />
                   );
