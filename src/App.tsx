@@ -2,6 +2,7 @@ import { type Component, createSignal, type ParentProps, Show, onMount, Suspense
 import { settingsService } from '@/services/storage/settingsService';
 import { FirstRunWizard } from '@/components/composite/FirstRunWizard';
 import { TrackerConnectModal } from '@/components/domain/network/TrackerConnectModal';
+import { useNetworkPresenceResource } from '@/hooks/network/useNetworkPresence';
 import { Router, Route } from '@solidjs/router';
 import { listen } from '@tauri-apps/api/event';
 import MainLayout from './components/layout/MainLayout';
@@ -109,6 +110,17 @@ const App: Component = () => {
   const [needsFirstRun, setNeedsFirstRun] = createSignal(false);
   /** Shown every cold start until the user connects or skips (session only). */
   const [needsTrackerConnect, setNeedsTrackerConnect] = createSignal(true);
+  const { presence } = useNetworkPresenceResource();
+  /**
+   * Only open the tracker modal once the Tor overlay settled: `ready` (SOCKS + onion up, so the
+   * .onion probe can actually run) or a terminal failure (`degraded`/`failed`, where the user
+   * still needs to pick hub LAN / lab local). While bootstrapping, keep it closed to avoid racing
+   * probes against a Tor that is not connected yet.
+   */
+  const torSettled = () => {
+    const p = presence();
+    return p.onionActive || p.mode === 'degraded' || p.mode === 'failed';
+  };
 
   onMount(async () => {
     let cleanup: (() => void) | null = null;
@@ -260,7 +272,7 @@ const App: Component = () => {
         <Show when={needsFirstRun()}>
           <FirstRunWizard onComplete={() => setNeedsFirstRun(false)} />
         </Show>
-        <Show when={!needsFirstRun() && needsTrackerConnect()}>
+        <Show when={!needsFirstRun() && needsTrackerConnect() && torSettled()}>
           <TrackerConnectModal
             isOpen
             onConnected={() => setNeedsTrackerConnect(false)}

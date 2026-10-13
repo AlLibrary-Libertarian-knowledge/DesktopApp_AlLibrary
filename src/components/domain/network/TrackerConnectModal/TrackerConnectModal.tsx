@@ -45,6 +45,8 @@ export const TrackerConnectModal: Component<TrackerConnectModalProps> = props =>
   const [firstProbeDone, setFirstProbeDone] = createSignal(false);
 
   let pollTimer: number | undefined;
+  /** Prevents the poll from stacking probes while a slow .onion probe is still in flight. */
+  let probeInFlight = false;
 
   /** Bundled default from AppConfig::default().tracker_url (via tracker_probe). */
   const defaultOnion = () => probe()?.defaultOnionUrl?.trim() || '';
@@ -55,6 +57,8 @@ export const TrackerConnectModal: Component<TrackerConnectModalProps> = props =>
   const primaryUrl = () => defaultOnion() || savedUrl() || '';
 
   const refreshProbe = async (showChecking = false) => {
+    if (probeInFlight) return;
+    probeInFlight = true;
     if (showChecking || !firstProbeDone()) setProbeUi('checking');
     try {
       // No URL → Rust probes AppConfig::default().tracker_url
@@ -67,6 +71,8 @@ export const TrackerConnectModal: Component<TrackerConnectModalProps> = props =>
       setProbeUi('offline');
       setFirstProbeDone(true);
       setError(String(e instanceof Error ? e.message : e));
+    } finally {
+      probeInFlight = false;
     }
   };
 

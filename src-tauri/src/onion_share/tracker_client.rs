@@ -51,18 +51,19 @@ pub async fn fetch_lobby_http(
     .await
 }
 
-/// Short timeouts for the connect-modal probe (must not feel infinite).
+/// Bounded timeouts for the connect-modal probe (must not feel infinite).
+/// `.onion` targets get more room: the first rendezvous after Tor bootstraps
+/// (descriptor fetch + intro + rendezvous) routinely takes 10–20 s.
 pub async fn fetch_lobby_http_probe(
     tracker_url: &str,
     socks_addr: Option<&str>,
 ) -> Result<NetworkLobby, String> {
-    fetch_lobby_http_with_timeouts(
-        tracker_url,
-        socks_addr,
-        Duration::from_secs(6),
-        Duration::from_secs(10),
-    )
-    .await
+    let (connect, total) = if tracker_url.contains(".onion") {
+        (Duration::from_secs(20), Duration::from_secs(25))
+    } else {
+        (Duration::from_secs(6), Duration::from_secs(10))
+    };
+    fetch_lobby_http_with_timeouts(tracker_url, socks_addr, connect, total).await
 }
 
 async fn fetch_lobby_http_with_timeouts(
