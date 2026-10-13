@@ -21,6 +21,26 @@ pub fn normalize_tracker_url(raw: &str) -> String {
     u.as_str().trim_end_matches('/').to_string()
 }
 
+/// Current TrackerRust hidden service (keys persisted in the `tor_keys` Docker volume).
+pub const DEFAULT_TRACKER_ONION_URL: &str =
+    "http://xscv6ske7lokympue5f3wqf472etqnpdghcxolozkfx67xywnjr2y6id.onion";
+
+/// Retired tracker onions. A saved `tracker_url` pointing at one of these is migrated to
+/// [`DEFAULT_TRACKER_ONION_URL`] on load, so old installs do not stay pinned to a dead address.
+const LEGACY_TRACKER_ONION_HOSTS: &[&str] = &[
+    "3anhnwqwxmjo7xsyxs3uoocdctxd3nwkfm5lt36xcwi4hfmkbttoktqd.onion",
+];
+
+fn is_legacy_tracker_onion(url: &str) -> bool {
+    let host = url::Url::parse(url.trim())
+        .ok()
+        .and_then(|u| u.host_str().map(|h| h.to_ascii_lowercase()));
+    match host {
+        Some(h) => LEGACY_TRACKER_ONION_HOSTS.iter().any(|legacy| h == *legacy),
+        None => false,
+    }
+}
+
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(default)]
 pub struct AppConfig {
@@ -30,12 +50,23 @@ pub struct AppConfig {
     pub tracker_url: String,
     pub share_publicly: bool,
     /// After Tor fails reaching `tracker_url`, also try HTTP to local Docker Desktop (`127.0.0.1:8080`).
+    /// Only used when localhost actually answers a probe (avoids family-PC dead ends).
     pub try_local_tracker_fallback: bool,
+    /// Optional hub on LAN for other household PCs, e.g. `http://192.168.15.191:8080`.
+    #[serde(default)]
+    pub preferred_hub_url: String,
+    /// Last tracker URL that successfully synced the lobby.
+    #[serde(default)]
+    pub last_good_tracker_url: String,
     pub bootstrap_peers: Vec<String>,
     /// Tor bridge lines (one per entry), passed as `--Bridge` when non-empty.
     pub tor_bridges: Vec<String>,
     /// Last successful Tor overlay data directory (warm-start reuse).
     pub tor_overlay_data_dir: Option<String>,
+    /// When true, completed downloads POST anonymous transfer metrics to the Analytics hub.
+    pub analytics_ingest_enabled: bool,
+    /// Full URL for Django telemetry ingest (default local TCC hub).
+    pub analytics_ingest_url: String,
 }
 
 impl Default for AppConfig {
@@ -44,14 +75,17 @@ impl Default for AppConfig {
             terms_accepted: false,
             tor_path: String::new(),
             node_id: uuid::Uuid::new_v4().to_string(),
-            tracker_url: "http://3anhnwqwxmjo7xsyxs3uoocdctxd3nwkfm5lt36xcwi4hfmkbttoktqd.onion"
-                .to_string(),
+            tracker_url: DEFAULT_TRACKER_ONION_URL.to_string(),
             share_publicly: true,
             // Docker Desktop POC maps tracker to host :8080; Tor-to-.onion can lag or fail behind strict networks.
             try_local_tracker_fallback: true,
+            preferred_hub_url: String::new(),
+            last_good_tracker_url: String::new(),
             bootstrap_peers: Vec::new(),
             tor_bridges: Vec::new(),
             tor_overlay_data_dir: None,
+            analytics_ingest_enabled: true,
+            analytics_ingest_url: "http://127.0.0.1:8000/api/v1/telemetry/ingest/".to_string(),
         }
     }
 }
@@ -65,10 +99,33 @@ impl AppConfig {
         let Some(path) = Self::config_path() else {
             return Self::default();
         };
-        std::fs::read_to_string(path)
+        let mut cfg: Self = std::fs::read_to_string(path)
             .ok()
             .and_then(|s| serde_json::from_str(&s).ok())
-            .unwrap_or_default()
+            .unwrap_or_default();
+        cfg.migrate_legacy_tracker_urls();
+        cfg
+    }
+
+    /// Replace retired tracker onions (saved by older builds) with the current default.
+    /// Persists the change so the migration runs once per install.
+    fn migrate_legacy_tracker_urls(&mut self) {
+        let mut changed = false;
+        if is_legacy_tracker_onion(&self.tracker_url) {
+            self.tracker_url = DEFAULT_TRACKER_ONION_URL.to_string();
+            changed = true;
+        }
+        if is_legacy_tracker_onion(&self.last_good_tracker_url) {
+            self.last_good_tracker_url.clear();
+            changed = true;
+        }
+        if is_legacy_tracker_onion(&self.preferred_hub_url) {
+            self.preferred_hub_url.clear();
+            changed = true;
+        }
+        if changed {
+            let _ = self.save();
+        }
     }
 
     pub fn save(&self) -> anyhow::Result<()> {

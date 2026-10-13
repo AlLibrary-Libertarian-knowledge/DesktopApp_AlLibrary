@@ -33,6 +33,7 @@ use std::path::PathBuf;
 
 use crate::commands::documents::process_downloaded_file_internal;
 use crate::commands::seed_sync::{ensure_document_seeded, flush_pending_seeds, sync_all_enabled_seeds};
+use crate::commands::telemetry_export::spawn_ingest_transfer_telemetry;
 
 pub use crate::commands::onion_state::{OnionShareState, TorBootstrapSnapshot};
 use crate::commands::settings::load_app_settings;
@@ -97,6 +98,11 @@ pub struct TrackerNetworkConfig {
     pub try_local_tracker_fallback: bool,
     #[serde(default)]
     pub tor_bridges: Vec<String>,
+    /// Hub on LAN for other household PCs (e.g. http://192.168.x.x:8080).
+    #[serde(default)]
+    pub preferred_hub_url: String,
+    #[serde(default)]
+    pub last_good_tracker_url: String,
 }
 
 struct BootstrapInProgressGuard {
@@ -943,6 +949,8 @@ pub async fn tracker_get_config() -> Result<TrackerNetworkConfig, String> {
         share_publicly: c.share_publicly,
         try_local_tracker_fallback: c.try_local_tracker_fallback,
         tor_bridges: c.tor_bridges,
+        preferred_hub_url: normalize_tracker_url(&c.preferred_hub_url),
+        last_good_tracker_url: normalize_tracker_url(&c.last_good_tracker_url),
     })
 }
 
@@ -954,10 +962,13 @@ pub struct TrackerProbeDto {
     pub online_nodes: Option<u32>,
     pub latency_ms: Option<u64>,
     pub error: Option<String>,
-    /// Lab default: http://127.0.0.1:8080
+    /// Lab fallback: http://127.0.0.1:8080 (same-PC Docker).
     pub default_local_url: String,
-    /// Bundled Docker onion tracker preset (needs Tor).
+    /// App default tracker — AppConfig::default().tracker_url (onion; needs Tor).
     pub default_onion_url: String,
+    /// Whether http://127.0.0.1:8080 answered (Docker TrackerRust on this PC).
+    pub local_online: bool,
+    pub local_online_nodes: Option<u32>,
 }
 
 #[tauri::command]
@@ -966,11 +977,12 @@ pub async fn tracker_probe(
     url: Option<String>,
 ) -> Result<TrackerProbeDto, String> {
     let default_local = tracker_client::local_tracker_http_url().to_string();
+    // Same source as AppConfig::default().tracker_url (bundled onion preset).
     let default_onion = AppConfig::default().tracker_url;
     let target = url
         .map(|u| normalize_tracker_url(&u))
         .filter(|u| !u.is_empty())
-        .unwrap_or_else(|| default_local.clone());
+        .unwrap_or_else(|| default_onion.clone());
 
     let socks = if target.contains(".onion") {
         clone_active_handle(state.inner())
@@ -980,7 +992,10 @@ pub async fn tracker_probe(
         None
     };
     let socks_ref = socks.as_deref();
-    let r = tracker_client::probe_tracker(&target, socks_ref).await;
+    let (r, local) = tokio::join!(
+        tracker_client::probe_tracker(&target, socks_ref),
+        tracker_client::probe_tracker(&default_local, None),
+    );
     Ok(TrackerProbeDto {
         online: r.online,
         url: r.url,
@@ -989,6 +1004,8 @@ pub async fn tracker_probe(
         error: r.error,
         default_local_url: default_local,
         default_onion_url: default_onion,
+        local_online: local.online,
+        local_online_nodes: local.online_nodes,
     })
 }
 
@@ -1002,6 +1019,10 @@ pub async fn tracker_set_config(config: TrackerNetworkConfig) -> Result<(), Stri
     c.node_id = config.node_id;
     c.share_publicly = config.share_publicly;
     c.try_local_tracker_fallback = config.try_local_tracker_fallback;
+    c.preferred_hub_url = normalize_tracker_url(&config.preferred_hub_url);
+    if !config.last_good_tracker_url.trim().is_empty() {
+        c.last_good_tracker_url = normalize_tracker_url(&config.last_good_tracker_url);
+    }
     c.tor_bridges = config
         .tor_bridges
         .into_iter()
@@ -1009,6 +1030,125 @@ pub async fn tracker_set_config(config: TrackerNetworkConfig) -> Result<(), Stri
         .filter(|b| !b.is_empty())
         .collect();
     c.save().map_err(|e| e.to_string())
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TrackerSmartConnectDto {
+    pub ok: bool,
+    pub url_used: String,
+    pub online_nodes: Option<u32>,
+    pub used_localhost: bool,
+    pub tried: Vec<String>,
+    pub error: Option<String>,
+}
+
+/// Probe candidates (hub LAN → last good → local :8080 → current → onion), pick first reachable,
+/// save it, announce + refresh lobby. One-click recovery for household PCs.
+#[tauri::command]
+pub async fn tracker_smart_connect(
+    app: AppHandle,
+    state: State<'_, OnionShareState>,
+) -> Result<TrackerSmartConnectDto, String> {
+    let mut cfg = AppConfig::load();
+    let default_onion = AppConfig::default().tracker_url;
+    let local = tracker_client::local_tracker_http_url().to_string();
+
+    let mut ordered: Vec<String> = Vec::new();
+    for raw in [
+        cfg.preferred_hub_url.as_str(),
+        cfg.last_good_tracker_url.as_str(),
+        local.as_str(),
+        cfg.tracker_url.as_str(),
+        default_onion.as_str(),
+    ] {
+        let u = normalize_tracker_url(raw);
+        if u.is_empty() {
+            continue;
+        }
+        if !ordered.iter().any(|x| x == &u) {
+            ordered.push(u);
+        }
+    }
+
+    let socks = clone_active_handle(state.inner())
+        .await
+        .map(|h| h.socks_addr());
+    let socks_ref = socks.as_deref();
+
+    let mut tried = Vec::new();
+    let mut chosen: Option<(String, Option<u32>)> = None;
+    let mut last_err: Option<String> = None;
+
+    for url in &ordered {
+        tried.push(url.clone());
+        let socks_for = if url.contains(".onion") {
+            socks_ref
+        } else {
+            None
+        };
+        let r = tracker_client::probe_tracker(url, socks_for).await;
+        if r.online {
+            chosen = Some((url.clone(), r.online_nodes));
+            break;
+        }
+        last_err = r.error.or(Some(format!("unreachable: {url}")));
+    }
+
+    let Some((url_used, nodes)) = chosen else {
+        return Ok(TrackerSmartConnectDto {
+            ok: false,
+            url_used: String::new(),
+            online_nodes: None,
+            used_localhost: false,
+            tried,
+            error: Some(
+                last_err.unwrap_or_else(|| {
+                    "No tracker reachable. On a family PC set Hub LAN URL to the hub IP:8080 (not 127.0.0.1)."
+                        .into()
+                }),
+            ),
+        });
+    };
+
+    cfg.tracker_url = url_used.clone();
+    cfg.last_good_tracker_url = url_used.clone();
+    // Localhost fallback only when Docker tracker is on THIS machine.
+    let local_up = tracker_client::probe_tracker(&local, None).await.online;
+    cfg.try_local_tracker_fallback = local_up;
+    cfg.save().map_err(|e| e.to_string())?;
+
+    let h = clone_active_handle(state.inner()).await;
+    let sync = run_tracker_sync(state.inner(), Some(&app), h, false).await;
+    match sync {
+        Some(Ok(outcome)) => Ok(TrackerSmartConnectDto {
+            ok: true,
+            url_used: outcome.url_used.clone(),
+            online_nodes: nodes,
+            used_localhost: outcome.used_localhost_fallback
+                || outcome.url_used.contains("127.0.0.1"),
+            tried,
+            error: None,
+        }),
+        Some(Err(e)) => Ok(TrackerSmartConnectDto {
+            ok: false,
+            url_used: url_used.clone(),
+            online_nodes: nodes,
+            used_localhost: url_used.contains("127.0.0.1"),
+            tried,
+            error: Some(format!(
+                "Reachable at {url_used} but announce/sync failed: {e}"
+            )),
+        }),
+        None => Ok(TrackerSmartConnectDto {
+            ok: false,
+            url_used,
+            online_nodes: nodes,
+            used_localhost: false,
+            tried,
+            error: Some("Tracker sync skipped (busy). Try again.".into()),
+        }),
+    }
 }
 
 #[tauri::command]
@@ -1169,6 +1309,7 @@ pub async fn onion_share_fetch(
                     average_speed_kbps: avg_kbps,
                     content_hash: stats.content_hash.clone(),
                     retries: Some(stats.retries as i64),
+                    tor_circuit_latency_ms: Some(stats.tor_circuit_latency_ms as f64),
                 };
 
                 let expected_hash = parse_any(&link_owned)
@@ -1236,6 +1377,21 @@ pub async fn onion_share_fetch(
                             )
                             .await;
                         }
+                        let completed_at = Utc::now().to_rfc3339();
+                        let started_at = telemetry
+                            .duration_ms
+                            .and_then(|ms| {
+                                Utc::now()
+                                    .checked_sub_signed(chrono::Duration::milliseconds(ms))
+                                    .map(|t| t.to_rfc3339())
+                            })
+                            .unwrap_or_else(|| completed_at.clone());
+                        spawn_ingest_transfer_telemetry(
+                            "completed",
+                            telemetry.clone(),
+                            started_at,
+                            completed_at,
+                        );
                         let _ = app_for_fetch.emit(
                             "onion-share-fetch-done",
                             json!({
@@ -1261,6 +1417,23 @@ pub async fn onion_share_fetch(
                                 Some(&telemetry),
                             )
                             .await;
+                        }
+                        if telemetry.content_hash.is_some() {
+                            let completed_at = Utc::now().to_rfc3339();
+                            let started_at = telemetry
+                                .duration_ms
+                                .and_then(|ms| {
+                                    Utc::now()
+                                        .checked_sub_signed(chrono::Duration::milliseconds(ms))
+                                        .map(|t| t.to_rfc3339())
+                                })
+                                .unwrap_or_else(|| completed_at.clone());
+                            spawn_ingest_transfer_telemetry(
+                                "failed",
+                                telemetry.clone(),
+                                started_at,
+                                completed_at,
+                            );
                         }
                         let _ = app_for_fetch.emit(
                             "onion-share-fetch-done",

@@ -116,7 +116,10 @@ pub use network_cache::{
 pub use favorites::{is_favorite, toggle_favorite, list_favorites, FavoriteToggleResult};
 pub use activity::{log_activity, list_activity, delete_activity};
 pub use transfers::{list_recent_transfers, TransferDto};
-pub use telemetry_export::{export_anonymous_telemetry, AnonymousTelemetryEvent};
+pub use telemetry_export::{
+    export_anonymous_telemetry, push_anonymous_telemetry, spawn_ingest_transfer_telemetry,
+    AnonymousTelemetryEvent,
+};
 pub use experiment_overlay::{
     bootstrap_kad, discover_kad_peers, get_kad_record, gossip_announce_content, put_kad_record,
     run_dht_lookup_benchmark,

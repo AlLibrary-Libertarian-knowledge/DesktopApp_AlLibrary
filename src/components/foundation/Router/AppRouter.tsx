@@ -18,7 +18,6 @@ const AppRouter = () => {
       <Route path="/search-network" component={() => <div>Search Network Page</div>} />
       <Route path="/browse" component={() => <div>Browse Categories Page</div>} />
       <Route path="/trending" component={() => <div>Trending Content Page</div>} />
-      <Route path="/new-arrivals" component={() => <div>New Arrivals Page</div>} />
 
       {/* Network Routes */}
       <Route path="/peers" component={() => <div>Peer Network Page</div>} />

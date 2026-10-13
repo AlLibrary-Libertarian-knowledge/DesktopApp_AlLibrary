@@ -95,7 +95,8 @@ fn resolve_from_file(file: &NetworkFile, prefer_swarm: bool, tracker_url: &str) 
         .clone()
         .unwrap_or_else(|| build_swarm_link_string(tracker_url, &file.content_hash));
 
-    if prefer_swarm && available {
+    // Force swarm path whenever requested — peer discovery happens at fetch time.
+    if prefer_swarm && !file.content_hash.is_empty() {
         return ResolvedDownloadLink {
             link: swarm_link,
             link_kind: "swarm".into(),
@@ -160,14 +161,25 @@ pub async fn resolve_download_link(
     }
 
     if trimmed.starts_with("opoc://") {
-        let content_hash = find_network_file(&app, trimmed)
-            .await?
-            .map(|f| f.content_hash)
-            .unwrap_or_default();
+        // Swarm-first: upgrade direct onion links to opocswarm whenever the file is known.
+        if let Some(file) = find_network_file(&app, trimmed).await? {
+            if prefer_swarm {
+                return Ok(resolve_from_file(&file, true, &tracker_url));
+            }
+            return Ok(ResolvedDownloadLink {
+                link: trimmed.to_string(),
+                link_kind: "direct".into(),
+                content_hash: file.content_hash,
+                peer_count: 0,
+                available: true,
+                peers: vec![],
+            });
+        }
+        // Unknown direct link — keep as-is (cannot invent a content hash).
         return Ok(ResolvedDownloadLink {
             link: trimmed.to_string(),
             link_kind: "direct".into(),
-            content_hash,
+            content_hash: String::new(),
             peer_count: 0,
             available: true,
             peers: vec![],

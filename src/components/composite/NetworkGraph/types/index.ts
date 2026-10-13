@@ -107,8 +107,8 @@ export interface NetworkGraphProps {
   theme?: 'light' | 'dark';
   testMode?: boolean; // Disables continuous animation for testing
   /**
-   * When true (default while demoing), use simulated peers/files.
-   * Set false — or flip `USE_MOCK_NETWORK_GRAPH` — to use live tracker lobby.
+   * When true, use simulated peers/files (demos/tests).
+   * Default follows `USE_MOCK_NETWORK_GRAPH` (live lobby when false).
    */
   useMockData?: boolean;
 }

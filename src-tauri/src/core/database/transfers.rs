@@ -38,6 +38,8 @@ pub struct TransferTelemetry {
     pub average_speed_kbps: Option<f64>,
     pub content_hash: Option<String>,
     pub retries: Option<i64>,
+    /// First-byte / circuit latency (ms) for Analytics Cap.6 Tor KPIs.
+    pub tor_circuit_latency_ms: Option<f64>,
 }
 
 fn map_transfer_row(row: &sqlx::sqlite::SqliteRow) -> Result<TransferRow, String> {

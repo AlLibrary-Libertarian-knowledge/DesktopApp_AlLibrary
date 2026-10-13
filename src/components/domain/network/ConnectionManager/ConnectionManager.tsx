@@ -1,4 +1,4 @@
-import { type Component, Show, createSignal, onMount } from 'solid-js';
+import { type Component, Show, createSignal, onCleanup, onMount } from 'solid-js';
 import { Card } from '@/components/foundation/Card';
 import { Button } from '@/components/foundation/Button';
 import { Switch } from '@/components/foundation/Switch';
@@ -7,6 +7,9 @@ import {
   trackerGetConfig,
   trackerSetConfig,
   trackerGetLastSyncDiag,
+  trackerSmartConnect,
+  onionShareStatus,
+  DEFAULT_LOCAL_TRACKER_URL,
   type TrackerNetworkConfig,
   type TrackerSyncDiagnostics,
 } from '@/services/network/onionShareService';
@@ -21,14 +24,35 @@ const TRACKER_PLACEHOLDER =
 
 export const ConnectionManager: Component<ConnectionManagerProps> = props => {
   const [trackerUrl, setTrackerUrl] = createSignal('');
+  const [hubUrl, setHubUrl] = createSignal('');
   const [nodeId, setNodeId] = createSignal('');
   const [pauseAllSeeding, setPauseAllSeeding] = createSignal(false);
   const [trackerBusy, setTrackerBusy] = createSignal(false);
+  const [connectBusy, setConnectBusy] = createSignal(false);
   const [trackerToast, setTrackerToast] = createSignal('');
   const [syncDiag, setSyncDiag] = createSignal<TrackerSyncDiagnostics | null>(null);
   const [resolvedDbPath, setResolvedDbPath] = createSignal('');
   const [advancedOpen, setAdvancedOpen] = createSignal(false);
   const [lobbySyncBusy, setLobbySyncBusy] = createSignal(false);
+  const [myOnion, setMyOnion] = createSignal<string | null>(null);
+  const [onionRunning, setOnionRunning] = createSignal(false);
+  const [onionPort, setOnionPort] = createSignal<number | null>(null);
+  const [copyToast, setCopyToast] = createSignal('');
+  const [lastGood, setLastGood] = createSignal('');
+
+  const loadMyOnion = async () => {
+    try {
+      const st = await onionShareStatus();
+      const onion = (st.onion || '').trim() || null;
+      setMyOnion(onion);
+      setOnionRunning(Boolean(st.running && onion));
+      setOnionPort(st.localPort ?? null);
+    } catch {
+      setMyOnion(null);
+      setOnionRunning(false);
+      setOnionPort(null);
+    }
+  };
 
   const loadTrackerConfig = async () => {
     setTrackerBusy(true);
@@ -36,10 +60,13 @@ export const ConnectionManager: Component<ConnectionManagerProps> = props => {
     try {
       const c = await trackerGetConfig();
       setTrackerUrl(c.trackerUrl?.trim() ?? '');
+      setHubUrl(c.preferredHubUrl?.trim() ?? '');
+      setLastGood(c.lastGoodTrackerUrl?.trim() ?? '');
       setNodeId(c.nodeId ?? '');
       setPauseAllSeeding(!(c.sharePublicly ?? true));
       const diag = await trackerGetLastSyncDiag();
       setSyncDiag(diag);
+      await loadMyOnion();
       try {
         const settings = await invoke<AppSettings>('load_app_settings');
         if (settings.resolvedPaths?.databaseFile) {
@@ -55,8 +82,34 @@ export const ConnectionManager: Component<ConnectionManagerProps> = props => {
     }
   };
 
+  const copyMyOnion = async () => {
+    const onion = myOnion();
+    if (!onion) return;
+    const link = onion.startsWith('http') ? onion : `http://${onion}`;
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopyToast('Copied this machine’s .onion link');
+      window.setTimeout(() => setCopyToast(''), 2500);
+    } catch {
+      setCopyToast('Could not copy — select the field manually');
+      window.setTimeout(() => setCopyToast(''), 3000);
+    }
+  };
+
   onMount(() => {
     void loadTrackerConfig();
+    const id = window.setInterval(() => {
+      void loadMyOnion();
+    }, 8000);
+    onCleanup(() => window.clearInterval(id));
+  });
+
+  const buildCfg = (): TrackerNetworkConfig => ({
+    trackerUrl: trackerUrl().trim(),
+    nodeId: nodeId(),
+    sharePublicly: !pauseAllSeeding(),
+    preferredHubUrl: hubUrl().trim(),
+    lastGoodTrackerUrl: lastGood() || undefined,
   });
 
   const saveTrackerConfig = async () => {
@@ -68,26 +121,57 @@ export const ConnectionManager: Component<ConnectionManagerProps> = props => {
         setTrackerToast('Tracker URL cannot be empty.');
         return;
       }
-      const cfg: TrackerNetworkConfig = {
-        trackerUrl: url,
-        nodeId: nodeId(),
-        sharePublicly: !pauseAllSeeding(),
-      };
+      const cfg = buildCfg();
       await trackerSetConfig(cfg);
       await transferFacade.syncAllEnabledSeeds();
       const diag = await trackerGetLastSyncDiag();
       setSyncDiag(diag);
       props.onConfigChange?.(cfg);
       setTrackerToast(
-        pauseAllSeeding()
-          ? 'All seeding paused. Per-file settings preserved.'
-          : 'Seeding resumed. Eligible files will re-announce.'
+        pauseAllSeeding() ? 'All seeding paused. Per-file settings preserved.' : 'Settings saved.'
       );
       window.setTimeout(() => setTrackerToast(''), 5000);
     } catch (e) {
       setTrackerToast(String(e instanceof Error ? e.message : e));
     } finally {
       setTrackerBusy(false);
+    }
+  };
+
+  const connectAndSync = async () => {
+    setConnectBusy(true);
+    setTrackerToast('');
+    try {
+      // Persist hub URL first so smart connect can use it.
+      const url = trackerUrl().trim() || DEFAULT_LOCAL_TRACKER_URL;
+      await trackerSetConfig({
+        ...buildCfg(),
+        trackerUrl: url,
+      });
+      const result = await trackerSmartConnect();
+      await loadTrackerConfig();
+      if (result.ok) {
+        try {
+          await transferFacade.syncAllEnabledSeeds();
+        } catch {
+          /* optional */
+        }
+        setTrackerToast(
+          `Connected via ${result.urlUsed}` +
+            (result.onlineNodes != null ? ` · ${result.onlineNodes} nodes` : '')
+        );
+        props.onConfigChange?.(await trackerGetConfig());
+      } else {
+        setTrackerToast(
+          result.error ||
+            'Could not reach any tracker. On a family PC set Hub LAN URL to the hub IP:8080.'
+        );
+      }
+      window.setTimeout(() => setTrackerToast(''), 8000);
+    } catch (e) {
+      setTrackerToast(String(e instanceof Error ? e.message : e));
+    } finally {
+      setConnectBusy(false);
     }
   };
 
@@ -115,11 +199,25 @@ export const ConnectionManager: Component<ConnectionManagerProps> = props => {
           <span class={`${styles.badge} ${styles.badgeLive}`}>Live</span>
         </div>
         <p class={styles.subtitle}>
-          Same role as POC-Tracker-Onion-Share Docker: announce files and fetch the public lobby.
-          Use <code class={styles.inlineCode}>http://…onion</code> only (no{' '}
-          <code class={styles.inlineCode}>:8080</code>) — the compose stack exposes the tracker on
-          Tor virtual port <strong>80</strong>, mapped to 8080 inside the container.
+          Use <strong>Connect &amp; sync lobby</strong> to auto-pick a reachable tracker (hub LAN →
+          last good → lab local → onion). Family PCs must set <strong>Hub LAN URL</strong> to the
+          hub machine IP — not <code class={styles.inlineCode}>127.0.0.1</code>.
         </p>
+
+        <div class={styles.connectHero}>
+          <Button
+            variant="primary"
+            loading={connectBusy()}
+            disabled={connectBusy() || trackerBusy()}
+            onClick={() => void connectAndSync()}
+          >
+            Connect &amp; sync lobby
+          </Button>
+          <p class={styles.subtitle}>
+            Probes and reconnects in one click. Avoids dead localhost fallbacks on other PCs.
+          </p>
+        </div>
+
         <label class={styles.fieldLabel}>
           Tracker base URL
           <textarea
@@ -132,6 +230,73 @@ export const ConnectionManager: Component<ConnectionManagerProps> = props => {
             autocomplete="off"
           />
         </label>
+
+        <label class={styles.fieldLabel}>
+          Hub LAN URL (household PCs)
+          <input
+            class={styles.trackerUrlField}
+            type="url"
+            placeholder="http://192.168.x.x:8080 — IP of the PC running TrackerRust Docker"
+            value={hubUrl()}
+            onInput={e => setHubUrl(e.currentTarget.value)}
+            spellcheck={false}
+            autocomplete="off"
+          />
+        </label>
+        <Show when={lastGood()}>
+          <p class={styles.subtitle}>
+            Last good tracker: <code class={styles.inlineCode}>{lastGood()}</code>
+          </p>
+        </Show>
+
+        <div class={styles.myOnionBlock}>
+          <div class={styles.sectionHeader}>
+            <label class={styles.fieldLabel} style={{ margin: 0, flex: 1 }}>
+              This machine’s .onion (share endpoint)
+              <input
+                class={styles.trackerUrlField}
+                type="text"
+                readonly
+                value={
+                  myOnion()
+                    ? myOnion()!.startsWith('http')
+                      ? myOnion()!
+                      : `http://${myOnion()}`
+                    : onionRunning()
+                      ? 'Waiting for hidden service…'
+                      : 'Onion share not running — start Tor / onion share first'
+                }
+                title="Published by this PC’s Tor hidden service. Share file links use this host."
+                spellcheck={false}
+              />
+            </label>
+            <span class={`${styles.badge} ${onionRunning() ? styles.badgeLive : styles.badgeIdle}`}>
+              {onionRunning() ? 'Published' : 'Offline'}
+            </span>
+          </div>
+          <Show when={onionPort() != null}>
+            <p class={styles.subtitle}>
+              Local Axum port: <code class={styles.inlineCode}>{onionPort()}</code> (Tor maps
+              virtual 80 → this port)
+            </p>
+          </Show>
+          <div class={styles.actionBar}>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={!myOnion()}
+              onClick={() => void copyMyOnion()}
+            >
+              Copy .onion link
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => void loadMyOnion()}>
+              Refresh onion
+            </Button>
+          </div>
+          <Show when={copyToast()}>
+            <div class={styles.toast}>{copyToast()}</div>
+          </Show>
+        </div>
         <div class={styles.trackerMeta}>
           <label class={styles.fieldLabelInline}>
             Node ID (anonymous identity)
@@ -153,15 +318,15 @@ export const ConnectionManager: Component<ConnectionManagerProps> = props => {
         <div class={styles.actionBar}>
           <Button
             variant="outline"
-            disabled={trackerBusy()}
+            disabled={trackerBusy() || connectBusy()}
             onClick={() => void loadTrackerConfig()}
           >
             Reload from disk
           </Button>
           <Button
-            variant="primary"
+            variant="outline"
             loading={trackerBusy()}
-            disabled={trackerBusy()}
+            disabled={trackerBusy() || connectBusy()}
             onClick={() => void saveTrackerConfig()}
           >
             Save tracker settings
@@ -197,7 +362,7 @@ export const ConnectionManager: Component<ConnectionManagerProps> = props => {
         <Show when={advancedOpen()}>
           <div class={styles.trackerMeta}>
             <p class={styles.subtitle}>
-              Manual lobby sync retries the tracker when automatic sync fails (Tor must be running).
+              Manual lobby sync retries the current saved tracker URL only.
             </p>
             <Button
               variant="primary"

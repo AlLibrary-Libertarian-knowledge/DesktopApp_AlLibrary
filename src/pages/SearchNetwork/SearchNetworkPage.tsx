@@ -1,26 +1,19 @@
 /**
  * SearchNetworkPage - P2P Network Search Interface
- * Enhanced to match HomePage and DocumentManagement sophisticated patterns
  */
 
 import { type Component, createSignal, onMount, Show, For } from 'solid-js';
-import { useNavigate } from '@solidjs/router';
-import { Search, Shield, Filter, Download, BookOpen, ArrowRight, Users } from 'lucide-solid';
+import { useNavigate, useSearchParams } from '@solidjs/router';
+import { Search, Shield, Filter, Download, BookOpen, Users, HardDrive } from 'lucide-solid';
 
-// Foundation Components
 import { Button } from '../../components/foundation/Button';
-import { Input } from '../../components/foundation/Input';
 import { TopCard } from '@/components/composite/TopCard';
-import StatCard from '@/components/composite/StatCard/StatCard';
 import LoadingSpinner from '@/components/foundation/LoadingSpinner/LoadingSpinner';
 
-// Domain Components
 import { NetworkFileCard } from '../../components/domain/network/NetworkFileCard';
-import { NetworkStatus } from '../../components/domain/network/NetworkStatus';
 import { OnionStatusBar } from '../../components/domain/network/OnionStatusBar';
 import { TransferQueuePanel } from '@/components/domain/network/TransferQueuePanel';
 
-// Hooks and Services
 import { useNetworkSearch, type NetworkSearchResult } from '../../hooks/api/useNetworkSearch';
 import { useNetworkLobby } from '../../hooks/api/useNetworkLobby';
 import { enableTorAndP2P } from '../../services/network/bootstrap';
@@ -31,10 +24,6 @@ import { useToast } from '@/hooks/ui/useToast';
 import { downloadWithToast } from '@/utils/downloadActions';
 import { documentService } from '@/services/documentService';
 
-// Types
-import type { Document } from '@/types/core';
-
-// Styles
 import styles from './SearchNetworkPage.module.css';
 
 export interface SearchNetworkPageProps {
@@ -46,31 +35,32 @@ export interface SearchNetworkPageProps {
 
 export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const transfer = useTransferState();
   const toast = useToast();
   const [hash, setHash] = createSignal('');
   const [downloadError, setDownloadError] = createSignal<string | null>(null);
 
-  // State Management
-  const [searchQuery, setSearchQuery] = createSignal(props.initialQuery || '');
-  const [activeTab, setActiveTab] = createSignal<'search' | 'results'>('results');
-  // const [viewMode, setViewMode] = createSignal<'grid' | 'list'>(props.initialViewMode || 'grid');
+  const queryFromUrl = () => {
+    const q = searchParams.q;
+    return (Array.isArray(q) ? q[0] : q)?.trim() || '';
+  };
+
+  const [searchQuery, setSearchQuery] = createSignal(props.initialQuery || queryFromUrl());
+  const [hasSearched, setHasSearched] = createSignal(false);
   const [showFilters, setShowFilters] = createSignal(false);
   const [anonymousMode, setAnonymousMode] = createSignal(props.anonymousMode || false);
   const [torEstablishing, setTorEstablishing] = createSignal(false);
   const [downloadingAll, setDownloadingAll] = createSignal(false);
 
   const { presence } = useNetworkPresenceResource();
-
-  // Search filters
   const [fileTypes, setFileTypes] = createSignal<string[]>([]);
-  // const [culturalLevels, setCulturalLevels] = createSignal<number[]>([]);
 
-  // Hooks
   const { results, isSearching, search } = useNetworkSearch();
   const lobby = useNetworkLobby();
   const net = useNetworkStore();
   let searchInputEl: HTMLInputElement | undefined;
+
   const onEnableTorClick = async () => {
     try {
       setTorEstablishing(true);
@@ -81,21 +71,6 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
       setTorEstablishing(false);
     }
   };
-
-  onMount(() => {
-    const keyHandler = (ev: KeyboardEvent) => {
-      const isMac = navigator.platform.includes('Mac');
-      if ((isMac ? ev.metaKey : ev.ctrlKey) && ev.key.toLowerCase() === 'k') {
-        ev.preventDefault();
-        searchInputEl?.focus();
-      }
-    };
-    window.addEventListener('keydown', keyHandler);
-    void handleSearch();
-    return () => {
-      window.removeEventListener('keydown', keyHandler);
-    };
-  });
 
   const formatTotalSize = (bytes: number) => {
     if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KiB`;
@@ -113,7 +88,8 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
     presence().onionActive || (transfer.onionRunning() && Boolean(transfer.onionAddress()));
 
   const handleSearch = async () => {
-    setActiveTab('results');
+    setHasSearched(true);
+    setDownloadError(null);
     try {
       await search(
         {
@@ -128,8 +104,30 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
     }
   };
 
+  onMount(() => {
+    const keyHandler = (ev: KeyboardEvent) => {
+      const isMac = navigator.platform.includes('Mac');
+      if ((isMac ? ev.metaKey : ev.ctrlKey) && ev.key.toLowerCase() === 'k') {
+        ev.preventDefault();
+        searchInputEl?.focus();
+      }
+    };
+    window.addEventListener('keydown', keyHandler);
+
+    const initial = (props.initialQuery || queryFromUrl()).trim();
+    if (initial) {
+      setSearchQuery(initial);
+      void handleSearch();
+    }
+
+    return () => {
+      window.removeEventListener('keydown', keyHandler);
+    };
+  });
+
+  // Swarm-first so multi-seeder parallel fetch is used whenever possible.
   const downloadTargetFor = (result: NetworkSearchResult) =>
-    result.directLink || result.document.filePath || result.swarmLink || result.document.id;
+    result.swarmLink || result.document.id || result.directLink || result.document.filePath;
 
   const handleFileDownload = async (result: NetworkSearchResult) => {
     setDownloadError(null);
@@ -161,10 +159,6 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
     }
   };
 
-  const handleSearchInput = (value: string) => {
-    setSearchQuery(value);
-  };
-
   const handleDocumentOpen = async (result: NetworkSearchResult) => {
     const resolved = await documentService.resolveDocumentById(result.document.id);
     if (resolved?.source === 'local' && resolved.filePath) {
@@ -174,17 +168,18 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
     toast.info('Download this file first — it will open in the reader once saved to your library.');
   };
 
-  // Removed unused hasSearched state
+  const toggleFileType = (type: string) => {
+    const types = fileTypes();
+    setFileTypes(types.includes(type) ? types.filter(t => t !== type) : [...types, type]);
+  };
 
   return (
     <div class={styles['search-network-page']}>
-      {/* Futuristic header using existing TopCard component */}
       <TopCard
         title="Network Search Hub"
         subtitle="Distributed search across the P2P network"
         rightContent={
           <div class={styles['network-status-enhanced']}>
-            <NetworkStatus variant="default" />
             <OnionStatusBar
               variant="toolbar"
               onStartOnion={onEnableTorClick}
@@ -194,331 +189,299 @@ export const SearchNetworkPage: Component<SearchNetworkPageProps> = props => {
         }
       />
 
-      {/* Minimal tabs for clarity */}
-      <div class={styles['contentTabs']}>
-        <div class={styles['tabButtons']}>
-          <button
-            class={`${activeTab() === 'search' ? 'active' : ''}`}
-            onClick={() => setActiveTab('search')}
-          >
-            <Search size={16} />
-            &nbsp;Overview
-          </button>
-          <button
-            class={`${activeTab() === 'results' ? 'active' : ''}`}
-            onClick={() => setActiveTab('results')}
-          >
-            <BookOpen size={16} />
-            &nbsp;Search Results
-          </button>
-        </div>
-      </div>
-
       <div class={styles['dashboard-content']}>
-        {/* Search Interface Tab */}
-        {activeTab() === 'search' && (
-          <>
-            {/* Network Statistics removed (mocked). Live info shown in header. */}
-
-            {/* Enhanced Search Interface */}
-            <section class={styles['searchControls']}>
-              <div class={styles['searchBar']}>
-                <div class={styles['searchOptions']}>
-                  <div class={styles['searchOptionsRight']}>
-                    <div>
-                      <Input
-                        type="text"
-                        placeholder="Download by hash"
-                        value={hash()}
-                        onInput={v => setHash(v)}
-                      />
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={transfer.busy() || !hash().trim() || !canDownload()}
-                        onClick={async () => {
-                          setDownloadError(null);
-                          try {
-                            await downloadWithToast(
-                              hash().trim(),
-                              () => transfer.startDownload(hash().trim(), hash().trim()),
-                              toast
-                            );
-                          } catch (e) {
-                            setDownloadError(e instanceof Error ? e.message : String(e));
-                          }
-                        }}
-                      >
-                        <Download size={14} class="mr-2" />
-                        Download
-                      </Button>
-                      <Show when={downloadError() || transfer.error()}>
-                        <p class={styles['download-error']} role="alert">
-                          {downloadError() || transfer.error()}
-                        </p>
-                      </Show>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowFilters(!showFilters())}
-                    >
-                      <Filter size={16} class="mr-2" />
-                      {showFilters() ? 'Hide Filters' : 'Show Filters'}
-                    </Button>
-                  </div>
-                </div>
-
-                <div class={styles['searchInputContainer']}>
-                  <Search size={20} />
-                  <Input
-                    type="text"
-                    placeholder="Search documents across the P2P network..."
-                    value={searchQuery()}
-                    onInput={handleSearchInput}
-                    onKeyDown={(e: any) => {
-                      if (e.key === 'Enter') handleSearch();
-                    }}
-                    ref={(el: HTMLInputElement) => {
-                      searchInputEl = el;
-                    }}
-                    class={styles['searchInput'] as unknown as string}
-                  />
-                  <div class={styles['searchActions']}>
-                    <Button variant="primary" onClick={handleSearch} disabled={isSearching()}>
-                      {isSearching() ? 'Searching...' : 'Search Network'}
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Filters with smooth expand */}
-                <div
-                  class={styles['filtersPanel']}
-                  data-open={showFilters() ? '1' : '0'}
-                  aria-hidden={!showFilters()}
-                  aria-expanded={showFilters()}
+        <section class={styles.searchControls} aria-label="Network search">
+          <div class={styles.searchBar}>
+            <div class={styles.searchInputContainer}>
+              <Search size={20} aria-hidden="true" />
+              <input
+                type="search"
+                class={styles.searchInput}
+                placeholder="Search documents across the P2P network..."
+                value={searchQuery()}
+                onInput={e => setSearchQuery(e.currentTarget.value)}
+                onKeyDown={(e: KeyboardEvent) => {
+                  if (e.key === 'Enter') void handleSearch();
+                }}
+                ref={el => {
+                  searchInputEl = el;
+                }}
+                aria-label="Search the P2P network"
+              />
+              <div class={styles.searchActions}>
+                <Button
+                  variant="primary"
+                  class={styles.purplePrimary}
+                  onClick={() => void handleSearch()}
+                  disabled={isSearching()}
                 >
-                  <div class={styles['searchOptions']}>
-                    <div class={styles['searchOptionsLeft']}>
-                      <label>Scope (coming soon)</label>
-                      <div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled
-                          title="Peer trust filtering is not available yet"
-                        >
-                          All Peers
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled
-                          title="Peer trust filtering is not available yet"
-                        >
-                          Trusted Only
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled
-                          title="Peer trust filtering is not available yet"
-                        >
-                          Nearby Peers
-                        </Button>
-                      </div>
-                    </div>
-                    <div class={styles['searchOptionsRight']}>
-                      <label>Types</label>
-                      <div>
-                        <Button
-                          variant={fileTypes().includes('pdf') ? 'primary' : 'outline'}
-                          size="sm"
-                          onClick={() => {
-                            const types = fileTypes();
-                            setFileTypes(
-                              types.includes('pdf')
-                                ? types.filter(t => t !== 'pdf')
-                                : [...types, 'pdf']
-                            );
-                            void handleSearch();
-                          }}
-                        >
-                          PDF
-                        </Button>
-                        <Button
-                          variant={fileTypes().includes('epub') ? 'primary' : 'outline'}
-                          size="sm"
-                          onClick={() => {
-                            const types = fileTypes();
-                            setFileTypes(
-                              types.includes('epub')
-                                ? types.filter(t => t !== 'epub')
-                                : [...types, 'epub']
-                            );
-                            void handleSearch();
-                          }}
-                        >
-                          EPUB
-                        </Button>
-                        <Button
-                          variant={anonymousMode() ? 'primary' : 'outline'}
-                          size="sm"
-                          onClick={() => setAnonymousMode(!anonymousMode())}
-                        >
-                          <Shield size={16} />
-                          &nbsp;Anonymous
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                  {isSearching() ? 'Searching…' : 'Search Network'}
+                </Button>
               </div>
-            </section>
-
-            {/* Quick metrics ribbon using StatCard */}
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-              <StatCard
-                type="peers"
-                icon={<Users size={20} />}
-                number={`${lobby.onlineNodes()}`}
-                label="Nodes Online"
-                trendType="neutral"
-                trendIcon={<ArrowRight size={12} />}
-                trendValue="live"
-                graphType="peers"
-              />
-              <StatCard
-                type="documents"
-                icon={<BookOpen size={20} />}
-                number={String(lobby.files().length)}
-                label="Lobby Files"
-                trendType="neutral"
-                trendIcon={<ArrowRight size={12} />}
-                trendValue="cached"
-                graphType="chart"
-              />
-              <StatCard
-                type="health"
-                icon={<Shield size={20} />}
-                number={lobbyTotalSize()}
-                label="Lobby Total Size"
-                trendType={presence().onionActive ? 'positive' : 'neutral'}
-                trendIcon={<ArrowRight size={12} />}
-                trendValue={presence().onionActive ? 'Live' : 'Cached'}
-                graphType="health"
-              />
             </div>
 
-            {/* Removed bulk toolbar for streamlined UI */}
-
-            {/* Network Activity Preview removed until wired with live events */}
-          </>
-        )}
-
-        {/* Search Results Tab */}
-        {activeTab() === 'results' && (
-          <section class={styles['results-section']} id="resultsTop" aria-live="polite">
-            <div class={styles['section-header']}>
-              <h2>Search Results</h2>
-              <div class={styles['result-controls']}>
-                <span>
-                  {results()?.length ?? 0} files · {resultsTotalSize()}
-                </span>
+            <div class={styles.searchToolbar}>
+              <div class={styles.hashDownload}>
+                <input
+                  type="text"
+                  class={styles.hashInput}
+                  placeholder="Download by hash"
+                  value={hash()}
+                  onInput={e => setHash(e.currentTarget.value)}
+                  aria-label="Download by content hash"
+                />
                 <Button
                   variant="outline"
                   size="sm"
-                  disabled={!results()?.length || downloadingAll() || !canDownload()}
-                  onClick={() => void handleDownloadAll()}
+                  class={styles.purpleOutline}
+                  disabled={transfer.busy() || !hash().trim() || !canDownload()}
+                  onClick={async () => {
+                    setDownloadError(null);
+                    try {
+                      await downloadWithToast(
+                        hash().trim(),
+                        () => transfer.startDownload(hash().trim(), hash().trim()),
+                        toast
+                      );
+                    } catch (e) {
+                      setDownloadError(e instanceof Error ? e.message : String(e));
+                    }
+                  }}
                 >
-                  <Download size={14} class="mr-2" />
-                  {downloadingAll() ? 'Queueing…' : 'Download All'}
+                  <Download size={14} />
+                  Download
                 </Button>
               </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                class={styles.purpleGhost}
+                onClick={() => setShowFilters(!showFilters())}
+              >
+                <Filter size={16} />
+                {showFilters() ? 'Hide Filters' : 'Filters'}
+              </Button>
             </div>
-            <Show when={!canDownload() && (results()?.length ?? 0) > 0}>
-              <div class={styles['download-error']}>
-                <p>
-                  Downloads need Tor onion sharing to be ready. You can browse cached results now;
-                  queue downloads once Onion status shows ready.
-                </p>
-                <Button variant="outline" size="sm" onClick={() => navigate('/transfers')}>
-                  Open Sharing &amp; downloads
-                </Button>
-              </div>
-            </Show>
 
-            <Show when={downloadError() && activeTab() === 'results'}>
+            <Show when={downloadError()}>
               <p class={styles['download-error']} role="alert">
                 {downloadError()}
               </p>
             </Show>
 
-            <TransferQueuePanel
-              variant="compact"
-              showOutbound={false}
-              class={styles['transfer-queue']}
-            />
-
-            <Show
-              when={isSearching() && !(results()?.length ?? 0)}
-              fallback={
-                <Show when={(results()?.length ?? 0) > 0}>
-                  <div class={styles['results-grid']}>
-                    <For each={results()}>
-                      {(result: NetworkSearchResult) => {
-                        const target = downloadTargetFor(result);
-                        const row = () => transfer.findDownloadForTarget(target);
-                        return (
-                          <NetworkFileCard
-                            contentHash={result.document.id}
-                            name={result.document.title}
-                            size={result.document.fileSize}
-                            link={result.document.filePath || ''}
-                            peerCount={result.peerCount}
-                            canDownload={canDownload()}
-                            downloadProgress={row()?.progress}
-                            downloadStatus={row()?.status}
-                            downloadError={row()?.error}
-                            onOpen={() => void handleDocumentOpen(result)}
-                            onDownload={() => handleFileDownload(result)}
-                            onDownloadError={msg => setDownloadError(msg)}
-                          />
-                        );
-                      }}
-                    </For>
-                  </div>
-                </Show>
-              }
+            <div
+              class={styles.filtersPanel}
+              data-open={showFilters() ? '1' : '0'}
+              aria-hidden={!showFilters()}
+              aria-expanded={showFilters()}
             >
-              <div class={styles['search-progress']}>
-                <LoadingSpinner
-                  variant="ring"
-                  size="md"
-                  message={`Searching across ${net.connectedPeers()} connected peers...`}
-                  showMessage
-                />
+              <div class={styles.filterGroups}>
+                <div class={styles.filterGroup}>
+                  <span class={styles.filterLabel}>Scope</span>
+                  <div class={styles.filterChips}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled
+                      title="Peer trust filtering is not available yet"
+                    >
+                      All Peers
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled
+                      title="Peer trust filtering is not available yet"
+                    >
+                      Trusted Only
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled
+                      title="Peer trust filtering is not available yet"
+                    >
+                      Nearby Peers
+                    </Button>
+                  </div>
+                </div>
+                <div class={styles.filterGroup}>
+                  <span class={styles.filterLabel}>Types</span>
+                  <div class={styles.filterChips}>
+                    <Button
+                      variant={fileTypes().includes('pdf') ? 'primary' : 'outline'}
+                      size="sm"
+                      onClick={() => {
+                        toggleFileType('pdf');
+                        if (hasSearched()) void handleSearch();
+                      }}
+                    >
+                      PDF
+                    </Button>
+                    <Button
+                      variant={fileTypes().includes('epub') ? 'primary' : 'outline'}
+                      size="sm"
+                      onClick={() => {
+                        toggleFileType('epub');
+                        if (hasSearched()) void handleSearch();
+                      }}
+                    >
+                      EPUB
+                    </Button>
+                    <Button
+                      variant={anonymousMode() ? 'primary' : 'outline'}
+                      size="sm"
+                      onClick={() => setAnonymousMode(!anonymousMode())}
+                    >
+                      <Shield size={14} />
+                      Anonymous
+                    </Button>
+                  </div>
+                </div>
               </div>
-              <div class={styles['skeleton-grid']}>
-                <For each={[1, 2, 3, 4, 5, 6]}>{() => <div class={styles['skeleton-card']} />}</For>
-              </div>
-            </Show>
+            </div>
+          </div>
+        </section>
 
-            <Show when={!isSearching() && results()?.length === 0}>
-              <div class={styles['empty-state']}>
-                <Search size={48} />
-                <h3>No results found</h3>
-                <p>Try adjusting your search terms or expanding your search scope.</p>
-                <Button variant="primary" onClick={() => setActiveTab('search')}>
-                  <ArrowRight size={16} class="mr-2" />
-                  Back to Search
-                </Button>
-              </div>
-            </Show>
-          </section>
-        )}
+        <div class={styles.metricsRibbon} aria-label="Network metrics">
+          <div class={styles.metricChip}>
+            <Users size={15} aria-hidden="true" />
+            <div>
+              <strong>{lobby.onlineNodes()}</strong>
+              <span>Nodes online</span>
+            </div>
+          </div>
+          <div class={styles.metricChip}>
+            <BookOpen size={15} aria-hidden="true" />
+            <div>
+              <strong>{lobby.files().length}</strong>
+              <span>Lobby files</span>
+            </div>
+          </div>
+          <div class={styles.metricChip}>
+            <HardDrive size={15} aria-hidden="true" />
+            <div>
+              <strong>{lobbyTotalSize()}</strong>
+              <span>Lobby size</span>
+            </div>
+          </div>
+        </div>
 
-        {/* Network Activity Tab intentionally minimal until live events wiring */}
+        <section class={styles['results-section']} id="resultsTop" aria-live="polite">
+          <div class={styles['section-header']}>
+            <h2>Search Results</h2>
+            <div class={styles['result-controls']}>
+              <span class={styles.resultMeta}>
+                {hasSearched()
+                  ? `${results()?.length ?? 0} files · ${resultsTotalSize()}`
+                  : 'Ready to search'}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!results()?.length || downloadingAll() || !canDownload()}
+                onClick={() => void handleDownloadAll()}
+              >
+                <Download size={14} />
+                {downloadingAll() ? 'Queueing…' : 'Download All'}
+              </Button>
+            </div>
+          </div>
+
+          <Show when={!canDownload() && (results()?.length ?? 0) > 0}>
+            <div class={styles.downloadNotice}>
+              <p>
+                Downloads need Tor onion sharing to be ready. Browse results now; queue downloads
+                once Onion status shows ready.
+              </p>
+              <Button variant="outline" size="sm" onClick={() => navigate('/transfers')}>
+                Open Sharing &amp; downloads
+              </Button>
+            </div>
+          </Show>
+
+          <Show when={isSearching()}>
+            <div class={styles['search-progress']}>
+              <LoadingSpinner
+                variant="ring"
+                size="md"
+                message={`Searching across ${net.connectedPeers()} connected peers…`}
+                showMessage
+              />
+            </div>
+            <div class={styles['skeleton-grid']}>
+              <For each={[1, 2, 3, 4, 5, 6]}>{() => <div class={styles['skeleton-card']} />}</For>
+            </div>
+          </Show>
+
+          <Show when={!isSearching() && (results()?.length ?? 0) > 0}>
+            <div class={styles['results-grid']}>
+              <For each={results()}>
+                {(result: NetworkSearchResult) => {
+                  const target = downloadTargetFor(result);
+                  const row = () => transfer.findDownloadForTarget(target);
+                  return (
+                    <NetworkFileCard
+                      contentHash={result.document.id}
+                      name={result.document.title}
+                      size={result.document.fileSize}
+                      link={result.document.filePath || ''}
+                      peerCount={result.peerCount}
+                      canDownload={canDownload()}
+                      downloadProgress={row()?.progress}
+                      downloadStatus={row()?.status}
+                      downloadError={row()?.error}
+                      onOpen={() => void handleDocumentOpen(result)}
+                      onDownload={() => void handleFileDownload(result)}
+                      onDownloadError={msg => setDownloadError(msg)}
+                    />
+                  );
+                }}
+              </For>
+            </div>
+          </Show>
+
+          <Show when={!isSearching() && !hasSearched()}>
+            <div class={styles['empty-state']}>
+              <div class={styles.emptyIcon} aria-hidden="true">
+                <Search size={22} />
+              </div>
+              <h3>Search the P2P network</h3>
+              <p>Enter a query above to find documents shared by peers.</p>
+            </div>
+          </Show>
+
+          <Show when={!isSearching() && hasSearched() && (results()?.length ?? 0) === 0}>
+            <div class={styles['empty-state']}>
+              <div class={styles.emptyIcon} aria-hidden="true">
+                <Search size={22} />
+              </div>
+              <h3>No results found</h3>
+              <p>Try adjusting your search terms or expanding your search scope.</p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  searchInputEl?.focus();
+                  searchInputEl?.select();
+                }}
+              >
+                Refine search
+              </Button>
+            </div>
+          </Show>
+        </section>
+
+        <section class={styles.downloadsSection} aria-label="Downloads from search">
+          <TransferQueuePanel
+            variant="compact"
+            showOutbound={false}
+            showCompleted={false}
+            hideSummary
+            hideEmptySearchLink
+            class={styles['transfer-queue']}
+          />
+        </section>
       </div>
     </div>
   );

@@ -1,8 +1,8 @@
 import type { Node, Link } from '../types';
 import { physicsConfig } from '../config/physicsConfig';
 
-/** Flip to `false` (or pass `useMockData={false}` on NetworkGraph) when wiring live tracker lobby. */
-export const USE_MOCK_NETWORK_GRAPH = true;
+/** Live tracker lobby by default; pass `useMockData={true}` for demos/tests. */
+export const USE_MOCK_NETWORK_GRAPH = false;
 
 const initializeOrbitalProperties = (node: Node, centerX = 400, centerY = 300): Node => {
   if (node.type === 'self') {

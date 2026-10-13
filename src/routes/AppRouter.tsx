@@ -10,7 +10,6 @@ const Favorites = lazy(() => import('../pages/Favorites'));
 const Recent = lazy(() => import('../pages/Recent'));
 const Trending = lazy(() => import('../pages/Trending'));
 const Browse = lazy(() => import('../pages/Browse'));
-const NewArrivalsPage = lazy(() => import('../pages/NewArrivals'));
 const Peers = lazy(() => import('../pages/Peers'));
 const NetworkHealth = lazy(() => import('../pages/NetworkHealth'));
 const ConnectionManager = lazy(() => import('../pages/ConnectionManager'));
@@ -97,14 +96,6 @@ const AppRouter = () => {
         component={() => (
           <Suspense fallback={<RouteLoading />}>
             <Trending />
-          </Suspense>
-        )}
-      />
-      <Route
-        path="/new-arrivals"
-        component={() => (
-          <Suspense fallback={<RouteLoading />}>
-            <NewArrivalsPage />
           </Suspense>
         )}
       />

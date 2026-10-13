@@ -28,6 +28,8 @@ pub struct FetchStats {
     pub content_hash: Option<String>,
     pub duration_ms: u64,
     pub retries: u32,
+    /// Time until first decrypted chunk (proxy for Tor circuit / first-byte latency).
+    pub tor_circuit_latency_ms: u64,
 }
 
 pub fn build_http_client(base_url: &str, socks_addr: Option<String>) -> anyhow::Result<reqwest::Client> {
@@ -79,6 +81,7 @@ pub async fn fetch_to_directory(
             let out_path = out_dir.join(&manifest.file_name);
             let mut out_file = tokio::fs::File::create(&out_path).await?;
             let mut bytes_moved = 0u64;
+            let mut first_byte_ms: Option<u64> = None;
 
             for idx in 0..manifest.total_chunks {
                 let ct = client
@@ -91,6 +94,9 @@ pub async fn fetch_to_directory(
 
                 let pt = crypto::decrypt_chunk(&link.key, link.file_id, idx, &ct)
                     .with_context(|| format!("chunk {} decrypt failed", idx))?;
+                if first_byte_ms.is_none() {
+                    first_byte_ms = Some(started.elapsed().as_millis() as u64);
+                }
                 bytes_moved += pt.len() as u64;
                 tokio::io::AsyncWriteExt::write_all(&mut out_file, &pt).await?;
                 report_progress(&progress_cb, (idx + 1) as u32, total, bytes_moved);
@@ -107,6 +113,7 @@ pub async fn fetch_to_directory(
                 content_hash: None,
                 duration_ms: started.elapsed().as_millis() as u64,
                 retries: 0,
+                tor_circuit_latency_ms: first_byte_ms.unwrap_or_else(|| started.elapsed().as_millis() as u64),
             })
         }
         ParsedLink::Swarm(swarm) => {
@@ -163,12 +170,15 @@ pub async fn fetch_to_directory(
             let sem = std::sync::Arc::new(tokio::sync::Semaphore::new(concurrency));
             let fail_counter = Arc::new(AtomicU32::new(0));
             let retry_counter = Arc::new(AtomicU32::new(0));
+            let first_byte_ms = Arc::new(std::sync::Mutex::new(None::<u64>));
+            let started_swarm = started;
 
             for idx in 0..manifest.total_chunks {
                 let permit = sem.clone().acquire_owned().await?;
                 let peers = network_file.peers.clone();
                 let fails = fail_counter.clone();
                 let retries = retry_counter.clone();
+                let first_byte = first_byte_ms.clone();
                 let client_inner =
                     build_http_client(&format!("http://{}", peers[0].onion), Some(socks.clone()))?;
                 join_set.spawn(async move {
@@ -188,7 +198,16 @@ pub async fn fetch_to_directory(
                                 if let Ok(bytes) = ok_resp.bytes().await {
                                     match crypto::decrypt_chunk(&file_key, peer.file_id, idx, &bytes)
                                     {
-                                        Ok(pt) => return Ok::<_, anyhow::Error>((idx, pt)),
+                                        Ok(pt) => {
+                                            if let Ok(mut slot) = first_byte.lock() {
+                                                if slot.is_none() {
+                                                    *slot = Some(
+                                                        started_swarm.elapsed().as_millis() as u64,
+                                                    );
+                                                }
+                                            }
+                                            return Ok::<_, anyhow::Error>((idx, pt));
+                                        }
                                         Err(_) => {
                                             fails.fetch_add(1, Ordering::Relaxed);
                                         }
@@ -212,6 +231,11 @@ pub async fn fetch_to_directory(
                 completed += 1;
                 report_progress(&progress_cb, completed, total, bytes_moved);
             }
+            let tor_ms = first_byte_ms
+                .lock()
+                .ok()
+                .and_then(|g| *g)
+                .unwrap_or_else(|| started.elapsed().as_millis() as u64);
 
             let mut out_file = tokio::fs::File::create(&out_path).await?;
             for chunk in chunks.into_iter() {
@@ -230,6 +254,7 @@ pub async fn fetch_to_directory(
                 content_hash: Some(network_file.content_hash),
                 duration_ms: started.elapsed().as_millis() as u64,
                 retries: retry_counter.load(Ordering::Relaxed),
+                tor_circuit_latency_ms: tor_ms,
             })
         }
     }

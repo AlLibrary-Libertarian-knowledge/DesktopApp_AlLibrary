@@ -42,11 +42,50 @@ pub async fn fetch_lobby_http(
     tracker_url: &str,
     socks_addr: Option<&str>,
 ) -> Result<NetworkLobby, String> {
-    let client = build_http_client(
+    fetch_lobby_http_with_timeouts(
         tracker_url,
-        socks_addr.map(|s| s.to_string()),
+        socks_addr,
+        Duration::from_secs(90),
+        Duration::from_secs(180),
     )
-    .map_err(|e| e.to_string())?;
+    .await
+}
+
+/// Short timeouts for the connect-modal probe (must not feel infinite).
+pub async fn fetch_lobby_http_probe(
+    tracker_url: &str,
+    socks_addr: Option<&str>,
+) -> Result<NetworkLobby, String> {
+    fetch_lobby_http_with_timeouts(
+        tracker_url,
+        socks_addr,
+        Duration::from_secs(6),
+        Duration::from_secs(10),
+    )
+    .await
+}
+
+async fn fetch_lobby_http_with_timeouts(
+    tracker_url: &str,
+    socks_addr: Option<&str>,
+    connect_timeout: Duration,
+    request_timeout: Duration,
+) -> Result<NetworkLobby, String> {
+    let mut builder = reqwest::Client::builder()
+        .connect_timeout(connect_timeout)
+        .timeout(request_timeout)
+        .user_agent("AlLibrary-onion-share/0.1");
+    if tracker_url.contains(".onion") {
+        let socks = socks_addr
+            .map(str::trim)
+            .filter(|s| !s.is_empty())
+            .ok_or_else(|| {
+                "Tor SOCKS not ready — wait for Onion Active, or use http://127.0.0.1:8080".to_string()
+            })?;
+        builder = builder
+            .proxy(reqwest::Proxy::all(format!("socks5h://{}", socks)).map_err(|e| e.to_string())?);
+    }
+    let client = builder.build().map_err(|e| e.to_string())?;
     let lobby_url = format!("{}/lobby", tracker_url.trim_end_matches('/'));
     let lobby = client
         .get(&lobby_url)
@@ -89,8 +128,19 @@ pub async fn probe_tracker(
             error: Some("empty tracker URL".into()),
         };
     }
+    if url.contains(".onion") && socks_addr.map(str::trim).unwrap_or("").is_empty() {
+        return TrackerProbeResult {
+            online: false,
+            url,
+            online_nodes: None,
+            latency_ms: Some(0),
+            error: Some(
+                "Tor SOCKS not ready — wait for Onion Active, or use http://127.0.0.1:8080".into(),
+            ),
+        };
+    }
     let started = std::time::Instant::now();
-    match fetch_lobby_http(&url, socks_addr).await {
+    match fetch_lobby_http_probe(&url, socks_addr).await {
         Ok(lobby) => TrackerProbeResult {
             online: true,
             url,
@@ -296,14 +346,32 @@ pub async fn sync_tracker_result(
         );
     }
 
-    let mut candidates: Vec<(String, bool)> = vec![(primary.clone(), false)];
-    let local_fb = normalize_tracker_url("http://127.0.0.1:8080");
-    if cfg.try_local_tracker_fallback && primary.contains(".onion") && local_fb != primary {
-        candidates.push((local_fb, true));
-        info!(
-            "Local Docker fallback queued: try {} if Tor cannot reach {}",
-            "http://127.0.0.1:8080", primary
-        );
+    let mut candidates: Vec<(String, bool)> = Vec::new();
+    let mut push_cand = |url: String, is_fb: bool| {
+        if url.is_empty() {
+            return;
+        }
+        if candidates.iter().any(|(u, _)| u == &url) {
+            return;
+        }
+        candidates.push((url, is_fb));
+    };
+    push_cand(primary.clone(), false);
+    push_cand(normalize_tracker_url(&cfg.preferred_hub_url), false);
+    push_cand(normalize_tracker_url(&cfg.last_good_tracker_url), false);
+    let local_fb = normalize_tracker_url(LOCAL_TRACKER_HTTP);
+    if cfg.try_local_tracker_fallback {
+        // Only queue localhost if it actually answers — family PCs have no tracker there.
+        let local_up = probe_tracker(&local_fb, None).await.online;
+        if local_up {
+            push_cand(local_fb, true);
+            info!(
+                "Local Docker fallback queued: try {} if primary fails",
+                LOCAL_TRACKER_HTTP
+            );
+        } else {
+            info!("Skipping localhost tracker fallback (nothing on :8080)");
+        }
     }
 
     let mut last_err = String::new();
@@ -317,6 +385,13 @@ pub async fn sync_tracker_result(
                         base
                     );
                 }
+                let mut cfg_save = AppConfig::load();
+                cfg_save.last_good_tracker_url = base.clone();
+                if cfg_save.tracker_url.trim() != base.as_str() && !base.contains(".onion") {
+                    // Prefer sticky LAN hub once it works (household PCs).
+                    cfg_save.tracker_url = base.clone();
+                }
+                let _ = cfg_save.save();
                 return Ok(TrackerSyncOutcome {
                     url_used: base,
                     used_localhost_fallback: is_fb,

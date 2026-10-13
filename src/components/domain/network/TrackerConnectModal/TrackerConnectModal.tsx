@@ -6,6 +6,7 @@ import {
   trackerGetConfig,
   trackerProbe,
   trackerSetConfig,
+  trackerSmartConnect,
   type TrackerProbeResult,
 } from '@/services/network/onionShareService';
 import { transferFacade } from '@/services/network/transferFacade';
@@ -20,6 +21,20 @@ export interface TrackerConnectModalProps {
 
 type ProbeUi = 'checking' | 'online' | 'offline';
 
+function shortenEndpoint(url: string): string {
+  const t = url.trim();
+  if (!t) return '';
+  if (!t.includes('.onion') || t.length <= 48) return t;
+  try {
+    const u = new URL(t);
+    const host = u.hostname;
+    if (host.length <= 28) return t;
+    return `${u.protocol}//${host.slice(0, 10)}…${host.slice(-8)}`;
+  } catch {
+    return t.length > 48 ? `${t.slice(0, 28)}…` : t;
+  }
+}
+
 export const TrackerConnectModal: Component<TrackerConnectModalProps> = props => {
   const [probe, setProbe] = createSignal<TrackerProbeResult | null>(null);
   const [probeUi, setProbeUi] = createSignal<ProbeUi>('checking');
@@ -31,12 +46,19 @@ export const TrackerConnectModal: Component<TrackerConnectModalProps> = props =>
 
   let pollTimer: number | undefined;
 
+  /** Bundled default from AppConfig::default().tracker_url (via tracker_probe). */
+  const defaultOnion = () => probe()?.defaultOnionUrl?.trim() || '';
+
   const defaultLocal = () => probe()?.defaultLocalUrl || DEFAULT_LOCAL_TRACKER_URL;
+
+  /** Primary CTA / status — same onion as Rust AppConfig default. */
+  const primaryUrl = () => defaultOnion() || savedUrl() || '';
 
   const refreshProbe = async (showChecking = false) => {
     if (showChecking || !firstProbeDone()) setProbeUi('checking');
     try {
-      const r = await trackerProbe(defaultLocal());
+      // No URL → Rust probes AppConfig::default().tracker_url
+      const r = await trackerProbe();
       setProbe(r);
       setProbeUi(r.online ? 'online' : 'offline');
       setFirstProbeDone(true);
@@ -86,6 +108,7 @@ export const TrackerConnectModal: Component<TrackerConnectModalProps> = props =>
         sharePublicly: cfg.sharePublicly ?? true,
         tryLocalTrackerFallback: cfg.tryLocalTrackerFallback,
         torBridges: cfg.torBridges,
+        preferredHubUrl: cfg.preferredHubUrl,
       });
       try {
         await transferFacade.syncAllEnabledSeeds();
@@ -96,6 +119,32 @@ export const TrackerConnectModal: Component<TrackerConnectModalProps> = props =>
         await networkFacade.refreshLobby();
       } catch {
         /* lobby may fail until Tor is up for onion URLs */
+      }
+      props.onConnected();
+    } catch (e) {
+      setError(String(e instanceof Error ? e.message : e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const smartConnect = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      const result = await trackerSmartConnect();
+      if (!result.ok) {
+        setError(
+          result.error ||
+            'Nenhum tracker alcançável. No PC familiar, use Lab local só no hub — ou informe o IP:8080 do hub.'
+        );
+        await refreshProbe(false);
+        return;
+      }
+      try {
+        await transferFacade.syncAllEnabledSeeds();
+      } catch {
+        /* optional */
       }
       props.onConnected();
     } catch (e) {
@@ -171,14 +220,15 @@ export const TrackerConnectModal: Component<TrackerConnectModalProps> = props =>
             <p class={styles.kicker}>Tracker server</p>
             <h2 class={styles.title}>Onde você quer entrar na rede?</h2>
             <p class={styles.lede}>
-              Um toque no padrão local — ou cole outro endereço se for lab remoto / Docker.
+              Padrão: tracker onion da rede. Use lab local só se o TrackerRust estiver na sua
+              máquina.
             </p>
 
             <div class={`${styles.statusLine} ${liveClass()}`}>
               <span class={styles.liveDot} />
               <span class={styles.statusText}>{statusCopy()}</span>
-              <span class={styles.endpoint} title={defaultLocal()}>
-                {defaultLocal()}
+              <span class={styles.endpoint} title={primaryUrl() || '…'}>
+                {shortenEndpoint(primaryUrl()) || '…'}
               </span>
             </div>
 
@@ -193,7 +243,11 @@ export const TrackerConnectModal: Component<TrackerConnectModalProps> = props =>
 
             <Show when={probeUi() === 'offline'}>
               <p class={styles.offlineHint}>
-                Suba o TrackerRust na porta 8080, ou escolha outra URL abaixo.
+                Use <strong>Conectar automaticamente</strong> — escolhe hub LAN / lab local / onion.
+                Lab neste PC:{' '}
+                {probe()?.localOnline
+                  ? `OK (${probe()?.localOnlineNodes ?? '?'} nós).`
+                  : 'indisponível em :8080 (normal em outro computador da casa).'}
               </p>
             </Show>
           </div>
@@ -204,12 +258,31 @@ export const TrackerConnectModal: Component<TrackerConnectModalProps> = props =>
             type="button"
             class={styles.cta}
             disabled={busy()}
-            onClick={() => void connectTo(defaultLocal())}
+            onClick={() => void smartConnect()}
           >
-            <span>Conectar ao tracker padrão</span>
+            <span>Conectar automaticamente</span>
             <span class={styles.ctaIcon}>
               <ArrowRight size={18} strokeWidth={2.5} />
             </span>
+          </button>
+          <Show when={probe()?.localOnline}>
+            <button
+              type="button"
+              class={styles.secondaryBtn}
+              disabled={busy()}
+              onClick={() => void connectTo(defaultLocal())}
+            >
+              Lab local (127.0.0.1:8080)
+              {probe()?.localOnlineNodes != null ? ` · ${probe()!.localOnlineNodes} nós` : ''}
+            </button>
+          </Show>
+          <button
+            type="button"
+            class={styles.secondaryBtn}
+            disabled={busy() || !primaryUrl()}
+            onClick={() => void connectTo(primaryUrl())}
+          >
+            Só onion padrão
           </button>
 
           <details class={styles.advanced}>
@@ -219,7 +292,7 @@ export const TrackerConnectModal: Component<TrackerConnectModalProps> = props =>
                 <input
                   class={styles.input}
                   type="url"
-                  placeholder="http://127.0.0.1:8080 ou http://….onion"
+                  placeholder="http://….onion ou http://127.0.0.1:8080"
                   value={customUrl()}
                   onInput={e => setCustomUrl(e.currentTarget.value)}
                   disabled={busy()}
@@ -235,6 +308,16 @@ export const TrackerConnectModal: Component<TrackerConnectModalProps> = props =>
               </div>
 
               <div class={styles.presetRow}>
+                <Show when={defaultOnion()}>
+                  <button
+                    type="button"
+                    class={styles.chipBtn}
+                    disabled={busy()}
+                    onClick={() => setCustomUrl(defaultOnion())}
+                  >
+                    Onion padrão
+                  </button>
+                </Show>
                 <button
                   type="button"
                   class={styles.chipBtn}
@@ -243,16 +326,6 @@ export const TrackerConnectModal: Component<TrackerConnectModalProps> = props =>
                 >
                   Lab local
                 </button>
-                <Show when={probe()?.defaultOnionUrl}>
-                  <button
-                    type="button"
-                    class={styles.chipBtn}
-                    disabled={busy()}
-                    onClick={() => setCustomUrl(probe()!.defaultOnionUrl)}
-                  >
-                    Onion Docker
-                  </button>
-                </Show>
               </div>
 
               <Show when={savedUrl()}>
@@ -280,7 +353,7 @@ export const TrackerConnectModal: Component<TrackerConnectModalProps> = props =>
             </button>
           </Show>
           <p class={styles.footnote}>
-            Aparece a cada abertura para não misturar tracker local com onion remoto.
+            O padrão vem de AppConfig (tracker onion). Lab local continua disponível abaixo.
           </p>
         </div>
       </div>

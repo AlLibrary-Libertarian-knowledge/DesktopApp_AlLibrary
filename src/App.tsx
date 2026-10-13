@@ -393,17 +393,6 @@ const App: Component = () => {
             )}
           />
 
-          {/* Placeholder routes for remaining pages */}
-          <Route
-            path="/new-arrivals"
-            component={() => (
-              <div class="page-placeholder">
-                <h1>New Arrivals</h1>
-                <p>Recently added documents to the network.</p>
-              </div>
-            )}
-          />
-
           <Route
             path="/transfers"
             component={() => (

@@ -63,7 +63,7 @@ Descubra qual domínio `.onion` a rede Tor gerou para o seu tracker executando:
 docker compose exec tor_service cat /var/lib/tor/hidden_service/hostname
 ```
 A saída será o link público do seu tracker, por exemplo:
-`3anhnwqwxmjo7xsyxs3uoocdctxd3nwkfm5lt36xcwi4hfmkbttoktqd.onion`
+`xscv6ske7lokympue5f3wqf472etqnpdghcxolozkfx67xywnjr2y6id.onion`
 
 ### Passo B: Atualizar a URL no Código Rust
 No código-fonte do cliente DesktopApp_AlLibrary, edite o arquivo de configurações de rede:

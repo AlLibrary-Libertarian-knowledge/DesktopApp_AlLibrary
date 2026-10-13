@@ -54,7 +54,19 @@ export interface TrackerNetworkConfig {
   tryLocalTrackerFallback?: boolean;
   /** Tor bridge lines (one per entry). */
   torBridges?: string[];
+  /** Hub LAN URL for household PCs, e.g. http://192.168.15.191:8080 */
+  preferredHubUrl?: string;
+  lastGoodTrackerUrl?: string;
 }
+
+export type TrackerSmartConnectResult = {
+  ok: boolean;
+  urlUsed: string;
+  onlineNodes?: number | null;
+  usedLocalhost?: boolean;
+  tried: string[];
+  error?: string | null;
+};
 
 export type OnionShareMode = 'idle' | 'bootstrapping' | 'ready' | 'degraded' | 'failed';
 
@@ -269,6 +281,9 @@ export type TrackerProbeResult = {
   error?: string | null;
   defaultLocalUrl: string;
   defaultOnionUrl: string;
+  /** Docker TrackerRust on this PC (http://127.0.0.1:8080). */
+  localOnline?: boolean;
+  localOnlineNodes?: number | null;
 };
 
 /** GET /lobby reachability check (uses Tor SOCKS only when URL is .onion and overlay is up). */
@@ -276,6 +291,11 @@ export async function trackerProbe(url?: string): Promise<TrackerProbeResult> {
   return safeInvoke<TrackerProbeResult>('tracker_probe', {
     url: url?.trim() || null,
   });
+}
+
+/** One-click: probe hub LAN / last-good / local / onion, save winner, announce + lobby sync. */
+export async function trackerSmartConnect(): Promise<TrackerSmartConnectResult> {
+  return safeInvoke<TrackerSmartConnectResult>('tracker_smart_connect');
 }
 
 /** Re-announce all seed-eligible treated documents (after library scan or resume global seeding). */
@@ -349,4 +369,13 @@ export function listenOnionShareFetchDone(
   handler: (payload: OnionShareFetchDonePayload) => void
 ): Promise<() => void> {
   return listen<OnionShareFetchDonePayload>('onion-share-fetch-done', e => handler(e.payload));
+}
+
+/** Flush local anonymous transfer telemetry to the Analytics hub (manual backfill). */
+export async function pushAnonymousTelemetry(limit?: number): Promise<{
+  exported: number;
+  created: number;
+  is_simulated: boolean;
+}> {
+  return safeInvoke('push_anonymous_telemetry', { limit: limit ?? null });
 }

@@ -1,5 +1,9 @@
 import type { NetworkFileView } from '@/services/network/networkFacade';
-import type { NetworkPeerView } from '@/hooks/api/networkPeerView';
+import {
+  mergePeerViews,
+  peersFromLobbyFiles,
+  type NetworkPeerView,
+} from '@/hooks/api/networkPeerView';
 import type { Link, Node } from '../types';
 import { physicsConfig } from '../config/physicsConfig';
 
@@ -118,7 +122,11 @@ export function buildLobbyGraph(input: LobbyGraphInput): { nodes: Node[]; links:
     centerY
   );
 
-  const peers = input.peers.filter(p => p.nodeId !== input.selfNodeId);
+  // Lobby files always carry peer locations; SQLite peer cache can lag or TTL-expire
+  // while status still shows online_nodes > 0 — merge so topology matches reality.
+  const peers = mergePeerViews(input.peers, peersFromLobbyFiles(input.files)).filter(
+    p => p.nodeId !== input.selfNodeId
+  );
   const angleStep = peers.length > 0 ? (Math.PI * 2) / peers.length : 0;
 
   const peerNodes: Node[] = peers.map((p, i) => {

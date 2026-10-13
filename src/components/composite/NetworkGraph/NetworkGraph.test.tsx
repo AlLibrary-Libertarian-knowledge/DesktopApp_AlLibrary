@@ -1,6 +1,7 @@
 import { render, cleanup } from '@solidjs/testing-library';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import NetworkGraph from './NetworkGraph';
+import type { NetworkGraphProps } from './types';
 import { mockContext, addEventListenerSpy, removeEventListenerSpy } from '../../../test-setup';
 
 // Mock ResizeObserver
@@ -37,6 +38,9 @@ Object.defineProperty(window, 'devicePixelRatio', {
   value: 1,
 });
 
+/** Tests use simulated topology so they do not depend on Tauri lobby. */
+const MockGraph = (props: NetworkGraphProps = {}) => <NetworkGraph useMockData={true} {...props} />;
+
 describe('NetworkGraph', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -47,13 +51,13 @@ describe('NetworkGraph', () => {
   });
 
   it('renders with default props', () => {
-    const { container } = render(() => <NetworkGraph />);
+    const { container } = render(() => <MockGraph />);
     const canvas = container.querySelector('canvas');
     expect(canvas).toBeTruthy();
   });
 
   it('handles responsive width prop', () => {
-    const { container } = render(() => <NetworkGraph width="100%" height={400} />);
+    const { container } = render(() => <MockGraph width="100%" height={400} />);
     const canvas = container.querySelector('canvas') as HTMLCanvasElement;
 
     expect(canvas).toBeTruthy();
@@ -61,7 +65,7 @@ describe('NetworkGraph', () => {
   });
 
   it('handles numeric width prop', () => {
-    const { container } = render(() => <NetworkGraph width={600} height={400} />);
+    const { container } = render(() => <MockGraph width={600} height={400} />);
     const canvas = container.querySelector('canvas') as HTMLCanvasElement;
 
     expect(canvas).toBeTruthy();
@@ -69,7 +73,7 @@ describe('NetworkGraph', () => {
   });
 
   it('handles responsive height prop', () => {
-    const { container } = render(() => <NetworkGraph width={800} height="100%" />);
+    const { container } = render(() => <MockGraph width={800} height="100%" />);
     const canvas = container.querySelector('canvas') as HTMLCanvasElement;
 
     expect(canvas).toBeTruthy();
@@ -77,7 +81,7 @@ describe('NetworkGraph', () => {
   });
 
   it('shows network statistics when showStats is true', () => {
-    const { container } = render(() => <NetworkGraph showStats={true} />);
+    const { container } = render(() => <MockGraph showStats={true} />);
     const statsContainer = container.querySelector('.network-stats');
 
     expect(statsContainer).toBeTruthy();
@@ -87,14 +91,14 @@ describe('NetworkGraph', () => {
   });
 
   it('hides network statistics when showStats is false', () => {
-    const { container } = render(() => <NetworkGraph showStats={false} />);
+    const { container } = render(() => <MockGraph showStats={false} />);
     const statsContainer = container.querySelector('.network-stats');
 
     expect(statsContainer).toBeFalsy();
   });
 
   it('applies correct theme class', () => {
-    const { container } = render(() => <NetworkGraph theme="dark" />);
+    const { container } = render(() => <MockGraph theme="dark" />);
     const networkGraph = container.querySelector('.network-graph');
 
     expect(networkGraph?.classList.contains('dark')).toBe(true);
@@ -108,7 +112,7 @@ describe('NetworkGraph', () => {
       disconnect: vi.fn(),
     })) as any;
 
-    render(() => <NetworkGraph width="100%" height={400} />);
+    render(() => <MockGraph width="100%" height={400} />);
 
     expect(globalThis.ResizeObserver).toHaveBeenCalled();
     expect(mockObserve).toHaveBeenCalled();
@@ -120,14 +124,14 @@ describe('NetworkGraph', () => {
       value: 2,
     });
 
-    render(() => <NetworkGraph width={400} height={300} />);
+    render(() => <MockGraph width={400} height={300} />);
 
     // Should call scale with device pixel ratio
     expect(mockContext.scale).toHaveBeenCalledWith(2, 2);
   });
 
   it('responds to mouse events for interactivity', () => {
-    render(() => <NetworkGraph />);
+    render(() => <MockGraph />);
 
     expect(addEventListenerSpy).toHaveBeenCalledWith('mousemove', expect.any(Function));
     expect(addEventListenerSpy).toHaveBeenCalledWith('mousedown', expect.any(Function));
@@ -135,9 +139,9 @@ describe('NetworkGraph', () => {
   });
 
   it('calculates network statistics correctly', () => {
-    const { container } = render(() => <NetworkGraph showStats={true} />);
+    const { container } = render(() => <MockGraph showStats={true} />);
 
-    // Peers ratio + health % from lobby/mock graph stats
+    // Peers ratio + health % from mock graph stats
     expect(container.textContent).toMatch(/\d+\/\d+/);
     expect(container.textContent).toMatch(/\d+%/);
   });
@@ -155,20 +159,20 @@ describe('NetworkGraph', () => {
         };
       }) as any;
 
-      render(() => <NetworkGraph width="100%" height={400} />);
+      render(() => <MockGraph width="100%" height={400} />);
 
       expect(mockObserve).toHaveBeenCalled();
     });
 
     it('maintains aspect ratio during resize', () => {
-      const { container } = render(() => <NetworkGraph width="100%" height="auto" />);
+      const { container } = render(() => <MockGraph width="100%" height="auto" />);
       const canvas = container.querySelector('canvas');
 
       expect(canvas?.style.width).toBe('100%');
     });
 
     it('uses default dimensions when no props provided', () => {
-      const { container } = render(() => <NetworkGraph />);
+      const { container } = render(() => <MockGraph />);
       const canvas = container.querySelector('canvas') as HTMLCanvasElement;
 
       expect(canvas.style.width).toBe('500px');
@@ -178,13 +182,13 @@ describe('NetworkGraph', () => {
 
   describe('Performance', () => {
     it('sets up animation loop correctly', () => {
-      render(() => <NetworkGraph />);
+      render(() => <MockGraph />);
 
       expect(globalThis.requestAnimationFrame).toHaveBeenCalled();
     });
 
     it('cleans up animation on unmount', () => {
-      const { unmount } = render(() => <NetworkGraph />);
+      const { unmount } = render(() => <MockGraph />);
 
       unmount();
 
@@ -192,7 +196,7 @@ describe('NetworkGraph', () => {
     });
 
     it('sets up event listeners correctly', async () => {
-      const { unmount } = render(() => <NetworkGraph />);
+      const { unmount } = render(() => <MockGraph />);
 
       // Wait for the component to fully mount and set up event listeners
       await new Promise(resolve => setTimeout(resolve, 10));

@@ -236,4 +236,26 @@ describe('transferFacade', () => {
     const link = await transferFacade.resolveDownloadLink('hash-abc');
     expect(link).toContain('opocswarm://');
   });
+
+  it('upgrades direct opoc:// to swarm via resolve_download_link', async () => {
+    invokeMock.mockImplementation(async (cmd: string, args?: { input?: string }) => {
+      if (cmd === 'resolve_download_link' && args?.input?.startsWith('opoc://')) {
+        return {
+          link: 'opocswarm://swarm/hash-abc#dHJhY2tlcg',
+          linkKind: 'swarm',
+          contentHash: 'hash-abc',
+          peerCount: 3,
+          available: true,
+          peers: [],
+        };
+      }
+      return null;
+    });
+
+    const { transferFacade } = await import('../transferFacade');
+    const resolved = await transferFacade.resolveDownloadLinkFull('opoc://abc.onion/f/1', true);
+    expect(resolved.linkKind).toBe('swarm');
+    expect(resolved.link).toContain('opocswarm://');
+    expect(resolved.peerCount).toBe(3);
+  });
 });

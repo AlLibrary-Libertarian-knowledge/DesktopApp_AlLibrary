@@ -172,10 +172,10 @@ async function resolveDownloadLinkFull(
     }
   }
 
-  if (looksLikeDownloadLink(value)) {
+  if (looksLikeDownloadLink(value) && value.startsWith('opocswarm://')) {
     return {
       link: value,
-      linkKind: value.startsWith('opocswarm://') ? 'swarm' : 'direct',
+      linkKind: 'swarm',
       contentHash: '',
       peerCount: 0,
       available: true,
@@ -186,28 +186,86 @@ async function resolveDownloadLinkFull(
   try {
     const cached = await invoke<CachedNetworkFileWire[]>('search_network_cached', {
       query: value,
-      limit: 10,
+      limit: 25,
     });
-    const hit = cached.find(f => f.content_hash === value);
+    const hit =
+      cached.find(f => f.content_hash === value) ||
+      cached.find(f => f.link === value) ||
+      cached.find(f => (f.peers || []).some(p => p.link === value));
     if (hit) {
-      const link =
-        preferSwarm && hit.swarm_link ? hit.swarm_link : hit.link || hit.peers?.[0]?.link || '';
+      const peers = (hit.peers ?? []).map(p => ({
+        nodeId: p.node_id,
+        onion: p.onion,
+        fileId: p.file_id,
+        link: p.link,
+      }));
+      const peerCount = hit.peer_count ?? hit.peers?.length ?? 0;
+
+      if (preferSwarm && hit.content_hash) {
+        let swarmLink = hit.swarm_link || '';
+        if (!swarmLink) {
+          try {
+            swarmLink = await invoke<string>('build_swarm_link', {
+              contentHash: hit.content_hash,
+              trackerUrl: null,
+            });
+          } catch {
+            swarmLink = '';
+          }
+        }
+        if (swarmLink) {
+          return {
+            link: swarmLink,
+            linkKind: 'swarm',
+            contentHash: hit.content_hash,
+            peerCount,
+            available: peerCount > 0,
+            peers,
+          };
+        }
+      }
+
       return {
-        link,
-        linkKind: preferSwarm && hit.swarm_link ? 'swarm' : 'direct',
+        link: hit.link || hit.peers?.[0]?.link || value,
+        linkKind: 'direct',
         contentHash: hit.content_hash,
-        peerCount: hit.peer_count ?? hit.peers?.length ?? 0,
-        available: (hit.peer_count ?? hit.peers?.length ?? 0) > 0,
-        peers: (hit.peers ?? []).map(p => ({
-          nodeId: p.node_id,
-          onion: p.onion,
-          fileId: p.file_id,
-          link: p.link,
-        })),
+        peerCount,
+        available: peerCount > 0,
+        peers,
       };
     }
   } catch {
     /* ignore */
+  }
+
+  if (preferSwarm && /^[0-9a-fA-F]{32,}$/.test(value)) {
+    try {
+      const swarmLink = await invoke<string>('build_swarm_link', {
+        contentHash: value,
+        trackerUrl: null,
+      });
+      return {
+        link: swarmLink,
+        linkKind: 'swarm',
+        contentHash: value,
+        peerCount: 0,
+        available: false,
+        peers: [],
+      };
+    } catch {
+      /* fall through */
+    }
+  }
+
+  if (looksLikeDownloadLink(value)) {
+    return {
+      link: value,
+      linkKind: value.startsWith('opocswarm://') ? 'swarm' : 'direct',
+      contentHash: '',
+      peerCount: 0,
+      available: true,
+      peers: [],
+    };
   }
 
   throw new Error(`No network file found for hash or link: ${value}`);
@@ -293,6 +351,7 @@ export const transferFacade = {
     downloadManager.updateItem(id, { status: 'resolving' });
 
     try {
+      // Always swarm-first — never keep a direct opoc:// sourceInput when resolve returns swarm.
       const resolved = await resolveDownloadLinkFull(item.sourceInput || item.link, true);
       if (
         !resolved.available &&
@@ -303,10 +362,12 @@ export const transferFacade = {
         throw new Error('No online peers are seeding this file.');
       }
 
-      const trimmedLink =
-        resolved.linkKind === 'swarm' && looksLikeDownloadLink(item.sourceInput || '')
-          ? (item.sourceInput || resolved.link).trim()
-          : resolved.link.trim();
+      const source = (item.sourceInput || '').trim();
+      const trimmedLink = (
+        resolved.linkKind === 'swarm'
+          ? resolved.link || (source.startsWith('opocswarm://') ? source : '')
+          : resolved.link || source
+      ).trim();
       if (!trimmedLink) {
         throw new Error('Could not resolve a download link for this file.');
       }

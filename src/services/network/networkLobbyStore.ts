@@ -10,7 +10,12 @@ import {
   type NetworkLobbyView,
 } from '@/services/network/networkFacade';
 import type { NetworkLobby } from '@/services/network/onionShareService';
-import { mapPeer, type NetworkPeerView } from '@/hooks/api/networkPeerView';
+import {
+  mapPeer,
+  mergePeerViews,
+  peersFromLobbyFiles,
+  type NetworkPeerView,
+} from '@/hooks/api/networkPeerView';
 
 const POLL_MS = 30_000;
 const EVENT_DEBOUNCE_MS = 250;
@@ -88,10 +93,30 @@ function createNetworkLobbyStore(): NetworkLobbyStore {
   const unlisteners: UnlistenFn[] = [];
   let lastAppliedFingerprint = '';
 
+  const applyPeers = (
+    rawPeers: Awaited<ReturnType<typeof networkFacade.listPeers>>,
+    lobbyFiles: NetworkFileView[]
+  ) => {
+    const fromCache = rawPeers.map(p => mapPeer(p, lobbyFiles));
+    const merged = mergePeerViews(fromCache, peersFromLobbyFiles(lobbyFiles));
+    setPeers(merged);
+    setPeerCount(merged.length);
+  };
+
+  const applyPeersFromFiles = (lobbyFiles: NetworkFileView[]) => {
+    const fromFiles = peersFromLobbyFiles(lobbyFiles);
+    const merged = mergePeerViews(peers(), fromFiles);
+    setPeers(merged);
+    setPeerCount(merged.length);
+  };
+
   const applyLobby = (lobby: NetworkLobbyView) => {
     const fp = lobbyFingerprint(lobby);
     if (fp === lastAppliedFingerprint && !lobby.syncError) {
       if (lobby.lastSyncAt) setLastSyncAt(lobby.lastSyncAt);
+      // Still refresh peer topology from files — online count can stay stable
+      // while peer rows on files change, and SQLite peers may be empty.
+      applyPeersFromFiles(lobby.files);
       return;
     }
     lastAppliedFingerprint = fp;
@@ -100,15 +125,7 @@ function createNetworkLobbyStore(): NetworkLobbyStore {
     setTotalBytes(lobby.totalBytes);
     setLastSyncAt(lobby.lastSyncAt);
     setSyncError(lobby.syncError);
-  };
-
-  const applyPeers = (
-    rawPeers: Awaited<ReturnType<typeof networkFacade.listPeers>>,
-    lobbyFiles: NetworkFileView[]
-  ) => {
-    const mapped = rawPeers.map(p => mapPeer(p, lobbyFiles));
-    setPeers(mapped);
-    setPeerCount(mapped.length);
+    applyPeersFromFiles(lobby.files);
   };
 
   const refresh = async (force = false) => {
@@ -117,9 +134,13 @@ function createNetworkLobbyStore(): NetworkLobbyStore {
     try {
       const lobby = force ? await networkFacade.refreshLobby() : await networkFacade.getLobby();
       applyLobby(lobby);
-      if (force) {
+      // Always refresh SQLite peers after lobby — not only on force.
+      // Status uses online_nodes; graph needs peer rows (TTL can empty the cache).
+      try {
         const rawPeers = await networkFacade.listPeers();
         applyPeers(rawPeers, lobby.files);
+      } catch {
+        applyPeersFromFiles(lobby.files);
       }
     } catch (e: unknown) {
       setSyncError(e instanceof Error ? e.message : String(e));
@@ -133,7 +154,7 @@ function createNetworkLobbyStore(): NetworkLobbyStore {
       const rawPeers = await networkFacade.listPeers();
       applyPeers(rawPeers, lobbyFiles);
     } catch {
-      /* keep last peers */
+      applyPeersFromFiles(lobbyFiles);
     }
   };
 

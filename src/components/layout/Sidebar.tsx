@@ -21,7 +21,6 @@ import {
   Globe,
   FolderOpen,
   TrendingUp,
-  Sparkles,
   Users,
   ArrowLeftRight,
   ChevronDown,
@@ -81,7 +80,6 @@ const NAV_SECTIONS: NavSection[] = [
       { path: '/search-network', label: 'Search Network', icon: Search },
       { path: '/browse', label: 'Browse Categories', icon: FolderOpen },
       { path: '/trending', label: 'Trending', icon: TrendingUp },
-      { path: '/new-arrivals', label: 'New Arrivals', icon: Sparkles },
     ],
   },
   {

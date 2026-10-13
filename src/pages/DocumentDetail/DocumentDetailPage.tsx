@@ -350,7 +350,8 @@ export const DocumentDetailPage: Component<DocumentDetailPageProps> = () => {
         toast.info(tf('pages.documentDetail.toasts.alreadyLocal'));
         return;
       }
-      const linkOrHash = doc.networkLink || doc.contentHash || doc.id;
+      // Prefer hash so resolve_download_link builds opocswarm:// (multi-seeder).
+      const linkOrHash = doc.contentHash || doc.networkLink || doc.id;
       if (!linkOrHash) {
         throw new Error('No network link or content hash for this document.');
       }

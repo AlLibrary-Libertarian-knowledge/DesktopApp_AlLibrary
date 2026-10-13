@@ -4,7 +4,6 @@ import {
   FileText,
   BookOpen,
   Clock,
-  ChevronRight,
   Upload,
   AlertTriangle,
   CheckCircle,
@@ -78,14 +77,14 @@ const DocumentManagementRightColumn: Component<Props> = props => {
       </Show>
 
       <div class={`${styles.grid} ${props.layout === 'bottom' ? styles.gridBottom : ''}`}>
-        <div class={`${styles.section} ${styles.storageSection}`}>
+        <section class={`${styles.section} ${styles.storageSection}`}>
           <div class={styles.sectionHeader}>
             <div class={styles.sectionTitle}>
-              <HardDrive size={18} />
+              <HardDrive size={16} />
               Storage Overview
             </div>
             <div class={`${styles.storageStatus} ${styles[storageStatus().type]}`}>
-              <StatusIcon size={14} />
+              <StatusIcon size={13} />
               <span>{storageStatus().message}</span>
             </div>
           </div>
@@ -121,12 +120,12 @@ const DocumentManagementRightColumn: Component<Props> = props => {
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
-        <div class={`${styles.section} ${styles.formatsSection}`}>
+        <section class={`${styles.section} ${styles.formatsSection}`}>
           <div class={styles.sectionHeader}>
             <div class={styles.sectionTitle}>
-              <FileText size={18} />
+              <FileText size={16} />
               Document Formats
             </div>
             <div class={styles.formatCount}>{props.formats.length} Types</div>
@@ -147,25 +146,37 @@ const DocumentManagementRightColumn: Component<Props> = props => {
             </div>
           </div>
 
-          <div class={styles.formatsList}>
-            <For each={props.formats}>
-              {fmt => (
-                <div class={styles.formatItem}>
-                  <div class={styles.formatIcon}>
-                    <BookOpen size={16} />
-                  </div>
-                  <span class={styles.formatName}>{fmt}</span>
-                  <ChevronRight size={14} class={styles.formatArrow} />
+          <Show
+            when={props.formats.length > 0}
+            fallback={
+              <div class={styles.empty}>
+                <div class={styles.emptyIcon} aria-hidden="true">
+                  <BookOpen size={18} />
                 </div>
-              )}
-            </For>
-          </div>
-        </div>
+                <p class={styles.emptyTitle}>No formats yet</p>
+                <p class={styles.emptyHint}>Formats appear as you add documents.</p>
+              </div>
+            }
+          >
+            <div class={styles.formatsList}>
+              <For each={props.formats}>
+                {fmt => (
+                  <div class={styles.formatItem}>
+                    <div class={styles.formatIcon}>
+                      <BookOpen size={15} />
+                    </div>
+                    <span class={styles.formatName}>{fmt}</span>
+                  </div>
+                )}
+              </For>
+            </div>
+          </Show>
+        </section>
 
-        <div class={`${styles.section} ${styles.uploadsSection}`}>
+        <section class={`${styles.section} ${styles.uploadsSection}`}>
           <div class={styles.sectionHeader}>
             <div class={styles.sectionTitle}>
-              <Clock size={18} />
+              <Clock size={16} />
               Recent Activity
             </div>
             <Show when={props.recentUploads.length > 0}>
@@ -178,9 +189,11 @@ const DocumentManagementRightColumn: Component<Props> = props => {
               when={props.recentUploads.length > 0}
               fallback={
                 <div class={styles.empty}>
-                  <Upload size={24} />
-                  <span>No recent uploads</span>
-                  <p>Start uploading your documents</p>
+                  <div class={styles.emptyIcon} aria-hidden="true">
+                    <Upload size={18} />
+                  </div>
+                  <p class={styles.emptyTitle}>No recent uploads</p>
+                  <p class={styles.emptyHint}>Start uploading your documents</p>
                 </div>
               }
             >
@@ -202,7 +215,7 @@ const DocumentManagementRightColumn: Component<Props> = props => {
               </For>
             </Show>
           </div>
-        </div>
+        </section>
       </div>
     </aside>
   );
